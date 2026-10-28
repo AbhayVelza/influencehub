@@ -23,7 +23,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { useCan } from '@/hooks/use-me'
+import { useCan, useMe } from '@/hooks/use-me'
 import { useTeam } from '@/hooks/use-team'
 import { copyToClipboard } from '@/lib/clipboard'
 import { formatLocation } from '@/lib/format'
@@ -36,7 +36,9 @@ import { StageStepper } from './stage-stepper'
 
 function OwnerControl({ influencer }: { influencer: Influencer }) {
   const team = useTeam()
+  const { data: me } = useMe()
   const canReassign = useCan('influencer:reassign')
+  const canClaim = useCan('influencer:claim')
   const update = useUpdateInfluencer(influencer.id)
   const owner = team.data?.items.find((u) => u.id === influencer.assigned_to)
   const label = influencer.assigned_to ? (owner?.name ?? '…') : 'Unassigned'
@@ -50,6 +52,27 @@ function OwnerControl({ influencer }: { influencer: Influencer }) {
       },
     )
 
+  if (!canReassign && canClaim && !influencer.assigned_to && me) {
+    return (
+      <Button
+        variant="outline"
+        disabled={update.isPending}
+        onClick={() =>
+          update.mutate(
+            { assigned_to: me.id },
+            {
+              onSuccess: () => toast.success('Claimed — you’re now the owner'),
+              onError: (err) => toast.error('Couldn’t claim', { description: getErrorMessage(err) }),
+            },
+          )
+        }
+      >
+        <UserRound />
+        Unassigned · Claim
+      </Button>
+    )
+  }
+
   if (!canReassign) {
     return (
       <Tooltip>
@@ -59,7 +82,7 @@ function OwnerControl({ influencer }: { influencer: Influencer }) {
             Owner: <span className="text-foreground">{label}</span>
           </span>
         </TooltipTrigger>
-        <TooltipContent>Only managers and admins can reassign</TooltipContent>
+        <TooltipContent>Only managers and admins can reassign an owned influencer</TooltipContent>
       </Tooltip>
     )
   }

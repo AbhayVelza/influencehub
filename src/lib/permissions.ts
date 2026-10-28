@@ -7,6 +7,8 @@ export type Permission =
   | 'call:log'
   | 'package:manage'
   | 'stage:change'
+  /** Assign an unassigned influencer to yourself. */
+  | 'influencer:claim'
   | 'stage:reopen'
   | 'influencer:reassign'
   | 'influencer:delete'
@@ -24,6 +26,7 @@ const EXECUTIVE: Permission[] = [
   'call:log',
   'package:manage',
   'stage:change',
+  'influencer:claim',
 ]
 
 const MANAGER: Permission[] = [

@@ -35,7 +35,7 @@ interested → contacted. Package returned → back to onboarded.
 - **Activity**: id, influencer_id, actor, type, payload, created_at
 - **FollowerSnapshot**: followers, following, engagement_rate, captured_at
 - **MediaItem**: thumbnail, permalink, likes, comments, posted_at
-- **Permissions**: executive = view/add/edit/call/package/change stage; manager += reopen rejected,
+- **Permissions**: executive = view/add/edit/call/package/change stage/claim unassigned; manager += reopen rejected,
   reassign, delete, import/export; admin += override stages, manage team, categories, integrations.
 
 ## Tech stack
@@ -67,12 +67,13 @@ Async actions return job_id; UI polls GET /jobs/{id} every 2 s.
 - Admin override (a move outside the standard transitions) skips the call/package requirements but needs a
   `reason`; without one → `422 reason_required`. Activity payload: `{from, to, reason, override: true}`.
   Bulk `change_stage` has no reason field, so it can't override.
-- `POST /influencers/bulk` actions: `change_stage` (value = stage), `assign` (value = user id or null; manager/admin),
+- `POST /influencers/bulk` actions: `change_stage` (value = stage), `assign` (value = user id or null; see owner rule),
   `sync` (returns `job_id`; job result `{synced, failed[{id, message}]}`), `delete` (manager/admin).
   Response: `{succeeded[ids], failed[{id, code, message}], job_id|null}`; per-row failures don't fail the request.
   Per-row messages don't include the influencer's name (the UI adds it).
-- Changing `assigned_to` (PATCH or bulk `assign`), including on an unassigned influencer, is manager/admin
-  only → `403 forbidden` for executives.
+- Owner changes: managers/admins can set any `assigned_to`. Executives can only **claim** — set an
+  UNASSIGNED influencer's `assigned_to` to themselves (PATCH, POST create, or bulk `assign` with value = own id).
+  Anything else → `403 forbidden`. Bulk claim reports already-assigned rows as per-row `forbidden` failures.
 - Notifications have no endpoint: they're derived from overdue + due-today follow-ups.
 - `GET/PATCH /settings/instagram` (admin only, else 403). GET → `{ connected, business_account {username,
   ig_user_id} | null, token_status (valid|expiring|expired), token_expires_at, sync_interval_hours (3|6|12|24),

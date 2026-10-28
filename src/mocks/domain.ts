@@ -117,6 +117,14 @@ export function createInfluencer(body: InfluencerCreate, source: 'instagram' | '
   return { ok: true, influencer }
 }
 
+/** Managers/admins can set any owner; executives can only claim an unassigned influencer for themselves. */
+export function canChangeOwner(user: User, currentOwner: string | null, to: string | null): boolean {
+  if (can(user.role, 'influencer:reassign')) return true
+  return currentOwner === null && to === user.id
+}
+
+export const CLAIM_ONLY_MESSAGE = 'Executives can only claim unassigned influencers for themselves'
+
 /** Removes an influencer with its calls, packages and activity. False if it doesn't exist. */
 export function deleteInfluencer(id: string): boolean {
   const index = db.influencers.findIndex((i) => i.id === id)

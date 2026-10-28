@@ -16,7 +16,9 @@ import type {
 } from '@/types'
 import { currentUser, db, findInfluencer, logActivity, mediaFor, nextId, nowIso, snapshotsFor } from '../db'
 import {
+  canChangeOwner,
   changeStage,
+  CLAIM_ONLY_MESSAGE,
   completeSync,
   createInfluencer,
   deleteInfluencer,
@@ -100,12 +102,19 @@ export const influencerHandlers = [
         else result.failed.push({ id, code: res.code, message: res.message })
       }
     } else if (body.action === 'assign') {
-      if (!can(user.role, 'influencer:reassign')) return forbidden('Only managers and admins can reassign influencers')
-      if (body.value && !db.team.some((u) => u.id === body.value)) return apiError(422, 'validation_error', 'Unknown user')
+      const to = body.value ?? null
+      // Executives may only bulk-claim for themselves; anything else is a reassignment.
+      if (!can(user.role, 'influencer:reassign') && to !== user.id) return forbidden(CLAIM_ONLY_MESSAGE)
+      if (to && !db.team.some((u) => u.id === to)) return apiError(422, 'validation_error', 'Unknown user')
       for (const id of ids) {
         const inf = findInfluencer(id)
         if (!inf) {
           result.failed.push({ id, code: 'not_found', message: 'Influencer not found' })
+          continue
+        }
+        if (!canChangeOwner(user, inf.assigned_to, to)) {
+          const owner = db.team.find((u) => u.id === inf.assigned_to)?.name ?? 'someone else'
+          result.failed.push({ id, code: 'forbidden', message: `Already assigned to ${owner}` })
           continue
         }
         const from = inf.assigned_to
@@ -149,6 +158,7 @@ export const influencerHandlers = [
   http.post(api('/influencers'), async ({ request }) => {
     await latency()
     const body = await readJson<InfluencerCreate>(request)
+    if (body.assigned_to && !canChangeOwner(currentUser(), null, body.assigned_to)) return forbidden(CLAIM_ONLY_MESSAGE)
     const source = body.followers != null && body.account_type !== 'personal' ? 'instagram' : 'manual'
     const res = createInfluencer(body, source)
     if (!res.ok) return apiError(res.status, res.code, res.message)
@@ -179,10 +189,7 @@ export const influencerHandlers = [
     }
     if (body.phone !== undefined) body.phone = normalizePhone(body.phone)
     if (body.assigned_to !== undefined && body.assigned_to !== inf.assigned_to) {
-      // Any owner change (including claiming an unassigned influencer) is a manager/admin action.
-      if (!can(user.role, 'influencer:reassign')) {
-        return forbidden('Only managers and admins can reassign influencers')
-      }
+      if (!canChangeOwner(user, inf.assigned_to, body.assigned_to)) return forbidden(CLAIM_ONLY_MESSAGE)
       logActivity(inf.id, 'assigned', { from: inf.assigned_to, to: body.assigned_to })
     }
 
