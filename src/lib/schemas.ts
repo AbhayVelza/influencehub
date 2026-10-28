@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { ALL_STAGES, CALL_OUTCOMES, DEFAULT_COUNTRY_CODE, PACKAGE_STATUSES } from '@/lib/constants'
-import { localInputToIso } from '@/lib/format'
+import { localInputToIso, parseCompactNumber } from '@/lib/format'
 
 // Validation shared by every form and inline edit, so a value accepted in one place is accepted everywhere.
 
@@ -16,7 +16,15 @@ export function normalizePhone(value: string | null | undefined): string | null 
   return compact.startsWith('+') ? compact : `${DEFAULT_COUNTRY_CODE}${compact.replace(/^0+/, '')}`
 }
 
-export const normalizeHandle = (value: string) => value.trim().replace(/^@+/, '').toLowerCase()
+/**
+ * "@RiyaStyle", "instagram.com/riyastyle", "https://www.instagram.com/riyastyle/?hl=en" → "riyastyle".
+ * Format isn't checked here; fieldSchemas.instagram_handle does that.
+ */
+export function normalizeHandle(value: string): string {
+  const trimmed = value.trim()
+  const fromUrl = trimmed.match(/instagram\.com\/([^/?#\s]+)/i)?.[1]
+  return (fromUrl ?? trimmed).replace(/^@+/, '').replace(/\/+$/, '').toLowerCase()
+}
 
 /** Trimmed text; empty becomes null. */
 const optionalText = (max: number, label: string) =>
@@ -60,6 +68,40 @@ export const fieldSchemas = {
 }
 
 export const MAX_TAGS = 20
+
+// ---------------------------------------------------------------------------
+// Add influencer
+
+/** Owner select: "" means unassigned. */
+const ownerField = z.string().transform((v) => v || null)
+
+/** Details the user adds on top of an Instagram profile (and the core of the manual form). */
+export const influencerDetailsSchema = z.object({
+  name: fieldSchemas.name,
+  category: fieldSchemas.category,
+  phone: fieldSchemas.phone,
+  email: fieldSchemas.email,
+  city: fieldSchemas.city,
+  state: fieldSchemas.state,
+  country: fieldSchemas.country,
+  assigned_to: ownerField,
+})
+
+export type InfluencerDetailsInput = z.input<typeof influencerDetailsSchema>
+
+export const manualInfluencerSchema = influencerDetailsSchema.extend({
+  instagram_handle: fieldSchemas.instagram_handle,
+  account_type: z.enum(['business', 'creator', 'personal', 'unknown']),
+  /** Optional manual estimate, e.g. for personal accounts Instagram won't share. */
+  followers: z
+    .string()
+    .trim()
+    .refine((v) => v === '' || parseCompactNumber(v) !== undefined, 'Use a number like 12000, 12k or 1.2m')
+    .transform((v) => (v ? parseCompactNumber(v)! : null)),
+  notes: fieldSchemas.notes,
+})
+
+export type ManualInfluencerInput = z.input<typeof manualInfluencerSchema>
 
 export const addressSchema = z.object({
   line1: requiredText(200, 'Address line 1'),

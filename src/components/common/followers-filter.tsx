@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { formatFollowerRange, type FollowerRange as Range } from '@/lib/format'
+import { formatFollowerRange, parseCompactNumber, type FollowerRange as Range } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
 const PRESETS: { label: string; range: Range }[] = [
@@ -14,14 +14,6 @@ const PRESETS: { label: string; range: Range }[] = [
   { label: 'Macro · 500K–1M', range: { min: 500_000, max: 1_000_000 } },
   { label: 'Mega · 1M+', range: { min: 1_000_000 } },
 ]
-
-/** Accepts "25000", "25k", "1.2m". */
-function parseAmount(text: string): number | undefined {
-  const match = text.trim().toLowerCase().replace(/,/g, '').match(/^(\d+(?:\.\d+)?)\s*([km])?$/)
-  if (!match) return undefined
-  const n = Number(match[1]) * (match[2] === 'm' ? 1_000_000 : match[2] === 'k' ? 1_000 : 1)
-  return Math.round(n)
-}
 
 interface FollowersFilterProps {
   min?: number
@@ -52,8 +44,8 @@ export function FollowersFilter({ min, max, onChange }: FollowersFilterProps) {
 
   const onSubmit = (event: FormEvent) => {
     event.preventDefault()
-    const nextMin = minText.trim() ? parseAmount(minText) : undefined
-    const nextMax = maxText.trim() ? parseAmount(maxText) : undefined
+    const nextMin = minText.trim() ? parseCompactNumber(minText) : undefined
+    const nextMax = maxText.trim() ? parseCompactNumber(maxText) : undefined
     if ((minText.trim() && nextMin === undefined) || (maxText.trim() && nextMax === undefined)) {
       setError('Use numbers like 25000, 25k or 1.2m')
       return

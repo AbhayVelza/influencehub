@@ -2,6 +2,7 @@ import { Suspense } from 'react'
 import { Outlet } from 'react-router-dom'
 import { ErrorState } from '@/components/common/states'
 import { Skeleton } from '@/components/ui/skeleton'
+import { AddInfluencerProvider } from '@/features/add-influencer/add-influencer-provider'
 import { useMe } from '@/hooks/use-me'
 import { Sidebar } from './sidebar'
 import { TopBar } from './top-bar'
@@ -50,16 +51,18 @@ export function AppShell() {
   }
 
   return (
-    <div className="flex h-svh min-w-[1024px] overflow-hidden">
-      <Sidebar />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <TopBar />
-        <main className="flex-1 overflow-y-auto">
-          <Suspense fallback={<PageSkeleton />}>
-            <Outlet />
-          </Suspense>
-        </main>
+    <AddInfluencerProvider>
+      <div className="flex h-svh min-w-[1024px] overflow-hidden">
+        <Sidebar />
+        <div className="flex min-w-0 flex-1 flex-col">
+          <TopBar />
+          <main className="flex-1 overflow-y-auto">
+            <Suspense fallback={<PageSkeleton />}>
+              <Outlet />
+            </Suspense>
+          </main>
+        </div>
       </div>
-    </div>
+    </AddInfluencerProvider>
   )
 }

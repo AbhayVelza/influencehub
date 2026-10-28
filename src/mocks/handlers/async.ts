@@ -1,4 +1,5 @@
 import { http, HttpResponse } from 'msw'
+import { mapImportRow, validateImportRow } from '@/lib/csv-import'
 import { can } from '@/lib/permissions'
 import { toSearchParams } from '@/services/http'
 import type {
@@ -6,14 +7,13 @@ import type {
   CsvImportResult,
   ExportRequest,
   ExportResult,
+  Influencer,
   InfluencerCreate,
 } from '@/types'
-import { currentUser, db } from '../db'
-import { createInfluencer, filterInfluencers, lookupInstagram, normalizeHandle, parseCsv, toCsv } from '../domain'
+import { currentUser, db, logActivity, nowIso } from '../db'
+import { completeSync, createInfluencer, filterInfluencers, lookupInstagram, normalizeHandle, parseCsv, toCsv } from '../domain'
 import { createJob, readJob } from '../jobs'
 import { api, apiError, forbidden, latency, notFound, readJson } from '../utils'
-
-const NUMERIC_FIELDS = new Set(['followers', 'following', 'posts_count', 'engagement_rate'])
 
 export const asyncHandlers = [
   http.get(api('/jobs/:id'), async ({ params }) => {
@@ -62,35 +62,81 @@ export const asyncHandlers = [
     }
 
     const run = (): CsvImportResult => {
-      const [header = [], ...rows] = parseCsv(text)
-      const columnIndex = new Map(header.map((h, i) => [h.trim(), i]))
-      const categories = new Map(db.categories.map((c) => [c.name.toLowerCase(), c.name]))
-      const result: CsvImportResult = { total_rows: rows.length, created: 0, skipped: 0, errors: [] }
+      const [rawHeader = [], ...rows] = parseCsv(text)
+      const headers = rawHeader.map((h) => h.trim())
+      const categoryNames = db.categories.filter((c) => c.is_active).map((c) => c.name)
+      const result: CsvImportResult = {
+        total_rows: rows.length,
+        created: 0,
+        updated: 0,
+        duplicates: 0,
+        failed: 0,
+        errors: [],
+        instagram: body.fetch_instagram ? { synced: 0, failed: 0 } : null,
+      }
+      const seen = new Set<string>()
+      const touched: Influencer[] = []
 
       rows.forEach((row, idx) => {
-        const record: Record<string, unknown> = {}
-        for (const [field, column] of Object.entries(mapping)) {
-          const i = column ? columnIndex.get(column) : undefined
-          const raw = i === undefined ? '' : (row[i] ?? '').trim()
-          if (!raw) continue
-          record[field] = NUMERIC_FIELDS.has(field) ? Number(raw.replace(/[,%]/g, '')) : raw
+        const line = idx + 2 // header is line 1
+        const raw = mapImportRow(row, headers, mapping)
+        const { values, errors } = validateImportRow(raw, categoryNames)
+        const problems = Object.values(errors)
+        if (problems.length) {
+          result.failed++
+          result.errors.push({ row: line, instagram_handle: raw.instagram_handle ?? null, message: problems.join('; ') })
+          return
         }
-        if (typeof record.tags === 'string') record.tags = record.tags.split(/[;|]/).map((t) => t.trim()).filter(Boolean)
-        const category = categories.get(String(record.category ?? '').toLowerCase())
-        record.category = category ?? 'Other'
-        record.account_type = 'unknown'
+        const handle = values.instagram_handle!
+        if (seen.has(handle)) {
+          result.duplicates++
+          return
+        }
+        seen.add(handle)
 
-        const res = createInfluencer(record as unknown as InfluencerCreate, 'csv')
-        if (res.ok) result.created++
-        else {
-          result.skipped++
-          result.errors.push({ row: idx + 2, message: res.message }) // +2: header row and 1-based
+        const existing = db.influencers.find((i) => i.instagram_handle === handle)
+        if (existing) {
+          if (body.on_duplicate !== 'update') {
+            result.duplicates++
+            return
+          }
+          // Only fields present in the row overwrite; tags are merged.
+          const { instagram_handle: _ignored, tags, ...rest } = values
+          const fields = Object.keys(raw).filter((k) => k !== 'instagram_handle' && k !== 'tags')
+          Object.assign(existing, Object.fromEntries(Object.entries(rest).filter(([k]) => fields.includes(k))))
+          if (tags) existing.tags = [...new Set([...existing.tags, ...tags])]
+          existing.updated_at = nowIso()
+          logActivity(existing.id, 'updated', { fields: Object.keys(raw).filter((k) => k !== 'instagram_handle'), source: 'csv' })
+          result.updated++
+          touched.push(existing)
+          return
+        }
+
+        const res = createInfluencer({ ...values, account_type: 'unknown' } as InfluencerCreate, 'csv')
+        if (res.ok) {
+          result.created++
+          touched.push(res.influencer)
+        } else {
+          result.failed++
+          result.errors.push({ row: line, instagram_handle: handle, message: res.message })
         }
       })
+
+      if (result.instagram) {
+        for (const inf of touched) {
+          try {
+            completeSync(inf.id)
+            result.instagram.synced++
+          } catch {
+            result.instagram.failed++
+          }
+        }
+      }
       db.uploads.delete(body.key)
       return result
     }
-    return HttpResponse.json({ job_id: createJob(run, 3000) }, { status: 202 })
+    // Instagram lookups make the job noticeably longer, like the real thing.
+    return HttpResponse.json({ job_id: createJob(run, body.fetch_instagram ? 5000 : 3000) }, { status: 202 })
   }),
 
   // ---- Export -------------------------------------------------------------

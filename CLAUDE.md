@@ -74,6 +74,15 @@ Async actions return job_id; UI polls GET /jobs/{id} every 2 s.
 - Owner changes: managers/admins can set any `assigned_to`. Executives can only **claim** — set an
   UNASSIGNED influencer's `assigned_to` to themselves (PATCH, POST create, or bulk `assign` with value = own id).
   Anything else → `403 forbidden`. Bulk claim reports already-assigned rows as per-row `forbidden` failures.
+- Handles are normalised everywhere (forms, lookup, CSV, API): full Instagram URLs and a leading `@` are
+  stripped, then lowercased. `POST /influencers` returns `409 handle_taken` for duplicates.
+- CSV import: `POST /imports/csv/presign {filename}` → `{upload_url, key}`; client PUTs the file to `upload_url`;
+  `POST /imports/csv {key, mapping, fetch_instagram, on_duplicate: skip|update}` → job. Job result
+  `{total_rows, created, updated, duplicates, failed, errors[{row, instagram_handle, message}],
+  instagram {synced, failed} | null}`. `row` = 1-based file line (header = line 1). Rows are validated with
+  the same rules as the forms (`src/lib/csv-import.ts`); unknown/missing category → "Other"; repeated
+  handles within the file count as duplicates; `update` overwrites only mapped non-empty fields and merges
+  tags. Client limits: 2 MB, 5,000 rows. Import/presign are manager/admin only.
 - Notifications have no endpoint: they're derived from overdue + due-today follow-ups.
 - `GET/PATCH /settings/instagram` (admin only, else 403). GET → `{ connected, business_account {username,
   ig_user_id} | null, token_status (valid|expiring|expired), token_expires_at, sync_interval_hours (3|6|12|24),

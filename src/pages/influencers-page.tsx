@@ -1,11 +1,11 @@
 import { Download, Plus, SearchX, Upload, Users } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import { ComingSoonButton } from '@/components/common/coming-soon-button'
 import { PageHeader } from '@/components/common/page-header'
 import { Pagination } from '@/components/common/pagination'
 import { EmptyState, ErrorState } from '@/components/common/states'
 import { Button } from '@/components/ui/button'
+import { useAddInfluencer } from '@/features/add-influencer/context'
 import { ActiveFilters } from '@/features/influencers/active-filters'
 import { BulkActionsBar } from '@/features/influencers/bulk-actions-bar'
 import { InfluencerFilterBar } from '@/features/influencers/filter-bar'
@@ -33,6 +33,7 @@ export default function InfluencersPage() {
   const canImport = useCan('data:import')
   const canExport = useCan('data:export')
   const canCreate = useCan('influencer:create')
+  const addInfluencer = useAddInfluencer()
 
   const rows = useMemo(() => query.data?.items ?? [], [query.data])
   const total = query.data?.total ?? 0
@@ -81,6 +82,7 @@ export default function InfluencersPage() {
       icon={Users}
       title="No influencers yet"
       description="Add influencers from Instagram, enter them manually, or import a CSV."
+      action={canCreate && <Button onClick={() => addInfluencer.open()}>Add influencer</Button>}
     />
   )
 
@@ -99,10 +101,10 @@ export default function InfluencersPage() {
           actions={
             <>
               {canImport && (
-                <ComingSoonButton phase={4} variant="outline">
+                <Button variant="outline" onClick={() => addInfluencer.open({ tab: 'csv' })}>
                   <Upload />
                   Import CSV
-                </ComingSoonButton>
+                </Button>
               )}
               {canExport && (
                 <Button
@@ -115,10 +117,10 @@ export default function InfluencersPage() {
                 </Button>
               )}
               {canCreate && (
-                <ComingSoonButton phase={4}>
+                <Button onClick={() => addInfluencer.open()}>
                   <Plus />
                   Add Influencer
-                </ComingSoonButton>
+                </Button>
               )}
             </>
           }

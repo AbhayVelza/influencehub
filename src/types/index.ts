@@ -408,16 +408,29 @@ export interface CsvPresignResponse {
 /** Maps influencer field → CSV column header. */
 export type CsvColumnMapping = Partial<Record<keyof InfluencerCreate, string>>
 
+/** What to do with a row whose handle is already in the CRM. */
+export type CsvDuplicatePolicy = 'skip' | 'update'
+
 export interface CsvImportRequest {
   key: string
   mapping: CsvColumnMapping
+  /** Look each imported handle up on Instagram after the rows are saved. */
+  fetch_instagram: boolean
+  on_duplicate: CsvDuplicatePolicy
 }
 
 export interface CsvImportResult {
   total_rows: number
   created: number
-  skipped: number
-  errors: { row: number; message: string }[]
+  /** Existing influencers updated (on_duplicate = update). */
+  updated: number
+  /** Rows skipped because the handle already exists (in the CRM or earlier in the file). */
+  duplicates: number
+  failed: number
+  /** Failed rows only. `row` is the 1-based line number in the file (header = 1). */
+  errors: { row: number; instagram_handle: string | null; message: string }[]
+  /** Present when fetch_instagram was requested. */
+  instagram: { synced: number; failed: number } | null
 }
 
 export interface ExportRequest {

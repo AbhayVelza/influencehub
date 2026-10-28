@@ -30,6 +30,14 @@ export function formatFollowerRange({ min, max }: FollowerRange): string {
   return ''
 }
 
+/** Accepts "25000", "25,000", "25k", "1.2m". Undefined when it isn't a number. */
+export function parseCompactNumber(text: string): number | undefined {
+  const match = text.trim().toLowerCase().replace(/,/g, '').match(/^(\d+(?:\.\d+)?)\s*([km])?$/)
+  if (!match) return undefined
+  const n = Number(match[1]) * (match[2] === 'm' ? 1_000_000 : match[2] === 'k' ? 1_000 : 1)
+  return Math.round(n)
+}
+
 export function formatPercent(value: number | null | undefined, digits = 1): string {
   if (value == null) return '—'
   return `${value.toFixed(digits)}%`

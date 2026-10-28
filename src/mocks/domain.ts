@@ -1,9 +1,12 @@
+import { csvCell } from '@/lib/csv'
 import { can } from '@/lib/permissions'
 import { normalizeHandle, normalizePhone } from '@/lib/schemas'
 import { getAllowedTransitions, isOverride } from '@/lib/stages'
 import type { Influencer, InfluencerCreate, InstagramProfile, Stage, User } from '@/types'
 import { currentUser, db, findInfluencer, logActivity, nextId, nowIso, previousStageOf } from './db'
 import { JobFailure } from './jobs'
+
+export { parseCsv } from '@/lib/csv'
 
 // Same normalisation as the UI's validation, so the mock behaves like the forms expect.
 export { normalizeHandle, normalizePhone }
@@ -292,41 +295,6 @@ export function completeSync(id: string): { influencer_id: string; followers: nu
 
 // ---------------------------------------------------------------------------
 // CSV
-
-export function parseCsv(text: string): string[][] {
-  const rows: string[][] = []
-  let row: string[] = []
-  let field = ''
-  let quoted = false
-  for (let i = 0; i < text.length; i++) {
-    const ch = text[i]
-    if (quoted) {
-      if (ch === '"' && text[i + 1] === '"') {
-        field += '"'
-        i++
-      } else if (ch === '"') quoted = false
-      else field += ch
-    } else if (ch === '"') quoted = true
-    else if (ch === ',') {
-      row.push(field)
-      field = ''
-    } else if (ch === '\n' || ch === '\r') {
-      if (ch === '\r' && text[i + 1] === '\n') i++
-      row.push(field)
-      if (row.some((f) => f.trim() !== '')) rows.push(row)
-      row = []
-      field = ''
-    } else field += ch
-  }
-  row.push(field)
-  if (row.some((f) => f.trim() !== '')) rows.push(row)
-  return rows
-}
-
-const csvCell = (value: unknown) => {
-  const s = value == null ? '' : Array.isArray(value) ? value.join('; ') : String(value)
-  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
-}
 
 export const EXPORT_COLUMNS: (keyof Influencer)[] = [
   'name',
