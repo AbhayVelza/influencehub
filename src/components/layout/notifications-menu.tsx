@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useFollowUps } from '@/hooks/use-follow-ups'
+import { useDefaultMine, useFollowUps } from '@/hooks/use-follow-ups'
 import { CALL_OUTCOME_META } from '@/lib/constants'
 import { formatDate, formatRelative } from '@/lib/format'
 import type { CallLogWithInfluencer } from '@/types'
@@ -40,8 +40,9 @@ function FollowUpRow({ call, overdue }: { call: CallLogWithInfluencer; overdue: 
 /** Follow-ups that need attention: overdue first, then due today. */
 export function NotificationsMenu() {
   const navigate = useNavigate()
-  const overdue = useFollowUps('overdue')
-  const today = useFollowUps('today')
+  const mine = useDefaultMine()
+  const overdue = useFollowUps('overdue', 1, 25, mine)
+  const today = useFollowUps('today', 1, 25, mine)
 
   const isLoading = overdue.isLoading || today.isLoading
   const isError = overdue.isError || today.isError

@@ -21,7 +21,7 @@ import type {
 import { currentUser, db, findInfluencer, nextId, nowIso, stageEnteredAt, toSummary } from '../db'
 import { filterInfluencers } from '../domain'
 import { all, api, apiError, forbidden, latency, notFound, readJson } from '../utils'
-import { followUpBucket, withInfluencer } from './calls'
+import { followUpBucket, isMine, withInfluencer } from './calls'
 
 const ROLES = Object.keys(ROLE_LABEL) as Role[]
 const isEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
@@ -174,6 +174,7 @@ export const workspaceHandlers = [
             instagram_handle: i.instagram_handle,
             profile_pic_url: i.profile_pic_url,
             followers: i.followers,
+            category: i.category,
             assigned_to: i.assigned_to,
             stage: i.stage,
             days_in_stage: Math.max(0, differenceInCalendarDays(now, new Date(stageEnteredAt(i)))),
@@ -212,7 +213,7 @@ export const workspaceHandlers = [
       return bucket === 'today' || bucket === 'overdue'
     })
     const mine = openFollowUps
-      .filter((c) => c.called_by === me || findInfluencer(c.influencer_id)?.assigned_to === me)
+      .filter((c) => isMine(c, me))
       .sort((a, b) => a.follow_up_date!.localeCompare(b.follow_up_date!))
 
     const body: DashboardSummary = {

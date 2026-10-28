@@ -36,6 +36,7 @@ export const queryKeys = {
   followUpsAll: ['follow-ups'] as const,
   pipeline: ['pipeline'] as const,
   dashboard: ['dashboard'] as const,
-  followUps: (bucket: FollowUpBucket, page = 1, pageSize = 25) => ['follow-ups', bucket, page, pageSize] as const,
+  followUps: (bucket: FollowUpBucket, page = 1, pageSize = 25, mine = false) =>
+    ['follow-ups', bucket, page, pageSize, mine] as const,
   job: (id: string) => ['jobs', id] as const,
 }

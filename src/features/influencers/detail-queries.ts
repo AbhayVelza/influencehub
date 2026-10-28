@@ -96,7 +96,7 @@ function stageEvents(pages: Activity[][]): { from: Stage; to: Stage }[] {
 }
 
 /** The stage an on-hold influencer returns to: where it was before it was put on hold. */
-export function previousStageOf(influencer: Influencer, pages: Activity[][]): Stage | null {
+export function previousStageOf(influencer: Pick<Influencer, 'stage'>, pages: Activity[][]): Stage | null {
   if (influencer.stage !== 'on_hold') return null
   const entry = stageEvents(pages).find((e) => e.to === 'on_hold')
   return entry && entry.from !== 'on_hold' ? entry.from : null

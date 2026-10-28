@@ -1,7 +1,7 @@
 import type { LucideIcon } from 'lucide-react'
 import { LayoutDashboard, Package, PhoneCall, Settings, SquareKanban, Users } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
-import { useFollowUps } from '@/hooks/use-follow-ups'
+import { useDefaultMine, useFollowUps } from '@/hooks/use-follow-ups'
 import { useCan } from '@/hooks/use-me'
 import { cn } from '@/lib/utils'
 
@@ -42,7 +42,7 @@ function SidebarLink({ item }: { item: NavItem }) {
 
 export function Sidebar() {
   const canSeeSettings = useCan('integrations:manage')
-  const { data: dueToday } = useFollowUps('today')
+  const { data: dueToday } = useFollowUps('today', 1, 25, useDefaultMine())
 
   const items: NavItem[] = [
     { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },

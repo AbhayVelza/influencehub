@@ -126,7 +126,7 @@ export default function InfluencerDetailPage() {
         hasInterestedCall={!!calls.data?.items.some((c) => c.outcome === 'interested')}
         hasTrackedPackage={!!packages.data?.items.some((p) => p.courier && p.tracking_number)}
         onLogCall={openLogCall}
-        onCreatePackage={(intent) => openPackage(intent)}
+        onCreatePackage={() => openPackage()}
       />
 
       <div className="grid items-start gap-6 lg:grid-cols-[19rem_minmax(0,1fr)]">

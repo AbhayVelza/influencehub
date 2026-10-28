@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import type { z } from 'zod'
 import { Copy, Plus, Trash2 } from 'lucide-react'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Controller, useFieldArray, useForm, useWatch, type FieldError } from 'react-hook-form'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -21,9 +22,11 @@ import { COURIERS, PACKAGE_STATUS_META, PACKAGE_STATUSES } from '@/lib/constants
 import { packageSchema, type PackageFormInput } from '@/lib/schemas'
 import { getErrorMessage } from '@/services'
 import type { Address, Influencer, Package, PackageStatus } from '@/types'
-import { useCreatePackage, useUpdatePackage } from './queries'
+import { PackageStatusConfirm } from './package-status-confirm'
+import { needsStatusConfirm, useCreatePackage, useUpdatePackage, type StageChangingStatus } from './queries'
 
-export type PackageTarget = Pick<Influencer, 'id' | 'name' | 'address'>
+/** `stage` is optional; when known, the delivered/returned confirmation says exactly what happens. */
+export type PackageTarget = Pick<Influencer, 'id' | 'name' | 'address'> & { stage?: Influencer['stage'] }
 
 interface PackageDrawerProps {
   influencer: PackageTarget
@@ -70,6 +73,8 @@ const ADDRESS_FIELDS = [
   { name: 'country', label: 'Country', span: 1 },
 ] as const
 
+type SubmitValues = z.output<typeof packageSchema>
+
 function FieldMessage({ error }: { error?: FieldError | { message?: string } }) {
   return error?.message ? <p className="text-xs text-destructive">{error.message}</p> : null
 }
@@ -90,8 +95,15 @@ export function PackageDrawer({ influencer, pkg, open, onOpenChange, intent, onS
   }, [open, influencer, pkg, intent, reset])
 
   const tracking = useWatch({ control, name: 'tracking_number' })
+  const [confirm, setConfirm] = useState<{ status: StageChangingStatus; values: SubmitValues } | null>(null)
 
-  const onSubmit = handleSubmit(async (values) => {
+  const onSubmit = handleSubmit((values) => {
+    const status = values.status as PackageStatus
+    if (isEdit && needsStatusConfirm(pkg?.status, status)) return setConfirm({ status, values })
+    return save(values)
+  })
+
+  const save = async (values: SubmitValues) => {
     const body = {
       items: values.items,
       address: values.address,
@@ -122,7 +134,7 @@ export function PackageDrawer({ influencer, pkg, open, onOpenChange, intent, onS
       return
     }
     toast.success(isEdit ? 'Package updated' : 'Package created')
-  })
+  }
 
   return (
     <Sheet open={open} onOpenChange={(next) => !busy && onOpenChange(next)}>
@@ -283,6 +295,18 @@ export function PackageDrawer({ influencer, pkg, open, onOpenChange, intent, onS
           </SheetFooter>
         </form>
       </SheetContent>
+      <PackageStatusConfirm
+        status={confirm?.status ?? null}
+        influencerName={influencer.name}
+        influencerStage={influencer.stage}
+        pending={busy}
+        onCancel={() => setConfirm(null)}
+        onConfirm={async () => {
+          if (!confirm) return
+          await save(confirm.values)
+          setConfirm(null)
+        }}
+      />
     </Sheet>
   )
 }

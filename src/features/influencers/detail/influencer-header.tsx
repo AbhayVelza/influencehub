@@ -121,8 +121,8 @@ interface InfluencerHeaderProps {
   pipelinePosition: Stage | null
   hasInterestedCall: boolean
   hasTrackedPackage: boolean
-  onLogCall: (intent?: 'contacted') => void
-  onCreatePackage: (intent?: 'package_sent') => void
+  onLogCall: () => void
+  onCreatePackage: () => void
 }
 
 export function InfluencerHeader({
@@ -194,8 +194,6 @@ export function InfluencerHeader({
           previousStage={previousStage}
           hasInterestedCall={hasInterestedCall}
           hasTrackedPackage={hasTrackedPackage}
-          onNeedCall={() => onLogCall('contacted')}
-          onNeedPackage={() => onCreatePackage('package_sent')}
         />
         <OwnerControl influencer={influencer} />
         <div className="ml-auto flex items-center gap-2">

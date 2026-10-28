@@ -126,6 +126,7 @@ export function toSummary(inf: Influencer): InfluencerSummary {
     profile_pic_url: inf.profile_pic_url,
     phone: inf.phone,
     stage: inf.stage,
+    assigned_to: inf.assigned_to,
   }
 }
 

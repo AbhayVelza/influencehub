@@ -7,9 +7,12 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import type { FilterOption } from '@/types'
 
+/** Counts are optional: lists without a counts endpoint (e.g. packages) leave them out. */
+type Option = Omit<FilterOption, 'count'> & { count?: number }
+
 interface MultiSelectFilterProps {
   label: string
-  options: FilterOption[] | undefined
+  options: Option[] | undefined
   selected: string[]
   onChange: (values: string[]) => void
   /** Shows skeleton rows instead of options (initial load, or options that are being narrowed). */
@@ -17,7 +20,7 @@ interface MultiSelectFilterProps {
   searchPlaceholder?: string
   /** Shown instead of options when they can't be chosen yet. */
   hint?: string
-  renderOption?: (option: FilterOption) => ReactNode
+  renderOption?: (option: Option) => ReactNode
 }
 
 /** Searchable multi-select with counts, used for list and pipeline filters. */
@@ -102,7 +105,9 @@ export function MultiSelectFilter({
                         <span className="flex min-w-0 flex-1 items-center gap-1.5 truncate">
                           {renderOption ? renderOption(option) : option.label}
                         </span>
-                        <span className="text-xs text-muted-foreground tabular-nums">{option.count}</span>
+                        {option.count !== undefined && (
+                          <span className="text-xs text-muted-foreground tabular-nums">{option.count}</span>
+                        )}
                       </CommandItem>
                     )
                   })}

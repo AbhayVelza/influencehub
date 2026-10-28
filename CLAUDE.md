@@ -83,6 +83,15 @@ Async actions return job_id; UI polls GET /jobs/{id} every 2 s.
   the same rules as the forms (`src/lib/csv-import.ts`); unknown/missing category → "Other"; repeated
   handles within the file count as duplicates; `update` overwrites only mapped non-empty fields and merges
   tags. Client limits: 2 MB, 5,000 rows. Import/presign are manager/admin only.
+- `GET /calls/follow-ups` accepts `mine=true`: only calls I made or on influencers I own (also used for the
+  dashboard's "my follow-ups"). Executives default to `mine`; everyone can toggle. Embedded `influencer`
+  summaries include `assigned_to`.
+- `GET /pipeline` cards include `category`; `days_in_stage` = calendar days since the last move into the stage.
+- `GET /packages` accepts `sent_from` / `sent_to` (yyyy-MM-dd, IST calendar day of `sent_at`; unsent packages
+  never match a date range).
+- `PATCH /packages/{id}`: when status changes to `delivered` / `returned` and the influencer is in
+  `package_sent`, the server moves them to `delivered` / `onboarded` (standard transition, activity reason
+  "Package delivered" / "Package returned"). Otherwise the stage is untouched. The UI confirms first.
 - Notifications have no endpoint: they're derived from overdue + due-today follow-ups.
 - `GET/PATCH /settings/instagram` (admin only, else 403). GET → `{ connected, business_account {username,
   ig_user_id} | null, token_status (valid|expiring|expired), token_expires_at, sync_interval_hours (3|6|12|24),

@@ -1,7 +1,9 @@
 import { http, HttpResponse } from 'msw'
 import { PACKAGE_STATUSES } from '@/lib/constants'
+import { dayKey } from '@/lib/format'
 import type { Package, PackageCreate, PackageUpdate, PackageWithInfluencer } from '@/types'
 import { db, findInfluencer, logActivity, nextId, nowIso, toSummary } from '../db'
+import { changeStage } from '../domain'
 import { api, apiError, latency, notFound, paginate, readJson } from '../utils'
 
 function withInfluencer(pkg: Package): PackageWithInfluencer | null {
@@ -25,6 +27,8 @@ export const packageHandlers = [
     const statuses = params.getAll('status')
     const couriers = params.getAll('courier')
     const influencerId = params.get('influencer_id')
+    const sentFrom = params.get('sent_from')
+    const sentTo = params.get('sent_to')
 
     const list = db.packages
       .map(withInfluencer)
@@ -33,6 +37,10 @@ export const packageHandlers = [
         if (influencerId && p.influencer_id !== influencerId) return false
         if (statuses.length && !statuses.includes(p.status)) return false
         if (couriers.length && !couriers.includes(p.courier ?? '')) return false
+        // Date range on the IST calendar day the package was sent; unsent packages don't match a range.
+        if ((sentFrom || sentTo) && !p.sent_at) return false
+        if (sentFrom && dayKey(p.sent_at!) < sentFrom) return false
+        if (sentTo && dayKey(p.sent_at!) > sentTo) return false
         if (q) {
           const haystack = [p.influencer.name, p.influencer.instagram_handle, p.tracking_number, p.courier].join(' ')
           if (!haystack.toLowerCase().includes(q)) return false
@@ -93,6 +101,13 @@ export const packageHandlers = [
       package_id: pkg.id,
       ...(pkg.status !== previousStatus ? { status: pkg.status } : { fields: Object.keys(body) }),
     })
+
+    // Delivered / returned packages move an influencer who is waiting on them (stage package_sent).
+    const inf = findInfluencer(pkg.influencer_id)
+    if (inf && inf.stage === 'package_sent' && pkg.status !== previousStatus) {
+      if (pkg.status === 'delivered') changeStage(inf, 'delivered', 'Package delivered')
+      if (pkg.status === 'returned') changeStage(inf, 'onboarded', 'Package returned')
+    }
     return HttpResponse.json(pkg)
   }),
 ]

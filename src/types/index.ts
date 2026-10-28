@@ -187,6 +187,7 @@ export interface InfluencerSummary {
   profile_pic_url: string | null
   phone: string | null
   stage: Stage
+  assigned_to: string | null
 }
 
 export interface CallLogWithInfluencer extends CallLog {
@@ -320,6 +321,10 @@ export interface PackageListParams {
   status?: PackageStatus[]
   courier?: string[]
   influencer_id?: string
+  /** Sent on or after this IST date (yyyy-MM-dd). */
+  sent_from?: string
+  /** Sent on or before this IST date (yyyy-MM-dd). */
+  sent_to?: string
   page?: number
   page_size?: number
 }
@@ -335,6 +340,7 @@ export interface PipelineCard {
   instagram_handle: string
   profile_pic_url: string | null
   followers: number | null
+  category: string
   assigned_to: string | null
   stage: Stage
   days_in_stage: number

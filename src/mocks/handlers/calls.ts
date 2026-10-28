@@ -10,6 +10,11 @@ export function followUpBucket(call: CallLog, today = todayKey()): Exclude<Follo
   return day < today ? 'overdue' : day === today ? 'today' : 'upcoming'
 }
 
+/** A call is "mine" if I made it or I own the influencer. */
+export function isMine(call: CallLog, userId: string): boolean {
+  return call.called_by === userId || findInfluencer(call.influencer_id)?.assigned_to === userId
+}
+
 export function withInfluencer(calls: CallLog[]): CallLogWithInfluencer[] {
   return calls.flatMap((c) => {
     const inf = findInfluencer(c.influencer_id)
@@ -23,11 +28,14 @@ export const callHandlers = [
     const params = new URL(request.url).searchParams
     const bucket = (params.get('bucket') ?? 'today') as FollowUpBucket
     const today = todayKey()
+    const me = db.currentUserId
+    // mine = calls I made, or on influencers I own.
+    const scoped = params.get('mine') === 'true' ? db.calls.filter((c) => isMine(c, me)) : db.calls
 
     const list =
       bucket === 'history'
-        ? [...db.calls].sort((a, b) => b.created_at.localeCompare(a.created_at))
-        : db.calls
+        ? [...scoped].sort((a, b) => b.created_at.localeCompare(a.created_at))
+        : scoped
             .filter((c) => followUpBucket(c, today) === bucket)
             .sort((a, b) => a.follow_up_date!.localeCompare(b.follow_up_date!))
 

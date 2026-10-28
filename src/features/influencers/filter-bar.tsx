@@ -8,15 +8,17 @@ import { useFilterOptions } from './queries'
 /** Stable empty selection, so effect dependencies don't change every render. */
 const NONE: string[] = []
 
-export type FilterChange =(patch: Partial<InfluencerFilters>, options?: { replace?: boolean }) => void
+export type FilterChange = (patch: Partial<InfluencerFilters>, options?: { replace?: boolean }) => void
 
 interface InfluencerFilterBarProps {
   filters: InfluencerFilters
   onChange: FilterChange
+  /** The pipeline shows every stage as a column, so it has no Stage filter. */
+  hideStage?: boolean
 }
 
 /** Category / Country → State → City / Stage / Assigned / Followers. Shared by the list and pipeline. */
-export function InfluencerFilterBar({ filters, onChange }: InfluencerFilterBarProps) {
+export function InfluencerFilterBar({ filters, onChange, hideStage }: InfluencerFilterBarProps) {
   const country = filters.country ?? NONE
   const state = filters.state ?? NONE
   const city = filters.city ?? NONE
@@ -71,20 +73,22 @@ export function InfluencerFilterBar({ filters, onChange }: InfluencerFilterBarPr
         loading={narrowing}
         hint={hint}
       />
-      <MultiSelectFilter
-        label="Stage"
-        options={options?.stages}
-        selected={filters.stage ?? []}
-        onChange={(next) => onChange({ stage: next as Stage[] })}
-        loading={isLoading}
-        hint={hint}
-        renderOption={(o) => (
-          <>
-            <StageDot stage={o.value as Stage} />
-            {o.label}
-          </>
-        )}
-      />
+      {!hideStage && (
+        <MultiSelectFilter
+          label="Stage"
+          options={options?.stages}
+          selected={filters.stage ?? []}
+          onChange={(next) => onChange({ stage: next as Stage[] })}
+          loading={isLoading}
+          hint={hint}
+          renderOption={(o) => (
+            <>
+              <StageDot stage={o.value as Stage} />
+              {o.label}
+            </>
+          )}
+        />
+      )}
       <MultiSelectFilter
         label="Assigned"
         options={options?.assigned_to}
