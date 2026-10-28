@@ -44,8 +44,10 @@ export function UserMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="rounded-full" aria-label="Account menu">
-          <PersonAvatar name={me.name} />
+        {/* Named by hidden text rather than aria-label, so the visible initials don't conflict with the name. */}
+        <Button variant="ghost" size="icon" className="rounded-full">
+          <PersonAvatar name={me.name} aria-hidden />
+          <span className="sr-only">Account menu</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-60">

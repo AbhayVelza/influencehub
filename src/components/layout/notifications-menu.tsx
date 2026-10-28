@@ -55,10 +55,15 @@ export function NotificationsMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative" aria-label={`Notifications, ${total} follow-ups due`}>
-          <Bell />
+        {/* Named by hidden text rather than aria-label, so the visible badge doesn't conflict with the name. */}
+        <Button variant="ghost" size="icon" className="relative">
+          <Bell aria-hidden />
+          <span className="sr-only">Notifications, {total} follow-ups due</span>
           {total > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-semibold text-white tabular-nums">
+            <span
+              aria-hidden
+              className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-semibold text-white tabular-nums"
+            >
               {total > 9 ? '9+' : total}
             </span>
           )}

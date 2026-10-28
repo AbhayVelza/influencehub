@@ -18,13 +18,27 @@ import type {
   TeamMemberUpdate,
   User,
 } from '@/types'
-import { currentUser, db, findInfluencer, nextId, nowIso, stageEnteredAt, toSummary } from '../db'
+import { currentUser, db, findInfluencer, nextId, nowIso, stageEnteredAt, toSummary, type StoredCategory } from '../db'
 import { filterInfluencers } from '../domain'
 import { all, api, apiError, forbidden, latency, notFound, readJson } from '../utils'
 import { followUpBucket, isMine, withInfluencer } from './calls'
 
 const ROLES = Object.keys(ROLE_LABEL) as Role[]
 const isEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+
+/** "priya.nair@x.com" → "Priya Nair" */
+const nameFromEmail = (email: string) =>
+  email
+    .split('@')[0]!
+    .split(/[._-]+/)
+    .filter(Boolean)
+    .map((p) => p.charAt(0).toUpperCase() + p.slice(1))
+    .join(' ')
+
+const withCount = (c: StoredCategory): Category => ({
+  ...c,
+  influencer_count: db.influencers.filter((i) => i.category === c.name).length,
+})
 
 export const workspaceHandlers = [
   http.get(api('/me'), async () => {
@@ -43,11 +57,11 @@ export const workspaceHandlers = [
     if (!can(currentUser().role, 'team:manage')) return forbidden('Only admins can manage the team')
     const body = await readJson<TeamMemberCreate>(request)
     const email = body.email?.trim().toLowerCase() ?? ''
-    if (!body.name?.trim()) return apiError(422, 'validation_error', 'Name is required')
     if (!isEmail(email)) return apiError(422, 'validation_error', 'Enter a valid email')
     if (!ROLES.includes(body.role)) return apiError(422, 'validation_error', 'Choose a role')
     if (db.team.some((u) => u.email === email)) return apiError(409, 'email_taken', 'A team member with this email exists')
-    const user: User = { id: nextId('usr'), name: body.name.trim(), email, role: body.role, is_active: true, created_at: nowIso() }
+    const name = body.name?.trim() || nameFromEmail(email)
+    const user: User = { id: nextId('usr'), name, email, role: body.role, is_active: true, created_at: nowIso() }
     db.team.push(user)
     return HttpResponse.json(user, { status: 201 })
   }),
@@ -59,8 +73,15 @@ export const workspaceHandlers = [
     if (!user) return notFound('Team member')
     const body = await readJson<TeamMemberUpdate>(request)
     if (body.role !== undefined && !ROLES.includes(body.role)) return apiError(422, 'validation_error', 'Choose a role')
-    if (user.id === db.currentUserId && (body.role !== undefined || body.is_active === false)) {
-      return apiError(422, 'validation_error', 'You cannot change your own role or deactivate yourself')
+    const demoting = body.role !== undefined && body.role !== user.role
+    const deactivating = body.is_active === false && user.is_active
+    if (user.id === db.currentUserId && (demoting || deactivating)) {
+      return apiError(422, 'self_change', 'You can’t change your own role or deactivate yourself')
+    }
+    // There must always be at least one active admin.
+    if (user.role === 'admin' && user.is_active && (demoting || deactivating)) {
+      const otherAdmins = db.team.filter((u) => u.id !== user.id && u.role === 'admin' && u.is_active).length
+      if (otherAdmins === 0) return apiError(422, 'last_admin', 'There must be at least one active admin')
     }
     Object.assign(user, body)
     return HttpResponse.json(user)
@@ -69,7 +90,18 @@ export const workspaceHandlers = [
   // ---- Categories ---------------------------------------------------------
   http.get(api('/categories'), async () => {
     await latency()
-    return HttpResponse.json(all(db.categories))
+    return HttpResponse.json(all(db.categories.map(withCount)))
+  }),
+
+  http.delete(api('/categories/:id'), async ({ params }) => {
+    await latency()
+    if (!can(currentUser().role, 'categories:manage')) return forbidden('Only admins can manage categories')
+    const index = db.categories.findIndex((c) => c.id === params.id)
+    if (index === -1) return notFound('Category')
+    const count = withCount(db.categories[index]!).influencer_count
+    if (count > 0) return apiError(409, 'in_use', `Used by ${count} influencer${count === 1 ? '' : 's'}. Deactivate it instead.`)
+    db.categories.splice(index, 1)
+    return new HttpResponse(null, { status: 204 })
   }),
 
   http.post(api('/categories'), async ({ request }) => {
@@ -80,9 +112,9 @@ export const workspaceHandlers = [
     if (db.categories.some((c) => c.name.toLowerCase() === name.toLowerCase())) {
       return apiError(409, 'name_taken', 'This category already exists')
     }
-    const category: Category = { id: nextId('cat'), name, is_active: true }
+    const category: StoredCategory = { id: nextId('cat'), name, is_active: true }
     db.categories.push(category)
-    return HttpResponse.json(category, { status: 201 })
+    return HttpResponse.json(withCount(category), { status: 201 })
   }),
 
   http.patch(api('/categories/:id'), async ({ params, request }) => {
@@ -101,7 +133,7 @@ export const workspaceHandlers = [
       category.name = name
     }
     if (body.is_active !== undefined) category.is_active = body.is_active
-    return HttpResponse.json(category)
+    return HttpResponse.json(withCount(category))
   }),
 
   // ---- Instagram integration settings -------------------------------------
@@ -227,7 +259,7 @@ export const workspaceHandlers = [
       funnel: ALL_STAGES.map((stage) => ({ stage, count: db.influencers.filter((i) => i.stage === stage).length })),
       by_category: tally((i) => i.category).map(([category, count]) => ({ category, count })),
       top_cities: tally((i) => i.city)
-        .slice(0, 8)
+        .slice(0, 10)
         .map(([city, count]) => ({ city, count })),
       my_follow_ups: withInfluencer(mine).slice(0, 10),
       recent_activity: [...db.activities]
@@ -236,7 +268,7 @@ export const workspaceHandlers = [
           const inf = findInfluencer(a.influencer_id)
           return inf ? [{ ...a, influencer: toSummary(inf) }] : []
         })
-        .slice(0, 15),
+        .slice(0, 20),
     }
     return HttpResponse.json(body)
   }),

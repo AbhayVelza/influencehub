@@ -1,12 +1,13 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { App } from '@/App'
-import { USE_MOCKS } from '@/lib/env'
 import './index.css'
 
 async function enableMocking() {
-  if (!USE_MOCKS) return
-  // Dynamic import keeps MSW and the fixtures out of the bundle when mocks are off.
+  // VITE_USE_MOCKS is a build-time literal (vite.config define). Checked inline, not via USE_MOCKS from
+  // lib/env, so the bundler folds it here: without mocks the dynamic import below, MSW and the fixtures
+  // are left out of the production bundle.
+  if (import.meta.env.VITE_USE_MOCKS !== 'true') return
   const { startMockApi } = await import('@/mocks/browser')
   await startMockApi()
 }

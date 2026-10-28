@@ -39,6 +39,8 @@ export const categoriesApi = {
   list: (signal?: AbortSignal) => http.get<Paginated<Category>>('/categories', undefined, signal),
   create: (body: CategoryCreate) => http.post<Category>('/categories', body),
   update: (id: string, body: CategoryUpdate) => http.patch<Category>(`/categories/${id}`, body),
+  /** 409 `in_use` while any influencer has this category. */
+  remove: (id: string) => http.delete(`/categories/${id}`),
 }
 
 export const settingsApi = {

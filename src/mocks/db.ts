@@ -19,11 +19,14 @@ import type {
 } from '@/types'
 import fixturesJson from './fixtures.json'
 
+/** Categories as stored; `influencer_count` is computed per response. */
+export type StoredCategory = Omit<Category, 'influencer_count'>
+
 interface Fixtures {
   generated_at: string
   current_user_id: string
   team: User[]
-  categories: Category[]
+  categories: StoredCategory[]
   influencers: Influencer[]
   calls: CallLog[]
   packages: Package[]

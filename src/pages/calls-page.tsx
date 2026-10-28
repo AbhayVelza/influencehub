@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { LogCallDialog, type LogCallTarget } from '@/features/calls/log-call-dialog'
 import { useMarkFollowUpDone } from '@/features/calls/queries'
 import { useDefaultMine, useFollowUps } from '@/hooks/use-follow-ups'
@@ -65,7 +65,7 @@ function CountBadge({ bucket, mine }: { bucket: FollowUpBucket; mine: boolean })
     <span
       className={cn(
         'rounded-full px-1.5 text-[11px] font-semibold tabular-nums',
-        bucket === 'overdue' && data.total > 0 ? 'bg-destructive text-white' : 'bg-muted text-muted-foreground',
+        bucket === 'overdue' && data.total > 0 ? 'bg-red-600 text-white' : 'bg-foreground/10 text-foreground',
       )}
     >
       {data.total}
@@ -114,8 +114,8 @@ export default function CallsPage() {
   return (
     <div className="space-y-4 p-6">
       <PageHeader title="Calls & Follow-ups" description="Every time is shown in IST." />
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <Tabs value={bucket} onValueChange={(v) => update({ tab: v === 'today' ? null : v, page: null })}>
+      <Tabs value={bucket} onValueChange={(v) => update({ tab: v === 'today' ? null : v, page: null })} className="gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <TabsList>
             {TABS.map((t) => (
               <TabsTrigger key={t.value} value={t.value} className="gap-1.5">
@@ -124,137 +124,151 @@ export default function CallsPage() {
               </TabsTrigger>
             ))}
           </TabsList>
-        </Tabs>
-        <div className="flex items-center gap-2">
-          <Switch
-            id="only-mine"
-            checked={mine}
-            onCheckedChange={(v) => update({ scope: v === defaultMine ? null : v ? 'mine' : 'all', page: null })}
-          />
-          <Label htmlFor="only-mine" className="text-sm">
-            Only my follow-ups
-          </Label>
+          <div className="flex items-center gap-2">
+            <Switch
+              id="only-mine"
+              checked={mine}
+              onCheckedChange={(v) => update({ scope: v === defaultMine ? null : v ? 'mine' : 'all', page: null })}
+            />
+            <Label htmlFor="only-mine" className="text-sm">
+              Only my follow-ups
+            </Label>
+          </div>
         </div>
-      </div>
-
-      <div className="overflow-hidden rounded-lg border bg-card">
-        <div className="overflow-x-auto">
-          <Table className={cn(query.isPlaceholderData && 'opacity-60')}>
-            <TableHeader>
-              <TableRow className="bg-muted/40 hover:bg-muted/40">
-                {history && <TableHead>Called</TableHead>}
-                <TableHead>Influencer</TableHead>
-                <TableHead>Phone</TableHead>
-                <TableHead>{history ? 'Outcome' : 'Last outcome'}</TableHead>
-                <TableHead>Follow-up (IST)</TableHead>
-                <TableHead>{history ? 'Called by' : 'Owner'}</TableHead>
-                <TableHead className="text-right">
-                  <span className="sr-only">Actions</span>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {query.isPending ? (
-                Array.from({ length: 6 }, (_, i) => (
-                  <TableRow key={i}>
-                    {Array.from({ length: history ? 7 : 6 }, (_, j) => (
-                      <TableCell key={j}>
-                        <Skeleton className="h-5 w-24" />
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              ) : query.isError ? (
-                <TableRow>
-                  <TableCell colSpan={7}>
-                    <ErrorState title="Couldn’t load follow-ups" error={query.error} onRetry={() => query.refetch()} />
-                  </TableCell>
-                </TableRow>
-              ) : query.data.items.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={7}>
-                    <EmptyState icon={history ? History : CalendarCheck} {...emptyCopy[bucket]} />
-                  </TableCell>
-                </TableRow>
-              ) : (
-                query.data.items.map((call) => {
-                  const overdue = bucket === 'overdue'
-                  const ownerId = history ? call.called_by : call.influencer.assigned_to
-                  return (
-                    <TableRow key={call.id}>
-                      {history && (
-                        <TableCell className="whitespace-nowrap" title={formatDateTime(call.created_at)}>
-                          {formatRelative(call.created_at)}
-                        </TableCell>
+        {/* One panel per tab so each trigger controls a real tabpanel; only the active one renders the table. */}
+        {TABS.map((t) => (
+          <TabsContent key={t.value} value={t.value}>
+            {t.value === bucket && (
+              <div className="overflow-hidden rounded-lg border bg-card">
+                <div className="overflow-x-auto">
+                  <Table className={cn(query.isPlaceholderData && 'opacity-60')}>
+                    <TableHeader>
+                      <TableRow className="bg-muted/40 hover:bg-muted/40">
+                        {history && <TableHead>Called</TableHead>}
+                        <TableHead>Influencer</TableHead>
+                        <TableHead>Phone</TableHead>
+                        <TableHead>{history ? 'Outcome' : 'Last outcome'}</TableHead>
+                        <TableHead>Follow-up (IST)</TableHead>
+                        <TableHead>{history ? 'Called by' : 'Owner'}</TableHead>
+                        <TableHead className="text-right">
+                          <span className="sr-only">Actions</span>
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {query.isPending ? (
+                        Array.from({ length: 6 }, (_, i) => (
+                          <TableRow key={i}>
+                            {Array.from({ length: history ? 7 : 6 }, (_, j) => (
+                              <TableCell key={j}>
+                                <Skeleton className="h-5 w-24" />
+                              </TableCell>
+                            ))}
+                          </TableRow>
+                        ))
+                      ) : query.isError ? (
+                        <TableRow>
+                          <TableCell colSpan={7}>
+                            <ErrorState title="Couldn’t load follow-ups" error={query.error} onRetry={() => query.refetch()} />
+                          </TableCell>
+                        </TableRow>
+                      ) : query.data.items.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={7}>
+                            <EmptyState icon={history ? History : CalendarCheck} {...emptyCopy[bucket]} />
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        query.data.items.map((call) => {
+                          const overdue = bucket === 'overdue'
+                          const ownerId = history ? call.called_by : call.influencer.assigned_to
+                          return (
+                            <TableRow key={call.id}>
+                              {history && (
+                                <TableCell className="whitespace-nowrap" title={formatDateTime(call.created_at)}>
+                                  {formatRelative(call.created_at)}
+                                </TableCell>
+                              )}
+                              <TableCell>
+                                <InfluencerCell call={call} />
+                              </TableCell>
+                              <TableCell>
+                                {call.influencer.phone ? (
+                                  <a href={`tel:${call.influencer.phone}`} className="whitespace-nowrap hover:underline">
+                                    {call.influencer.phone}
+                                  </a>
+                                ) : (
+                                  <span className="text-muted-foreground">—</span>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                <Outcome call={call} />
+                              </TableCell>
+                              <TableCell className="whitespace-nowrap">
+                                {call.follow_up_date ? (
+                                  <>
+                                    <span className={cn(overdue && 'font-medium text-destructive')}>
+                                      {formatDateTime(call.follow_up_date)}
+                                    </span>
+                                    <span className="block text-xs text-muted-foreground">
+                                      {call.follow_up_done ? 'Done' : formatRelative(call.follow_up_date)}
+                                    </span>
+                                  </>
+                                ) : (
+                                  <span className="text-muted-foreground">—</span>
+                                )}
+                              </TableCell>
+                              <TableCell className="whitespace-nowrap">
+                                {ownerId ? (team.get(ownerId)?.name ?? '…') : <span className="text-muted-foreground">Unassigned</span>}
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex justify-end gap-1.5">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                      setLogFor({
+                                        target: { id: call.influencer_id, name: call.influencer.name, stage: call.influencer.stage },
+                                        open: true,
+                                      })
+                                    }
+                                  >
+                                    <PhoneCall />
+                                    Log call
+                                  </Button>
+                                  {!history && (
+                                    <Button variant="ghost" size="sm" disabled={markDone.isPending} onClick={() => done(call)}>
+                                      Mark done
+                                    </Button>
+                                  )}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          )
+                        })
                       )}
-                      <TableCell>
-                        <InfluencerCell call={call} />
-                      </TableCell>
-                      <TableCell>
-                        {call.influencer.phone ? (
-                          <a href={`tel:${call.influencer.phone}`} className="whitespace-nowrap hover:underline">
-                            {call.influencer.phone}
-                          </a>
-                        ) : (
-                          <span className="text-muted-foreground">—</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Outcome call={call} />
-                      </TableCell>
-                      <TableCell className="whitespace-nowrap">
-                        {call.follow_up_date ? (
-                          <>
-                            <span className={cn(overdue && 'font-medium text-destructive')}>{formatDateTime(call.follow_up_date)}</span>
-                            <span className="block text-xs text-muted-foreground">
-                              {call.follow_up_done ? 'Done' : formatRelative(call.follow_up_date)}
-                            </span>
-                          </>
-                        ) : (
-                          <span className="text-muted-foreground">—</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="whitespace-nowrap">
-                        {ownerId ? (team.get(ownerId)?.name ?? '…') : <span className="text-muted-foreground">Unassigned</span>}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex justify-end gap-1.5">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setLogFor({ target: { id: call.influencer_id, name: call.influencer.name, stage: call.influencer.stage }, open: true })}
-                          >
-                            <PhoneCall />
-                            Log call
-                          </Button>
-                          {!history && (
-                            <Button variant="ghost" size="sm" disabled={markDone.isPending} onClick={() => done(call)}>
-                              Mark done
-                            </Button>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )
-                })
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            )}
+          </TabsContent>
+        ))}
+      </Tabs>
 
       {query.data && query.data.total > PAGE_SIZE && (
         <div className="flex justify-end">
-          <Pagination page={page} pageSize={PAGE_SIZE} total={query.data.total} onPageChange={(p) => update({ page: p > 1 ? String(p) : null })} />
+          <Pagination
+            page={page}
+            pageSize={PAGE_SIZE}
+            total={query.data.total}
+            onPageChange={(p) => update({ page: p > 1 ? String(p) : null })}
+          />
         </div>
       )}
 
       {logFor && (
-        <LogCallDialog
-          influencer={logFor.target}
-          open={logFor.open}
-          onOpenChange={(open) => setLogFor((s) => (s ? { ...s, open } : s))}
-        />
+        <LogCallDialog influencer={logFor.target} open={logFor.open} onOpenChange={(open) => setLogFor((s) => (s ? { ...s, open } : s))} />
       )}
     </div>
   )

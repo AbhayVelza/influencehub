@@ -172,6 +172,23 @@ export const packageSchema = z
 export type PackageFormInput = z.input<typeof packageSchema>
 
 // ---------------------------------------------------------------------------
+// Settings
+
+export const inviteSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .min(1, 'Email is required')
+    .refine((v) => EMAIL.test(v), 'Enter a valid email address'),
+  role: z.enum(['admin', 'manager', 'executive']),
+  /** Optional; the server derives one from the email. */
+  name: optionalText(100, 'Name'),
+})
+
+export type InviteInput = z.input<typeof inviteSchema>
+
+// ---------------------------------------------------------------------------
 // Stage override
 
 export const overrideSchema = z.object({

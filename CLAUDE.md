@@ -1,8 +1,9 @@
 # InfluenceHub — Frontend (React)
 
-Internal CRM for managing influencers. Work in phases. After each phase: run `npm run lint` +
-`npm run typecheck`, summarize, and STOP. Do not create other documentation files.
-Never add features beyond this spec without asking.
+Internal CRM for managing influencers. All six frontend phases are built. Before calling any change done,
+run `npm run lint`, `npm run typecheck` and `npm run build`, and check it in the browser for each role
+(use the "View as" switcher). Docs: this file and README.md only. Never add features beyond this spec
+without asking; record any API decision you make in "Contract decisions" below.
 
 ## Business flow
 Gather data → call → onboard → send package.
@@ -97,6 +98,14 @@ Async actions return job_id; UI polls GET /jobs/{id} every 2 s.
   ig_user_id} | null, token_status (valid|expiring|expired), token_expires_at, sync_interval_hours (3|6|12|24),
   api_usage_pct, last_runs[≤20] {started_at, finished_at|null, status (running|succeeded|partial|failed),
   synced, failed} }`. PATCH accepts `{ sync_interval_hours }` and returns the full object.
+- `GET /dashboard/summary`: `top_cities` = top 10 by influencer count; `recent_activity` = latest 20;
+  `my_follow_ups` = today + overdue, scoped like `mine=true`; "contacted this week" counts moves since Monday 00:00 IST.
+- Team: `POST /team {email, role, name?}` (name derived from the email when omitted; 409 `email_taken`).
+  `PATCH /team/{id}` → 422 `self_change` when you change your own role / deactivate yourself, 422 `last_admin`
+  when it would leave no active admin.
+- Categories carry `influencer_count`. `DELETE /categories/{id}` (admin) → 409 `in_use` while any influencer
+  uses it (deactivate instead); 204 otherwise. Renaming a category renames it on its influencers. Inactive
+  categories stay on existing influencers but aren't offered for new ones.
 
 ## Screens
 1. **App shell**: sidebar (Dashboard, Influencers, Pipeline, Calls & Follow-ups w/ due-today badge,
@@ -127,16 +136,21 @@ Async actions return job_id; UI polls GET /jobs/{id} every 2 s.
 **UX**: light/dark; desktop-first, usable at 1024px; skeletons + empty + error states everywhere;
 numbers 12.4K / 1.2M; relative times; toasts; "/" focuses search; same stage colors everywhere.
 
-## Phases
-1. Scaffold, CLAUDE.md, theme, app shell, routing, TS types, API client in src/services, MSW handlers for
-   all endpoints, 50 realistic mock influencers in `src/mocks/fixtures.json` (70% Indian cities, all stages
-   and account types, plus calls, packages, 4 team members).
-2. Influencers list (complete)
-3. Influencer detail
-4. Add / Import modal
-5. Pipeline, Calls, Packages
-6. Dashboard, Settings, polish pass
+## Phases (all complete)
+1. Scaffold, theme, app shell, routing, types, API client, MSW mocks + fixtures. 2. Influencers list.
+3. Influencer detail. 4. Add / Import modal. 5. Pipeline, Calls, Packages. 6. Dashboard, Settings, polish.
 
 ## Rules
 - All API calls only through `src/services`; no hardcoded URLs (env vars).
-- MSW toggled by `VITE_USE_MOCKS`.
+- MSW toggled by `VITE_USE_MOCKS` (a build-time literal, see vite.config). Without it, production builds contain
+  no MSW code, fixtures or worker script. Every production chunk stays under 500 kB (vendor groups in vite.config).
+
+## Conventions (reuse, don't duplicate)
+- Validation: `src/lib/schemas.ts` (forms, inline edits, CSV rows via `src/lib/csv-import.ts`, the mock API).
+- Stage rules: `src/lib/stages.ts`; stage moves in the UI go through `useStageMover`
+  (`src/features/influencers/stage-mover.tsx`): required modals, confirms, override reasons.
+- Permissions: `src/lib/permissions.ts` (`useCan`). Stage colours: `STAGE_META` in `src/lib/constants.ts`.
+- Shared UI: Log Call dialog (`features/calls`), Package drawer + status confirm (`features/packages`),
+  influencer filter bar / search / chips (`features/influencers`), jobs via `useJob` or `waitForJob`.
+- Dates display in Asia/Kolkata (`src/lib/format.ts`); datetime inputs are read as IST.
+- Charts follow the dataviz rules: one validated series colour (`--chart-series-1`), thin marks, a table view.

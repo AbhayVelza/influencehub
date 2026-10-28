@@ -32,6 +32,7 @@ export function PipelineCardView({
         <PersonAvatar name={card.name} src={card.profile_pic_url} className="size-8" />
         <div className="min-w-0 flex-1">
           <Link
+            id={`pipeline-card-${card.id}`}
             to={`/influencers/${card.id}`}
             className="block truncate font-medium hover:underline"
             // A plain click opens the profile (drags need 6px of movement); no native link dragging.
@@ -74,13 +75,19 @@ export function PipelineCardView({
 
 /** A card that can be dragged with the pointer or picked up with Space. */
 export function DraggablePipelineCard({ card, owner }: { card: PipelineCardData; owner: User | undefined }) {
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: card.id, data: { card } })
+  // role=group (not dnd-kit's default button): the card contains a link, and buttons can't nest interactive
+  // content. It's named by the influencer's name; dnd-kit adds the drag instructions via aria-describedby.
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: card.id,
+    data: { card },
+    attributes: { role: 'group' },
+  })
   return (
     <div
       ref={setNodeRef}
       {...attributes}
       {...listeners}
-      aria-label={`${card.name}, ${card.days_in_stage} days in stage. Press Space to move.`}
+      aria-labelledby={`pipeline-card-${card.id}`}
       className={cn(
         'cursor-grab rounded-lg outline-none focus-visible:ring-3 focus-visible:ring-ring/50 active:cursor-grabbing',
         isDragging && 'opacity-40',

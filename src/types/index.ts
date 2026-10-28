@@ -163,6 +163,8 @@ export interface Category {
   id: string
   name: string
   is_active: boolean
+  /** Influencers currently in this category (a category in use can't be deleted). */
+  influencer_count: number
 }
 
 // ---------------------------------------------------------------------------
@@ -499,9 +501,10 @@ export interface InstagramSettingsUpdate {
 // Team, categories, saved views
 
 export interface TeamMemberCreate {
-  name: string
   email: string
   role: Role
+  /** Optional; defaults to a name derived from the email. */
+  name?: string
 }
 
 export type TeamMemberUpdate = Partial<Pick<User, 'name' | 'role' | 'is_active'>>
