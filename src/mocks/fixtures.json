@@ -1,0 +1,6901 @@
+{
+  "generated_at": "2026-10-28T06:30:00.000Z",
+  "current_user_id": "usr_01",
+  "team": [
+    {
+      "id": "usr_01",
+      "name": "Ananya Iyer",
+      "email": "ananya.iyer@influencehub.example",
+      "role": "admin",
+      "is_active": true,
+      "created_at": "2025-09-03T06:30:00.000Z"
+    },
+    {
+      "id": "usr_02",
+      "name": "Rahul Menon",
+      "email": "rahul.menon@influencehub.example",
+      "role": "manager",
+      "is_active": true,
+      "created_at": "2025-11-02T06:30:00.000Z"
+    },
+    {
+      "id": "usr_03",
+      "name": "Sneha Patil",
+      "email": "sneha.patil@influencehub.example",
+      "role": "executive",
+      "is_active": true,
+      "created_at": "2026-01-01T06:30:00.000Z"
+    },
+    {
+      "id": "usr_04",
+      "name": "Arjun Rao",
+      "email": "arjun.rao@influencehub.example",
+      "role": "executive",
+      "is_active": true,
+      "created_at": "2026-03-02T06:30:00.000Z"
+    }
+  ],
+  "categories": [
+    {
+      "id": "cat_01",
+      "name": "Fashion",
+      "is_active": true
+    },
+    {
+      "id": "cat_02",
+      "name": "Beauty",
+      "is_active": true
+    },
+    {
+      "id": "cat_03",
+      "name": "Food",
+      "is_active": true
+    },
+    {
+      "id": "cat_04",
+      "name": "Tech",
+      "is_active": true
+    },
+    {
+      "id": "cat_05",
+      "name": "Travel",
+      "is_active": true
+    },
+    {
+      "id": "cat_06",
+      "name": "Fitness",
+      "is_active": true
+    },
+    {
+      "id": "cat_07",
+      "name": "Lifestyle",
+      "is_active": true
+    },
+    {
+      "id": "cat_08",
+      "name": "Gaming",
+      "is_active": true
+    },
+    {
+      "id": "cat_09",
+      "name": "Finance",
+      "is_active": true
+    },
+    {
+      "id": "cat_10",
+      "name": "Parenting",
+      "is_active": true
+    },
+    {
+      "id": "cat_11",
+      "name": "Other",
+      "is_active": true
+    }
+  ],
+  "influencers": [
+    {
+      "id": "inf_001",
+      "name": "Riya Shah",
+      "category": "Fashion",
+      "instagram_handle": "riyastyle",
+      "profile_url": "https://www.instagram.com/riyastyle/",
+      "phone": "+917333614739",
+      "email": "riyastyle.collabs@example.com",
+      "address": {
+        "line1": "18, Green Valley Society, Koregaon Park Lane 5",
+        "line2": null,
+        "city": "Pune",
+        "state": "Maharashtra",
+        "postal_code": "411057",
+        "country": "India"
+      },
+      "city": "Pune",
+      "state": "Maharashtra",
+      "country": "India",
+      "followers": 245300,
+      "following": 1683,
+      "posts_count": 2366,
+      "engagement_rate": 2.63,
+      "bio": "Pune | Everyday & festive looks ✨ | Styling tips daily | Collabs via DM",
+      "is_verified": false,
+      "account_type": "business",
+      "profile_pic_url": "https://i.pravatar.cc/300?u=riyastyle",
+      "ig_sync_status": "synced",
+      "last_synced_at": "2026-10-26T19:30:00.000Z",
+      "stage": "onboarded",
+      "assigned_to": "usr_04",
+      "tags": [
+        "mid-tier"
+      ],
+      "notes": "Speaks Hindi and Marathi; open to regional reels.",
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": true,
+        "address_collected": true,
+        "ig_connected": true
+      },
+      "created_at": "2026-08-02T00:30:00.000Z",
+      "updated_at": "2026-10-26T08:30:00.000Z"
+    },
+    {
+      "id": "inf_002",
+      "name": "Aarav Mehta",
+      "category": "Tech",
+      "instagram_handle": "aaravtechtalks",
+      "profile_url": "https://www.instagram.com/aaravtechtalks/",
+      "phone": "+916864486486",
+      "email": "aaravtechtalks.collabs@example.com",
+      "address": {
+        "line1": "65, Palm Grove, MG Road",
+        "line2": null,
+        "city": "Mumbai",
+        "state": "Maharashtra",
+        "postal_code": "400083",
+        "country": "India"
+      },
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "country": "India",
+      "followers": 297804,
+      "following": 337,
+      "posts_count": 1522,
+      "engagement_rate": 4.23,
+      "bio": "Gadgets, unboxings & honest reviews 📱 | Mumbai",
+      "is_verified": false,
+      "account_type": "creator",
+      "profile_pic_url": "https://i.pravatar.cc/300?u=aaravtechtalks",
+      "ig_sync_status": "synced",
+      "last_synced_at": "2026-10-27T21:30:00.000Z",
+      "stage": "package_sent",
+      "assigned_to": "usr_04",
+      "tags": [
+        "mid-tier",
+        "ugc",
+        "priority"
+      ],
+      "notes": null,
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": true,
+        "address_collected": true,
+        "ig_connected": true
+      },
+      "created_at": "2026-09-22T02:30:00.000Z",
+      "updated_at": "2026-10-14T14:46:00.000Z"
+    },
+    {
+      "id": "inf_003",
+      "name": "Priya Nair",
+      "category": "Food",
+      "instagram_handle": "priyaeatskochi",
+      "profile_url": "https://www.instagram.com/priyaeatskochi/",
+      "phone": null,
+      "email": null,
+      "address": null,
+      "city": "Kochi",
+      "state": "Kerala",
+      "country": "India",
+      "followers": null,
+      "following": null,
+      "posts_count": null,
+      "engagement_rate": null,
+      "bio": null,
+      "is_verified": false,
+      "account_type": "unknown",
+      "profile_pic_url": null,
+      "ig_sync_status": "pending",
+      "last_synced_at": null,
+      "stage": "data_gathered",
+      "assigned_to": null,
+      "tags": [],
+      "notes": null,
+      "onboarding_checklist": {
+        "called": false,
+        "terms_agreed": false,
+        "address_collected": false,
+        "ig_connected": false
+      },
+      "created_at": "2026-08-31T06:30:00.000Z",
+      "updated_at": "2026-08-31T06:30:00.000Z"
+    },
+    {
+      "id": "inf_004",
+      "name": "Kabir Malhotra",
+      "category": "Fitness",
+      "instagram_handle": "kabirfitlife",
+      "profile_url": "https://www.instagram.com/kabirfitlife/",
+      "phone": "+918978097444",
+      "email": "kabirfitlife.collabs@example.com",
+      "address": {
+        "line1": "114, Palm Grove, Park Street",
+        "line2": "Near City Mall",
+        "city": "New Delhi",
+        "state": "Delhi",
+        "postal_code": "110047",
+        "country": "India"
+      },
+      "city": "New Delhi",
+      "state": "Delhi",
+      "country": "India",
+      "followers": 7388,
+      "following": 601,
+      "posts_count": 2085,
+      "engagement_rate": 6.6,
+      "bio": "Coach | Strength & mobility 💪 | New Delhi | Free plans in highlights",
+      "is_verified": false,
+      "account_type": "creator",
+      "profile_pic_url": "https://i.pravatar.cc/300?u=kabirfitlife",
+      "ig_sync_status": "synced",
+      "last_synced_at": "2026-10-26T21:30:00.000Z",
+      "stage": "delivered",
+      "assigned_to": "usr_02",
+      "tags": [
+        "micro",
+        "diwali-campaign"
+      ],
+      "notes": null,
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": true,
+        "address_collected": true,
+        "ig_connected": true
+      },
+      "created_at": "2026-06-13T05:30:00.000Z",
+      "updated_at": "2026-09-11T22:19:00.000Z"
+    },
+    {
+      "id": "inf_005",
+      "name": "Ananya Reddy",
+      "category": "Beauty",
+      "instagram_handle": "ananyaglows",
+      "profile_url": "https://www.instagram.com/ananyaglows/",
+      "phone": "+917829091933",
+      "email": "ananyaglows.collabs@example.com",
+      "address": {
+        "line1": "230, Shanti Apartments, MG Road",
+        "line2": "Near City Mall",
+        "city": "Hyderabad",
+        "state": "Telangana",
+        "postal_code": "500036",
+        "country": "India"
+      },
+      "city": "Hyderabad",
+      "state": "Telangana",
+      "country": "India",
+      "followers": 65982,
+      "following": 1292,
+      "posts_count": 976,
+      "engagement_rate": 3.9,
+      "bio": "Skincare + makeup that works 💄 | Hyderabad | Honest reviews only",
+      "is_verified": false,
+      "account_type": "creator",
+      "profile_pic_url": "https://i.pravatar.cc/300?u=ananyaglows",
+      "ig_sync_status": "synced",
+      "last_synced_at": "2026-10-26T17:30:00.000Z",
+      "stage": "contacted",
+      "assigned_to": "usr_02",
+      "tags": [
+        "micro",
+        "bilingual"
+      ],
+      "notes": "Very responsive. Good fit for festive campaign.",
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": false,
+        "address_collected": true,
+        "ig_connected": false
+      },
+      "created_at": "2026-07-29T00:30:00.000Z",
+      "updated_at": "2026-09-02T20:40:00.000Z"
+    },
+    {
+      "id": "inf_006",
+      "name": "Ishaan Kapoor",
+      "category": "Lifestyle",
+      "instagram_handle": "ishaankapoor",
+      "profile_url": "https://www.instagram.com/ishaankapoor/",
+      "phone": "+917977877523",
+      "email": "ishaankapoor.collabs@example.com",
+      "address": {
+        "line1": "190, Lotus Residency, CG Road",
+        "line2": null,
+        "city": "Mumbai",
+        "state": "Maharashtra",
+        "postal_code": "400040",
+        "country": "India"
+      },
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "country": "India",
+      "followers": 330492,
+      "following": 1362,
+      "posts_count": 291,
+      "engagement_rate": 4.12,
+      "bio": "Living, loving, sharing ☕ | Mumbai | Home • Style • Life",
+      "is_verified": false,
+      "account_type": "business",
+      "profile_pic_url": "https://i.pravatar.cc/300?u=ishaankapoor",
+      "ig_sync_status": "synced",
+      "last_synced_at": "2026-10-27T19:30:00.000Z",
+      "stage": "onboarded",
+      "assigned_to": "usr_03",
+      "tags": [
+        "mid-tier",
+        "bilingual"
+      ],
+      "notes": null,
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": true,
+        "address_collected": true,
+        "ig_connected": true
+      },
+      "created_at": "2026-07-04T01:30:00.000Z",
+      "updated_at": "2026-10-24T04:30:00.000Z"
+    },
+    {
+      "id": "inf_007",
+      "name": "Meera Iyer",
+      "category": "Parenting",
+      "instagram_handle": "meerathemom",
+      "profile_url": "https://www.instagram.com/meerathemom/",
+      "phone": null,
+      "email": "meerathemom.collabs@example.com",
+      "address": null,
+      "city": "Chennai",
+      "state": "Tamil Nadu",
+      "country": "India",
+      "followers": 177391,
+      "following": 1792,
+      "posts_count": 254,
+      "engagement_rate": 2.94,
+      "bio": "Parent of two 👶 | Real parenting, real moments | Chennai",
+      "is_verified": false,
+      "account_type": "unknown",
+      "profile_pic_url": "https://i.pravatar.cc/300?u=meerathemom",
+      "ig_sync_status": "error",
+      "last_synced_at": "2026-10-24T06:30:00.000Z",
+      "stage": "data_gathered",
+      "assigned_to": "usr_01",
+      "tags": [
+        "mid-tier",
+        "repeat-collab",
+        "ugc"
+      ],
+      "notes": null,
+      "onboarding_checklist": {
+        "called": false,
+        "terms_agreed": false,
+        "address_collected": false,
+        "ig_connected": false
+      },
+      "created_at": "2026-07-26T06:30:00.000Z",
+      "updated_at": "2026-07-26T06:30:00.000Z"
+    },
+    {
+      "id": "inf_008",
+      "name": "Rohan Desai",
+      "category": "Finance",
+      "instagram_handle": "rohanonmoney",
+      "profile_url": "https://www.instagram.com/rohanonmoney/",
+      "phone": "+917148119645",
+      "email": "rohanonmoney.collabs@example.com",
+      "address": null,
+      "city": "Ahmedabad",
+      "state": "Gujarat",
+      "country": "India",
+      "followers": null,
+      "following": null,
+      "posts_count": null,
+      "engagement_rate": null,
+      "bio": null,
+      "is_verified": false,
+      "account_type": "personal",
+      "profile_pic_url": null,
+      "ig_sync_status": "not_synced",
+      "last_synced_at": null,
+      "stage": "contacted",
+      "assigned_to": "usr_02",
+      "tags": [
+        "bilingual",
+        "regional"
+      ],
+      "notes": "Prefers WhatsApp after 6 pm.",
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": false,
+        "address_collected": false,
+        "ig_connected": false
+      },
+      "created_at": "2026-10-04T22:30:00.000Z",
+      "updated_at": "2026-10-12T14:18:00.000Z"
+    },
+    {
+      "id": "inf_009",
+      "name": "Sneha Kulkarni",
+      "category": "Travel",
+      "instagram_handle": "snehawanders",
+      "profile_url": "https://www.instagram.com/snehawanders/",
+      "phone": "+918372761149",
+      "email": "snehawanders.collabs@example.com",
+      "address": {
+        "line1": "30, Shanti Apartments, Park Street",
+        "line2": "Near Metro Station",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "postal_code": "411060",
+        "country": "India"
+      },
+      "city": "Pune",
+      "state": "Maharashtra",
+      "country": "India",
+      "followers": 52088,
+      "following": 582,
+      "posts_count": 515,
+      "engagement_rate": 4.83,
+      "bio": "Slow travel & hidden gems 🌏 | Based in Pune",
+      "is_verified": false,
+      "account_type": "creator",
+      "profile_pic_url": "https://i.pravatar.cc/300?u=snehawanders",
+      "ig_sync_status": "synced",
+      "last_synced_at": "2026-10-27T22:30:00.000Z",
+      "stage": "package_sent",
+      "assigned_to": "usr_03",
+      "tags": [
+        "micro"
+      ],
+      "notes": null,
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": true,
+        "address_collected": true,
+        "ig_connected": true
+      },
+      "created_at": "2026-08-30T05:30:00.000Z",
+      "updated_at": "2026-10-03T11:53:00.000Z"
+    },
+    {
+      "id": "inf_010",
+      "name": "Arjun Pillai",
+      "category": "Gaming",
+      "instagram_handle": "arjunplays",
+      "profile_url": "https://www.instagram.com/arjunplays/",
+      "phone": "+917998517034",
+      "email": "arjunplays.collabs@example.com",
+      "address": null,
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "country": "India",
+      "followers": null,
+      "following": null,
+      "posts_count": null,
+      "engagement_rate": null,
+      "bio": null,
+      "is_verified": false,
+      "account_type": "unknown",
+      "profile_pic_url": null,
+      "ig_sync_status": "pending",
+      "last_synced_at": null,
+      "stage": "data_gathered",
+      "assigned_to": null,
+      "tags": [
+        "reels"
+      ],
+      "notes": null,
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": false,
+        "address_collected": false,
+        "ig_connected": false
+      },
+      "created_at": "2026-08-23T05:30:00.000Z",
+      "updated_at": "2026-10-28T04:30:00.000Z"
+    },
+    {
+      "id": "inf_011",
+      "name": "Tanvi Joshi",
+      "category": "Beauty",
+      "instagram_handle": "tanviglam",
+      "profile_url": "https://www.instagram.com/tanviglam/",
+      "phone": "+916173035570",
+      "email": "tanviglam.collabs@example.com",
+      "address": {
+        "line1": "192, Shanti Apartments, Hazratganj",
+        "line2": "Near Metro Station",
+        "city": "Mumbai",
+        "state": "Maharashtra",
+        "postal_code": "400041",
+        "country": "India"
+      },
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "country": "India",
+      "followers": 21062,
+      "following": 1410,
+      "posts_count": 630,
+      "engagement_rate": 6.05,
+      "bio": "Skincare + makeup that works 💄 | Mumbai | Honest reviews only",
+      "is_verified": false,
+      "account_type": "creator",
+      "profile_pic_url": "https://i.pravatar.cc/300?u=tanviglam",
+      "ig_sync_status": "synced",
+      "last_synced_at": "2026-10-26T20:30:00.000Z",
+      "stage": "delivered",
+      "assigned_to": "usr_04",
+      "tags": [
+        "micro",
+        "regional"
+      ],
+      "notes": "Asked for barter + one paid reel; needs manager approval.",
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": true,
+        "address_collected": true,
+        "ig_connected": true
+      },
+      "created_at": "2026-09-29T03:30:00.000Z",
+      "updated_at": "2026-10-15T15:31:00.000Z"
+    },
+    {
+      "id": "inf_012",
+      "name": "Vikram Singh",
+      "category": "Travel",
+      "instagram_handle": "vikramroams",
+      "profile_url": "https://www.instagram.com/vikramroams/",
+      "phone": "+917148739334",
+      "email": "vikramroams.collabs@example.com",
+      "address": null,
+      "city": "Jaipur",
+      "state": "Rajasthan",
+      "country": "India",
+      "followers": null,
+      "following": null,
+      "posts_count": null,
+      "engagement_rate": null,
+      "bio": null,
+      "is_verified": false,
+      "account_type": "personal",
+      "profile_pic_url": null,
+      "ig_sync_status": "not_synced",
+      "last_synced_at": null,
+      "stage": "on_hold",
+      "assigned_to": "usr_04",
+      "tags": [
+        "bilingual",
+        "regional"
+      ],
+      "notes": null,
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": false,
+        "address_collected": false,
+        "ig_connected": false
+      },
+      "created_at": "2026-07-31T02:30:00.000Z",
+      "updated_at": "2026-09-20T06:49:00.000Z"
+    },
+    {
+      "id": "inf_013",
+      "name": "Neha Agarwal",
+      "category": "Food",
+      "instagram_handle": "nehacooks",
+      "profile_url": "https://www.instagram.com/nehacooks/",
+      "phone": "+919528163404",
+      "email": "nehacooks.collabs@example.com",
+      "address": null,
+      "city": "Kolkata",
+      "state": "West Bengal",
+      "country": "India",
+      "followers": 65443,
+      "following": 902,
+      "posts_count": 154,
+      "engagement_rate": 5.31,
+      "bio": "Eating my way through Kolkata 🍛 | Street food & home recipes",
+      "is_verified": false,
+      "account_type": "unknown",
+      "profile_pic_url": "https://i.pravatar.cc/300?u=nehacooks",
+      "ig_sync_status": "error",
+      "last_synced_at": "2026-10-23T06:30:00.000Z",
+      "stage": "data_gathered",
+      "assigned_to": "usr_01",
+      "tags": [
+        "micro",
+        "regional",
+        "diwali-campaign"
+      ],
+      "notes": null,
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": false,
+        "address_collected": false,
+        "ig_connected": false
+      },
+      "created_at": "2026-06-24T22:30:00.000Z",
+      "updated_at": "2026-10-26T06:30:00.000Z"
+    },
+    {
+      "id": "inf_014",
+      "name": "Karan Bhatia",
+      "category": "Tech",
+      "instagram_handle": "karanunboxes",
+      "profile_url": "https://www.instagram.com/karanunboxes/",
+      "phone": "+919259348930",
+      "email": "karanunboxes.collabs@example.com",
+      "address": {
+        "line1": "346, Silver Oak Towers, Civil Lines",
+        "line2": null,
+        "city": "Gurugram",
+        "state": "Haryana",
+        "postal_code": "122016",
+        "country": "India"
+      },
+      "city": "Gurugram",
+      "state": "Haryana",
+      "country": "India",
+      "followers": 96072,
+      "following": 770,
+      "posts_count": 225,
+      "engagement_rate": 3.37,
+      "bio": "Gadgets, unboxings & honest reviews 📱 | Gurugram",
+      "is_verified": false,
+      "account_type": "business",
+      "profile_pic_url": "https://i.pravatar.cc/300?u=karanunboxes",
+      "ig_sync_status": "synced",
+      "last_synced_at": "2026-10-26T22:30:00.000Z",
+      "stage": "contacted",
+      "assigned_to": "usr_01",
+      "tags": [
+        "micro",
+        "ugc",
+        "bilingual"
+      ],
+      "notes": "Asked for barter + one paid reel; needs manager approval.",
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": false,
+        "address_collected": true,
+        "ig_connected": false
+      },
+      "created_at": "2026-10-07T23:30:00.000Z",
+      "updated_at": "2026-10-14T13:11:00.000Z"
+    },
+    {
+      "id": "inf_015",
+      "name": "Diya Menon",
+      "category": "Fashion",
+      "instagram_handle": "diyadresses",
+      "profile_url": "https://www.instagram.com/diyadresses/",
+      "phone": "+919165150051",
+      "email": "diyadresses.collabs@example.com",
+      "address": {
+        "line1": "134, Sai Krupa Heights, CG Road",
+        "line2": "Near Metro Station",
+        "city": "Bengaluru",
+        "state": "Karnataka",
+        "postal_code": "560044",
+        "country": "India"
+      },
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "country": "India",
+      "followers": 68968,
+      "following": 1603,
+      "posts_count": 2058,
+      "engagement_rate": 5.18,
+      "bio": "Bengaluru | Everyday & festive looks ✨ | Styling tips daily | Collabs via DM",
+      "is_verified": false,
+      "account_type": "business",
+      "profile_pic_url": "https://i.pravatar.cc/300?u=diyadresses",
+      "ig_sync_status": "synced",
+      "last_synced_at": "2026-10-27T17:30:00.000Z",
+      "stage": "onboarded",
+      "assigned_to": "usr_04",
+      "tags": [
+        "micro",
+        "regional",
+        "priority"
+      ],
+      "notes": "Very responsive. Good fit for festive campaign.",
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": true,
+        "address_collected": true,
+        "ig_connected": true
+      },
+      "created_at": "2026-10-16T06:30:00.000Z",
+      "updated_at": "2026-10-23T13:32:00.000Z"
+    },
+    {
+      "id": "inf_016",
+      "name": "Aditya Rao",
+      "category": "Fitness",
+      "instagram_handle": "adityalifts",
+      "profile_url": "https://www.instagram.com/adityalifts/",
+      "phone": "+919664824055",
+      "email": "adityalifts.collabs@example.com",
+      "address": {
+        "line1": "290, Silver Oak Towers, CG Road",
+        "line2": "Near Central Park",
+        "city": "Bengaluru",
+        "state": "Karnataka",
+        "postal_code": "560085",
+        "country": "India"
+      },
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "country": "India",
+      "followers": 715475,
+      "following": 1506,
+      "posts_count": 1468,
+      "engagement_rate": 2.74,
+      "bio": "Coach | Strength & mobility 💪 | Bengaluru | Free plans in highlights",
+      "is_verified": true,
+      "account_type": "business",
+      "profile_pic_url": "https://i.pravatar.cc/300?u=adityalifts",
+      "ig_sync_status": "synced",
+      "last_synced_at": "2026-10-26T22:30:00.000Z",
+      "stage": "package_sent",
+      "assigned_to": "usr_03",
+      "tags": [
+        "macro",
+        "diwali-campaign"
+      ],
+      "notes": null,
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": true,
+        "address_collected": true,
+        "ig_connected": true
+      },
+      "created_at": "2026-06-14T01:30:00.000Z",
+      "updated_at": "2026-08-24T16:37:00.000Z"
+    },
+    {
+      "id": "inf_017",
+      "name": "Pooja Sharma",
+      "category": "Lifestyle",
+      "instagram_handle": "poojasharmaofficial",
+      "profile_url": "https://www.instagram.com/poojasharmaofficial/",
+      "phone": "+916473378858",
+      "email": "poojasharmaofficial.collabs@example.com",
+      "address": null,
+      "city": "New Delhi",
+      "state": "Delhi",
+      "country": "India",
+      "followers": 460035,
+      "following": 1064,
+      "posts_count": 1262,
+      "engagement_rate": 3.22,
+      "bio": "Living, loving, sharing ☕ | New Delhi | Home • Style • Life",
+      "is_verified": false,
+      "account_type": "business",
+      "profile_pic_url": "https://i.pravatar.cc/300?u=poojasharmaofficial",
+      "ig_sync_status": "synced",
+      "last_synced_at": "2026-10-26T14:30:00.000Z",
+      "stage": "rejected",
+      "assigned_to": "usr_03",
+      "tags": [
+        "mid-tier",
+        "ugc"
+      ],
+      "notes": "Only does content with products she personally uses.",
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": false,
+        "address_collected": false,
+        "ig_connected": false
+      },
+      "created_at": "2026-06-11T03:30:00.000Z",
+      "updated_at": "2026-08-13T15:40:00.000Z"
+    },
+    {
+      "id": "inf_018",
+      "name": "Siddharth Jain",
+      "category": "Finance",
+      "instagram_handle": "sidinvests",
+      "profile_url": "https://www.instagram.com/sidinvests/",
+      "phone": "+917947081313",
+      "email": null,
+      "address": null,
+      "city": "Indore",
+      "state": "Madhya Pradesh",
+      "country": "India",
+      "followers": null,
+      "following": null,
+      "posts_count": null,
+      "engagement_rate": null,
+      "bio": null,
+      "is_verified": false,
+      "account_type": "personal",
+      "profile_pic_url": null,
+      "ig_sync_status": "not_synced",
+      "last_synced_at": null,
+      "stage": "data_gathered",
+      "assigned_to": "usr_04",
+      "tags": [],
+      "notes": null,
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": false,
+        "address_collected": false,
+        "ig_connected": false
+      },
+      "created_at": "2026-10-05T05:30:00.000Z",
+      "updated_at": "2026-10-28T04:30:00.000Z"
+    },
+    {
+      "id": "inf_019",
+      "name": "Kavya Krishnan",
+      "category": "Beauty",
+      "instagram_handle": "kavyaskincare",
+      "profile_url": "https://www.instagram.com/kavyaskincare/",
+      "phone": "+918020329740",
+      "email": "kavyaskincare.collabs@example.com",
+      "address": {
+        "line1": "266, Palm Grove, CG Road",
+        "line2": "Near Central Park",
+        "city": "Coimbatore",
+        "state": "Tamil Nadu",
+        "postal_code": "641016",
+        "country": "India"
+      },
+      "city": "Coimbatore",
+      "state": "Tamil Nadu",
+      "country": "India",
+      "followers": 3400000,
+      "following": 1691,
+      "posts_count": 737,
+      "engagement_rate": 1.83,
+      "bio": "Skincare + makeup that works 💄 | Coimbatore | Honest reviews only",
+      "is_verified": true,
+      "account_type": "business",
+      "profile_pic_url": "https://i.pravatar.cc/300?u=kavyaskincare",
+      "ig_sync_status": "synced",
+      "last_synced_at": "2026-10-28T04:30:00.000Z",
+      "stage": "delivered",
+      "assigned_to": "usr_01",
+      "tags": [
+        "macro"
+      ],
+      "notes": "Very responsive. Good fit for festive campaign.",
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": true,
+        "address_collected": true,
+        "ig_connected": true
+      },
+      "created_at": "2026-10-04T06:30:00.000Z",
+      "updated_at": "2026-10-17T17:18:00.000Z"
+    },
+    {
+      "id": "inf_020",
+      "name": "Nikhil Verma",
+      "category": "Food",
+      "instagram_handle": "nikhilkhaata",
+      "profile_url": "https://www.instagram.com/nikhilkhaata/",
+      "phone": "+916483155382",
+      "email": "nikhilkhaata.collabs@example.com",
+      "address": null,
+      "city": "Lucknow",
+      "state": "Uttar Pradesh",
+      "country": "India",
+      "followers": 30473,
+      "following": 1717,
+      "posts_count": 655,
+      "engagement_rate": 5.82,
+      "bio": "Eating my way through Lucknow 🍛 | Street food & home recipes",
+      "is_verified": false,
+      "account_type": "creator",
+      "profile_pic_url": "https://i.pravatar.cc/300?u=nikhilkhaata",
+      "ig_sync_status": "error",
+      "last_synced_at": "2026-10-21T06:30:00.000Z",
+      "stage": "contacted",
+      "assigned_to": "usr_04",
+      "tags": [
+        "micro",
+        "priority",
+        "repeat-collab"
+      ],
+      "notes": "Speaks Hindi and Marathi; open to regional reels.",
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": false,
+        "address_collected": false,
+        "ig_connected": false
+      },
+      "created_at": "2026-06-19T22:30:00.000Z",
+      "updated_at": "2026-08-14T01:34:00.000Z"
+    },
+    {
+      "id": "inf_021",
+      "name": "Aisha Khan",
+      "category": "Fashion",
+      "instagram_handle": "aishakhanstyle",
+      "profile_url": "https://www.instagram.com/aishakhanstyle/",
+      "phone": "+919667191973",
+      "email": "aishakhanstyle.collabs@example.com",
+      "address": {
+        "line1": "107, Lotus Residency, CG Road",
+        "line2": "Near City Mall",
+        "city": "Hyderabad",
+        "state": "Telangana",
+        "postal_code": "500070",
+        "country": "India"
+      },
+      "city": "Hyderabad",
+      "state": "Telangana",
+      "country": "India",
+      "followers": 511004,
+      "following": 231,
+      "posts_count": 1500,
+      "engagement_rate": 3.36,
+      "bio": "Hyderabad | Everyday & festive looks ✨ | Styling tips daily | Collabs via DM",
+      "is_verified": false,
+      "account_type": "business",
+      "profile_pic_url": "https://i.pravatar.cc/300?u=aishakhanstyle",
+      "ig_sync_status": "synced",
+      "last_synced_at": "2026-10-26T14:30:00.000Z",
+      "stage": "onboarded",
+      "assigned_to": "usr_02",
+      "tags": [
+        "macro",
+        "regional",
+        "reels"
+      ],
+      "notes": "Prefers WhatsApp after 6 pm.",
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": true,
+        "address_collected": true,
+        "ig_connected": true
+      },
+      "created_at": "2026-08-07T06:30:00.000Z",
+      "updated_at": "2026-09-13T02:07:00.000Z"
+    },
+    {
+      "id": "inf_022",
+      "name": "Rahul Gupta",
+      "category": "Gaming",
+      "instagram_handle": "rahulgg",
+      "profile_url": "https://www.instagram.com/rahulgg/",
+      "phone": "+919634203954",
+      "email": "rahulgg.collabs@example.com",
+      "address": null,
+      "city": "Noida",
+      "state": "Uttar Pradesh",
+      "country": "India",
+      "followers": null,
+      "following": null,
+      "posts_count": null,
+      "engagement_rate": null,
+      "bio": null,
+      "is_verified": false,
+      "account_type": "personal",
+      "profile_pic_url": null,
+      "ig_sync_status": "not_synced",
+      "last_synced_at": null,
+      "stage": "data_gathered",
+      "assigned_to": "usr_04",
+      "tags": [],
+      "notes": null,
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": false,
+        "address_collected": false,
+        "ig_connected": false
+      },
+      "created_at": "2026-09-02T02:30:00.000Z",
+      "updated_at": "2026-10-23T05:30:00.000Z"
+    },
+    {
+      "id": "inf_023",
+      "name": "Shreya Banerjee",
+      "category": "Lifestyle",
+      "instagram_handle": "shreyabanerjee",
+      "profile_url": "https://www.instagram.com/shreyabanerjee/",
+      "phone": "+919575092299",
+      "email": "shreyabanerjee.collabs@example.com",
+      "address": {
+        "line1": "331, Silver Oak Towers, Anna Salai",
+        "line2": null,
+        "city": "Kolkata",
+        "state": "West Bengal",
+        "postal_code": "700081",
+        "country": "India"
+      },
+      "city": "Kolkata",
+      "state": "West Bengal",
+      "country": "India",
+      "followers": 178305,
+      "following": 370,
+      "posts_count": 997,
+      "engagement_rate": 3.23,
+      "bio": "Living, loving, sharing ☕ | Kolkata | Home • Style • Life",
+      "is_verified": false,
+      "account_type": "creator",
+      "profile_pic_url": "https://i.pravatar.cc/300?u=shreyabanerjee",
+      "ig_sync_status": "synced",
+      "last_synced_at": "2026-10-28T02:30:00.000Z",
+      "stage": "package_sent",
+      "assigned_to": "usr_01",
+      "tags": [
+        "mid-tier",
+        "reels",
+        "priority"
+      ],
+      "notes": null,
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": true,
+        "address_collected": true,
+        "ig_connected": true
+      },
+      "created_at": "2026-10-05T22:30:00.000Z",
+      "updated_at": "2026-10-18T10:12:00.000Z"
+    },
+    {
+      "id": "inf_024",
+      "name": "Varun Chopra",
+      "category": "Fitness",
+      "instagram_handle": "varunchoprafit",
+      "profile_url": "https://www.instagram.com/varunchoprafit/",
+      "phone": "+917270734980",
+      "email": "varunchoprafit.collabs@example.com",
+      "address": {
+        "line1": "300, Lotus Residency, CG Road",
+        "line2": null,
+        "city": "Chandigarh",
+        "state": "Chandigarh",
+        "postal_code": "160027",
+        "country": "India"
+      },
+      "city": "Chandigarh",
+      "state": "Chandigarh",
+      "country": "India",
+      "followers": 67564,
+      "following": 1219,
+      "posts_count": 882,
+      "engagement_rate": 4.57,
+      "bio": "Coach | Strength & mobility 💪 | Chandigarh | Free plans in highlights",
+      "is_verified": false,
+      "account_type": "creator",
+      "profile_pic_url": "https://i.pravatar.cc/300?u=varunchoprafit",
+      "ig_sync_status": "synced",
+      "last_synced_at": "2026-10-28T03:30:00.000Z",
+      "stage": "on_hold",
+      "assigned_to": "usr_03",
+      "tags": [
+        "micro",
+        "bilingual"
+      ],
+      "notes": "Speaks Hindi and Marathi; open to regional reels.",
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": true,
+        "address_collected": true,
+        "ig_connected": true
+      },
+      "created_at": "2026-08-25T01:30:00.000Z",
+      "updated_at": "2026-09-28T07:21:00.000Z"
+    },
+    {
+      "id": "inf_025",
+      "name": "Ira Saxena",
+      "category": "Parenting",
+      "instagram_handle": "irasaxenaparenting",
+      "profile_url": "https://www.instagram.com/irasaxenaparenting/",
+      "phone": "+917579625684",
+      "email": "irasaxenaparenting.collabs@example.com",
+      "address": null,
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "country": "India",
+      "followers": null,
+      "following": null,
+      "posts_count": null,
+      "engagement_rate": null,
+      "bio": null,
+      "is_verified": false,
+      "account_type": "personal",
+      "profile_pic_url": null,
+      "ig_sync_status": "not_synced",
+      "last_synced_at": null,
+      "stage": "contacted",
+      "assigned_to": "usr_03",
+      "tags": [
+        "repeat-collab"
+      ],
+      "notes": null,
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": false,
+        "address_collected": false,
+        "ig_connected": false
+      },
+      "created_at": "2026-10-02T00:30:00.000Z",
+      "updated_at": "2026-10-11T10:27:00.000Z"
+    },
+    {
+      "id": "inf_026",
+      "name": "Manav Patel",
+      "category": "Tech",
+      "instagram_handle": "manavtech",
+      "profile_url": "https://www.instagram.com/manavtech/",
+      "phone": "+919255472636",
+      "email": "manavtech.collabs@example.com",
+      "address": null,
+      "city": "Surat",
+      "state": "Gujarat",
+      "country": "India",
+      "followers": 162000,
+      "following": null,
+      "posts_count": null,
+      "engagement_rate": null,
+      "bio": null,
+      "is_verified": false,
+      "account_type": "personal",
+      "profile_pic_url": null,
+      "ig_sync_status": "not_synced",
+      "last_synced_at": null,
+      "stage": "rejected",
+      "assigned_to": "usr_03",
+      "tags": [
+        "mid-tier",
+        "repeat-collab",
+        "diwali-campaign"
+      ],
+      "notes": null,
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": false,
+        "address_collected": false,
+        "ig_connected": false
+      },
+      "created_at": "2026-06-28T01:30:00.000Z",
+      "updated_at": "2026-08-03T18:29:00.000Z"
+    },
+    {
+      "id": "inf_027",
+      "name": "Nandini Bose",
+      "category": "Travel",
+      "instagram_handle": "nandinitravels",
+      "profile_url": "https://www.instagram.com/nandinitravels/",
+      "phone": "+919057185096",
+      "email": "nandinitravels.collabs@example.com",
+      "address": {
+        "line1": "140, Green Valley Society, Park Street",
+        "line2": "Near City Mall",
+        "city": "Kolkata",
+        "state": "West Bengal",
+        "postal_code": "700096",
+        "country": "India"
+      },
+      "city": "Kolkata",
+      "state": "West Bengal",
+      "country": "India",
+      "followers": 13907,
+      "following": 309,
+      "posts_count": 1503,
+      "engagement_rate": 7.89,
+      "bio": "Slow travel & hidden gems 🌏 | Based in Kolkata",
+      "is_verified": false,
+      "account_type": "creator",
+      "profile_pic_url": "https://i.pravatar.cc/300?u=nandinitravels",
+      "ig_sync_status": "synced",
+      "last_synced_at": "2026-10-28T02:30:00.000Z",
+      "stage": "delivered",
+      "assigned_to": "usr_03",
+      "tags": [
+        "micro"
+      ],
+      "notes": null,
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": true,
+        "address_collected": true,
+        "ig_connected": true
+      },
+      "created_at": "2026-08-23T05:30:00.000Z",
+      "updated_at": "2026-10-07T15:03:00.000Z"
+    },
+    {
+      "id": "inf_028",
+      "name": "Yash Thakur",
+      "category": "Other",
+      "instagram_handle": "yashthakurcomedy",
+      "profile_url": "https://www.instagram.com/yashthakurcomedy/",
+      "phone": "+918094341783",
+      "email": "yashthakurcomedy.collabs@example.com",
+      "address": null,
+      "city": "Nagpur",
+      "state": "Maharashtra",
+      "country": "India",
+      "followers": 1422000,
+      "following": null,
+      "posts_count": null,
+      "engagement_rate": null,
+      "bio": null,
+      "is_verified": false,
+      "account_type": "personal",
+      "profile_pic_url": null,
+      "ig_sync_status": "not_synced",
+      "last_synced_at": null,
+      "stage": "data_gathered",
+      "assigned_to": null,
+      "tags": [
+        "macro"
+      ],
+      "notes": null,
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": false,
+        "address_collected": false,
+        "ig_connected": false
+      },
+      "created_at": "2026-08-26T06:30:00.000Z",
+      "updated_at": "2026-10-27T07:30:00.000Z"
+    },
+    {
+      "id": "inf_029",
+      "name": "Zoya Mirza",
+      "category": "Beauty",
+      "instagram_handle": "zoyamakeup",
+      "profile_url": "https://www.instagram.com/zoyamakeup/",
+      "phone": "+917895341479",
+      "email": "zoyamakeup.collabs@example.com",
+      "address": {
+        "line1": "258, Green Valley Society, Linking Road",
+        "line2": null,
+        "city": "New Delhi",
+        "state": "Delhi",
+        "postal_code": "110084",
+        "country": "India"
+      },
+      "city": "New Delhi",
+      "state": "Delhi",
+      "country": "India",
+      "followers": 119993,
+      "following": 936,
+      "posts_count": 2301,
+      "engagement_rate": 3.97,
+      "bio": "Skincare + makeup that works 💄 | New Delhi | Honest reviews only",
+      "is_verified": false,
+      "account_type": "creator",
+      "profile_pic_url": "https://i.pravatar.cc/300?u=zoyamakeup",
+      "ig_sync_status": "synced",
+      "last_synced_at": "2026-10-28T05:30:00.000Z",
+      "stage": "onboarded",
+      "assigned_to": "usr_04",
+      "tags": [
+        "mid-tier",
+        "bilingual"
+      ],
+      "notes": null,
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": true,
+        "address_collected": true,
+        "ig_connected": true
+      },
+      "created_at": "2026-10-05T01:30:00.000Z",
+      "updated_at": "2026-10-17T12:24:00.000Z"
+    },
+    {
+      "id": "inf_030",
+      "name": "Harsh Vardhan",
+      "category": "Food",
+      "instagram_handle": "harshtastes",
+      "profile_url": "https://www.instagram.com/harshtastes/",
+      "phone": "+916887399226",
+      "email": "harshtastes.collabs@example.com",
+      "address": {
+        "line1": "122, Green Valley Society, Salt Lake Sector V",
+        "line2": null,
+        "city": "Jaipur",
+        "state": "Rajasthan",
+        "postal_code": "302036",
+        "country": "India"
+      },
+      "city": "Jaipur",
+      "state": "Rajasthan",
+      "country": "India",
+      "followers": 406838,
+      "following": 1063,
+      "posts_count": 420,
+      "engagement_rate": 3.26,
+      "bio": "Eating my way through Jaipur 🍛 | Street food & home recipes",
+      "is_verified": false,
+      "account_type": "creator",
+      "profile_pic_url": "https://i.pravatar.cc/300?u=harshtastes",
+      "ig_sync_status": "synced",
+      "last_synced_at": "2026-10-28T01:30:00.000Z",
+      "stage": "package_sent",
+      "assigned_to": "usr_03",
+      "tags": [
+        "mid-tier",
+        "diwali-campaign",
+        "regional"
+      ],
+      "notes": "Only does content with products she personally uses.",
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": true,
+        "address_collected": true,
+        "ig_connected": true
+      },
+      "created_at": "2026-07-13T04:30:00.000Z",
+      "updated_at": "2026-09-16T01:03:00.000Z"
+    },
+    {
+      "id": "inf_031",
+      "name": "Simran Kaur",
+      "category": "Fashion",
+      "instagram_handle": "simrankaurstyle",
+      "profile_url": "https://www.instagram.com/simrankaurstyle/",
+      "phone": "+917631023148",
+      "email": "simrankaurstyle.collabs@example.com",
+      "address": null,
+      "city": "Amritsar",
+      "state": "Punjab",
+      "country": "India",
+      "followers": 105555,
+      "following": 1326,
+      "posts_count": 693,
+      "engagement_rate": 4.19,
+      "bio": "Amritsar | Everyday & festive looks ✨ | Styling tips daily | Collabs via DM",
+      "is_verified": false,
+      "account_type": "creator",
+      "profile_pic_url": "https://i.pravatar.cc/300?u=simrankaurstyle",
+      "ig_sync_status": "synced",
+      "last_synced_at": "2026-10-26T20:30:00.000Z",
+      "stage": "contacted",
+      "assigned_to": "usr_03",
+      "tags": [
+        "mid-tier",
+        "repeat-collab",
+        "reels"
+      ],
+      "notes": "Only does content with products she personally uses.",
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": false,
+        "address_collected": false,
+        "ig_connected": false
+      },
+      "created_at": "2026-06-09T01:30:00.000Z",
+      "updated_at": "2026-10-28T04:30:00.000Z"
+    },
+    {
+      "id": "inf_032",
+      "name": "Dev Arora",
+      "category": "Finance",
+      "instagram_handle": "devarorafinance",
+      "profile_url": "https://www.instagram.com/devarorafinance/",
+      "phone": "+918107921137",
+      "email": "devarorafinance.collabs@example.com",
+      "address": null,
+      "city": "Gurugram",
+      "state": "Haryana",
+      "country": "India",
+      "followers": null,
+      "following": null,
+      "posts_count": null,
+      "engagement_rate": null,
+      "bio": null,
+      "is_verified": false,
+      "account_type": "business",
+      "profile_pic_url": null,
+      "ig_sync_status": "pending",
+      "last_synced_at": null,
+      "stage": "data_gathered",
+      "assigned_to": "usr_03",
+      "tags": [
+        "priority"
+      ],
+      "notes": null,
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": false,
+        "address_collected": false,
+        "ig_connected": false
+      },
+      "created_at": "2026-09-01T00:30:00.000Z",
+      "updated_at": "2026-10-25T05:30:00.000Z"
+    },
+    {
+      "id": "inf_033",
+      "name": "Ritika Sinha",
+      "category": "Lifestyle",
+      "instagram_handle": "ritikasinha",
+      "profile_url": "https://www.instagram.com/ritikasinha/",
+      "phone": "+916692859526",
+      "email": "ritikasinha.collabs@example.com",
+      "address": null,
+      "city": "Patna",
+      "state": "Bihar",
+      "country": "India",
+      "followers": 249303,
+      "following": 807,
+      "posts_count": 315,
+      "engagement_rate": 3.95,
+      "bio": "Living, loving, sharing ☕ | Patna | Home • Style • Life",
+      "is_verified": false,
+      "account_type": "business",
+      "profile_pic_url": "https://i.pravatar.cc/300?u=ritikasinha",
+      "ig_sync_status": "synced",
+      "last_synced_at": "2026-10-26T22:30:00.000Z",
+      "stage": "rejected",
+      "assigned_to": "usr_04",
+      "tags": [
+        "mid-tier",
+        "repeat-collab",
+        "ugc"
+      ],
+      "notes": "Prefers WhatsApp after 6 pm.",
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": false,
+        "address_collected": false,
+        "ig_connected": false
+      },
+      "created_at": "2026-09-05T23:30:00.000Z",
+      "updated_at": "2026-10-06T06:22:00.000Z"
+    },
+    {
+      "id": "inf_034",
+      "name": "Om Yadav",
+      "category": "Travel",
+      "instagram_handle": "omyadavtravels",
+      "profile_url": "https://www.instagram.com/omyadavtravels/",
+      "phone": "+918003624544",
+      "email": "omyadavtravels.collabs@example.com",
+      "address": {
+        "line1": "243, Green Valley Society, Banjara Hills Rd 12",
+        "line2": null,
+        "city": "Panaji",
+        "state": "Goa",
+        "postal_code": "403001",
+        "country": "India"
+      },
+      "city": "Panaji",
+      "state": "Goa",
+      "country": "India",
+      "followers": 19935,
+      "following": 1703,
+      "posts_count": 1076,
+      "engagement_rate": 6.34,
+      "bio": "Slow travel & hidden gems 🌏 | Based in Panaji",
+      "is_verified": false,
+      "account_type": "creator",
+      "profile_pic_url": "https://i.pravatar.cc/300?u=omyadavtravels",
+      "ig_sync_status": "synced",
+      "last_synced_at": "2026-10-28T05:30:00.000Z",
+      "stage": "delivered",
+      "assigned_to": "usr_03",
+      "tags": [
+        "micro",
+        "priority"
+      ],
+      "notes": "Very responsive. Good fit for festive campaign.",
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": true,
+        "address_collected": true,
+        "ig_connected": true
+      },
+      "created_at": "2026-09-26T02:30:00.000Z",
+      "updated_at": "2026-10-15T16:18:00.000Z"
+    },
+    {
+      "id": "inf_035",
+      "name": "Lakshmi Venkatesh",
+      "category": "Parenting",
+      "instagram_handle": "lakshmiandkids",
+      "profile_url": "https://www.instagram.com/lakshmiandkids/",
+      "phone": "+919365617506",
+      "email": "lakshmiandkids.collabs@example.com",
+      "address": null,
+      "city": "Mysuru",
+      "state": "Karnataka",
+      "country": "India",
+      "followers": 97490,
+      "following": 847,
+      "posts_count": 780,
+      "engagement_rate": 3.64,
+      "bio": "Parent of two 👶 | Real parenting, real moments | Mysuru",
+      "is_verified": false,
+      "account_type": "creator",
+      "profile_pic_url": "https://i.pravatar.cc/300?u=lakshmiandkids",
+      "ig_sync_status": "synced",
+      "last_synced_at": "2026-10-28T03:30:00.000Z",
+      "stage": "on_hold",
+      "assigned_to": "usr_03",
+      "tags": [
+        "micro",
+        "repeat-collab"
+      ],
+      "notes": null,
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": false,
+        "address_collected": false,
+        "ig_connected": false
+      },
+      "created_at": "2026-09-28T01:30:00.000Z",
+      "updated_at": "2026-10-10T10:30:00.000Z"
+    },
+    {
+      "id": "inf_036",
+      "name": "Emma Collins",
+      "category": "Beauty",
+      "instagram_handle": "emmacollinsbeauty",
+      "profile_url": "https://www.instagram.com/emmacollinsbeauty/",
+      "phone": "+447739831644",
+      "email": "emmacollinsbeauty.collabs@example.com",
+      "address": {
+        "line1": "131, Orchard Road",
+        "line2": null,
+        "city": "London",
+        "state": "England",
+        "postal_code": "SW1A 2AA",
+        "country": "United Kingdom"
+      },
+      "city": "London",
+      "state": "England",
+      "country": "United Kingdom",
+      "followers": 261706,
+      "following": 1274,
+      "posts_count": 623,
+      "engagement_rate": 4.09,
+      "bio": "Skincare + makeup that works 💄 | London | Honest reviews only",
+      "is_verified": false,
+      "account_type": "creator",
+      "profile_pic_url": "https://i.pravatar.cc/300?u=emmacollinsbeauty",
+      "ig_sync_status": "synced",
+      "last_synced_at": "2026-10-28T02:30:00.000Z",
+      "stage": "contacted",
+      "assigned_to": "usr_01",
+      "tags": [
+        "mid-tier",
+        "ugc"
+      ],
+      "notes": "Managed by an agency; loop in their manager on email.",
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": false,
+        "address_collected": true,
+        "ig_connected": false
+      },
+      "created_at": "2026-05-31T04:30:00.000Z",
+      "updated_at": "2026-10-23T05:30:00.000Z"
+    },
+    {
+      "id": "inf_037",
+      "name": "Liam Carter",
+      "category": "Tech",
+      "instagram_handle": "liamcartertech",
+      "profile_url": "https://www.instagram.com/liamcartertech/",
+      "phone": "+12131788509",
+      "email": "liamcartertech.collabs@example.com",
+      "address": {
+        "line1": "153, King Street",
+        "line2": null,
+        "city": "Austin",
+        "state": "Texas",
+        "postal_code": "78701",
+        "country": "United States"
+      },
+      "city": "Austin",
+      "state": "Texas",
+      "country": "United States",
+      "followers": 381128,
+      "following": 500,
+      "posts_count": 1551,
+      "engagement_rate": 2.51,
+      "bio": "Gadgets, unboxings & honest reviews 📱 | Austin",
+      "is_verified": false,
+      "account_type": "business",
+      "profile_pic_url": "https://i.pravatar.cc/300?u=liamcartertech",
+      "ig_sync_status": "synced",
+      "last_synced_at": "2026-10-27T04:30:00.000Z",
+      "stage": "onboarded",
+      "assigned_to": "usr_02",
+      "tags": [
+        "mid-tier"
+      ],
+      "notes": null,
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": true,
+        "address_collected": true,
+        "ig_connected": true
+      },
+      "created_at": "2026-09-19T02:30:00.000Z",
+      "updated_at": "2026-10-28T04:30:00.000Z"
+    },
+    {
+      "id": "inf_038",
+      "name": "Sofia Martinez",
+      "category": "Fitness",
+      "instagram_handle": "sofiamoves",
+      "profile_url": "https://www.instagram.com/sofiamoves/",
+      "phone": "+12127925731",
+      "email": "sofiamoves.collabs@example.com",
+      "address": null,
+      "city": "Los Angeles",
+      "state": "California",
+      "country": "United States",
+      "followers": 20000,
+      "following": null,
+      "posts_count": null,
+      "engagement_rate": null,
+      "bio": null,
+      "is_verified": false,
+      "account_type": "personal",
+      "profile_pic_url": null,
+      "ig_sync_status": "not_synced",
+      "last_synced_at": null,
+      "stage": "data_gathered",
+      "assigned_to": "usr_04",
+      "tags": [
+        "micro",
+        "regional",
+        "reels"
+      ],
+      "notes": "Very responsive. Good fit for festive campaign.",
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": false,
+        "address_collected": false,
+        "ig_connected": false
+      },
+      "created_at": "2026-06-02T04:30:00.000Z",
+      "updated_at": "2026-10-27T11:30:00.000Z"
+    },
+    {
+      "id": "inf_039",
+      "name": "Chloe Tan",
+      "category": "Food",
+      "instagram_handle": "chloetaneats",
+      "profile_url": "https://www.instagram.com/chloetaneats/",
+      "phone": "+6581422093",
+      "email": "chloetaneats.collabs@example.com",
+      "address": {
+        "line1": "332, Queen Street",
+        "line2": null,
+        "city": "Singapore",
+        "state": "Singapore",
+        "postal_code": "238859",
+        "country": "Singapore"
+      },
+      "city": "Singapore",
+      "state": "Singapore",
+      "country": "Singapore",
+      "followers": 54213,
+      "following": 906,
+      "posts_count": 2400,
+      "engagement_rate": 5.29,
+      "bio": "Eating my way through Singapore 🍛 | Street food & home recipes",
+      "is_verified": false,
+      "account_type": "business",
+      "profile_pic_url": "https://i.pravatar.cc/300?u=chloetaneats",
+      "ig_sync_status": "synced",
+      "last_synced_at": "2026-10-28T01:30:00.000Z",
+      "stage": "package_sent",
+      "assigned_to": "usr_02",
+      "tags": [
+        "micro",
+        "reels",
+        "priority"
+      ],
+      "notes": "Only does content with products she personally uses.",
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": true,
+        "address_collected": true,
+        "ig_connected": true
+      },
+      "created_at": "2026-06-06T00:30:00.000Z",
+      "updated_at": "2026-08-19T11:33:00.000Z"
+    },
+    {
+      "id": "inf_040",
+      "name": "Noah Williams",
+      "category": "Fashion",
+      "instagram_handle": "noahwears",
+      "profile_url": "https://www.instagram.com/noahwears/",
+      "phone": "+15121504303",
+      "email": "noahwears.collabs@example.com",
+      "address": {
+        "line1": "229, Main Street",
+        "line2": null,
+        "city": "New York",
+        "state": "New York",
+        "postal_code": "10001",
+        "country": "United States"
+      },
+      "city": "New York",
+      "state": "New York",
+      "country": "United States",
+      "followers": 3825,
+      "following": 315,
+      "posts_count": 700,
+      "engagement_rate": 10.18,
+      "bio": "New York | Everyday & festive looks ✨ | Styling tips daily | Collabs via DM",
+      "is_verified": false,
+      "account_type": "business",
+      "profile_pic_url": "https://i.pravatar.cc/300?u=noahwears",
+      "ig_sync_status": "synced",
+      "last_synced_at": "2026-10-27T23:30:00.000Z",
+      "stage": "delivered",
+      "assigned_to": "usr_04",
+      "tags": [
+        "micro"
+      ],
+      "notes": null,
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": true,
+        "address_collected": true,
+        "ig_connected": true
+      },
+      "created_at": "2026-06-13T04:30:00.000Z",
+      "updated_at": "2026-08-25T14:55:00.000Z"
+    },
+    {
+      "id": "inf_041",
+      "name": "Aaliyah Rahman",
+      "category": "Lifestyle",
+      "instagram_handle": "aaliyahindubai",
+      "profile_url": "https://www.instagram.com/aaliyahindubai/",
+      "phone": "+971569308877",
+      "email": "aaliyahindubai.collabs@example.com",
+      "address": {
+        "line1": "145, Orchard Road",
+        "line2": null,
+        "city": "Dubai",
+        "state": "Dubai",
+        "postal_code": "00000",
+        "country": "United Arab Emirates"
+      },
+      "city": "Dubai",
+      "state": "Dubai",
+      "country": "United Arab Emirates",
+      "followers": 531009,
+      "following": 708,
+      "posts_count": 267,
+      "engagement_rate": 3.31,
+      "bio": "Living, loving, sharing ☕ | Dubai | Home • Style • Life",
+      "is_verified": false,
+      "account_type": "business",
+      "profile_pic_url": "https://i.pravatar.cc/300?u=aaliyahindubai",
+      "ig_sync_status": "synced",
+      "last_synced_at": "2026-10-27T16:30:00.000Z",
+      "stage": "contacted",
+      "assigned_to": "usr_03",
+      "tags": [
+        "macro"
+      ],
+      "notes": null,
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": false,
+        "address_collected": true,
+        "ig_connected": false
+      },
+      "created_at": "2026-09-25T04:30:00.000Z",
+      "updated_at": "2026-10-28T04:30:00.000Z"
+    },
+    {
+      "id": "inf_042",
+      "name": "Olivia Brown",
+      "category": "Travel",
+      "instagram_handle": "oliviaexplores",
+      "profile_url": "https://www.instagram.com/oliviaexplores/",
+      "phone": "+61478315100",
+      "email": "oliviaexplores.collabs@example.com",
+      "address": null,
+      "city": "Sydney",
+      "state": "New South Wales",
+      "country": "Australia",
+      "followers": 28986,
+      "following": 1012,
+      "posts_count": 1496,
+      "engagement_rate": 6.2,
+      "bio": "Slow travel & hidden gems 🌏 | Based in Sydney",
+      "is_verified": false,
+      "account_type": "creator",
+      "profile_pic_url": "https://i.pravatar.cc/300?u=oliviaexplores",
+      "ig_sync_status": "synced",
+      "last_synced_at": "2026-10-27T01:30:00.000Z",
+      "stage": "data_gathered",
+      "assigned_to": null,
+      "tags": [
+        "micro",
+        "priority"
+      ],
+      "notes": "Very responsive. Good fit for festive campaign.",
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": false,
+        "address_collected": false,
+        "ig_connected": false
+      },
+      "created_at": "2026-08-11T23:30:00.000Z",
+      "updated_at": "2026-10-21T06:30:00.000Z"
+    },
+    {
+      "id": "inf_043",
+      "name": "Ethan Nguyen",
+      "category": "Gaming",
+      "instagram_handle": "ethanplaysttv",
+      "profile_url": "https://www.instagram.com/ethanplaysttv/",
+      "phone": "+16045327116",
+      "email": "ethanplaysttv.collabs@example.com",
+      "address": {
+        "line1": "199, Queen Street",
+        "line2": null,
+        "city": "Toronto",
+        "state": "Ontario",
+        "postal_code": "M5V 2T6",
+        "country": "Canada"
+      },
+      "city": "Toronto",
+      "state": "Ontario",
+      "country": "Canada",
+      "followers": 17127,
+      "following": 1429,
+      "posts_count": 521,
+      "engagement_rate": 5.97,
+      "bio": "Streamer & esports fan 🎮 | Toronto | Live on weekends",
+      "is_verified": false,
+      "account_type": "creator",
+      "profile_pic_url": "https://i.pravatar.cc/300?u=ethanplaysttv",
+      "ig_sync_status": "synced",
+      "last_synced_at": "2026-10-27T13:30:00.000Z",
+      "stage": "onboarded",
+      "assigned_to": "usr_03",
+      "tags": [
+        "micro"
+      ],
+      "notes": "Only does content with products she personally uses.",
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": true,
+        "address_collected": true,
+        "ig_connected": true
+      },
+      "created_at": "2026-06-03T04:30:00.000Z",
+      "updated_at": "2026-08-24T08:26:00.000Z"
+    },
+    {
+      "id": "inf_044",
+      "name": "Hannah Lee",
+      "category": "Parenting",
+      "instagram_handle": "hannahleefamily",
+      "profile_url": "https://www.instagram.com/hannahleefamily/",
+      "phone": "+16043885419",
+      "email": "hannahleefamily.collabs@example.com",
+      "address": null,
+      "city": "Vancouver",
+      "state": "British Columbia",
+      "country": "Canada",
+      "followers": 184566,
+      "following": 588,
+      "posts_count": 741,
+      "engagement_rate": 3.59,
+      "bio": "Parent of two 👶 | Real parenting, real moments | Vancouver",
+      "is_verified": false,
+      "account_type": "creator",
+      "profile_pic_url": "https://i.pravatar.cc/300?u=hannahleefamily",
+      "ig_sync_status": "synced",
+      "last_synced_at": "2026-10-27T16:30:00.000Z",
+      "stage": "rejected",
+      "assigned_to": "usr_02",
+      "tags": [
+        "mid-tier",
+        "regional",
+        "ugc"
+      ],
+      "notes": null,
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": false,
+        "address_collected": false,
+        "ig_connected": false
+      },
+      "created_at": "2026-09-13T03:30:00.000Z",
+      "updated_at": "2026-10-01T14:14:00.000Z"
+    },
+    {
+      "id": "inf_045",
+      "name": "Jack Thompson",
+      "category": "Fitness",
+      "instagram_handle": "jacktrains",
+      "profile_url": "https://www.instagram.com/jacktrains/",
+      "phone": "+447921318348",
+      "email": "jacktrains.collabs@example.com",
+      "address": null,
+      "city": "Manchester",
+      "state": "England",
+      "country": "United Kingdom",
+      "followers": 263235,
+      "following": 257,
+      "posts_count": 2355,
+      "engagement_rate": 3.84,
+      "bio": "Coach | Strength & mobility 💪 | Manchester | Free plans in highlights",
+      "is_verified": false,
+      "account_type": "creator",
+      "profile_pic_url": "https://i.pravatar.cc/300?u=jacktrains",
+      "ig_sync_status": "synced",
+      "last_synced_at": "2026-10-27T13:30:00.000Z",
+      "stage": "contacted",
+      "assigned_to": "usr_04",
+      "tags": [
+        "mid-tier",
+        "bilingual"
+      ],
+      "notes": null,
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": false,
+        "address_collected": false,
+        "ig_connected": false
+      },
+      "created_at": "2026-10-11T00:30:00.000Z",
+      "updated_at": "2026-10-18T15:55:00.000Z"
+    },
+    {
+      "id": "inf_046",
+      "name": "Mia Fernandes",
+      "category": "Fashion",
+      "instagram_handle": "miafernandes",
+      "profile_url": "https://www.instagram.com/miafernandes/",
+      "phone": "+971504087598",
+      "email": "miafernandes.collabs@example.com",
+      "address": {
+        "line1": "61, Sheikh Zayed Road",
+        "line2": null,
+        "city": "Dubai",
+        "state": "Dubai",
+        "postal_code": "00000",
+        "country": "United Arab Emirates"
+      },
+      "city": "Dubai",
+      "state": "Dubai",
+      "country": "United Arab Emirates",
+      "followers": 334432,
+      "following": 1457,
+      "posts_count": 1403,
+      "engagement_rate": 3.11,
+      "bio": "Dubai | Everyday & festive looks ✨ | Styling tips daily | Collabs via DM",
+      "is_verified": false,
+      "account_type": "business",
+      "profile_pic_url": "https://i.pravatar.cc/300?u=miafernandes",
+      "ig_sync_status": "synced",
+      "last_synced_at": "2026-10-28T00:30:00.000Z",
+      "stage": "package_sent",
+      "assigned_to": "usr_04",
+      "tags": [
+        "mid-tier",
+        "priority"
+      ],
+      "notes": null,
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": true,
+        "address_collected": true,
+        "ig_connected": true
+      },
+      "created_at": "2026-08-09T04:30:00.000Z",
+      "updated_at": "2026-10-02T21:22:00.000Z"
+    },
+    {
+      "id": "inf_047",
+      "name": "Lucas Silva",
+      "category": "Food",
+      "instagram_handle": "lucascooks",
+      "profile_url": "https://www.instagram.com/lucascooks/",
+      "phone": "+14164110073",
+      "email": "lucascooks.collabs@example.com",
+      "address": null,
+      "city": "Toronto",
+      "state": "Ontario",
+      "country": "Canada",
+      "followers": 729433,
+      "following": 1430,
+      "posts_count": 839,
+      "engagement_rate": 2.63,
+      "bio": "Eating my way through Toronto 🍛 | Street food & home recipes",
+      "is_verified": false,
+      "account_type": "business",
+      "profile_pic_url": "https://i.pravatar.cc/300?u=lucascooks",
+      "ig_sync_status": "synced",
+      "last_synced_at": "2026-10-26T18:30:00.000Z",
+      "stage": "on_hold",
+      "assigned_to": "usr_04",
+      "tags": [
+        "macro"
+      ],
+      "notes": null,
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": false,
+        "address_collected": false,
+        "ig_connected": false
+      },
+      "created_at": "2026-10-14T05:30:00.000Z",
+      "updated_at": "2026-10-22T17:10:00.000Z"
+    },
+    {
+      "id": "inf_048",
+      "name": "Ava Mitchell",
+      "category": "Beauty",
+      "instagram_handle": "avamitchellmua",
+      "profile_url": "https://www.instagram.com/avamitchellmua/",
+      "phone": null,
+      "email": "avamitchellmua.collabs@example.com",
+      "address": null,
+      "city": "Melbourne",
+      "state": "Victoria",
+      "country": "Australia",
+      "followers": 36660,
+      "following": 779,
+      "posts_count": 1152,
+      "engagement_rate": 5.71,
+      "bio": "Skincare + makeup that works 💄 | Melbourne | Honest reviews only",
+      "is_verified": false,
+      "account_type": "creator",
+      "profile_pic_url": "https://i.pravatar.cc/300?u=avamitchellmua",
+      "ig_sync_status": "synced",
+      "last_synced_at": "2026-10-28T02:30:00.000Z",
+      "stage": "data_gathered",
+      "assigned_to": null,
+      "tags": [
+        "micro",
+        "repeat-collab",
+        "ugc"
+      ],
+      "notes": null,
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": false,
+        "address_collected": false,
+        "ig_connected": false
+      },
+      "created_at": "2026-08-26T22:30:00.000Z",
+      "updated_at": "2026-10-27T10:30:00.000Z"
+    },
+    {
+      "id": "inf_049",
+      "name": "Ryan O'Connor",
+      "category": "Finance",
+      "instagram_handle": "ryanmoneytalks",
+      "profile_url": "https://www.instagram.com/ryanmoneytalks/",
+      "phone": "+353878001674",
+      "email": "ryanmoneytalks.collabs@example.com",
+      "address": {
+        "line1": "2, Queen Street",
+        "line2": null,
+        "city": "Dublin",
+        "state": "Leinster",
+        "postal_code": "D02 X285",
+        "country": "Ireland"
+      },
+      "city": "Dublin",
+      "state": "Leinster",
+      "country": "Ireland",
+      "followers": 97177,
+      "following": 396,
+      "posts_count": 1869,
+      "engagement_rate": 4.98,
+      "bio": "Making money simple 📈 | Personal finance & investing | Dublin",
+      "is_verified": false,
+      "account_type": "business",
+      "profile_pic_url": "https://i.pravatar.cc/300?u=ryanmoneytalks",
+      "ig_sync_status": "synced",
+      "last_synced_at": "2026-10-27T07:30:00.000Z",
+      "stage": "onboarded",
+      "assigned_to": "usr_03",
+      "tags": [
+        "micro",
+        "repeat-collab",
+        "priority"
+      ],
+      "notes": "Only does content with products she personally uses.",
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": true,
+        "address_collected": true,
+        "ig_connected": true
+      },
+      "created_at": "2026-06-25T22:30:00.000Z",
+      "updated_at": "2026-10-28T04:30:00.000Z"
+    },
+    {
+      "id": "inf_050",
+      "name": "Sara Al Hashimi",
+      "category": "Lifestyle",
+      "instagram_handle": "sarahashimi",
+      "profile_url": "https://www.instagram.com/sarahashimi/",
+      "phone": "+971563264429",
+      "email": "sarahashimi.collabs@example.com",
+      "address": null,
+      "city": "Abu Dhabi",
+      "state": "Abu Dhabi",
+      "country": "United Arab Emirates",
+      "followers": 14291,
+      "following": 1779,
+      "posts_count": 454,
+      "engagement_rate": 7.13,
+      "bio": "Living, loving, sharing ☕ | Abu Dhabi | Home • Style • Life",
+      "is_verified": false,
+      "account_type": "creator",
+      "profile_pic_url": "https://i.pravatar.cc/300?u=sarahashimi",
+      "ig_sync_status": "synced",
+      "last_synced_at": "2026-10-27T22:30:00.000Z",
+      "stage": "data_gathered",
+      "assigned_to": "usr_01",
+      "tags": [
+        "micro",
+        "ugc"
+      ],
+      "notes": null,
+      "onboarding_checklist": {
+        "called": true,
+        "terms_agreed": false,
+        "address_collected": false,
+        "ig_connected": false
+      },
+      "created_at": "2026-06-10T02:30:00.000Z",
+      "updated_at": "2026-10-26T05:30:00.000Z"
+    }
+  ],
+  "calls": [
+    {
+      "id": "call_001",
+      "influencer_id": "inf_001",
+      "called_by": "usr_04",
+      "outcome": "no_answer",
+      "notes": "Phone switched off.",
+      "follow_up_date": "2026-08-11T00:30:00.000Z",
+      "follow_up_done": true,
+      "created_at": "2026-08-10T00:30:00.000Z"
+    },
+    {
+      "id": "call_002",
+      "influencer_id": "inf_001",
+      "called_by": "usr_04",
+      "outcome": "interested",
+      "notes": "Keen on the festive collab, wants product details on WhatsApp.",
+      "follow_up_date": null,
+      "follow_up_done": false,
+      "created_at": "2026-08-26T11:26:00.000Z"
+    },
+    {
+      "id": "call_003",
+      "influencer_id": "inf_001",
+      "called_by": "usr_04",
+      "outcome": "call_back",
+      "notes": "Wants to discuss with manager first.",
+      "follow_up_date": "2026-10-28T08:30:00.000Z",
+      "follow_up_done": false,
+      "created_at": "2026-10-26T08:30:00.000Z"
+    },
+    {
+      "id": "call_004",
+      "influencer_id": "inf_002",
+      "called_by": "usr_04",
+      "outcome": "interested",
+      "notes": "Interested. Shared rate card and barter terms.",
+      "follow_up_date": null,
+      "follow_up_done": false,
+      "created_at": "2026-09-30T10:18:00.000Z"
+    },
+    {
+      "id": "call_005",
+      "influencer_id": "inf_004",
+      "called_by": "usr_02",
+      "outcome": "interested",
+      "notes": "Loved the brand, ready to onboard.",
+      "follow_up_date": null,
+      "follow_up_done": false,
+      "created_at": "2026-06-30T13:37:00.000Z"
+    },
+    {
+      "id": "call_006",
+      "influencer_id": "inf_005",
+      "called_by": "usr_02",
+      "outcome": "interested",
+      "notes": "Loved the brand, ready to onboard.",
+      "follow_up_date": null,
+      "follow_up_done": false,
+      "created_at": "2026-09-02T20:30:00.000Z"
+    },
+    {
+      "id": "call_007",
+      "influencer_id": "inf_006",
+      "called_by": "usr_03",
+      "outcome": "interested",
+      "notes": "Loved the brand, ready to onboard.",
+      "follow_up_date": null,
+      "follow_up_done": false,
+      "created_at": "2026-07-29T04:40:00.000Z"
+    },
+    {
+      "id": "call_008",
+      "influencer_id": "inf_006",
+      "called_by": "usr_03",
+      "outcome": "call_back",
+      "notes": "Busy shooting, asked to call back.",
+      "follow_up_date": "2026-10-26T04:30:00.000Z",
+      "follow_up_done": false,
+      "created_at": "2026-10-24T04:30:00.000Z"
+    },
+    {
+      "id": "call_009",
+      "influencer_id": "inf_008",
+      "called_by": "usr_02",
+      "outcome": "interested",
+      "notes": "Loved the brand, ready to onboard.",
+      "follow_up_date": null,
+      "follow_up_done": false,
+      "created_at": "2026-10-12T14:08:00.000Z"
+    },
+    {
+      "id": "call_010",
+      "influencer_id": "inf_009",
+      "called_by": "usr_03",
+      "outcome": "interested",
+      "notes": "Interested. Shared rate card and barter terms.",
+      "follow_up_date": null,
+      "follow_up_done": false,
+      "created_at": "2026-09-11T02:03:00.000Z"
+    },
+    {
+      "id": "call_011",
+      "influencer_id": "inf_010",
+      "called_by": "usr_04",
+      "outcome": "call_back",
+      "notes": "Asked for a call after the weekend.",
+      "follow_up_date": "2026-11-02T09:30:00.000Z",
+      "follow_up_done": false,
+      "created_at": "2026-10-28T04:30:00.000Z"
+    },
+    {
+      "id": "call_012",
+      "influencer_id": "inf_011",
+      "called_by": "usr_04",
+      "outcome": "interested",
+      "notes": "Loved the brand, ready to onboard.",
+      "follow_up_date": null,
+      "follow_up_done": false,
+      "created_at": "2026-10-02T22:34:00.000Z"
+    },
+    {
+      "id": "call_013",
+      "influencer_id": "inf_012",
+      "called_by": "usr_04",
+      "outcome": "interested",
+      "notes": "Loved the brand, ready to onboard.",
+      "follow_up_date": null,
+      "follow_up_done": false,
+      "created_at": "2026-08-22T11:25:00.000Z"
+    },
+    {
+      "id": "call_014",
+      "influencer_id": "inf_013",
+      "called_by": "usr_01",
+      "outcome": "no_answer",
+      "notes": "Rang twice, no response.",
+      "follow_up_date": "2026-10-28T06:30:00.000Z",
+      "follow_up_done": false,
+      "created_at": "2026-10-26T06:30:00.000Z"
+    },
+    {
+      "id": "call_015",
+      "influencer_id": "inf_014",
+      "called_by": "usr_01",
+      "outcome": "no_answer",
+      "notes": null,
+      "follow_up_date": "2026-10-12T01:48:00.000Z",
+      "follow_up_done": true,
+      "created_at": "2026-10-11T01:48:00.000Z"
+    },
+    {
+      "id": "call_016",
+      "influencer_id": "inf_014",
+      "called_by": "usr_01",
+      "outcome": "interested",
+      "notes": "Interested. Shared rate card and barter terms.",
+      "follow_up_date": null,
+      "follow_up_done": false,
+      "created_at": "2026-10-14T13:01:00.000Z"
+    },
+    {
+      "id": "call_017",
+      "influencer_id": "inf_015",
+      "called_by": "usr_04",
+      "outcome": "interested",
+      "notes": "Loved the brand, ready to onboard.",
+      "follow_up_date": null,
+      "follow_up_done": false,
+      "created_at": "2026-10-17T18:53:00.000Z"
+    },
+    {
+      "id": "call_018",
+      "influencer_id": "inf_016",
+      "called_by": "usr_03",
+      "outcome": "no_answer",
+      "notes": null,
+      "follow_up_date": "2026-06-25T08:18:00.000Z",
+      "follow_up_done": true,
+      "created_at": "2026-06-24T08:18:00.000Z"
+    },
+    {
+      "id": "call_019",
+      "influencer_id": "inf_016",
+      "called_by": "usr_03",
+      "outcome": "interested",
+      "notes": "Interested. Shared rate card and barter terms.",
+      "follow_up_date": null,
+      "follow_up_done": false,
+      "created_at": "2026-07-08T07:02:00.000Z"
+    },
+    {
+      "id": "call_020",
+      "influencer_id": "inf_017",
+      "called_by": "usr_03",
+      "outcome": "no_answer",
+      "notes": "Phone switched off.",
+      "follow_up_date": "2026-07-03T01:36:00.000Z",
+      "follow_up_done": true,
+      "created_at": "2026-07-02T01:36:00.000Z"
+    },
+    {
+      "id": "call_021",
+      "influencer_id": "inf_017",
+      "called_by": "usr_03",
+      "outcome": "not_interested",
+      "notes": "Only paid deals, above our budget.",
+      "follow_up_date": null,
+      "follow_up_done": false,
+      "created_at": "2026-08-13T15:30:00.000Z"
+    },
+    {
+      "id": "call_022",
+      "influencer_id": "inf_018",
+      "called_by": "usr_04",
+      "outcome": "call_back",
+      "notes": "Asked for a call after the weekend.",
+      "follow_up_date": "2026-10-29T08:30:00.000Z",
+      "follow_up_done": false,
+      "created_at": "2026-10-28T04:30:00.000Z"
+    },
+    {
+      "id": "call_023",
+      "influencer_id": "inf_019",
+      "called_by": "usr_01",
+      "outcome": "interested",
+      "notes": "Interested. Shared rate card and barter terms.",
+      "follow_up_date": null,
+      "follow_up_done": false,
+      "created_at": "2026-10-07T05:21:00.000Z"
+    },
+    {
+      "id": "call_024",
+      "influencer_id": "inf_020",
+      "called_by": "usr_04",
+      "outcome": "no_answer",
+      "notes": "Rang twice, no response.",
+      "follow_up_date": "2026-07-10T12:57:00.000Z",
+      "follow_up_done": true,
+      "created_at": "2026-07-09T12:57:00.000Z"
+    },
+    {
+      "id": "call_025",
+      "influencer_id": "inf_020",
+      "called_by": "usr_04",
+      "outcome": "interested",
+      "notes": "Interested. Shared rate card and barter terms.",
+      "follow_up_date": null,
+      "follow_up_done": false,
+      "created_at": "2026-08-14T01:24:00.000Z"
+    },
+    {
+      "id": "call_026",
+      "influencer_id": "inf_021",
+      "called_by": "usr_02",
+      "outcome": "no_answer",
+      "notes": "Rang twice, no response.",
+      "follow_up_date": "2026-08-16T12:48:00.000Z",
+      "follow_up_done": true,
+      "created_at": "2026-08-15T12:48:00.000Z"
+    },
+    {
+      "id": "call_027",
+      "influencer_id": "inf_021",
+      "called_by": "usr_02",
+      "outcome": "interested",
+      "notes": "Interested. Shared rate card and barter terms.",
+      "follow_up_date": null,
+      "follow_up_done": false,
+      "created_at": "2026-08-27T02:22:00.000Z"
+    },
+    {
+      "id": "call_028",
+      "influencer_id": "inf_022",
+      "called_by": "usr_04",
+      "outcome": "call_back",
+      "notes": "Asked for a call after the weekend.",
+      "follow_up_date": "2026-10-25T05:30:00.000Z",
+      "follow_up_done": false,
+      "created_at": "2026-10-23T05:30:00.000Z"
+    },
+    {
+      "id": "call_029",
+      "influencer_id": "inf_023",
+      "called_by": "usr_01",
+      "outcome": "no_answer",
+      "notes": "Phone switched off.",
+      "follow_up_date": "2026-10-08T16:20:00.000Z",
+      "follow_up_done": true,
+      "created_at": "2026-10-07T16:20:00.000Z"
+    },
+    {
+      "id": "call_030",
+      "influencer_id": "inf_023",
+      "called_by": "usr_01",
+      "outcome": "interested",
+      "notes": "Interested. Shared rate card and barter terms.",
+      "follow_up_date": null,
+      "follow_up_done": false,
+      "created_at": "2026-10-10T01:58:00.000Z"
+    },
+    {
+      "id": "call_031",
+      "influencer_id": "inf_024",
+      "called_by": "usr_03",
+      "outcome": "no_answer",
+      "notes": "Rang twice, no response.",
+      "follow_up_date": "2026-08-30T22:42:00.000Z",
+      "follow_up_done": true,
+      "created_at": "2026-08-29T22:42:00.000Z"
+    },
+    {
+      "id": "call_032",
+      "influencer_id": "inf_024",
+      "called_by": "usr_03",
+      "outcome": "interested",
+      "notes": "Loved the brand, ready to onboard.",
+      "follow_up_date": null,
+      "follow_up_done": false,
+      "created_at": "2026-09-05T07:29:00.000Z"
+    },
+    {
+      "id": "call_033",
+      "influencer_id": "inf_025",
+      "called_by": "usr_03",
+      "outcome": "no_answer",
+      "notes": null,
+      "follow_up_date": "2026-10-07T00:15:00.000Z",
+      "follow_up_done": true,
+      "created_at": "2026-10-06T00:15:00.000Z"
+    },
+    {
+      "id": "call_034",
+      "influencer_id": "inf_025",
+      "called_by": "usr_03",
+      "outcome": "interested",
+      "notes": "Loved the brand, ready to onboard.",
+      "follow_up_date": null,
+      "follow_up_done": false,
+      "created_at": "2026-10-11T10:17:00.000Z"
+    },
+    {
+      "id": "call_035",
+      "influencer_id": "inf_026",
+      "called_by": "usr_03",
+      "outcome": "wrong_number",
+      "notes": "Number belongs to someone else.",
+      "follow_up_date": null,
+      "follow_up_done": false,
+      "created_at": "2026-08-03T18:19:00.000Z"
+    },
+    {
+      "id": "call_036",
+      "influencer_id": "inf_027",
+      "called_by": "usr_03",
+      "outcome": "interested",
+      "notes": "Keen on the festive collab, wants product details on WhatsApp.",
+      "follow_up_date": null,
+      "follow_up_done": false,
+      "created_at": "2026-09-04T22:36:00.000Z"
+    },
+    {
+      "id": "call_037",
+      "influencer_id": "inf_028",
+      "called_by": "usr_04",
+      "outcome": "no_answer",
+      "notes": null,
+      "follow_up_date": "2026-10-28T07:30:00.000Z",
+      "follow_up_done": false,
+      "created_at": "2026-10-27T07:30:00.000Z"
+    },
+    {
+      "id": "call_038",
+      "influencer_id": "inf_029",
+      "called_by": "usr_04",
+      "outcome": "interested",
+      "notes": "Interested. Shared rate card and barter terms.",
+      "follow_up_date": null,
+      "follow_up_done": false,
+      "created_at": "2026-10-11T17:10:00.000Z"
+    },
+    {
+      "id": "call_039",
+      "influencer_id": "inf_030",
+      "called_by": "usr_03",
+      "outcome": "no_answer",
+      "notes": "Phone switched off.",
+      "follow_up_date": "2026-07-22T06:53:00.000Z",
+      "follow_up_done": true,
+      "created_at": "2026-07-21T06:53:00.000Z"
+    },
+    {
+      "id": "call_040",
+      "influencer_id": "inf_030",
+      "called_by": "usr_03",
+      "outcome": "interested",
+      "notes": "Keen on the festive collab, wants product details on WhatsApp.",
+      "follow_up_date": null,
+      "follow_up_done": false,
+      "created_at": "2026-08-03T21:35:00.000Z"
+    },
+    {
+      "id": "call_041",
+      "influencer_id": "inf_031",
+      "called_by": "usr_03",
+      "outcome": "no_answer",
+      "notes": null,
+      "follow_up_date": "2026-06-30T02:45:00.000Z",
+      "follow_up_done": true,
+      "created_at": "2026-06-29T02:45:00.000Z"
+    },
+    {
+      "id": "call_042",
+      "influencer_id": "inf_031",
+      "called_by": "usr_03",
+      "outcome": "interested",
+      "notes": "Interested. Shared rate card and barter terms.",
+      "follow_up_date": null,
+      "follow_up_done": false,
+      "created_at": "2026-08-10T02:31:00.000Z"
+    },
+    {
+      "id": "call_043",
+      "influencer_id": "inf_031",
+      "called_by": "usr_03",
+      "outcome": "call_back",
+      "notes": "Busy shooting, asked to call back.",
+      "follow_up_date": "2026-10-31T05:30:00.000Z",
+      "follow_up_done": false,
+      "created_at": "2026-10-28T04:30:00.000Z"
+    },
+    {
+      "id": "call_044",
+      "influencer_id": "inf_032",
+      "called_by": "usr_03",
+      "outcome": "call_back",
+      "notes": "Asked for a call after the weekend.",
+      "follow_up_date": "2026-10-28T05:30:00.000Z",
+      "follow_up_done": false,
+      "created_at": "2026-10-25T05:30:00.000Z"
+    },
+    {
+      "id": "call_045",
+      "influencer_id": "inf_033",
+      "called_by": "usr_04",
+      "outcome": "no_answer",
+      "notes": "Phone switched off.",
+      "follow_up_date": "2026-09-12T06:30:00.000Z",
+      "follow_up_done": true,
+      "created_at": "2026-09-11T06:30:00.000Z"
+    },
+    {
+      "id": "call_046",
+      "influencer_id": "inf_033",
+      "called_by": "usr_04",
+      "outcome": "interested",
+      "notes": "Loved the brand, ready to onboard.",
+      "follow_up_date": null,
+      "follow_up_done": false,
+      "created_at": "2026-09-22T20:31:00.000Z"
+    },
+    {
+      "id": "call_047",
+      "influencer_id": "inf_033",
+      "called_by": "usr_04",
+      "outcome": "not_interested",
+      "notes": "Only paid deals, above our budget.",
+      "follow_up_date": null,
+      "follow_up_done": false,
+      "created_at": "2026-10-06T06:12:00.000Z"
+    },
+    {
+      "id": "call_048",
+      "influencer_id": "inf_034",
+      "called_by": "usr_03",
+      "outcome": "interested",
+      "notes": "Keen on the festive collab, wants product details on WhatsApp.",
+      "follow_up_date": null,
+      "follow_up_done": false,
+      "created_at": "2026-09-30T20:13:00.000Z"
+    },
+    {
+      "id": "call_049",
+      "influencer_id": "inf_035",
+      "called_by": "usr_03",
+      "outcome": "no_answer",
+      "notes": null,
+      "follow_up_date": "2026-10-03T15:30:00.000Z",
+      "follow_up_done": true,
+      "created_at": "2026-10-02T15:30:00.000Z"
+    },
+    {
+      "id": "call_050",
+      "influencer_id": "inf_036",
+      "called_by": "usr_01",
+      "outcome": "no_answer",
+      "notes": "Rang twice, no response.",
+      "follow_up_date": "2026-06-22T13:42:00.000Z",
+      "follow_up_done": true,
+      "created_at": "2026-06-21T13:42:00.000Z"
+    },
+    {
+      "id": "call_051",
+      "influencer_id": "inf_036",
+      "called_by": "usr_01",
+      "outcome": "interested",
+      "notes": "Interested. Shared rate card and barter terms.",
+      "follow_up_date": null,
+      "follow_up_done": false,
+      "created_at": "2026-07-12T23:55:00.000Z"
+    },
+    {
+      "id": "call_052",
+      "influencer_id": "inf_036",
+      "called_by": "usr_01",
+      "outcome": "call_back",
+      "notes": "Asked for a call after the weekend.",
+      "follow_up_date": "2026-10-25T05:30:00.000Z",
+      "follow_up_done": false,
+      "created_at": "2026-10-23T05:30:00.000Z"
+    },
+    {
+      "id": "call_053",
+      "influencer_id": "inf_037",
+      "called_by": "usr_02",
+      "outcome": "interested",
+      "notes": "Keen on the festive collab, wants product details on WhatsApp.",
+      "follow_up_date": null,
+      "follow_up_done": false,
+      "created_at": "2026-09-27T01:37:00.000Z"
+    },
+    {
+      "id": "call_054",
+      "influencer_id": "inf_037",
+      "called_by": "usr_02",
+      "outcome": "call_back",
+      "notes": "Wants to discuss with manager first.",
+      "follow_up_date": "2026-10-30T06:30:00.000Z",
+      "follow_up_done": false,
+      "created_at": "2026-10-28T04:30:00.000Z"
+    },
+    {
+      "id": "call_055",
+      "influencer_id": "inf_038",
+      "called_by": "usr_04",
+      "outcome": "call_back",
+      "notes": "Wants to discuss with manager first.",
+      "follow_up_date": "2026-10-28T11:30:00.000Z",
+      "follow_up_done": false,
+      "created_at": "2026-10-27T11:30:00.000Z"
+    },
+    {
+      "id": "call_056",
+      "influencer_id": "inf_039",
+      "called_by": "usr_02",
+      "outcome": "interested",
+      "notes": "Loved the brand, ready to onboard.",
+      "follow_up_date": null,
+      "follow_up_done": false,
+      "created_at": "2026-06-28T06:12:00.000Z"
+    },
+    {
+      "id": "call_057",
+      "influencer_id": "inf_040",
+      "called_by": "usr_04",
+      "outcome": "interested",
+      "notes": "Keen on the festive collab, wants product details on WhatsApp.",
+      "follow_up_date": null,
+      "follow_up_done": false,
+      "created_at": "2026-06-30T08:10:00.000Z"
+    },
+    {
+      "id": "call_058",
+      "influencer_id": "inf_041",
+      "called_by": "usr_03",
+      "outcome": "interested",
+      "notes": "Keen on the festive collab, wants product details on WhatsApp.",
+      "follow_up_date": null,
+      "follow_up_done": false,
+      "created_at": "2026-10-05T19:04:00.000Z"
+    },
+    {
+      "id": "call_059",
+      "influencer_id": "inf_041",
+      "called_by": "usr_03",
+      "outcome": "call_back",
+      "notes": "Busy shooting, asked to call back.",
+      "follow_up_date": "2026-11-04T05:30:00.000Z",
+      "follow_up_done": false,
+      "created_at": "2026-10-28T04:30:00.000Z"
+    },
+    {
+      "id": "call_060",
+      "influencer_id": "inf_042",
+      "called_by": "usr_04",
+      "outcome": "no_answer",
+      "notes": null,
+      "follow_up_date": "2026-10-24T06:30:00.000Z",
+      "follow_up_done": false,
+      "created_at": "2026-10-21T06:30:00.000Z"
+    },
+    {
+      "id": "call_061",
+      "influencer_id": "inf_043",
+      "called_by": "usr_03",
+      "outcome": "interested",
+      "notes": "Keen on the festive collab, wants product details on WhatsApp.",
+      "follow_up_date": null,
+      "follow_up_done": false,
+      "created_at": "2026-07-15T01:50:00.000Z"
+    },
+    {
+      "id": "call_062",
+      "influencer_id": "inf_044",
+      "called_by": "usr_02",
+      "outcome": "no_answer",
+      "notes": "Rang twice, no response.",
+      "follow_up_date": "2026-09-20T23:12:00.000Z",
+      "follow_up_done": true,
+      "created_at": "2026-09-19T23:12:00.000Z"
+    },
+    {
+      "id": "call_063",
+      "influencer_id": "inf_044",
+      "called_by": "usr_02",
+      "outcome": "not_interested",
+      "notes": "Only paid deals, above our budget.",
+      "follow_up_date": null,
+      "follow_up_done": false,
+      "created_at": "2026-10-01T14:04:00.000Z"
+    },
+    {
+      "id": "call_064",
+      "influencer_id": "inf_045",
+      "called_by": "usr_04",
+      "outcome": "interested",
+      "notes": "Keen on the festive collab, wants product details on WhatsApp.",
+      "follow_up_date": null,
+      "follow_up_done": false,
+      "created_at": "2026-10-18T15:45:00.000Z"
+    },
+    {
+      "id": "call_065",
+      "influencer_id": "inf_046",
+      "called_by": "usr_04",
+      "outcome": "interested",
+      "notes": "Loved the brand, ready to onboard.",
+      "follow_up_date": null,
+      "follow_up_done": false,
+      "created_at": "2026-08-24T16:51:00.000Z"
+    },
+    {
+      "id": "call_066",
+      "influencer_id": "inf_047",
+      "called_by": "usr_04",
+      "outcome": "interested",
+      "notes": "Keen on the festive collab, wants product details on WhatsApp.",
+      "follow_up_date": null,
+      "follow_up_done": false,
+      "created_at": "2026-10-18T11:40:00.000Z"
+    },
+    {
+      "id": "call_067",
+      "influencer_id": "inf_048",
+      "called_by": "usr_04",
+      "outcome": "call_back",
+      "notes": "Wants to discuss with manager first.",
+      "follow_up_date": "2026-10-28T10:30:00.000Z",
+      "follow_up_done": false,
+      "created_at": "2026-10-27T10:30:00.000Z"
+    },
+    {
+      "id": "call_068",
+      "influencer_id": "inf_049",
+      "called_by": "usr_03",
+      "outcome": "interested",
+      "notes": "Interested. Shared rate card and barter terms.",
+      "follow_up_date": null,
+      "follow_up_done": false,
+      "created_at": "2026-07-24T22:10:00.000Z"
+    },
+    {
+      "id": "call_069",
+      "influencer_id": "inf_049",
+      "called_by": "usr_03",
+      "outcome": "call_back",
+      "notes": "Busy shooting, asked to call back.",
+      "follow_up_date": "2026-11-01T05:30:00.000Z",
+      "follow_up_done": false,
+      "created_at": "2026-10-28T04:30:00.000Z"
+    },
+    {
+      "id": "call_070",
+      "influencer_id": "inf_050",
+      "called_by": "usr_01",
+      "outcome": "no_answer",
+      "notes": "Rang twice, no response.",
+      "follow_up_date": "2026-10-28T05:30:00.000Z",
+      "follow_up_done": false,
+      "created_at": "2026-10-26T05:30:00.000Z"
+    }
+  ],
+  "packages": [
+    {
+      "id": "pkg_001",
+      "influencer_id": "inf_001",
+      "items": [
+        {
+          "name": "Festive Kurta Set",
+          "qty": 1
+        },
+        {
+          "name": "Welcome Card",
+          "qty": 1
+        }
+      ],
+      "address": {
+        "line1": "18, Green Valley Society, Koregaon Park Lane 5",
+        "line2": null,
+        "city": "Pune",
+        "state": "Maharashtra",
+        "postal_code": "411057",
+        "country": "India"
+      },
+      "courier": null,
+      "tracking_number": null,
+      "status": "preparing",
+      "sent_at": null,
+      "delivered_at": null
+    },
+    {
+      "id": "pkg_002",
+      "influencer_id": "inf_002",
+      "items": [
+        {
+          "name": "Wireless Earbuds",
+          "qty": 2
+        },
+        {
+          "name": "Welcome Card",
+          "qty": 1
+        }
+      ],
+      "address": {
+        "line1": "65, Palm Grove, MG Road",
+        "line2": null,
+        "city": "Mumbai",
+        "state": "Maharashtra",
+        "postal_code": "400083",
+        "country": "India"
+      },
+      "courier": "Blue Dart",
+      "tracking_number": "64798665860",
+      "status": "in_transit",
+      "sent_at": "2026-10-14T14:46:00.000Z",
+      "delivered_at": null
+    },
+    {
+      "id": "pkg_003",
+      "influencer_id": "inf_004",
+      "items": [
+        {
+          "name": "Whey Protein 1kg",
+          "qty": 1
+        },
+        {
+          "name": "Welcome Card",
+          "qty": 1
+        }
+      ],
+      "address": {
+        "line1": "114, Palm Grove, Park Street",
+        "line2": "Near City Mall",
+        "city": "New Delhi",
+        "state": "Delhi",
+        "postal_code": "110047",
+        "country": "India"
+      },
+      "courier": "Delhivery",
+      "tracking_number": "8977828489344",
+      "status": "delivered",
+      "sent_at": "2026-08-18T02:38:00.000Z",
+      "delivered_at": "2026-09-11T22:19:00.000Z"
+    },
+    {
+      "id": "pkg_004",
+      "influencer_id": "inf_009",
+      "items": [
+        {
+          "name": "Cabin Trolley Bag",
+          "qty": 1
+        },
+        {
+          "name": "Welcome Card",
+          "qty": 1
+        }
+      ],
+      "address": {
+        "line1": "30, Shanti Apartments, Park Street",
+        "line2": "Near Metro Station",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "postal_code": "411060",
+        "country": "India"
+      },
+      "courier": "Blue Dart",
+      "tracking_number": "11303159196",
+      "status": "in_transit",
+      "sent_at": "2026-10-03T11:53:00.000Z",
+      "delivered_at": null
+    },
+    {
+      "id": "pkg_005",
+      "influencer_id": "inf_011",
+      "items": [
+        {
+          "name": "Vitamin C Serum",
+          "qty": 2
+        },
+        {
+          "name": "Welcome Card",
+          "qty": 1
+        }
+      ],
+      "address": {
+        "line1": "192, Shanti Apartments, Hazratganj",
+        "line2": "Near Metro Station",
+        "city": "Mumbai",
+        "state": "Maharashtra",
+        "postal_code": "400041",
+        "country": "India"
+      },
+      "courier": "India Post",
+      "tracking_number": "EE271332077IN",
+      "status": "delivered",
+      "sent_at": "2026-10-11T04:50:00.000Z",
+      "delivered_at": "2026-10-15T15:31:00.000Z"
+    },
+    {
+      "id": "pkg_006",
+      "influencer_id": "inf_015",
+      "items": [
+        {
+          "name": "Festive Kurta Set",
+          "qty": 2
+        },
+        {
+          "name": "Welcome Card",
+          "qty": 1
+        }
+      ],
+      "address": {
+        "line1": "134, Sai Krupa Heights, CG Road",
+        "line2": "Near Metro Station",
+        "city": "Bengaluru",
+        "state": "Karnataka",
+        "postal_code": "560044",
+        "country": "India"
+      },
+      "courier": "India Post",
+      "tracking_number": "EE739590460IN",
+      "status": "returned",
+      "sent_at": "2026-10-21T23:47:00.000Z",
+      "delivered_at": null
+    },
+    {
+      "id": "pkg_007",
+      "influencer_id": "inf_016",
+      "items": [
+        {
+          "name": "Whey Protein 1kg",
+          "qty": 2
+        },
+        {
+          "name": "Resistance Bands Set",
+          "qty": 2
+        },
+        {
+          "name": "Welcome Card",
+          "qty": 1
+        }
+      ],
+      "address": {
+        "line1": "290, Silver Oak Towers, CG Road",
+        "line2": "Near Central Park",
+        "city": "Bengaluru",
+        "state": "Karnataka",
+        "postal_code": "560085",
+        "country": "India"
+      },
+      "courier": "XpressBees",
+      "tracking_number": "XB244587273636",
+      "status": "in_transit",
+      "sent_at": "2026-08-24T16:37:00.000Z",
+      "delivered_at": null
+    },
+    {
+      "id": "pkg_008",
+      "influencer_id": "inf_019",
+      "items": [
+        {
+          "name": "Vitamin C Serum",
+          "qty": 1
+        },
+        {
+          "name": "Matte Lipstick Trio",
+          "qty": 2
+        },
+        {
+          "name": "Welcome Card",
+          "qty": 1
+        }
+      ],
+      "address": {
+        "line1": "266, Palm Grove, CG Road",
+        "line2": "Near Central Park",
+        "city": "Coimbatore",
+        "state": "Tamil Nadu",
+        "postal_code": "641016",
+        "country": "India"
+      },
+      "courier": "Blue Dart",
+      "tracking_number": "76042978190",
+      "status": "delivered",
+      "sent_at": "2026-10-13T20:23:00.000Z",
+      "delivered_at": "2026-10-17T17:18:00.000Z"
+    },
+    {
+      "id": "pkg_009",
+      "influencer_id": "inf_023",
+      "items": [
+        {
+          "name": "Scented Candle Set",
+          "qty": 1
+        },
+        {
+          "name": "Ceramic Mug Pair",
+          "qty": 2
+        },
+        {
+          "name": "Welcome Card",
+          "qty": 1
+        }
+      ],
+      "address": {
+        "line1": "331, Silver Oak Towers, Anna Salai",
+        "line2": null,
+        "city": "Kolkata",
+        "state": "West Bengal",
+        "postal_code": "700081",
+        "country": "India"
+      },
+      "courier": "Delhivery",
+      "tracking_number": "7034463078186",
+      "status": "in_transit",
+      "sent_at": "2026-10-18T10:12:00.000Z",
+      "delivered_at": null
+    },
+    {
+      "id": "pkg_010",
+      "influencer_id": "inf_027",
+      "items": [
+        {
+          "name": "Cabin Trolley Bag",
+          "qty": 1
+        },
+        {
+          "name": "Welcome Card",
+          "qty": 1
+        }
+      ],
+      "address": {
+        "line1": "140, Green Valley Society, Park Street",
+        "line2": "Near City Mall",
+        "city": "Kolkata",
+        "state": "West Bengal",
+        "postal_code": "700096",
+        "country": "India"
+      },
+      "courier": "XpressBees",
+      "tracking_number": "XB832846966443",
+      "status": "delivered",
+      "sent_at": "2026-09-26T04:30:00.000Z",
+      "delivered_at": "2026-10-07T15:03:00.000Z"
+    },
+    {
+      "id": "pkg_011",
+      "influencer_id": "inf_029",
+      "items": [
+        {
+          "name": "Vitamin C Serum",
+          "qty": 1
+        },
+        {
+          "name": "Welcome Card",
+          "qty": 1
+        }
+      ],
+      "address": {
+        "line1": "258, Green Valley Society, Linking Road",
+        "line2": null,
+        "city": "New Delhi",
+        "state": "Delhi",
+        "postal_code": "110084",
+        "country": "India"
+      },
+      "courier": null,
+      "tracking_number": null,
+      "status": "preparing",
+      "sent_at": null,
+      "delivered_at": null
+    },
+    {
+      "id": "pkg_012",
+      "influencer_id": "inf_030",
+      "items": [
+        {
+          "name": "Gourmet Spice Box",
+          "qty": 2
+        },
+        {
+          "name": "Cold-pressed Oil Set",
+          "qty": 1
+        },
+        {
+          "name": "Welcome Card",
+          "qty": 1
+        }
+      ],
+      "address": {
+        "line1": "122, Green Valley Society, Salt Lake Sector V",
+        "line2": null,
+        "city": "Jaipur",
+        "state": "Rajasthan",
+        "postal_code": "302036",
+        "country": "India"
+      },
+      "courier": "DTDC",
+      "tracking_number": "D36088998",
+      "status": "in_transit",
+      "sent_at": "2026-09-16T01:03:00.000Z",
+      "delivered_at": null
+    },
+    {
+      "id": "pkg_013",
+      "influencer_id": "inf_034",
+      "items": [
+        {
+          "name": "Cabin Trolley Bag",
+          "qty": 1
+        },
+        {
+          "name": "Travel Organiser Kit",
+          "qty": 2
+        },
+        {
+          "name": "Welcome Card",
+          "qty": 1
+        }
+      ],
+      "address": {
+        "line1": "243, Green Valley Society, Banjara Hills Rd 12",
+        "line2": null,
+        "city": "Panaji",
+        "state": "Goa",
+        "postal_code": "403001",
+        "country": "India"
+      },
+      "courier": "Delhivery",
+      "tracking_number": "4656351261063",
+      "status": "delivered",
+      "sent_at": "2026-10-11T18:13:00.000Z",
+      "delivered_at": "2026-10-15T16:18:00.000Z"
+    },
+    {
+      "id": "pkg_014",
+      "influencer_id": "inf_039",
+      "items": [
+        {
+          "name": "Gourmet Spice Box",
+          "qty": 1
+        },
+        {
+          "name": "Cold-pressed Oil Set",
+          "qty": 1
+        },
+        {
+          "name": "Welcome Card",
+          "qty": 1
+        }
+      ],
+      "address": {
+        "line1": "332, Queen Street",
+        "line2": null,
+        "city": "Singapore",
+        "state": "Singapore",
+        "postal_code": "238859",
+        "country": "Singapore"
+      },
+      "courier": "FedEx",
+      "tracking_number": "759187242768",
+      "status": "sent",
+      "sent_at": "2026-08-19T11:33:00.000Z",
+      "delivered_at": null
+    },
+    {
+      "id": "pkg_015",
+      "influencer_id": "inf_040",
+      "items": [
+        {
+          "name": "Festive Kurta Set",
+          "qty": 1
+        },
+        {
+          "name": "Welcome Card",
+          "qty": 1
+        }
+      ],
+      "address": {
+        "line1": "229, Main Street",
+        "line2": null,
+        "city": "New York",
+        "state": "New York",
+        "postal_code": "10001",
+        "country": "United States"
+      },
+      "courier": "DHL Express",
+      "tracking_number": "1403175114",
+      "status": "delivered",
+      "sent_at": "2026-08-07T16:47:00.000Z",
+      "delivered_at": "2026-08-25T14:55:00.000Z"
+    },
+    {
+      "id": "pkg_016",
+      "influencer_id": "inf_046",
+      "items": [
+        {
+          "name": "Festive Kurta Set",
+          "qty": 2
+        },
+        {
+          "name": "Statement Earrings",
+          "qty": 1
+        },
+        {
+          "name": "Welcome Card",
+          "qty": 1
+        }
+      ],
+      "address": {
+        "line1": "61, Sheikh Zayed Road",
+        "line2": null,
+        "city": "Dubai",
+        "state": "Dubai",
+        "postal_code": "00000",
+        "country": "United Arab Emirates"
+      },
+      "courier": "DHL Express",
+      "tracking_number": "7615051556",
+      "status": "sent",
+      "sent_at": "2026-10-02T21:22:00.000Z",
+      "delivered_at": null
+    }
+  ],
+  "activities": [
+    {
+      "id": "act_0001",
+      "influencer_id": "inf_036",
+      "actor": "usr_01",
+      "type": "created",
+      "payload": {
+        "source": "instagram"
+      },
+      "created_at": "2026-05-31T04:30:00.000Z"
+    },
+    {
+      "id": "act_0002",
+      "influencer_id": "inf_036",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_01"
+      },
+      "created_at": "2026-05-31T05:30:00.000Z"
+    },
+    {
+      "id": "act_0003",
+      "influencer_id": "inf_038",
+      "actor": "usr_04",
+      "type": "created",
+      "payload": {
+        "source": "manual"
+      },
+      "created_at": "2026-06-02T04:30:00.000Z"
+    },
+    {
+      "id": "act_0004",
+      "influencer_id": "inf_038",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_04"
+      },
+      "created_at": "2026-06-02T05:30:00.000Z"
+    },
+    {
+      "id": "act_0005",
+      "influencer_id": "inf_043",
+      "actor": "usr_03",
+      "type": "created",
+      "payload": {
+        "source": "instagram"
+      },
+      "created_at": "2026-06-03T04:30:00.000Z"
+    },
+    {
+      "id": "act_0006",
+      "influencer_id": "inf_043",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_03"
+      },
+      "created_at": "2026-06-03T05:30:00.000Z"
+    },
+    {
+      "id": "act_0007",
+      "influencer_id": "inf_039",
+      "actor": "usr_02",
+      "type": "created",
+      "payload": {
+        "source": "csv"
+      },
+      "created_at": "2026-06-06T00:30:00.000Z"
+    },
+    {
+      "id": "act_0008",
+      "influencer_id": "inf_039",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_02"
+      },
+      "created_at": "2026-06-06T01:30:00.000Z"
+    },
+    {
+      "id": "act_0009",
+      "influencer_id": "inf_031",
+      "actor": "usr_03",
+      "type": "created",
+      "payload": {
+        "source": "instagram"
+      },
+      "created_at": "2026-06-09T01:30:00.000Z"
+    },
+    {
+      "id": "act_0010",
+      "influencer_id": "inf_031",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_03"
+      },
+      "created_at": "2026-06-09T02:30:00.000Z"
+    },
+    {
+      "id": "act_0011",
+      "influencer_id": "inf_050",
+      "actor": "usr_01",
+      "type": "created",
+      "payload": {
+        "source": "instagram"
+      },
+      "created_at": "2026-06-10T02:30:00.000Z"
+    },
+    {
+      "id": "act_0012",
+      "influencer_id": "inf_050",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_01"
+      },
+      "created_at": "2026-06-10T03:30:00.000Z"
+    },
+    {
+      "id": "act_0013",
+      "influencer_id": "inf_017",
+      "actor": "usr_03",
+      "type": "created",
+      "payload": {
+        "source": "instagram"
+      },
+      "created_at": "2026-06-11T03:30:00.000Z"
+    },
+    {
+      "id": "act_0014",
+      "influencer_id": "inf_017",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_03"
+      },
+      "created_at": "2026-06-11T04:30:00.000Z"
+    },
+    {
+      "id": "act_0015",
+      "influencer_id": "inf_040",
+      "actor": "usr_04",
+      "type": "created",
+      "payload": {
+        "source": "instagram"
+      },
+      "created_at": "2026-06-13T04:30:00.000Z"
+    },
+    {
+      "id": "act_0016",
+      "influencer_id": "inf_004",
+      "actor": "usr_02",
+      "type": "created",
+      "payload": {
+        "source": "instagram"
+      },
+      "created_at": "2026-06-13T05:30:00.000Z"
+    },
+    {
+      "id": "act_0017",
+      "influencer_id": "inf_040",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_04"
+      },
+      "created_at": "2026-06-13T05:30:00.000Z"
+    },
+    {
+      "id": "act_0018",
+      "influencer_id": "inf_004",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_02"
+      },
+      "created_at": "2026-06-13T06:30:00.000Z"
+    },
+    {
+      "id": "act_0019",
+      "influencer_id": "inf_016",
+      "actor": "usr_03",
+      "type": "created",
+      "payload": {
+        "source": "csv"
+      },
+      "created_at": "2026-06-14T01:30:00.000Z"
+    },
+    {
+      "id": "act_0020",
+      "influencer_id": "inf_016",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_03"
+      },
+      "created_at": "2026-06-14T02:30:00.000Z"
+    },
+    {
+      "id": "act_0021",
+      "influencer_id": "inf_020",
+      "actor": "usr_04",
+      "type": "created",
+      "payload": {
+        "source": "csv"
+      },
+      "created_at": "2026-06-19T22:30:00.000Z"
+    },
+    {
+      "id": "act_0022",
+      "influencer_id": "inf_020",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_04"
+      },
+      "created_at": "2026-06-19T23:30:00.000Z"
+    },
+    {
+      "id": "act_0023",
+      "influencer_id": "inf_036",
+      "actor": "usr_01",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_050",
+        "outcome": "no_answer"
+      },
+      "created_at": "2026-06-21T13:42:00.000Z"
+    },
+    {
+      "id": "act_0024",
+      "influencer_id": "inf_016",
+      "actor": "usr_03",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_018",
+        "outcome": "no_answer"
+      },
+      "created_at": "2026-06-24T08:18:00.000Z"
+    },
+    {
+      "id": "act_0025",
+      "influencer_id": "inf_013",
+      "actor": "usr_01",
+      "type": "created",
+      "payload": {
+        "source": "instagram"
+      },
+      "created_at": "2026-06-24T22:30:00.000Z"
+    },
+    {
+      "id": "act_0026",
+      "influencer_id": "inf_013",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_01"
+      },
+      "created_at": "2026-06-24T23:30:00.000Z"
+    },
+    {
+      "id": "act_0027",
+      "influencer_id": "inf_049",
+      "actor": "usr_03",
+      "type": "created",
+      "payload": {
+        "source": "instagram"
+      },
+      "created_at": "2026-06-25T22:30:00.000Z"
+    },
+    {
+      "id": "act_0028",
+      "influencer_id": "inf_049",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_03"
+      },
+      "created_at": "2026-06-25T23:30:00.000Z"
+    },
+    {
+      "id": "act_0029",
+      "influencer_id": "inf_026",
+      "actor": "usr_03",
+      "type": "created",
+      "payload": {
+        "source": "manual"
+      },
+      "created_at": "2026-06-28T01:30:00.000Z"
+    },
+    {
+      "id": "act_0030",
+      "influencer_id": "inf_026",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_03"
+      },
+      "created_at": "2026-06-28T02:30:00.000Z"
+    },
+    {
+      "id": "act_0031",
+      "influencer_id": "inf_039",
+      "actor": "usr_02",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_056",
+        "outcome": "interested"
+      },
+      "created_at": "2026-06-28T06:12:00.000Z"
+    },
+    {
+      "id": "act_0032",
+      "influencer_id": "inf_039",
+      "actor": "usr_02",
+      "type": "stage_changed",
+      "payload": {
+        "from": "data_gathered",
+        "to": "contacted"
+      },
+      "created_at": "2026-06-28T06:22:00.000Z"
+    },
+    {
+      "id": "act_0033",
+      "influencer_id": "inf_031",
+      "actor": "usr_03",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_041",
+        "outcome": "no_answer"
+      },
+      "created_at": "2026-06-29T02:45:00.000Z"
+    },
+    {
+      "id": "act_0034",
+      "influencer_id": "inf_040",
+      "actor": "usr_04",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_057",
+        "outcome": "interested"
+      },
+      "created_at": "2026-06-30T08:10:00.000Z"
+    },
+    {
+      "id": "act_0035",
+      "influencer_id": "inf_040",
+      "actor": "usr_04",
+      "type": "stage_changed",
+      "payload": {
+        "from": "data_gathered",
+        "to": "contacted"
+      },
+      "created_at": "2026-06-30T08:20:00.000Z"
+    },
+    {
+      "id": "act_0036",
+      "influencer_id": "inf_004",
+      "actor": "usr_02",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_005",
+        "outcome": "interested"
+      },
+      "created_at": "2026-06-30T13:37:00.000Z"
+    },
+    {
+      "id": "act_0037",
+      "influencer_id": "inf_004",
+      "actor": "usr_02",
+      "type": "stage_changed",
+      "payload": {
+        "from": "data_gathered",
+        "to": "contacted"
+      },
+      "created_at": "2026-06-30T13:47:00.000Z"
+    },
+    {
+      "id": "act_0038",
+      "influencer_id": "inf_017",
+      "actor": "usr_03",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_020",
+        "outcome": "no_answer"
+      },
+      "created_at": "2026-07-02T01:36:00.000Z"
+    },
+    {
+      "id": "act_0039",
+      "influencer_id": "inf_006",
+      "actor": "usr_03",
+      "type": "created",
+      "payload": {
+        "source": "instagram"
+      },
+      "created_at": "2026-07-04T01:30:00.000Z"
+    },
+    {
+      "id": "act_0040",
+      "influencer_id": "inf_006",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_03"
+      },
+      "created_at": "2026-07-04T02:30:00.000Z"
+    },
+    {
+      "id": "act_0041",
+      "influencer_id": "inf_016",
+      "actor": "usr_03",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_019",
+        "outcome": "interested"
+      },
+      "created_at": "2026-07-08T07:02:00.000Z"
+    },
+    {
+      "id": "act_0042",
+      "influencer_id": "inf_016",
+      "actor": "usr_03",
+      "type": "stage_changed",
+      "payload": {
+        "from": "data_gathered",
+        "to": "contacted"
+      },
+      "created_at": "2026-07-08T07:12:00.000Z"
+    },
+    {
+      "id": "act_0043",
+      "influencer_id": "inf_020",
+      "actor": "usr_04",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_024",
+        "outcome": "no_answer"
+      },
+      "created_at": "2026-07-09T12:57:00.000Z"
+    },
+    {
+      "id": "act_0044",
+      "influencer_id": "inf_036",
+      "actor": "usr_01",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_051",
+        "outcome": "interested"
+      },
+      "created_at": "2026-07-12T23:55:00.000Z"
+    },
+    {
+      "id": "act_0045",
+      "influencer_id": "inf_036",
+      "actor": "usr_01",
+      "type": "stage_changed",
+      "payload": {
+        "from": "data_gathered",
+        "to": "contacted"
+      },
+      "created_at": "2026-07-13T00:05:00.000Z"
+    },
+    {
+      "id": "act_0046",
+      "influencer_id": "inf_030",
+      "actor": "usr_03",
+      "type": "created",
+      "payload": {
+        "source": "csv"
+      },
+      "created_at": "2026-07-13T04:30:00.000Z"
+    },
+    {
+      "id": "act_0047",
+      "influencer_id": "inf_030",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_03"
+      },
+      "created_at": "2026-07-13T05:30:00.000Z"
+    },
+    {
+      "id": "act_0048",
+      "influencer_id": "inf_043",
+      "actor": "usr_03",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_061",
+        "outcome": "interested"
+      },
+      "created_at": "2026-07-15T01:50:00.000Z"
+    },
+    {
+      "id": "act_0049",
+      "influencer_id": "inf_043",
+      "actor": "usr_03",
+      "type": "stage_changed",
+      "payload": {
+        "from": "data_gathered",
+        "to": "contacted"
+      },
+      "created_at": "2026-07-15T02:00:00.000Z"
+    },
+    {
+      "id": "act_0050",
+      "influencer_id": "inf_040",
+      "actor": "usr_04",
+      "type": "stage_changed",
+      "payload": {
+        "from": "contacted",
+        "to": "onboarded"
+      },
+      "created_at": "2026-07-20T03:15:00.000Z"
+    },
+    {
+      "id": "act_0051",
+      "influencer_id": "inf_030",
+      "actor": "usr_03",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_039",
+        "outcome": "no_answer"
+      },
+      "created_at": "2026-07-21T06:53:00.000Z"
+    },
+    {
+      "id": "act_0052",
+      "influencer_id": "inf_004",
+      "actor": "usr_02",
+      "type": "stage_changed",
+      "payload": {
+        "from": "contacted",
+        "to": "onboarded"
+      },
+      "created_at": "2026-07-23T15:53:00.000Z"
+    },
+    {
+      "id": "act_0053",
+      "influencer_id": "inf_049",
+      "actor": "usr_03",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_068",
+        "outcome": "interested"
+      },
+      "created_at": "2026-07-24T22:10:00.000Z"
+    },
+    {
+      "id": "act_0054",
+      "influencer_id": "inf_049",
+      "actor": "usr_03",
+      "type": "stage_changed",
+      "payload": {
+        "from": "data_gathered",
+        "to": "contacted"
+      },
+      "created_at": "2026-07-24T22:20:00.000Z"
+    },
+    {
+      "id": "act_0055",
+      "influencer_id": "inf_039",
+      "actor": "usr_02",
+      "type": "stage_changed",
+      "payload": {
+        "from": "contacted",
+        "to": "onboarded"
+      },
+      "created_at": "2026-07-25T13:41:00.000Z"
+    },
+    {
+      "id": "act_0056",
+      "influencer_id": "inf_007",
+      "actor": "usr_01",
+      "type": "created",
+      "payload": {
+        "source": "instagram"
+      },
+      "created_at": "2026-07-26T06:30:00.000Z"
+    },
+    {
+      "id": "act_0057",
+      "influencer_id": "inf_007",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_01"
+      },
+      "created_at": "2026-07-26T07:30:00.000Z"
+    },
+    {
+      "id": "act_0058",
+      "influencer_id": "inf_005",
+      "actor": "usr_02",
+      "type": "created",
+      "payload": {
+        "source": "instagram"
+      },
+      "created_at": "2026-07-29T00:30:00.000Z"
+    },
+    {
+      "id": "act_0059",
+      "influencer_id": "inf_005",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_02"
+      },
+      "created_at": "2026-07-29T01:30:00.000Z"
+    },
+    {
+      "id": "act_0060",
+      "influencer_id": "inf_006",
+      "actor": "usr_03",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_007",
+        "outcome": "interested"
+      },
+      "created_at": "2026-07-29T04:40:00.000Z"
+    },
+    {
+      "id": "act_0061",
+      "influencer_id": "inf_006",
+      "actor": "usr_03",
+      "type": "stage_changed",
+      "payload": {
+        "from": "data_gathered",
+        "to": "contacted"
+      },
+      "created_at": "2026-07-29T04:50:00.000Z"
+    },
+    {
+      "id": "act_0062",
+      "influencer_id": "inf_016",
+      "actor": "usr_03",
+      "type": "stage_changed",
+      "payload": {
+        "from": "contacted",
+        "to": "onboarded"
+      },
+      "created_at": "2026-07-29T07:48:00.000Z"
+    },
+    {
+      "id": "act_0063",
+      "influencer_id": "inf_012",
+      "actor": "usr_04",
+      "type": "created",
+      "payload": {
+        "source": "manual"
+      },
+      "created_at": "2026-07-31T02:30:00.000Z"
+    },
+    {
+      "id": "act_0064",
+      "influencer_id": "inf_012",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_04"
+      },
+      "created_at": "2026-07-31T03:30:00.000Z"
+    },
+    {
+      "id": "act_0065",
+      "influencer_id": "inf_001",
+      "actor": "usr_04",
+      "type": "created",
+      "payload": {
+        "source": "instagram"
+      },
+      "created_at": "2026-08-02T00:30:00.000Z"
+    },
+    {
+      "id": "act_0066",
+      "influencer_id": "inf_001",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_04"
+      },
+      "created_at": "2026-08-02T01:30:00.000Z"
+    },
+    {
+      "id": "act_0067",
+      "influencer_id": "inf_026",
+      "actor": "usr_03",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_035",
+        "outcome": "wrong_number"
+      },
+      "created_at": "2026-08-03T18:19:00.000Z"
+    },
+    {
+      "id": "act_0068",
+      "influencer_id": "inf_026",
+      "actor": "usr_03",
+      "type": "stage_changed",
+      "payload": {
+        "from": "data_gathered",
+        "to": "rejected",
+        "reason": "Wrong number and no other contact available"
+      },
+      "created_at": "2026-08-03T18:29:00.000Z"
+    },
+    {
+      "id": "act_0069",
+      "influencer_id": "inf_030",
+      "actor": "usr_03",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_040",
+        "outcome": "interested"
+      },
+      "created_at": "2026-08-03T21:35:00.000Z"
+    },
+    {
+      "id": "act_0070",
+      "influencer_id": "inf_030",
+      "actor": "usr_03",
+      "type": "stage_changed",
+      "payload": {
+        "from": "data_gathered",
+        "to": "contacted"
+      },
+      "created_at": "2026-08-03T21:45:00.000Z"
+    },
+    {
+      "id": "act_0071",
+      "influencer_id": "inf_021",
+      "actor": "usr_02",
+      "type": "created",
+      "payload": {
+        "source": "instagram"
+      },
+      "created_at": "2026-08-07T06:30:00.000Z"
+    },
+    {
+      "id": "act_0072",
+      "influencer_id": "inf_021",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_02"
+      },
+      "created_at": "2026-08-07T07:30:00.000Z"
+    },
+    {
+      "id": "act_0073",
+      "influencer_id": "inf_040",
+      "actor": "usr_04",
+      "type": "package_created",
+      "payload": {
+        "package_id": "pkg_015",
+        "courier": "DHL Express"
+      },
+      "created_at": "2026-08-07T14:47:00.000Z"
+    },
+    {
+      "id": "act_0074",
+      "influencer_id": "inf_040",
+      "actor": "usr_04",
+      "type": "package_updated",
+      "payload": {
+        "package_id": "pkg_015",
+        "status": "sent"
+      },
+      "created_at": "2026-08-07T16:46:00.000Z"
+    },
+    {
+      "id": "act_0075",
+      "influencer_id": "inf_040",
+      "actor": "usr_04",
+      "type": "stage_changed",
+      "payload": {
+        "from": "onboarded",
+        "to": "package_sent"
+      },
+      "created_at": "2026-08-07T16:47:00.000Z"
+    },
+    {
+      "id": "act_0076",
+      "influencer_id": "inf_046",
+      "actor": "usr_04",
+      "type": "created",
+      "payload": {
+        "source": "instagram"
+      },
+      "created_at": "2026-08-09T04:30:00.000Z"
+    },
+    {
+      "id": "act_0077",
+      "influencer_id": "inf_046",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_04"
+      },
+      "created_at": "2026-08-09T05:30:00.000Z"
+    },
+    {
+      "id": "act_0078",
+      "influencer_id": "inf_001",
+      "actor": "usr_04",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_001",
+        "outcome": "no_answer"
+      },
+      "created_at": "2026-08-10T00:30:00.000Z"
+    },
+    {
+      "id": "act_0079",
+      "influencer_id": "inf_031",
+      "actor": "usr_03",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_042",
+        "outcome": "interested"
+      },
+      "created_at": "2026-08-10T02:31:00.000Z"
+    },
+    {
+      "id": "act_0080",
+      "influencer_id": "inf_031",
+      "actor": "usr_03",
+      "type": "stage_changed",
+      "payload": {
+        "from": "data_gathered",
+        "to": "contacted"
+      },
+      "created_at": "2026-08-10T02:41:00.000Z"
+    },
+    {
+      "id": "act_0081",
+      "influencer_id": "inf_042",
+      "actor": "usr_02",
+      "type": "created",
+      "payload": {
+        "source": "instagram"
+      },
+      "created_at": "2026-08-11T23:30:00.000Z"
+    },
+    {
+      "id": "act_0082",
+      "influencer_id": "inf_017",
+      "actor": "usr_03",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_021",
+        "outcome": "not_interested"
+      },
+      "created_at": "2026-08-13T15:30:00.000Z"
+    },
+    {
+      "id": "act_0083",
+      "influencer_id": "inf_017",
+      "actor": "usr_03",
+      "type": "stage_changed",
+      "payload": {
+        "from": "data_gathered",
+        "to": "rejected",
+        "reason": "Not interested in barter collaborations"
+      },
+      "created_at": "2026-08-13T15:40:00.000Z"
+    },
+    {
+      "id": "act_0084",
+      "influencer_id": "inf_020",
+      "actor": "usr_04",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_025",
+        "outcome": "interested"
+      },
+      "created_at": "2026-08-14T01:24:00.000Z"
+    },
+    {
+      "id": "act_0085",
+      "influencer_id": "inf_020",
+      "actor": "usr_04",
+      "type": "stage_changed",
+      "payload": {
+        "from": "data_gathered",
+        "to": "contacted"
+      },
+      "created_at": "2026-08-14T01:34:00.000Z"
+    },
+    {
+      "id": "act_0086",
+      "influencer_id": "inf_021",
+      "actor": "usr_02",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_026",
+        "outcome": "no_answer"
+      },
+      "created_at": "2026-08-15T12:48:00.000Z"
+    },
+    {
+      "id": "act_0087",
+      "influencer_id": "inf_004",
+      "actor": "usr_02",
+      "type": "package_created",
+      "payload": {
+        "package_id": "pkg_003",
+        "courier": "Delhivery"
+      },
+      "created_at": "2026-08-18T00:38:00.000Z"
+    },
+    {
+      "id": "act_0088",
+      "influencer_id": "inf_004",
+      "actor": "usr_02",
+      "type": "package_updated",
+      "payload": {
+        "package_id": "pkg_003",
+        "status": "sent"
+      },
+      "created_at": "2026-08-18T02:37:00.000Z"
+    },
+    {
+      "id": "act_0089",
+      "influencer_id": "inf_004",
+      "actor": "usr_02",
+      "type": "stage_changed",
+      "payload": {
+        "from": "onboarded",
+        "to": "package_sent"
+      },
+      "created_at": "2026-08-18T02:38:00.000Z"
+    },
+    {
+      "id": "act_0090",
+      "influencer_id": "inf_039",
+      "actor": "usr_02",
+      "type": "package_created",
+      "payload": {
+        "package_id": "pkg_014",
+        "courier": "FedEx"
+      },
+      "created_at": "2026-08-19T09:33:00.000Z"
+    },
+    {
+      "id": "act_0091",
+      "influencer_id": "inf_039",
+      "actor": "usr_02",
+      "type": "package_updated",
+      "payload": {
+        "package_id": "pkg_014",
+        "status": "sent"
+      },
+      "created_at": "2026-08-19T11:32:00.000Z"
+    },
+    {
+      "id": "act_0092",
+      "influencer_id": "inf_039",
+      "actor": "usr_02",
+      "type": "stage_changed",
+      "payload": {
+        "from": "onboarded",
+        "to": "package_sent"
+      },
+      "created_at": "2026-08-19T11:33:00.000Z"
+    },
+    {
+      "id": "act_0093",
+      "influencer_id": "inf_049",
+      "actor": "usr_03",
+      "type": "stage_changed",
+      "payload": {
+        "from": "contacted",
+        "to": "onboarded"
+      },
+      "created_at": "2026-08-21T19:23:00.000Z"
+    },
+    {
+      "id": "act_0094",
+      "influencer_id": "inf_012",
+      "actor": "usr_04",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_013",
+        "outcome": "interested"
+      },
+      "created_at": "2026-08-22T11:25:00.000Z"
+    },
+    {
+      "id": "act_0095",
+      "influencer_id": "inf_012",
+      "actor": "usr_04",
+      "type": "stage_changed",
+      "payload": {
+        "from": "data_gathered",
+        "to": "contacted"
+      },
+      "created_at": "2026-08-22T11:35:00.000Z"
+    },
+    {
+      "id": "act_0096",
+      "influencer_id": "inf_010",
+      "actor": "usr_02",
+      "type": "created",
+      "payload": {
+        "source": "instagram"
+      },
+      "created_at": "2026-08-23T05:30:00.000Z"
+    },
+    {
+      "id": "act_0097",
+      "influencer_id": "inf_027",
+      "actor": "usr_03",
+      "type": "created",
+      "payload": {
+        "source": "instagram"
+      },
+      "created_at": "2026-08-23T05:30:00.000Z"
+    },
+    {
+      "id": "act_0098",
+      "influencer_id": "inf_027",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_03"
+      },
+      "created_at": "2026-08-23T06:30:00.000Z"
+    },
+    {
+      "id": "act_0099",
+      "influencer_id": "inf_030",
+      "actor": "usr_03",
+      "type": "stage_changed",
+      "payload": {
+        "from": "contacted",
+        "to": "onboarded"
+      },
+      "created_at": "2026-08-24T05:01:00.000Z"
+    },
+    {
+      "id": "act_0100",
+      "influencer_id": "inf_043",
+      "actor": "usr_03",
+      "type": "stage_changed",
+      "payload": {
+        "from": "contacted",
+        "to": "onboarded"
+      },
+      "created_at": "2026-08-24T08:26:00.000Z"
+    },
+    {
+      "id": "act_0101",
+      "influencer_id": "inf_016",
+      "actor": "usr_03",
+      "type": "package_created",
+      "payload": {
+        "package_id": "pkg_007",
+        "courier": "XpressBees"
+      },
+      "created_at": "2026-08-24T14:37:00.000Z"
+    },
+    {
+      "id": "act_0102",
+      "influencer_id": "inf_016",
+      "actor": "usr_03",
+      "type": "package_updated",
+      "payload": {
+        "package_id": "pkg_007",
+        "status": "sent"
+      },
+      "created_at": "2026-08-24T16:36:00.000Z"
+    },
+    {
+      "id": "act_0103",
+      "influencer_id": "inf_016",
+      "actor": "usr_03",
+      "type": "stage_changed",
+      "payload": {
+        "from": "onboarded",
+        "to": "package_sent"
+      },
+      "created_at": "2026-08-24T16:37:00.000Z"
+    },
+    {
+      "id": "act_0104",
+      "influencer_id": "inf_046",
+      "actor": "usr_04",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_065",
+        "outcome": "interested"
+      },
+      "created_at": "2026-08-24T16:51:00.000Z"
+    },
+    {
+      "id": "act_0105",
+      "influencer_id": "inf_046",
+      "actor": "usr_04",
+      "type": "stage_changed",
+      "payload": {
+        "from": "data_gathered",
+        "to": "contacted"
+      },
+      "created_at": "2026-08-24T17:01:00.000Z"
+    },
+    {
+      "id": "act_0106",
+      "influencer_id": "inf_024",
+      "actor": "usr_03",
+      "type": "created",
+      "payload": {
+        "source": "instagram"
+      },
+      "created_at": "2026-08-25T01:30:00.000Z"
+    },
+    {
+      "id": "act_0107",
+      "influencer_id": "inf_024",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_03"
+      },
+      "created_at": "2026-08-25T02:30:00.000Z"
+    },
+    {
+      "id": "act_0108",
+      "influencer_id": "inf_016",
+      "actor": null,
+      "type": "package_updated",
+      "payload": {
+        "package_id": "pkg_007",
+        "status": "in_transit"
+      },
+      "created_at": "2026-08-25T12:37:00.000Z"
+    },
+    {
+      "id": "act_0109",
+      "influencer_id": "inf_040",
+      "actor": null,
+      "type": "package_updated",
+      "payload": {
+        "package_id": "pkg_015",
+        "status": "delivered"
+      },
+      "created_at": "2026-08-25T14:54:00.000Z"
+    },
+    {
+      "id": "act_0110",
+      "influencer_id": "inf_040",
+      "actor": "usr_04",
+      "type": "stage_changed",
+      "payload": {
+        "from": "package_sent",
+        "to": "delivered"
+      },
+      "created_at": "2026-08-25T14:55:00.000Z"
+    },
+    {
+      "id": "act_0111",
+      "influencer_id": "inf_028",
+      "actor": "usr_02",
+      "type": "created",
+      "payload": {
+        "source": "manual"
+      },
+      "created_at": "2026-08-26T06:30:00.000Z"
+    },
+    {
+      "id": "act_0112",
+      "influencer_id": "inf_001",
+      "actor": "usr_04",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_002",
+        "outcome": "interested"
+      },
+      "created_at": "2026-08-26T11:26:00.000Z"
+    },
+    {
+      "id": "act_0113",
+      "influencer_id": "inf_001",
+      "actor": "usr_04",
+      "type": "stage_changed",
+      "payload": {
+        "from": "data_gathered",
+        "to": "contacted"
+      },
+      "created_at": "2026-08-26T11:36:00.000Z"
+    },
+    {
+      "id": "act_0114",
+      "influencer_id": "inf_048",
+      "actor": "usr_02",
+      "type": "created",
+      "payload": {
+        "source": "instagram"
+      },
+      "created_at": "2026-08-26T22:30:00.000Z"
+    },
+    {
+      "id": "act_0115",
+      "influencer_id": "inf_021",
+      "actor": "usr_02",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_027",
+        "outcome": "interested"
+      },
+      "created_at": "2026-08-27T02:22:00.000Z"
+    },
+    {
+      "id": "act_0116",
+      "influencer_id": "inf_021",
+      "actor": "usr_02",
+      "type": "stage_changed",
+      "payload": {
+        "from": "data_gathered",
+        "to": "contacted"
+      },
+      "created_at": "2026-08-27T02:32:00.000Z"
+    },
+    {
+      "id": "act_0117",
+      "influencer_id": "inf_024",
+      "actor": "usr_03",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_031",
+        "outcome": "no_answer"
+      },
+      "created_at": "2026-08-29T22:42:00.000Z"
+    },
+    {
+      "id": "act_0118",
+      "influencer_id": "inf_009",
+      "actor": "usr_03",
+      "type": "created",
+      "payload": {
+        "source": "instagram"
+      },
+      "created_at": "2026-08-30T05:30:00.000Z"
+    },
+    {
+      "id": "act_0119",
+      "influencer_id": "inf_009",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_03"
+      },
+      "created_at": "2026-08-30T06:30:00.000Z"
+    },
+    {
+      "id": "act_0120",
+      "influencer_id": "inf_003",
+      "actor": "usr_02",
+      "type": "created",
+      "payload": {
+        "source": "instagram"
+      },
+      "created_at": "2026-08-31T06:30:00.000Z"
+    },
+    {
+      "id": "act_0121",
+      "influencer_id": "inf_032",
+      "actor": "usr_03",
+      "type": "created",
+      "payload": {
+        "source": "instagram"
+      },
+      "created_at": "2026-09-01T00:30:00.000Z"
+    },
+    {
+      "id": "act_0122",
+      "influencer_id": "inf_032",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_03"
+      },
+      "created_at": "2026-09-01T01:30:00.000Z"
+    },
+    {
+      "id": "act_0123",
+      "influencer_id": "inf_006",
+      "actor": "usr_03",
+      "type": "stage_changed",
+      "payload": {
+        "from": "contacted",
+        "to": "onboarded"
+      },
+      "created_at": "2026-09-01T16:49:00.000Z"
+    },
+    {
+      "id": "act_0124",
+      "influencer_id": "inf_022",
+      "actor": "usr_04",
+      "type": "created",
+      "payload": {
+        "source": "manual"
+      },
+      "created_at": "2026-09-02T02:30:00.000Z"
+    },
+    {
+      "id": "act_0125",
+      "influencer_id": "inf_022",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_04"
+      },
+      "created_at": "2026-09-02T03:30:00.000Z"
+    },
+    {
+      "id": "act_0126",
+      "influencer_id": "inf_005",
+      "actor": "usr_02",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_006",
+        "outcome": "interested"
+      },
+      "created_at": "2026-09-02T20:30:00.000Z"
+    },
+    {
+      "id": "act_0127",
+      "influencer_id": "inf_005",
+      "actor": "usr_02",
+      "type": "stage_changed",
+      "payload": {
+        "from": "data_gathered",
+        "to": "contacted"
+      },
+      "created_at": "2026-09-02T20:40:00.000Z"
+    },
+    {
+      "id": "act_0128",
+      "influencer_id": "inf_027",
+      "actor": "usr_03",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_036",
+        "outcome": "interested"
+      },
+      "created_at": "2026-09-04T22:36:00.000Z"
+    },
+    {
+      "id": "act_0129",
+      "influencer_id": "inf_027",
+      "actor": "usr_03",
+      "type": "stage_changed",
+      "payload": {
+        "from": "data_gathered",
+        "to": "contacted"
+      },
+      "created_at": "2026-09-04T22:46:00.000Z"
+    },
+    {
+      "id": "act_0130",
+      "influencer_id": "inf_024",
+      "actor": "usr_03",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_032",
+        "outcome": "interested"
+      },
+      "created_at": "2026-09-05T07:29:00.000Z"
+    },
+    {
+      "id": "act_0131",
+      "influencer_id": "inf_024",
+      "actor": "usr_03",
+      "type": "stage_changed",
+      "payload": {
+        "from": "data_gathered",
+        "to": "contacted"
+      },
+      "created_at": "2026-09-05T07:39:00.000Z"
+    },
+    {
+      "id": "act_0132",
+      "influencer_id": "inf_033",
+      "actor": "usr_04",
+      "type": "created",
+      "payload": {
+        "source": "instagram"
+      },
+      "created_at": "2026-09-05T23:30:00.000Z"
+    },
+    {
+      "id": "act_0133",
+      "influencer_id": "inf_033",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_04"
+      },
+      "created_at": "2026-09-06T00:30:00.000Z"
+    },
+    {
+      "id": "act_0134",
+      "influencer_id": "inf_009",
+      "actor": "usr_03",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_010",
+        "outcome": "interested"
+      },
+      "created_at": "2026-09-11T02:03:00.000Z"
+    },
+    {
+      "id": "act_0135",
+      "influencer_id": "inf_009",
+      "actor": "usr_03",
+      "type": "stage_changed",
+      "payload": {
+        "from": "data_gathered",
+        "to": "contacted"
+      },
+      "created_at": "2026-09-11T02:13:00.000Z"
+    },
+    {
+      "id": "act_0136",
+      "influencer_id": "inf_033",
+      "actor": "usr_04",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_045",
+        "outcome": "no_answer"
+      },
+      "created_at": "2026-09-11T06:30:00.000Z"
+    },
+    {
+      "id": "act_0137",
+      "influencer_id": "inf_004",
+      "actor": null,
+      "type": "package_updated",
+      "payload": {
+        "package_id": "pkg_003",
+        "status": "delivered"
+      },
+      "created_at": "2026-09-11T22:18:00.000Z"
+    },
+    {
+      "id": "act_0138",
+      "influencer_id": "inf_004",
+      "actor": "usr_02",
+      "type": "stage_changed",
+      "payload": {
+        "from": "package_sent",
+        "to": "delivered"
+      },
+      "created_at": "2026-09-11T22:19:00.000Z"
+    },
+    {
+      "id": "act_0139",
+      "influencer_id": "inf_021",
+      "actor": "usr_02",
+      "type": "stage_changed",
+      "payload": {
+        "from": "contacted",
+        "to": "onboarded"
+      },
+      "created_at": "2026-09-13T02:07:00.000Z"
+    },
+    {
+      "id": "act_0140",
+      "influencer_id": "inf_044",
+      "actor": "usr_02",
+      "type": "created",
+      "payload": {
+        "source": "instagram"
+      },
+      "created_at": "2026-09-13T03:30:00.000Z"
+    },
+    {
+      "id": "act_0141",
+      "influencer_id": "inf_044",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_02"
+      },
+      "created_at": "2026-09-13T04:30:00.000Z"
+    },
+    {
+      "id": "act_0142",
+      "influencer_id": "inf_046",
+      "actor": "usr_04",
+      "type": "stage_changed",
+      "payload": {
+        "from": "contacted",
+        "to": "onboarded"
+      },
+      "created_at": "2026-09-13T07:39:00.000Z"
+    },
+    {
+      "id": "act_0143",
+      "influencer_id": "inf_024",
+      "actor": "usr_03",
+      "type": "stage_changed",
+      "payload": {
+        "from": "contacted",
+        "to": "onboarded"
+      },
+      "created_at": "2026-09-15T22:44:00.000Z"
+    },
+    {
+      "id": "act_0144",
+      "influencer_id": "inf_030",
+      "actor": "usr_03",
+      "type": "package_created",
+      "payload": {
+        "package_id": "pkg_012",
+        "courier": "DTDC"
+      },
+      "created_at": "2026-09-15T23:03:00.000Z"
+    },
+    {
+      "id": "act_0145",
+      "influencer_id": "inf_030",
+      "actor": "usr_03",
+      "type": "package_updated",
+      "payload": {
+        "package_id": "pkg_012",
+        "status": "sent"
+      },
+      "created_at": "2026-09-16T01:02:00.000Z"
+    },
+    {
+      "id": "act_0146",
+      "influencer_id": "inf_030",
+      "actor": "usr_03",
+      "type": "stage_changed",
+      "payload": {
+        "from": "onboarded",
+        "to": "package_sent"
+      },
+      "created_at": "2026-09-16T01:03:00.000Z"
+    },
+    {
+      "id": "act_0147",
+      "influencer_id": "inf_027",
+      "actor": "usr_03",
+      "type": "stage_changed",
+      "payload": {
+        "from": "contacted",
+        "to": "onboarded"
+      },
+      "created_at": "2026-09-16T14:36:00.000Z"
+    },
+    {
+      "id": "act_0148",
+      "influencer_id": "inf_030",
+      "actor": null,
+      "type": "package_updated",
+      "payload": {
+        "package_id": "pkg_012",
+        "status": "in_transit"
+      },
+      "created_at": "2026-09-16T21:03:00.000Z"
+    },
+    {
+      "id": "act_0149",
+      "influencer_id": "inf_001",
+      "actor": "usr_04",
+      "type": "stage_changed",
+      "payload": {
+        "from": "contacted",
+        "to": "onboarded"
+      },
+      "created_at": "2026-09-18T03:10:00.000Z"
+    },
+    {
+      "id": "act_0150",
+      "influencer_id": "inf_037",
+      "actor": "usr_02",
+      "type": "created",
+      "payload": {
+        "source": "instagram"
+      },
+      "created_at": "2026-09-19T02:30:00.000Z"
+    },
+    {
+      "id": "act_0151",
+      "influencer_id": "inf_037",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_02"
+      },
+      "created_at": "2026-09-19T03:30:00.000Z"
+    },
+    {
+      "id": "act_0152",
+      "influencer_id": "inf_044",
+      "actor": "usr_02",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_062",
+        "outcome": "no_answer"
+      },
+      "created_at": "2026-09-19T23:12:00.000Z"
+    },
+    {
+      "id": "act_0153",
+      "influencer_id": "inf_012",
+      "actor": "usr_04",
+      "type": "stage_changed",
+      "payload": {
+        "from": "contacted",
+        "to": "on_hold",
+        "reason": "Influencer travelling, asked to reconnect next month"
+      },
+      "created_at": "2026-09-20T06:49:00.000Z"
+    },
+    {
+      "id": "act_0154",
+      "influencer_id": "inf_009",
+      "actor": "usr_03",
+      "type": "stage_changed",
+      "payload": {
+        "from": "contacted",
+        "to": "onboarded"
+      },
+      "created_at": "2026-09-21T20:34:00.000Z"
+    },
+    {
+      "id": "act_0155",
+      "influencer_id": "inf_002",
+      "actor": "usr_04",
+      "type": "created",
+      "payload": {
+        "source": "instagram"
+      },
+      "created_at": "2026-09-22T02:30:00.000Z"
+    },
+    {
+      "id": "act_0156",
+      "influencer_id": "inf_002",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_04"
+      },
+      "created_at": "2026-09-22T03:30:00.000Z"
+    },
+    {
+      "id": "act_0157",
+      "influencer_id": "inf_033",
+      "actor": "usr_04",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_046",
+        "outcome": "interested"
+      },
+      "created_at": "2026-09-22T20:31:00.000Z"
+    },
+    {
+      "id": "act_0158",
+      "influencer_id": "inf_033",
+      "actor": "usr_04",
+      "type": "stage_changed",
+      "payload": {
+        "from": "data_gathered",
+        "to": "contacted"
+      },
+      "created_at": "2026-09-22T20:41:00.000Z"
+    },
+    {
+      "id": "act_0159",
+      "influencer_id": "inf_041",
+      "actor": "usr_03",
+      "type": "created",
+      "payload": {
+        "source": "instagram"
+      },
+      "created_at": "2026-09-25T04:30:00.000Z"
+    },
+    {
+      "id": "act_0160",
+      "influencer_id": "inf_041",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_03"
+      },
+      "created_at": "2026-09-25T05:30:00.000Z"
+    },
+    {
+      "id": "act_0161",
+      "influencer_id": "inf_027",
+      "actor": "usr_03",
+      "type": "package_created",
+      "payload": {
+        "package_id": "pkg_010",
+        "courier": "XpressBees"
+      },
+      "created_at": "2026-09-26T02:30:00.000Z"
+    },
+    {
+      "id": "act_0162",
+      "influencer_id": "inf_034",
+      "actor": "usr_03",
+      "type": "created",
+      "payload": {
+        "source": "instagram"
+      },
+      "created_at": "2026-09-26T02:30:00.000Z"
+    },
+    {
+      "id": "act_0163",
+      "influencer_id": "inf_034",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_03"
+      },
+      "created_at": "2026-09-26T03:30:00.000Z"
+    },
+    {
+      "id": "act_0164",
+      "influencer_id": "inf_027",
+      "actor": "usr_03",
+      "type": "package_updated",
+      "payload": {
+        "package_id": "pkg_010",
+        "status": "sent"
+      },
+      "created_at": "2026-09-26T04:29:00.000Z"
+    },
+    {
+      "id": "act_0165",
+      "influencer_id": "inf_027",
+      "actor": "usr_03",
+      "type": "stage_changed",
+      "payload": {
+        "from": "onboarded",
+        "to": "package_sent"
+      },
+      "created_at": "2026-09-26T04:30:00.000Z"
+    },
+    {
+      "id": "act_0166",
+      "influencer_id": "inf_037",
+      "actor": "usr_02",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_053",
+        "outcome": "interested"
+      },
+      "created_at": "2026-09-27T01:37:00.000Z"
+    },
+    {
+      "id": "act_0167",
+      "influencer_id": "inf_037",
+      "actor": "usr_02",
+      "type": "stage_changed",
+      "payload": {
+        "from": "data_gathered",
+        "to": "contacted"
+      },
+      "created_at": "2026-09-27T01:47:00.000Z"
+    },
+    {
+      "id": "act_0168",
+      "influencer_id": "inf_035",
+      "actor": "usr_03",
+      "type": "created",
+      "payload": {
+        "source": "instagram"
+      },
+      "created_at": "2026-09-28T01:30:00.000Z"
+    },
+    {
+      "id": "act_0169",
+      "influencer_id": "inf_035",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_03"
+      },
+      "created_at": "2026-09-28T02:30:00.000Z"
+    },
+    {
+      "id": "act_0170",
+      "influencer_id": "inf_024",
+      "actor": "usr_03",
+      "type": "stage_changed",
+      "payload": {
+        "from": "onboarded",
+        "to": "on_hold",
+        "reason": "Awaiting brand approval for this category"
+      },
+      "created_at": "2026-09-28T07:21:00.000Z"
+    },
+    {
+      "id": "act_0171",
+      "influencer_id": "inf_011",
+      "actor": "usr_04",
+      "type": "created",
+      "payload": {
+        "source": "instagram"
+      },
+      "created_at": "2026-09-29T03:30:00.000Z"
+    },
+    {
+      "id": "act_0172",
+      "influencer_id": "inf_011",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_04"
+      },
+      "created_at": "2026-09-29T04:30:00.000Z"
+    },
+    {
+      "id": "act_0173",
+      "influencer_id": "inf_002",
+      "actor": "usr_04",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_004",
+        "outcome": "interested"
+      },
+      "created_at": "2026-09-30T10:18:00.000Z"
+    },
+    {
+      "id": "act_0174",
+      "influencer_id": "inf_002",
+      "actor": "usr_04",
+      "type": "stage_changed",
+      "payload": {
+        "from": "data_gathered",
+        "to": "contacted"
+      },
+      "created_at": "2026-09-30T10:28:00.000Z"
+    },
+    {
+      "id": "act_0175",
+      "influencer_id": "inf_034",
+      "actor": "usr_03",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_048",
+        "outcome": "interested"
+      },
+      "created_at": "2026-09-30T20:13:00.000Z"
+    },
+    {
+      "id": "act_0176",
+      "influencer_id": "inf_034",
+      "actor": "usr_03",
+      "type": "stage_changed",
+      "payload": {
+        "from": "data_gathered",
+        "to": "contacted"
+      },
+      "created_at": "2026-09-30T20:23:00.000Z"
+    },
+    {
+      "id": "act_0177",
+      "influencer_id": "inf_044",
+      "actor": "usr_02",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_063",
+        "outcome": "not_interested"
+      },
+      "created_at": "2026-10-01T14:04:00.000Z"
+    },
+    {
+      "id": "act_0178",
+      "influencer_id": "inf_044",
+      "actor": "usr_02",
+      "type": "stage_changed",
+      "payload": {
+        "from": "data_gathered",
+        "to": "rejected",
+        "reason": "Audience mismatch, mostly outside target market"
+      },
+      "created_at": "2026-10-01T14:14:00.000Z"
+    },
+    {
+      "id": "act_0179",
+      "influencer_id": "inf_025",
+      "actor": "usr_03",
+      "type": "created",
+      "payload": {
+        "source": "manual"
+      },
+      "created_at": "2026-10-02T00:30:00.000Z"
+    },
+    {
+      "id": "act_0180",
+      "influencer_id": "inf_025",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_03"
+      },
+      "created_at": "2026-10-02T01:30:00.000Z"
+    },
+    {
+      "id": "act_0181",
+      "influencer_id": "inf_035",
+      "actor": "usr_03",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_049",
+        "outcome": "no_answer"
+      },
+      "created_at": "2026-10-02T15:30:00.000Z"
+    },
+    {
+      "id": "act_0182",
+      "influencer_id": "inf_046",
+      "actor": "usr_04",
+      "type": "package_created",
+      "payload": {
+        "package_id": "pkg_016",
+        "courier": "DHL Express"
+      },
+      "created_at": "2026-10-02T19:22:00.000Z"
+    },
+    {
+      "id": "act_0183",
+      "influencer_id": "inf_046",
+      "actor": "usr_04",
+      "type": "package_updated",
+      "payload": {
+        "package_id": "pkg_016",
+        "status": "sent"
+      },
+      "created_at": "2026-10-02T21:21:00.000Z"
+    },
+    {
+      "id": "act_0184",
+      "influencer_id": "inf_046",
+      "actor": "usr_04",
+      "type": "stage_changed",
+      "payload": {
+        "from": "onboarded",
+        "to": "package_sent"
+      },
+      "created_at": "2026-10-02T21:22:00.000Z"
+    },
+    {
+      "id": "act_0185",
+      "influencer_id": "inf_011",
+      "actor": "usr_04",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_012",
+        "outcome": "interested"
+      },
+      "created_at": "2026-10-02T22:34:00.000Z"
+    },
+    {
+      "id": "act_0186",
+      "influencer_id": "inf_011",
+      "actor": "usr_04",
+      "type": "stage_changed",
+      "payload": {
+        "from": "data_gathered",
+        "to": "contacted"
+      },
+      "created_at": "2026-10-02T22:44:00.000Z"
+    },
+    {
+      "id": "act_0187",
+      "influencer_id": "inf_009",
+      "actor": "usr_03",
+      "type": "package_created",
+      "payload": {
+        "package_id": "pkg_004",
+        "courier": "Blue Dart"
+      },
+      "created_at": "2026-10-03T09:53:00.000Z"
+    },
+    {
+      "id": "act_0188",
+      "influencer_id": "inf_009",
+      "actor": "usr_03",
+      "type": "package_updated",
+      "payload": {
+        "package_id": "pkg_004",
+        "status": "sent"
+      },
+      "created_at": "2026-10-03T11:52:00.000Z"
+    },
+    {
+      "id": "act_0189",
+      "influencer_id": "inf_009",
+      "actor": "usr_03",
+      "type": "stage_changed",
+      "payload": {
+        "from": "onboarded",
+        "to": "package_sent"
+      },
+      "created_at": "2026-10-03T11:53:00.000Z"
+    },
+    {
+      "id": "act_0190",
+      "influencer_id": "inf_001",
+      "actor": "usr_04",
+      "type": "package_created",
+      "payload": {
+        "package_id": "pkg_001",
+        "courier": null
+      },
+      "created_at": "2026-10-04T04:50:00.000Z"
+    },
+    {
+      "id": "act_0191",
+      "influencer_id": "inf_019",
+      "actor": "usr_01",
+      "type": "created",
+      "payload": {
+        "source": "instagram"
+      },
+      "created_at": "2026-10-04T06:30:00.000Z"
+    },
+    {
+      "id": "act_0192",
+      "influencer_id": "inf_019",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_01"
+      },
+      "created_at": "2026-10-04T07:30:00.000Z"
+    },
+    {
+      "id": "act_0193",
+      "influencer_id": "inf_009",
+      "actor": null,
+      "type": "package_updated",
+      "payload": {
+        "package_id": "pkg_004",
+        "status": "in_transit"
+      },
+      "created_at": "2026-10-04T07:53:00.000Z"
+    },
+    {
+      "id": "act_0194",
+      "influencer_id": "inf_008",
+      "actor": "usr_02",
+      "type": "created",
+      "payload": {
+        "source": "manual"
+      },
+      "created_at": "2026-10-04T22:30:00.000Z"
+    },
+    {
+      "id": "act_0195",
+      "influencer_id": "inf_008",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_02"
+      },
+      "created_at": "2026-10-04T23:30:00.000Z"
+    },
+    {
+      "id": "act_0196",
+      "influencer_id": "inf_037",
+      "actor": "usr_02",
+      "type": "stage_changed",
+      "payload": {
+        "from": "contacted",
+        "to": "onboarded"
+      },
+      "created_at": "2026-10-05T00:30:00.000Z"
+    },
+    {
+      "id": "act_0197",
+      "influencer_id": "inf_029",
+      "actor": "usr_04",
+      "type": "created",
+      "payload": {
+        "source": "instagram"
+      },
+      "created_at": "2026-10-05T01:30:00.000Z"
+    },
+    {
+      "id": "act_0198",
+      "influencer_id": "inf_029",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_04"
+      },
+      "created_at": "2026-10-05T02:30:00.000Z"
+    },
+    {
+      "id": "act_0199",
+      "influencer_id": "inf_018",
+      "actor": "usr_04",
+      "type": "created",
+      "payload": {
+        "source": "manual"
+      },
+      "created_at": "2026-10-05T05:30:00.000Z"
+    },
+    {
+      "id": "act_0200",
+      "influencer_id": "inf_018",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_04"
+      },
+      "created_at": "2026-10-05T06:30:00.000Z"
+    },
+    {
+      "id": "act_0201",
+      "influencer_id": "inf_041",
+      "actor": "usr_03",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_058",
+        "outcome": "interested"
+      },
+      "created_at": "2026-10-05T19:04:00.000Z"
+    },
+    {
+      "id": "act_0202",
+      "influencer_id": "inf_041",
+      "actor": "usr_03",
+      "type": "stage_changed",
+      "payload": {
+        "from": "data_gathered",
+        "to": "contacted"
+      },
+      "created_at": "2026-10-05T19:14:00.000Z"
+    },
+    {
+      "id": "act_0203",
+      "influencer_id": "inf_023",
+      "actor": "usr_01",
+      "type": "created",
+      "payload": {
+        "source": "csv"
+      },
+      "created_at": "2026-10-05T22:30:00.000Z"
+    },
+    {
+      "id": "act_0204",
+      "influencer_id": "inf_023",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_01"
+      },
+      "created_at": "2026-10-05T23:30:00.000Z"
+    },
+    {
+      "id": "act_0205",
+      "influencer_id": "inf_025",
+      "actor": "usr_03",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_033",
+        "outcome": "no_answer"
+      },
+      "created_at": "2026-10-06T00:15:00.000Z"
+    },
+    {
+      "id": "act_0206",
+      "influencer_id": "inf_033",
+      "actor": "usr_04",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_047",
+        "outcome": "not_interested"
+      },
+      "created_at": "2026-10-06T06:12:00.000Z"
+    },
+    {
+      "id": "act_0207",
+      "influencer_id": "inf_033",
+      "actor": "usr_04",
+      "type": "stage_changed",
+      "payload": {
+        "from": "contacted",
+        "to": "rejected",
+        "reason": "Asked for a paid-only deal above budget"
+      },
+      "created_at": "2026-10-06T06:22:00.000Z"
+    },
+    {
+      "id": "act_0208",
+      "influencer_id": "inf_034",
+      "actor": "usr_03",
+      "type": "stage_changed",
+      "payload": {
+        "from": "contacted",
+        "to": "onboarded"
+      },
+      "created_at": "2026-10-06T23:44:00.000Z"
+    },
+    {
+      "id": "act_0209",
+      "influencer_id": "inf_019",
+      "actor": "usr_01",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_023",
+        "outcome": "interested"
+      },
+      "created_at": "2026-10-07T05:21:00.000Z"
+    },
+    {
+      "id": "act_0210",
+      "influencer_id": "inf_019",
+      "actor": "usr_01",
+      "type": "stage_changed",
+      "payload": {
+        "from": "data_gathered",
+        "to": "contacted"
+      },
+      "created_at": "2026-10-07T05:31:00.000Z"
+    },
+    {
+      "id": "act_0211",
+      "influencer_id": "inf_027",
+      "actor": null,
+      "type": "package_updated",
+      "payload": {
+        "package_id": "pkg_010",
+        "status": "delivered"
+      },
+      "created_at": "2026-10-07T15:02:00.000Z"
+    },
+    {
+      "id": "act_0212",
+      "influencer_id": "inf_027",
+      "actor": "usr_03",
+      "type": "stage_changed",
+      "payload": {
+        "from": "package_sent",
+        "to": "delivered"
+      },
+      "created_at": "2026-10-07T15:03:00.000Z"
+    },
+    {
+      "id": "act_0213",
+      "influencer_id": "inf_011",
+      "actor": "usr_04",
+      "type": "stage_changed",
+      "payload": {
+        "from": "contacted",
+        "to": "onboarded"
+      },
+      "created_at": "2026-10-07T15:43:00.000Z"
+    },
+    {
+      "id": "act_0214",
+      "influencer_id": "inf_023",
+      "actor": "usr_01",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_029",
+        "outcome": "no_answer"
+      },
+      "created_at": "2026-10-07T16:20:00.000Z"
+    },
+    {
+      "id": "act_0215",
+      "influencer_id": "inf_002",
+      "actor": "usr_04",
+      "type": "stage_changed",
+      "payload": {
+        "from": "contacted",
+        "to": "onboarded"
+      },
+      "created_at": "2026-10-07T19:50:00.000Z"
+    },
+    {
+      "id": "act_0216",
+      "influencer_id": "inf_014",
+      "actor": "usr_01",
+      "type": "created",
+      "payload": {
+        "source": "instagram"
+      },
+      "created_at": "2026-10-07T23:30:00.000Z"
+    },
+    {
+      "id": "act_0217",
+      "influencer_id": "inf_014",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_01"
+      },
+      "created_at": "2026-10-08T00:30:00.000Z"
+    },
+    {
+      "id": "act_0218",
+      "influencer_id": "inf_023",
+      "actor": "usr_01",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_030",
+        "outcome": "interested"
+      },
+      "created_at": "2026-10-10T01:58:00.000Z"
+    },
+    {
+      "id": "act_0219",
+      "influencer_id": "inf_023",
+      "actor": "usr_01",
+      "type": "stage_changed",
+      "payload": {
+        "from": "data_gathered",
+        "to": "contacted"
+      },
+      "created_at": "2026-10-10T02:08:00.000Z"
+    },
+    {
+      "id": "act_0220",
+      "influencer_id": "inf_035",
+      "actor": "usr_03",
+      "type": "stage_changed",
+      "payload": {
+        "from": "data_gathered",
+        "to": "on_hold",
+        "reason": "Budget freeze till end of quarter"
+      },
+      "created_at": "2026-10-10T10:30:00.000Z"
+    },
+    {
+      "id": "act_0221",
+      "influencer_id": "inf_019",
+      "actor": "usr_01",
+      "type": "stage_changed",
+      "payload": {
+        "from": "contacted",
+        "to": "onboarded"
+      },
+      "created_at": "2026-10-10T21:14:00.000Z"
+    },
+    {
+      "id": "act_0222",
+      "influencer_id": "inf_045",
+      "actor": "usr_04",
+      "type": "created",
+      "payload": {
+        "source": "instagram"
+      },
+      "created_at": "2026-10-11T00:30:00.000Z"
+    },
+    {
+      "id": "act_0223",
+      "influencer_id": "inf_045",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_04"
+      },
+      "created_at": "2026-10-11T01:30:00.000Z"
+    },
+    {
+      "id": "act_0224",
+      "influencer_id": "inf_014",
+      "actor": "usr_01",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_015",
+        "outcome": "no_answer"
+      },
+      "created_at": "2026-10-11T01:48:00.000Z"
+    },
+    {
+      "id": "act_0225",
+      "influencer_id": "inf_011",
+      "actor": "usr_04",
+      "type": "package_created",
+      "payload": {
+        "package_id": "pkg_005",
+        "courier": "India Post"
+      },
+      "created_at": "2026-10-11T02:50:00.000Z"
+    },
+    {
+      "id": "act_0226",
+      "influencer_id": "inf_011",
+      "actor": "usr_04",
+      "type": "package_updated",
+      "payload": {
+        "package_id": "pkg_005",
+        "status": "sent"
+      },
+      "created_at": "2026-10-11T04:49:00.000Z"
+    },
+    {
+      "id": "act_0227",
+      "influencer_id": "inf_011",
+      "actor": "usr_04",
+      "type": "stage_changed",
+      "payload": {
+        "from": "onboarded",
+        "to": "package_sent"
+      },
+      "created_at": "2026-10-11T04:50:00.000Z"
+    },
+    {
+      "id": "act_0228",
+      "influencer_id": "inf_025",
+      "actor": "usr_03",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_034",
+        "outcome": "interested"
+      },
+      "created_at": "2026-10-11T10:17:00.000Z"
+    },
+    {
+      "id": "act_0229",
+      "influencer_id": "inf_025",
+      "actor": "usr_03",
+      "type": "stage_changed",
+      "payload": {
+        "from": "data_gathered",
+        "to": "contacted"
+      },
+      "created_at": "2026-10-11T10:27:00.000Z"
+    },
+    {
+      "id": "act_0230",
+      "influencer_id": "inf_034",
+      "actor": "usr_03",
+      "type": "package_created",
+      "payload": {
+        "package_id": "pkg_013",
+        "courier": "Delhivery"
+      },
+      "created_at": "2026-10-11T16:13:00.000Z"
+    },
+    {
+      "id": "act_0231",
+      "influencer_id": "inf_029",
+      "actor": "usr_04",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_038",
+        "outcome": "interested"
+      },
+      "created_at": "2026-10-11T17:10:00.000Z"
+    },
+    {
+      "id": "act_0232",
+      "influencer_id": "inf_029",
+      "actor": "usr_04",
+      "type": "stage_changed",
+      "payload": {
+        "from": "data_gathered",
+        "to": "contacted"
+      },
+      "created_at": "2026-10-11T17:20:00.000Z"
+    },
+    {
+      "id": "act_0233",
+      "influencer_id": "inf_034",
+      "actor": "usr_03",
+      "type": "package_updated",
+      "payload": {
+        "package_id": "pkg_013",
+        "status": "sent"
+      },
+      "created_at": "2026-10-11T18:12:00.000Z"
+    },
+    {
+      "id": "act_0234",
+      "influencer_id": "inf_034",
+      "actor": "usr_03",
+      "type": "stage_changed",
+      "payload": {
+        "from": "onboarded",
+        "to": "package_sent"
+      },
+      "created_at": "2026-10-11T18:13:00.000Z"
+    },
+    {
+      "id": "act_0235",
+      "influencer_id": "inf_008",
+      "actor": "usr_02",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_009",
+        "outcome": "interested"
+      },
+      "created_at": "2026-10-12T14:08:00.000Z"
+    },
+    {
+      "id": "act_0236",
+      "influencer_id": "inf_008",
+      "actor": "usr_02",
+      "type": "stage_changed",
+      "payload": {
+        "from": "data_gathered",
+        "to": "contacted"
+      },
+      "created_at": "2026-10-12T14:18:00.000Z"
+    },
+    {
+      "id": "act_0237",
+      "influencer_id": "inf_019",
+      "actor": "usr_01",
+      "type": "package_created",
+      "payload": {
+        "package_id": "pkg_008",
+        "courier": "Blue Dart"
+      },
+      "created_at": "2026-10-13T18:23:00.000Z"
+    },
+    {
+      "id": "act_0238",
+      "influencer_id": "inf_019",
+      "actor": "usr_01",
+      "type": "package_updated",
+      "payload": {
+        "package_id": "pkg_008",
+        "status": "sent"
+      },
+      "created_at": "2026-10-13T20:22:00.000Z"
+    },
+    {
+      "id": "act_0239",
+      "influencer_id": "inf_019",
+      "actor": "usr_01",
+      "type": "stage_changed",
+      "payload": {
+        "from": "onboarded",
+        "to": "package_sent"
+      },
+      "created_at": "2026-10-13T20:23:00.000Z"
+    },
+    {
+      "id": "act_0240",
+      "influencer_id": "inf_023",
+      "actor": "usr_01",
+      "type": "stage_changed",
+      "payload": {
+        "from": "contacted",
+        "to": "onboarded"
+      },
+      "created_at": "2026-10-13T22:49:00.000Z"
+    },
+    {
+      "id": "act_0241",
+      "influencer_id": "inf_047",
+      "actor": "usr_04",
+      "type": "created",
+      "payload": {
+        "source": "instagram"
+      },
+      "created_at": "2026-10-14T05:30:00.000Z"
+    },
+    {
+      "id": "act_0242",
+      "influencer_id": "inf_047",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_04"
+      },
+      "created_at": "2026-10-14T06:30:00.000Z"
+    },
+    {
+      "id": "act_0243",
+      "influencer_id": "inf_002",
+      "actor": "usr_04",
+      "type": "package_created",
+      "payload": {
+        "package_id": "pkg_002",
+        "courier": "Blue Dart"
+      },
+      "created_at": "2026-10-14T12:46:00.000Z"
+    },
+    {
+      "id": "act_0244",
+      "influencer_id": "inf_014",
+      "actor": "usr_01",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_016",
+        "outcome": "interested"
+      },
+      "created_at": "2026-10-14T13:01:00.000Z"
+    },
+    {
+      "id": "act_0245",
+      "influencer_id": "inf_014",
+      "actor": "usr_01",
+      "type": "stage_changed",
+      "payload": {
+        "from": "data_gathered",
+        "to": "contacted"
+      },
+      "created_at": "2026-10-14T13:11:00.000Z"
+    },
+    {
+      "id": "act_0246",
+      "influencer_id": "inf_002",
+      "actor": "usr_04",
+      "type": "package_updated",
+      "payload": {
+        "package_id": "pkg_002",
+        "status": "sent"
+      },
+      "created_at": "2026-10-14T14:45:00.000Z"
+    },
+    {
+      "id": "act_0247",
+      "influencer_id": "inf_002",
+      "actor": "usr_04",
+      "type": "stage_changed",
+      "payload": {
+        "from": "onboarded",
+        "to": "package_sent"
+      },
+      "created_at": "2026-10-14T14:46:00.000Z"
+    },
+    {
+      "id": "act_0248",
+      "influencer_id": "inf_002",
+      "actor": null,
+      "type": "package_updated",
+      "payload": {
+        "package_id": "pkg_002",
+        "status": "in_transit"
+      },
+      "created_at": "2026-10-15T10:46:00.000Z"
+    },
+    {
+      "id": "act_0249",
+      "influencer_id": "inf_011",
+      "actor": null,
+      "type": "package_updated",
+      "payload": {
+        "package_id": "pkg_005",
+        "status": "delivered"
+      },
+      "created_at": "2026-10-15T15:30:00.000Z"
+    },
+    {
+      "id": "act_0250",
+      "influencer_id": "inf_011",
+      "actor": "usr_04",
+      "type": "stage_changed",
+      "payload": {
+        "from": "package_sent",
+        "to": "delivered"
+      },
+      "created_at": "2026-10-15T15:31:00.000Z"
+    },
+    {
+      "id": "act_0251",
+      "influencer_id": "inf_034",
+      "actor": null,
+      "type": "package_updated",
+      "payload": {
+        "package_id": "pkg_013",
+        "status": "delivered"
+      },
+      "created_at": "2026-10-15T16:17:00.000Z"
+    },
+    {
+      "id": "act_0252",
+      "influencer_id": "inf_034",
+      "actor": "usr_03",
+      "type": "stage_changed",
+      "payload": {
+        "from": "package_sent",
+        "to": "delivered"
+      },
+      "created_at": "2026-10-15T16:18:00.000Z"
+    },
+    {
+      "id": "act_0253",
+      "influencer_id": "inf_015",
+      "actor": "usr_04",
+      "type": "created",
+      "payload": {
+        "source": "instagram"
+      },
+      "created_at": "2026-10-16T06:30:00.000Z"
+    },
+    {
+      "id": "act_0254",
+      "influencer_id": "inf_015",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_04"
+      },
+      "created_at": "2026-10-16T07:30:00.000Z"
+    },
+    {
+      "id": "act_0255",
+      "influencer_id": "inf_029",
+      "actor": "usr_04",
+      "type": "stage_changed",
+      "payload": {
+        "from": "contacted",
+        "to": "onboarded"
+      },
+      "created_at": "2026-10-17T12:24:00.000Z"
+    },
+    {
+      "id": "act_0256",
+      "influencer_id": "inf_019",
+      "actor": null,
+      "type": "package_updated",
+      "payload": {
+        "package_id": "pkg_008",
+        "status": "delivered"
+      },
+      "created_at": "2026-10-17T17:17:00.000Z"
+    },
+    {
+      "id": "act_0257",
+      "influencer_id": "inf_019",
+      "actor": "usr_01",
+      "type": "stage_changed",
+      "payload": {
+        "from": "package_sent",
+        "to": "delivered"
+      },
+      "created_at": "2026-10-17T17:18:00.000Z"
+    },
+    {
+      "id": "act_0258",
+      "influencer_id": "inf_015",
+      "actor": "usr_04",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_017",
+        "outcome": "interested"
+      },
+      "created_at": "2026-10-17T18:53:00.000Z"
+    },
+    {
+      "id": "act_0259",
+      "influencer_id": "inf_015",
+      "actor": "usr_04",
+      "type": "stage_changed",
+      "payload": {
+        "from": "data_gathered",
+        "to": "contacted"
+      },
+      "created_at": "2026-10-17T19:03:00.000Z"
+    },
+    {
+      "id": "act_0260",
+      "influencer_id": "inf_023",
+      "actor": "usr_01",
+      "type": "package_created",
+      "payload": {
+        "package_id": "pkg_009",
+        "courier": "Delhivery"
+      },
+      "created_at": "2026-10-18T08:12:00.000Z"
+    },
+    {
+      "id": "act_0261",
+      "influencer_id": "inf_023",
+      "actor": "usr_01",
+      "type": "package_updated",
+      "payload": {
+        "package_id": "pkg_009",
+        "status": "sent"
+      },
+      "created_at": "2026-10-18T10:11:00.000Z"
+    },
+    {
+      "id": "act_0262",
+      "influencer_id": "inf_023",
+      "actor": "usr_01",
+      "type": "stage_changed",
+      "payload": {
+        "from": "onboarded",
+        "to": "package_sent"
+      },
+      "created_at": "2026-10-18T10:12:00.000Z"
+    },
+    {
+      "id": "act_0263",
+      "influencer_id": "inf_047",
+      "actor": "usr_04",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_066",
+        "outcome": "interested"
+      },
+      "created_at": "2026-10-18T11:40:00.000Z"
+    },
+    {
+      "id": "act_0264",
+      "influencer_id": "inf_047",
+      "actor": "usr_04",
+      "type": "stage_changed",
+      "payload": {
+        "from": "data_gathered",
+        "to": "contacted"
+      },
+      "created_at": "2026-10-18T11:50:00.000Z"
+    },
+    {
+      "id": "act_0265",
+      "influencer_id": "inf_045",
+      "actor": "usr_04",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_064",
+        "outcome": "interested"
+      },
+      "created_at": "2026-10-18T15:45:00.000Z"
+    },
+    {
+      "id": "act_0266",
+      "influencer_id": "inf_045",
+      "actor": "usr_04",
+      "type": "stage_changed",
+      "payload": {
+        "from": "data_gathered",
+        "to": "contacted"
+      },
+      "created_at": "2026-10-18T15:55:00.000Z"
+    },
+    {
+      "id": "act_0267",
+      "influencer_id": "inf_023",
+      "actor": null,
+      "type": "package_updated",
+      "payload": {
+        "package_id": "pkg_009",
+        "status": "in_transit"
+      },
+      "created_at": "2026-10-19T06:12:00.000Z"
+    },
+    {
+      "id": "act_0268",
+      "influencer_id": "inf_015",
+      "actor": "usr_04",
+      "type": "stage_changed",
+      "payload": {
+        "from": "contacted",
+        "to": "onboarded"
+      },
+      "created_at": "2026-10-19T18:08:00.000Z"
+    },
+    {
+      "id": "act_0269",
+      "influencer_id": "inf_042",
+      "actor": "usr_04",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_060",
+        "outcome": "no_answer"
+      },
+      "created_at": "2026-10-21T06:30:00.000Z"
+    },
+    {
+      "id": "act_0270",
+      "influencer_id": "inf_015",
+      "actor": "usr_04",
+      "type": "package_created",
+      "payload": {
+        "package_id": "pkg_006",
+        "courier": "India Post"
+      },
+      "created_at": "2026-10-21T21:47:00.000Z"
+    },
+    {
+      "id": "act_0271",
+      "influencer_id": "inf_015",
+      "actor": "usr_04",
+      "type": "package_updated",
+      "payload": {
+        "package_id": "pkg_006",
+        "status": "sent"
+      },
+      "created_at": "2026-10-21T23:46:00.000Z"
+    },
+    {
+      "id": "act_0272",
+      "influencer_id": "inf_015",
+      "actor": "usr_04",
+      "type": "stage_changed",
+      "payload": {
+        "from": "onboarded",
+        "to": "package_sent"
+      },
+      "created_at": "2026-10-21T23:47:00.000Z"
+    },
+    {
+      "id": "act_0273",
+      "influencer_id": "inf_047",
+      "actor": "usr_04",
+      "type": "stage_changed",
+      "payload": {
+        "from": "contacted",
+        "to": "on_hold",
+        "reason": "Asked to reconnect after Diwali"
+      },
+      "created_at": "2026-10-22T17:10:00.000Z"
+    },
+    {
+      "id": "act_0274",
+      "influencer_id": "inf_029",
+      "actor": "usr_04",
+      "type": "package_created",
+      "payload": {
+        "package_id": "pkg_011",
+        "courier": null
+      },
+      "created_at": "2026-10-22T19:57:00.000Z"
+    },
+    {
+      "id": "act_0275",
+      "influencer_id": "inf_022",
+      "actor": "usr_04",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_028",
+        "outcome": "call_back"
+      },
+      "created_at": "2026-10-23T05:30:00.000Z"
+    },
+    {
+      "id": "act_0276",
+      "influencer_id": "inf_036",
+      "actor": "usr_01",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_052",
+        "outcome": "call_back"
+      },
+      "created_at": "2026-10-23T05:30:00.000Z"
+    },
+    {
+      "id": "act_0277",
+      "influencer_id": "inf_015",
+      "actor": "usr_04",
+      "type": "package_updated",
+      "payload": {
+        "package_id": "pkg_006",
+        "status": "returned"
+      },
+      "created_at": "2026-10-23T13:31:00.000Z"
+    },
+    {
+      "id": "act_0278",
+      "influencer_id": "inf_015",
+      "actor": "usr_04",
+      "type": "stage_changed",
+      "payload": {
+        "from": "package_sent",
+        "to": "onboarded",
+        "reason": "Package returned: recipient unavailable"
+      },
+      "created_at": "2026-10-23T13:32:00.000Z"
+    },
+    {
+      "id": "act_0279",
+      "influencer_id": "inf_006",
+      "actor": "usr_03",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_008",
+        "outcome": "call_back"
+      },
+      "created_at": "2026-10-24T04:30:00.000Z"
+    },
+    {
+      "id": "act_0280",
+      "influencer_id": "inf_032",
+      "actor": "usr_03",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_044",
+        "outcome": "call_back"
+      },
+      "created_at": "2026-10-25T05:30:00.000Z"
+    },
+    {
+      "id": "act_0281",
+      "influencer_id": "inf_050",
+      "actor": "usr_01",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_070",
+        "outcome": "no_answer"
+      },
+      "created_at": "2026-10-26T05:30:00.000Z"
+    },
+    {
+      "id": "act_0282",
+      "influencer_id": "inf_013",
+      "actor": "usr_01",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_014",
+        "outcome": "no_answer"
+      },
+      "created_at": "2026-10-26T06:30:00.000Z"
+    },
+    {
+      "id": "act_0283",
+      "influencer_id": "inf_001",
+      "actor": "usr_04",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_003",
+        "outcome": "call_back"
+      },
+      "created_at": "2026-10-26T08:30:00.000Z"
+    },
+    {
+      "id": "act_0284",
+      "influencer_id": "inf_017",
+      "actor": null,
+      "type": "ig_synced",
+      "payload": {
+        "followers": 460035
+      },
+      "created_at": "2026-10-26T14:30:00.000Z"
+    },
+    {
+      "id": "act_0285",
+      "influencer_id": "inf_021",
+      "actor": null,
+      "type": "ig_synced",
+      "payload": {
+        "followers": 511004
+      },
+      "created_at": "2026-10-26T14:30:00.000Z"
+    },
+    {
+      "id": "act_0286",
+      "influencer_id": "inf_005",
+      "actor": null,
+      "type": "ig_synced",
+      "payload": {
+        "followers": 65982
+      },
+      "created_at": "2026-10-26T17:30:00.000Z"
+    },
+    {
+      "id": "act_0287",
+      "influencer_id": "inf_047",
+      "actor": null,
+      "type": "ig_synced",
+      "payload": {
+        "followers": 729433
+      },
+      "created_at": "2026-10-26T18:30:00.000Z"
+    },
+    {
+      "id": "act_0288",
+      "influencer_id": "inf_001",
+      "actor": null,
+      "type": "ig_synced",
+      "payload": {
+        "followers": 245300
+      },
+      "created_at": "2026-10-26T19:30:00.000Z"
+    },
+    {
+      "id": "act_0289",
+      "influencer_id": "inf_011",
+      "actor": null,
+      "type": "ig_synced",
+      "payload": {
+        "followers": 21062
+      },
+      "created_at": "2026-10-26T20:30:00.000Z"
+    },
+    {
+      "id": "act_0290",
+      "influencer_id": "inf_031",
+      "actor": null,
+      "type": "ig_synced",
+      "payload": {
+        "followers": 105555
+      },
+      "created_at": "2026-10-26T20:30:00.000Z"
+    },
+    {
+      "id": "act_0291",
+      "influencer_id": "inf_004",
+      "actor": null,
+      "type": "ig_synced",
+      "payload": {
+        "followers": 7388
+      },
+      "created_at": "2026-10-26T21:30:00.000Z"
+    },
+    {
+      "id": "act_0292",
+      "influencer_id": "inf_014",
+      "actor": null,
+      "type": "ig_synced",
+      "payload": {
+        "followers": 96072
+      },
+      "created_at": "2026-10-26T22:30:00.000Z"
+    },
+    {
+      "id": "act_0293",
+      "influencer_id": "inf_016",
+      "actor": null,
+      "type": "ig_synced",
+      "payload": {
+        "followers": 715475
+      },
+      "created_at": "2026-10-26T22:30:00.000Z"
+    },
+    {
+      "id": "act_0294",
+      "influencer_id": "inf_033",
+      "actor": null,
+      "type": "ig_synced",
+      "payload": {
+        "followers": 249303
+      },
+      "created_at": "2026-10-26T22:30:00.000Z"
+    },
+    {
+      "id": "act_0295",
+      "influencer_id": "inf_042",
+      "actor": null,
+      "type": "ig_synced",
+      "payload": {
+        "followers": 28986
+      },
+      "created_at": "2026-10-27T01:30:00.000Z"
+    },
+    {
+      "id": "act_0296",
+      "influencer_id": "inf_037",
+      "actor": null,
+      "type": "ig_synced",
+      "payload": {
+        "followers": 381128
+      },
+      "created_at": "2026-10-27T04:30:00.000Z"
+    },
+    {
+      "id": "act_0297",
+      "influencer_id": "inf_028",
+      "actor": "usr_04",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_037",
+        "outcome": "no_answer"
+      },
+      "created_at": "2026-10-27T07:30:00.000Z"
+    },
+    {
+      "id": "act_0298",
+      "influencer_id": "inf_049",
+      "actor": null,
+      "type": "ig_synced",
+      "payload": {
+        "followers": 97177
+      },
+      "created_at": "2026-10-27T07:30:00.000Z"
+    },
+    {
+      "id": "act_0299",
+      "influencer_id": "inf_048",
+      "actor": "usr_04",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_067",
+        "outcome": "call_back"
+      },
+      "created_at": "2026-10-27T10:30:00.000Z"
+    },
+    {
+      "id": "act_0300",
+      "influencer_id": "inf_038",
+      "actor": "usr_04",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_055",
+        "outcome": "call_back"
+      },
+      "created_at": "2026-10-27T11:30:00.000Z"
+    },
+    {
+      "id": "act_0301",
+      "influencer_id": "inf_043",
+      "actor": null,
+      "type": "ig_synced",
+      "payload": {
+        "followers": 17127
+      },
+      "created_at": "2026-10-27T13:30:00.000Z"
+    },
+    {
+      "id": "act_0302",
+      "influencer_id": "inf_045",
+      "actor": null,
+      "type": "ig_synced",
+      "payload": {
+        "followers": 263235
+      },
+      "created_at": "2026-10-27T13:30:00.000Z"
+    },
+    {
+      "id": "act_0303",
+      "influencer_id": "inf_041",
+      "actor": null,
+      "type": "ig_synced",
+      "payload": {
+        "followers": 531009
+      },
+      "created_at": "2026-10-27T16:30:00.000Z"
+    },
+    {
+      "id": "act_0304",
+      "influencer_id": "inf_044",
+      "actor": null,
+      "type": "ig_synced",
+      "payload": {
+        "followers": 184566
+      },
+      "created_at": "2026-10-27T16:30:00.000Z"
+    },
+    {
+      "id": "act_0305",
+      "influencer_id": "inf_015",
+      "actor": null,
+      "type": "ig_synced",
+      "payload": {
+        "followers": 68968
+      },
+      "created_at": "2026-10-27T17:30:00.000Z"
+    },
+    {
+      "id": "act_0306",
+      "influencer_id": "inf_006",
+      "actor": null,
+      "type": "ig_synced",
+      "payload": {
+        "followers": 330492
+      },
+      "created_at": "2026-10-27T19:30:00.000Z"
+    },
+    {
+      "id": "act_0307",
+      "influencer_id": "inf_002",
+      "actor": null,
+      "type": "ig_synced",
+      "payload": {
+        "followers": 297804
+      },
+      "created_at": "2026-10-27T21:30:00.000Z"
+    },
+    {
+      "id": "act_0308",
+      "influencer_id": "inf_009",
+      "actor": null,
+      "type": "ig_synced",
+      "payload": {
+        "followers": 52088
+      },
+      "created_at": "2026-10-27T22:30:00.000Z"
+    },
+    {
+      "id": "act_0309",
+      "influencer_id": "inf_050",
+      "actor": null,
+      "type": "ig_synced",
+      "payload": {
+        "followers": 14291
+      },
+      "created_at": "2026-10-27T22:30:00.000Z"
+    },
+    {
+      "id": "act_0310",
+      "influencer_id": "inf_040",
+      "actor": null,
+      "type": "ig_synced",
+      "payload": {
+        "followers": 3825
+      },
+      "created_at": "2026-10-27T23:30:00.000Z"
+    },
+    {
+      "id": "act_0311",
+      "influencer_id": "inf_046",
+      "actor": null,
+      "type": "ig_synced",
+      "payload": {
+        "followers": 334432
+      },
+      "created_at": "2026-10-28T00:30:00.000Z"
+    },
+    {
+      "id": "act_0312",
+      "influencer_id": "inf_030",
+      "actor": null,
+      "type": "ig_synced",
+      "payload": {
+        "followers": 406838
+      },
+      "created_at": "2026-10-28T01:30:00.000Z"
+    },
+    {
+      "id": "act_0313",
+      "influencer_id": "inf_039",
+      "actor": null,
+      "type": "ig_synced",
+      "payload": {
+        "followers": 54213
+      },
+      "created_at": "2026-10-28T01:30:00.000Z"
+    },
+    {
+      "id": "act_0314",
+      "influencer_id": "inf_023",
+      "actor": null,
+      "type": "ig_synced",
+      "payload": {
+        "followers": 178305
+      },
+      "created_at": "2026-10-28T02:30:00.000Z"
+    },
+    {
+      "id": "act_0315",
+      "influencer_id": "inf_027",
+      "actor": null,
+      "type": "ig_synced",
+      "payload": {
+        "followers": 13907
+      },
+      "created_at": "2026-10-28T02:30:00.000Z"
+    },
+    {
+      "id": "act_0316",
+      "influencer_id": "inf_036",
+      "actor": null,
+      "type": "ig_synced",
+      "payload": {
+        "followers": 261706
+      },
+      "created_at": "2026-10-28T02:30:00.000Z"
+    },
+    {
+      "id": "act_0317",
+      "influencer_id": "inf_048",
+      "actor": null,
+      "type": "ig_synced",
+      "payload": {
+        "followers": 36660
+      },
+      "created_at": "2026-10-28T02:30:00.000Z"
+    },
+    {
+      "id": "act_0318",
+      "influencer_id": "inf_024",
+      "actor": null,
+      "type": "ig_synced",
+      "payload": {
+        "followers": 67564
+      },
+      "created_at": "2026-10-28T03:30:00.000Z"
+    },
+    {
+      "id": "act_0319",
+      "influencer_id": "inf_035",
+      "actor": null,
+      "type": "ig_synced",
+      "payload": {
+        "followers": 97490
+      },
+      "created_at": "2026-10-28T03:30:00.000Z"
+    },
+    {
+      "id": "act_0320",
+      "influencer_id": "inf_010",
+      "actor": "usr_04",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_011",
+        "outcome": "call_back"
+      },
+      "created_at": "2026-10-28T04:30:00.000Z"
+    },
+    {
+      "id": "act_0321",
+      "influencer_id": "inf_018",
+      "actor": "usr_04",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_022",
+        "outcome": "call_back"
+      },
+      "created_at": "2026-10-28T04:30:00.000Z"
+    },
+    {
+      "id": "act_0322",
+      "influencer_id": "inf_019",
+      "actor": null,
+      "type": "ig_synced",
+      "payload": {
+        "followers": 3400000
+      },
+      "created_at": "2026-10-28T04:30:00.000Z"
+    },
+    {
+      "id": "act_0323",
+      "influencer_id": "inf_031",
+      "actor": "usr_03",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_043",
+        "outcome": "call_back"
+      },
+      "created_at": "2026-10-28T04:30:00.000Z"
+    },
+    {
+      "id": "act_0324",
+      "influencer_id": "inf_037",
+      "actor": "usr_02",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_054",
+        "outcome": "call_back"
+      },
+      "created_at": "2026-10-28T04:30:00.000Z"
+    },
+    {
+      "id": "act_0325",
+      "influencer_id": "inf_041",
+      "actor": "usr_03",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_059",
+        "outcome": "call_back"
+      },
+      "created_at": "2026-10-28T04:30:00.000Z"
+    },
+    {
+      "id": "act_0326",
+      "influencer_id": "inf_049",
+      "actor": "usr_03",
+      "type": "call_logged",
+      "payload": {
+        "call_id": "call_069",
+        "outcome": "call_back"
+      },
+      "created_at": "2026-10-28T04:30:00.000Z"
+    },
+    {
+      "id": "act_0327",
+      "influencer_id": "inf_029",
+      "actor": null,
+      "type": "ig_synced",
+      "payload": {
+        "followers": 119993
+      },
+      "created_at": "2026-10-28T05:30:00.000Z"
+    },
+    {
+      "id": "act_0328",
+      "influencer_id": "inf_034",
+      "actor": null,
+      "type": "ig_synced",
+      "payload": {
+        "followers": 19935
+      },
+      "created_at": "2026-10-28T05:30:00.000Z"
+    }
+  ],
+  "saved_views": [
+    {
+      "id": "view_01",
+      "name": "Pune fashion creators",
+      "filters": {
+        "category": [
+          "Fashion"
+        ],
+        "city": [
+          "Pune"
+        ]
+      },
+      "sort": "-followers",
+      "created_by": "usr_03",
+      "created_at": "2026-10-08T06:30:00.000Z"
+    },
+    {
+      "id": "view_02",
+      "name": "Mumbai 100K+",
+      "filters": {
+        "city": [
+          "Mumbai"
+        ],
+        "followers_min": 100000
+      },
+      "sort": "-followers",
+      "created_by": "usr_02",
+      "created_at": "2026-10-16T06:30:00.000Z"
+    }
+  ]
+}
