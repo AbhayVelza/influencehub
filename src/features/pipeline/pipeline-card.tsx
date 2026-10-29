@@ -2,6 +2,7 @@ import { useDraggable } from '@dnd-kit/core'
 import { Clock } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { PersonAvatar } from '@/components/common/person-avatar'
+import { AccountLabel } from '@/components/common/platform-badge'
 import { formatCompact } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import type { PipelineCard as PipelineCardData, User } from '@/types'
@@ -40,11 +41,11 @@ export function PipelineCardView({
           >
             {card.name}
           </Link>
-          <p className="truncate text-xs text-muted-foreground">@{card.instagram_handle}</p>
+          <AccountLabel account={card.primary_account} block className="text-xs text-muted-foreground" />
         </div>
       </div>
       <p className="text-xs text-muted-foreground">
-        <span className="font-medium text-foreground tabular-nums">{formatCompact(card.followers)}</span> followers ·{' '}
+        <span className="font-medium text-foreground tabular-nums">{formatCompact(card.total_reach)}</span> reach ·{' '}
         {card.category}
       </p>
       <div className="flex items-center justify-between gap-2 text-xs">

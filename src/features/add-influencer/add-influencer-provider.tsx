@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useCan } from '@/hooks/use-me'
 import { AddInfluencerContext, type AddTab, type ManualPrefill } from './context'
 import { CsvTab } from './csv-tab'
-import { InstagramTab } from './instagram-tab'
+import { LookupTab } from './lookup-tab'
 import { ManualTab } from './manual-tab'
 
 interface DialogState {
@@ -17,17 +17,17 @@ interface DialogState {
 
 export function AddInfluencerProvider({ children }: { children: ReactNode }) {
   const canImport = useCan('data:import')
-  const [state, setState] = useState<DialogState>({ open: false, tab: 'instagram', session: 0 })
+  const [state, setState] = useState<DialogState>({ open: false, tab: 'lookup', session: 0 })
   const [busy, setBusy] = useState(false)
 
   const open = useCallback(
     (options?: { tab?: AddTab; prefill?: ManualPrefill }) =>
-      setState((s) => ({ open: true, tab: options?.tab ?? 'instagram', prefill: options?.prefill, session: s.session + 1 })),
+      setState((s) => ({ open: true, tab: options?.tab ?? 'lookup', prefill: options?.prefill, session: s.session + 1 })),
     [],
   )
   const close = useCallback(() => setState((s) => ({ ...s, open: false })), [])
   const value = useMemo(() => ({ open }), [open])
-  const tab = state.tab === 'csv' && !canImport ? 'instagram' : state.tab
+  const tab = state.tab === 'csv' && !canImport ? 'lookup' : state.tab
 
   return (
     <AddInfluencerContext value={value}>
@@ -36,7 +36,7 @@ export function AddInfluencerProvider({ children }: { children: ReactNode }) {
         <DialogContent className="max-h-[90svh] overflow-y-auto sm:max-w-3xl" onEscapeKeyDown={(e) => busy && e.preventDefault()}>
           <DialogHeader>
             <DialogTitle>Add influencers</DialogTitle>
-            <DialogDescription>Fetch from Instagram, enter details by hand, or import a CSV.</DialogDescription>
+            <DialogDescription>Look up a public profile, enter details by hand, or import a CSV.</DialogDescription>
           </DialogHeader>
           <Tabs
             value={tab}
@@ -45,12 +45,12 @@ export function AddInfluencerProvider({ children }: { children: ReactNode }) {
             className="min-w-0 gap-4"
           >
             <TabsList>
-              <TabsTrigger value="instagram">Fetch from Instagram</TabsTrigger>
+              <TabsTrigger value="lookup">Look up a profile</TabsTrigger>
               <TabsTrigger value="manual">Manual</TabsTrigger>
               {canImport && <TabsTrigger value="csv">CSV import</TabsTrigger>}
             </TabsList>
-            <TabsContent value="instagram">
-              <InstagramTab
+            <TabsContent value="lookup">
+              <LookupTab
                 key={state.session}
                 onDone={close}
                 onManual={(prefill) => setState((s) => ({ ...s, tab: 'manual', prefill, session: s.session + 1 }))}

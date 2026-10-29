@@ -5,11 +5,6 @@ export const jobsApi = {
   get: <TResult = unknown>(id: string, signal?: AbortSignal) => http.get<Job<TResult>>(`/jobs/${id}`, undefined, signal),
 }
 
-export const instagramApi = {
-  /** Fails fast with 409 `already_exists` / `in_pool` / `assigned_to_other` when the handle is already in the CRM. */
-  lookup: (username: string) => http.post<JobRef>('/instagram/lookup', { username }),
-}
-
 export const importsApi = {
   presignCsv: (filename: string) => http.post<CsvPresignResponse>('/imports/csv/presign', { filename }),
 

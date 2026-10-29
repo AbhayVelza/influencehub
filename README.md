@@ -16,6 +16,10 @@ npm run dev        # http://localhost:5173, mock API on (see .env.development)
 | `npm run build` | Type-check and build to `dist/` |
 | `npm run preview` | Serve the production build |
 | `npm run lint` / `npm run typecheck` | oxlint / TypeScript |
+| `npm run test:e2e` | Playwright end-to-end tests (`e2e/`) against the dev server with mocks, on port 5199 |
+
+E2E tests use the installed Microsoft Edge. Elsewhere, run `npx playwright install chromium` and set
+`E2E_CHANNEL=chromium`.
 
 ## Environment variables
 
@@ -29,17 +33,23 @@ Copy `.env.example` to `.env.local` to override. `.env.development` turns the mo
 
 ## Mock data
 
-- 50 influencers (70% in Indian cities) across every stage, plus calls, packages, activity and a 4-person team.
+- 54 influencers (70% in Indian cities) across every stage, plus calls, packages, activity and a 4-person team.
+  Each has an Instagram account plus, for many, YouTube, TikTok, Facebook (Pages and two personal profiles),
+  Threads, Pinterest, LinkedIn or Snapchat, in every sync / connect state.
+- 4 planted duplicate pairs for **Possible duplicates**: same email (Riya Shah / Riya S.), a YouTube channel linked
+  from an Instagram bio (Ishaan Kapoor / Ishaan Talks), the same handle on two platforms (Arjun Pillai / Arjun P),
+  and a similar name in the same city (Kabir Malhotra / Kabir Malhothra).
   Dates shift on load, so "due today" and "overdue" follow-ups are always current.
 - Data lives in memory: a full page reload resets it.
-- Instagram usernames that simulate failures (lookup in **Add influencer**, and **Sync now**):
+- Usernames that simulate failures (lookup in **Add influencer**, and **Sync now**; any lookup platform):
 
   | Username contains | Result |
   | --- | --- |
-  | `personal` | Personal account: not synced, offered "Enter manually" |
+  | `personal` | Personal Instagram / Facebook profile: offered "Enter manually" |
   | `notfound` | Account not found |
   | `ratelimit` | Instagram rate limit |
-  | anything else | A generated Business/Creator profile |
+  | `multi` | A profile whose bio links another platform ("Also found: …") |
+  | anything else | A generated profile (about half link another platform in their bio) |
 
   A handle already in the CRM (e.g. `riyastyle`) returns "Already in CRM"; one in the Unassigned Pool (e.g.
   `oliviaexplores`) offers "Claim it".
@@ -59,7 +69,7 @@ data, and does nothing against a real backend.
 | View, add, edit, log calls, packages, standard stage moves | own influencers | all | all |
 | Unassigned Pool | preview, Claim | full details, Assign | full details, Assign |
 | Release to the pool (reason required) | own | anyone's | anyone's |
-| Reassign, delete, reopen rejected, import / export |  | ✓ | ✓ |
+| Reassign, delete, reopen rejected, import / export, review & merge duplicates |  | ✓ | ✓ |
 | Stage override (with reason), Settings (incl. pool guards) |  |  | ✓ |
 
 ## More

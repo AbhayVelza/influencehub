@@ -1,6 +1,7 @@
 import { http, HttpResponse } from 'msw'
 import { ALL_STAGES, STAGE_META } from '@/lib/constants'
 import { can } from '@/lib/permissions'
+import { PLATFORM_META, PLATFORMS } from '@/lib/platforms'
 import type {
   BulkRequest,
   BulkResult,
@@ -12,16 +13,16 @@ import type {
   Influencer,
   InfluencerCreate,
   InfluencerUpdate,
+  Platform,
   ReleaseRequest,
   StageChangeRequest,
 } from '@/types'
-import { currentUser, db, findInfluencer, logActivity, mediaFor, nextId, nowIso, snapshotsFor } from '../db'
+import { currentUser, db, findInfluencer, logActivity, nextId, nowIso } from '../db'
 import {
   assignedToOtherMessage,
   canSetOwnerOnCreate,
   changeStage,
   claimInfluencer,
-  completeSync,
   createInfluencer,
   deleteInfluencer,
   filterInfluencers,
@@ -36,7 +37,8 @@ import {
   visibleInfluencers,
 } from '../domain'
 import { createJob } from '../jobs'
-import { all, api, apiError, forbidden, latency, notFound, paginate, readJson } from '../utils'
+import { syncAccount } from '../social'
+import { api, apiError, forbidden, latency, notFound, paginate, readJson } from '../utils'
 
 function countBy(list: Influencer[], key: (i: Influencer) => string | null, label = (v: string) => v): FilterOption[] {
   const counts = new Map<string, number>()
@@ -67,7 +69,30 @@ export function filterOptionsFor(source: Influencer[], params: URLSearchParams):
       count: source.filter((i) => i.stage === stage).length,
     })),
     assigned_to: countBy(source, (i) => i.assigned_to, (id) => team.get(id) ?? id),
+    platforms: PLATFORMS.map((p) => ({
+      value: p,
+      label: PLATFORM_META[p].label,
+      count: source.filter((i) => i.accounts.some((a) => a.platform === p)).length,
+    })),
   }
+}
+
+/** Accounts a sync can refresh: public lookups, and connect accounts the creator has connected. */
+export const syncableAccounts = (inf: Influencer) =>
+  inf.accounts.filter((a) => a.sync_method === 'lookup' || (a.sync_method === 'connect' && a.connect_status === 'connected'))
+
+/** 409 when any of these handles is already in the CRM, in the shape the caller may see. */
+export function accountConflict(accounts: { platform: Platform; handle: string }[] | undefined) {
+  for (const a of accounts ?? []) {
+    if (!PLATFORMS.includes(a?.platform)) continue
+    const handle = normalizeHandle(a.handle ?? '', a.platform)
+    const status = handleStatus(a.platform, handle)
+    const label = `${PLATFORM_META[a.platform].label} @${handle}`
+    if (status.conflict === 'in_pool') return apiError(409, 'in_pool', inPoolMessage(label))
+    if (status.conflict === 'assigned_to_other') return apiError(409, 'assigned_to_other', assignedToOtherMessage(label))
+    if (status.conflict === 'exists') return apiError(409, 'handle_taken', `${label} is already in the CRM`)
+  }
+  return null
 }
 
 const CALL_OUTCOMES = ['interested', 'not_interested', 'call_back', 'no_answer', 'wrong_number']
@@ -88,8 +113,10 @@ export const influencerHandlers = [
 
   http.get(api('/influencers/check-handle'), async ({ request }) => {
     await latency()
-    const handle = normalizeHandle(new URL(request.url).searchParams.get('handle') ?? '')
-    return HttpResponse.json(handleStatus(handle))
+    const params = new URL(request.url).searchParams
+    const platform = (params.get('platform') ?? 'instagram') as Platform
+    if (!PLATFORMS.includes(platform)) return apiError(422, 'validation_error', 'Unknown platform')
+    return HttpResponse.json(handleStatus(platform, normalizeHandle(params.get('handle') ?? '', platform)))
   }),
 
   http.post(api('/influencers/bulk'), async ({ request }) => {
@@ -141,25 +168,24 @@ export const influencerHandlers = [
         else result.failed.push({ id, code: res.code, message: res.message })
       }
     } else if (body.action === 'sync') {
-      const found = ids.filter((id) => findVisible(id, user))
-      for (const id of found) {
-        const inf = findInfluencer(id)!
-        if (inf.account_type !== 'personal') inf.ig_sync_status = 'pending'
-      }
-      result.succeeded = found
-      ids.filter((id) => !found.includes(id)).forEach(notFoundRow)
+      const found = ids.map((id) => findVisible(id, user)).filter((i): i is Influencer => !!i)
+      const accounts = found.flatMap((inf) => syncableAccounts(inf).map((a) => ({ inf, a })))
+      for (const { a } of accounts) if (a.sync_method === 'lookup') a.sync_status = 'pending'
+      result.succeeded = found.map((i) => i.id)
+      ids.filter((id) => !result.succeeded.includes(id)).forEach(notFoundRow)
       result.job_id = createJob((): BulkSyncResult => {
         const sync: BulkSyncResult = { synced: 0, failed: [] }
-        for (const id of found) {
+        for (const { inf, a } of accounts) {
           try {
-            completeSync(id)
+            syncAccount(a.id)
             sync.synced++
           } catch (err) {
-            sync.failed.push({ id, message: err instanceof Error ? err.message : 'Sync failed' })
+            const message = err instanceof Error ? err.message : 'Sync failed'
+            sync.failed.push({ id: inf.id, message: `${PLATFORM_META[a.platform].label}: ${message}` })
           }
         }
         return sync
-      }, 2000 + found.length * 300)
+      }, 2000 + accounts.length * 200)
     } else if (body.action === 'delete') {
       if (!can(user.role, 'influencer:delete')) return forbidden('Only managers and admins can delete influencers')
       for (const id of ids) {
@@ -176,11 +202,9 @@ export const influencerHandlers = [
     await latency()
     const body = await readJson<InfluencerCreate>(request)
     if (!canSetOwnerOnCreate(currentUser(), body.assigned_to ?? null)) return forbidden(OWNER_CHANGE_MESSAGE)
-    const handle = normalizeHandle(body.instagram_handle ?? '')
-    const conflict = handle ? handleStatus(handle).conflict : null
-    if (conflict === 'in_pool') return apiError(409, 'in_pool', inPoolMessage(handle))
-    if (conflict === 'assigned_to_other') return apiError(409, 'assigned_to_other', assignedToOtherMessage(handle))
-    const source = body.followers != null && body.account_type !== 'personal' ? 'instagram' : 'manual'
+    const conflict = accountConflict(body.accounts)
+    if (conflict) return conflict
+    const source = body.accounts?.some((a) => a.metrics !== undefined && a.sync_method !== 'manual') ? 'lookup' : 'manual'
     const res = createInfluencer(body, source)
     if (!res.ok) return apiError(res.status, res.code, res.message)
     return HttpResponse.json(res.influencer, { status: 201 })
@@ -219,15 +243,9 @@ export const influencerHandlers = [
     if (!inf) return notFound('Influencer')
     const body = await readJson<InfluencerUpdate>(request)
     const user = currentUser()
-
-    if (body.instagram_handle !== undefined) {
-      const handle = normalizeHandle(body.instagram_handle)
-      if (!handle) return apiError(422, 'validation_error', 'Instagram handle is required')
-      if (db.influencers.some((i) => i.id !== inf.id && i.instagram_handle === handle)) {
-        return apiError(409, 'handle_taken', `@${handle} is already in the CRM`)
-      }
-      body.instagram_handle = handle
-      body.profile_url = `https://www.instagram.com/${handle}/`
+    // Accounts and what's derived from them change through /accounts endpoints only.
+    for (const key of ['accounts', 'total_reach', 'is_verified', 'profile_pic_url', 'id', 'stage', 'created_at', 'updated_at']) {
+      delete (body as Record<string, unknown>)[key]
     }
     if (body.phone !== undefined) body.phone = normalizePhone(body.phone)
     if (body.assigned_to !== undefined && body.assigned_to !== inf.assigned_to) {
@@ -267,26 +285,6 @@ export const influencerHandlers = [
     if (!findVisible(id)) return notFound('Influencer')
     const list = db.activities.filter((a) => a.influencer_id === id).sort((a, b) => b.created_at.localeCompare(a.created_at))
     return HttpResponse.json(paginate(list, new URL(request.url).searchParams, 50))
-  }),
-
-  http.get(api('/influencers/:id/snapshots'), async ({ params }) => {
-    await latency()
-    const inf = findVisible(String(params.id))
-    return inf ? HttpResponse.json(all(snapshotsFor(inf))) : notFound('Influencer')
-  }),
-
-  http.get(api('/influencers/:id/media'), async ({ params }) => {
-    await latency()
-    const inf = findVisible(String(params.id))
-    return inf ? HttpResponse.json(all(mediaFor(inf))) : notFound('Influencer')
-  }),
-
-  http.post(api('/influencers/:id/sync'), async ({ params }) => {
-    await latency()
-    const inf = findVisible(String(params.id))
-    if (!inf) return notFound('Influencer')
-    if (inf.account_type !== 'personal') inf.ig_sync_status = 'pending'
-    return HttpResponse.json({ job_id: createJob(() => completeSync(inf.id)) }, { status: 202 })
   }),
 
   http.get(api('/influencers/:id/calls'), async ({ params, request }) => {

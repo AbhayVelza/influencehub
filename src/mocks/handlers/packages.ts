@@ -43,7 +43,7 @@ export const packageHandlers = [
         if (sentFrom && dayKey(p.sent_at!) < sentFrom) return false
         if (sentTo && dayKey(p.sent_at!) > sentTo) return false
         if (q) {
-          const haystack = [p.influencer.name, p.influencer.instagram_handle, p.tracking_number, p.courier].join(' ')
+          const haystack = [p.influencer.name, p.influencer.primary_account?.handle, p.tracking_number, p.courier].join(' ')
           if (!haystack.toLowerCase().includes(q)) return false
         }
         return true

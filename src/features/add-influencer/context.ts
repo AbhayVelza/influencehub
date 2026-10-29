@@ -1,11 +1,13 @@
 import { createContext, useContext } from 'react'
-import type { AccountType } from '@/types'
+import type { Platform } from '@/types'
 
-export type AddTab = 'instagram' | 'manual' | 'csv'
+export type AddTab = 'lookup' | 'manual' | 'csv'
 
+/** Starts the manual form with one account, e.g. a personal profile the lookup couldn't fetch. */
 export interface ManualPrefill {
-  instagram_handle?: string
-  account_type?: AccountType
+  platform: Platform
+  handle: string
+  personal?: boolean
 }
 
 export interface AddInfluencerContextValue {

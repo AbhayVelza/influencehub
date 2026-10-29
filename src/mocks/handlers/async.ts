@@ -1,30 +1,27 @@
 import { http, HttpResponse } from 'msw'
 import { mapImportRow, validateImportRow } from '@/lib/csv-import'
 import { can } from '@/lib/permissions'
+import { LOOKUP_PLATFORMS, PLATFORM_META } from '@/lib/platforms'
 import { toSearchParams } from '@/services/http'
-import type {
-  CsvImportRequest,
-  CsvImportResult,
-  ExportRequest,
-  ExportResult,
-  Influencer,
-  InfluencerCreate,
-} from '@/types'
-import { currentUser, db, logActivity, nowIso } from '../db'
+import type { CsvImportRequest, CsvImportResult, ExportRequest, ExportResult, Influencer, InfluencerCreate, LookupRequest } from '@/types'
+import { currentUser, db, logActivity, nowIso, refreshDerived } from '../db'
 import {
   assignedToOtherMessage,
-  completeSync,
   createInfluencer,
   filterInfluencers,
+  findByHandle,
   handleStatus,
   inPoolMessage,
-  lookupInstagram,
   normalizeHandle,
   parseCsv,
   toCsv,
 } from '../domain'
 import { createJob, readJob } from '../jobs'
+import { buildAccount, lookupProfile, syncAccount } from '../social'
 import { api, apiError, forbidden, latency, notFound, readJson } from '../utils'
+import { syncableAccounts } from './influencers'
+
+const HANDLE = /^[a-z0-9._-]{1,60}$/
 
 export const asyncHandlers = [
   http.get(api('/jobs/:id'), async ({ params }) => {
@@ -33,17 +30,21 @@ export const asyncHandlers = [
     return job ? HttpResponse.json(job) : notFound('Job')
   }),
 
-  http.post(api('/instagram/lookup'), async ({ request }) => {
+  http.post(api('/lookup'), async ({ request }) => {
     await latency()
-    const username = normalizeHandle((await readJson<{ username?: string }>(request)).username ?? '')
-    if (!username || !/^[a-z0-9._]{1,30}$/.test(username)) {
-      return apiError(422, 'validation_error', 'Enter a valid Instagram username')
+    const body = await readJson<Partial<LookupRequest>>(request)
+    const platform = body.platform
+    if (!platform || !LOOKUP_PLATFORMS.includes(platform)) {
+      return apiError(422, 'not_supported', 'Only Instagram, YouTube, Threads and Facebook Pages can be looked up')
     }
-    const { conflict } = handleStatus(username)
-    if (conflict === 'exists') return apiError(409, 'already_exists', `@${username} is already in the CRM`)
-    if (conflict === 'in_pool') return apiError(409, 'in_pool', inPoolMessage(username))
-    if (conflict === 'assigned_to_other') return apiError(409, 'assigned_to_other', assignedToOtherMessage(username))
-    return HttpResponse.json({ job_id: createJob(() => lookupInstagram(username), 2500) }, { status: 202 })
+    const username = normalizeHandle(body.username ?? '', platform)
+    const label = `${PLATFORM_META[platform].label} @${username}`
+    if (!HANDLE.test(username)) return apiError(422, 'validation_error', `Enter a valid ${PLATFORM_META[platform].label} username`)
+    const { conflict } = handleStatus(platform, username)
+    if (conflict === 'exists') return apiError(409, 'already_exists', `${label} is already in the CRM`)
+    if (conflict === 'in_pool') return apiError(409, 'in_pool', inPoolMessage(label))
+    if (conflict === 'assigned_to_other') return apiError(409, 'assigned_to_other', assignedToOtherMessage(label))
+    return HttpResponse.json({ job_id: createJob(() => lookupProfile(platform, username), 2500) }, { status: 202 })
   }),
 
   // ---- CSV import ---------------------------------------------------------
@@ -69,8 +70,8 @@ export const asyncHandlers = [
     const text = db.uploads.get(body.key)
     if (text === undefined) return apiError(422, 'validation_error', 'Upload not found. Upload the file again.')
     const mapping = body.mapping ?? {}
-    if (!mapping.name || !mapping.instagram_handle) {
-      return apiError(422, 'validation_error', 'Map at least the name and Instagram handle columns')
+    if (!mapping.name || !Object.keys(PLATFORM_META).some((p) => mapping[p as keyof typeof mapping])) {
+      return apiError(422, 'validation_error', 'Map the name column and at least one platform handle column')
     }
 
     const run = (): CsvImportResult => {
@@ -84,7 +85,7 @@ export const asyncHandlers = [
         duplicates: 0,
         failed: 0,
         errors: [],
-        instagram: body.fetch_instagram ? { synced: 0, failed: 0 } : null,
+        profiles: body.fetch_profiles ? { synced: 0, failed: 0 } : null,
       }
       const seen = new Set<string>()
       const touched: Influencer[] = []
@@ -92,63 +93,71 @@ export const asyncHandlers = [
       rows.forEach((row, idx) => {
         const line = idx + 2 // header is line 1
         const raw = mapImportRow(row, headers, mapping)
-        const { values, errors } = validateImportRow(raw, categoryNames)
+        const { values, accounts, errors } = validateImportRow(raw, categoryNames)
+        const firstHandle = accounts[0]?.handle ?? null
         const problems = Object.values(errors)
         if (problems.length) {
           result.failed++
-          result.errors.push({ row: line, instagram_handle: raw.instagram_handle ?? null, message: problems.join('; ') })
+          result.errors.push({ row: line, handle: firstHandle, message: problems.join('; ') })
           return
         }
-        const handle = values.instagram_handle!
-        if (seen.has(handle)) {
+        const keys = accounts.map((a) => `${a.platform}:${a.handle}`)
+        if (keys.some((k) => seen.has(k))) {
           result.duplicates++
           return
         }
-        seen.add(handle)
+        keys.forEach((k) => seen.add(k))
 
-        const existing = db.influencers.find((i) => i.instagram_handle === handle)
+        // The row is an existing creator when any of its handles is already in the CRM.
+        const existing = accounts.map((a) => findByHandle(a.platform, a.handle)).find(Boolean)
         if (existing) {
           if (body.on_duplicate !== 'update') {
             result.duplicates++
             return
           }
-          // Only fields present in the row overwrite; tags are merged.
-          const { instagram_handle: _ignored, tags, ...rest } = values
-          const fields = Object.keys(raw).filter((k) => k !== 'instagram_handle' && k !== 'tags')
+          // Only fields present in the row overwrite; tags are merged; new handles are added as accounts.
+          const { tags, ...rest } = values
+          const fields = Object.keys(raw).filter((k) => k in rest)
           Object.assign(existing, Object.fromEntries(Object.entries(rest).filter(([k]) => fields.includes(k))))
           if (tags) existing.tags = [...new Set([...existing.tags, ...tags])]
+          for (const a of accounts) {
+            if (!findByHandle(a.platform, a.handle)) existing.accounts.push(buildAccount(existing, a, false))
+          }
           existing.updated_at = nowIso()
-          logActivity(existing.id, 'updated', { fields: Object.keys(raw).filter((k) => k !== 'instagram_handle'), source: 'csv' })
+          refreshDerived(existing)
+          logActivity(existing.id, 'updated', { fields: Object.keys(raw), source: 'csv' })
           result.updated++
           touched.push(existing)
           return
         }
 
-        const res = createInfluencer({ ...values, account_type: 'unknown' } as InfluencerCreate, 'csv')
+        const res = createInfluencer({ ...values, accounts } as InfluencerCreate, 'csv')
         if (res.ok) {
           result.created++
           touched.push(res.influencer)
         } else {
           result.failed++
-          result.errors.push({ row: line, instagram_handle: handle, message: res.message })
+          result.errors.push({ row: line, handle: firstHandle, message: res.message })
         }
       })
 
-      if (result.instagram) {
+      if (result.profiles) {
         for (const inf of touched) {
-          try {
-            completeSync(inf.id)
-            result.instagram.synced++
-          } catch {
-            result.instagram.failed++
+          for (const account of syncableAccounts(inf)) {
+            try {
+              syncAccount(account.id)
+              result.profiles.synced++
+            } catch {
+              result.profiles.failed++
+            }
           }
         }
       }
       db.uploads.delete(body.key)
       return result
     }
-    // Instagram lookups make the job noticeably longer, like the real thing.
-    return HttpResponse.json({ job_id: createJob(run, body.fetch_instagram ? 5000 : 3000) }, { status: 202 })
+    // Profile lookups make the job noticeably longer, like the real thing.
+    return HttpResponse.json({ job_id: createJob(run, body.fetch_profiles ? 5000 : 3000) }, { status: 202 })
   }),
 
   // ---- Export -------------------------------------------------------------

@@ -4,6 +4,7 @@ import { RequirePermission } from '@/components/common/require-permission'
 import {
   CallsPage,
   DashboardPage,
+  DuplicatesPage,
   InfluencerDetailPage,
   InfluencersPage,
   NotFoundPage,
@@ -21,6 +22,14 @@ export const router = createBrowserRouter([
       { path: 'influencers', element: <InfluencersPage /> },
       { path: 'influencers/:id', element: <InfluencerDetailPage /> },
       { path: 'pool', element: <PoolPage /> },
+      {
+        path: 'duplicates',
+        element: (
+          <RequirePermission permission="influencer:merge">
+            <DuplicatesPage />
+          </RequirePermission>
+        ),
+      },
       { path: 'pipeline', element: <PipelinePage /> },
       { path: 'calls', element: <CallsPage /> },
       { path: 'packages', element: <PackagesPage /> },

@@ -1,7 +1,8 @@
-import { BadgeCheck, ChevronDown, ExternalLink, Lock, UserRound } from 'lucide-react'
+import { BadgeCheck, ChevronDown, Lock, UserRound } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { PersonAvatar } from '@/components/common/person-avatar'
+import { AccountLabel, PlatformMarks } from '@/components/common/platform-badge'
 import { StageBadge } from '@/components/common/stage-badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -16,7 +17,7 @@ import { useCan, useMe } from '@/hooks/use-me'
 import { useTeam } from '@/hooks/use-team'
 import { formatCompact, formatDateTime, formatLocation, formatNumber, formatRelative } from '@/lib/format'
 import type { PoolItem } from '@/types'
-import { isFullInfluencer } from './queries'
+import { isFullInfluencer, poolPlatforms, poolPrimary } from './queries'
 
 function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -51,19 +52,13 @@ export function PoolPreview({ item }: { item: PoolItem }) {
 
       <dl className="divide-y">
         <Row label="Primary account">
-          <a
-            href={item.profile_url}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-1 font-medium hover:underline"
-          >
-            @{item.instagram_handle}
-            <ExternalLink className="size-3" />
-          </a>
+          <AccountLabel account={poolPrimary(item)} link className="font-medium" />
         </Row>
-        <Row label="Platforms">Instagram</Row>
-        <Row label="Followers">
-          {item.followers == null ? none : <span title={formatNumber(item.followers)}>{formatCompact(item.followers)}</span>}
+        <Row label="Platforms">
+          <PlatformMarks platforms={poolPlatforms(item)} />
+        </Row>
+        <Row label="Total reach">
+          {item.total_reach == null ? none : <span title={formatNumber(item.total_reach)}>{formatCompact(item.total_reach)}</span>}
         </Row>
         <Row label="Location">{formatLocation([item.city, item.state, item.country])}</Row>
         <Row label="Added">

@@ -16,7 +16,7 @@ import {
 import { ActivityTab } from '@/features/influencers/detail/activity-tab'
 import { CallsTab } from '@/features/influencers/detail/calls-tab'
 import { InfluencerHeader } from '@/features/influencers/detail/influencer-header'
-import { InstagramPanel } from '@/features/influencers/detail/instagram-panel'
+import { SocialAccountsPanel } from '@/features/influencers/detail/social-accounts-panel'
 import { OverviewTab } from '@/features/influencers/detail/overview-tab'
 import { PackagesTab } from '@/features/influencers/detail/packages-tab'
 import { listReturnPath } from '@/features/influencers/list-params'
@@ -161,7 +161,7 @@ export default function InfluencerDetailPage() {
       />
 
       <div className="grid items-start gap-6 lg:grid-cols-[19rem_minmax(0,1fr)]">
-        <InstagramPanel influencer={data} />
+        <SocialAccountsPanel influencer={data} />
 
         <Tabs value={tab} onValueChange={setTab} className="min-w-0 gap-4">
           <TabsList>

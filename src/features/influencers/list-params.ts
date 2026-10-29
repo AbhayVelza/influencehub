@@ -2,22 +2,14 @@ import { useCallback, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { ALL_STAGES, DEFAULT_PAGE_SIZE } from '@/lib/constants'
 import { toSearchParams } from '@/services/http'
-import type { InfluencerFilters, InfluencerListParams, InfluencerSort, InfluencerSortKey, Stage } from '@/types'
+import { PLATFORMS } from '@/lib/platforms'
+import type { InfluencerFilters, InfluencerListParams, InfluencerSort, InfluencerSortKey, Platform, Stage } from '@/types'
 
 // The list's URL uses the same keys as GET /influencers, so a URL maps 1:1 to an API request.
 
 export const PAGE_SIZE_OPTIONS = [25, 50, 100]
 
-const SORT_KEYS: InfluencerSortKey[] = [
-  'name',
-  'followers',
-  'engagement_rate',
-  'city',
-  'stage',
-  'created_at',
-  'updated_at',
-  'last_synced_at',
-]
+const SORT_KEYS: InfluencerSortKey[] = ['name', 'total_reach', 'city', 'stage', 'created_at', 'updated_at']
 
 const ARRAY_KEYS = ['category', 'country', 'state', 'city', 'assigned_to'] as const
 
@@ -42,10 +34,12 @@ export function parseFilters(sp: URLSearchParams): InfluencerFilters {
   }
   const stages = sp.getAll('stage').filter((s): s is Stage => ALL_STAGES.includes(s as Stage))
   if (stages.length) filters.stage = stages
-  const min = toNumber(sp.get('followers_min'))
-  const max = toNumber(sp.get('followers_max'))
-  if (min !== undefined) filters.followers_min = min
-  if (max !== undefined) filters.followers_max = max
+  const platforms = sp.getAll('platform').filter((p): p is Platform => PLATFORMS.includes(p as Platform))
+  if (platforms.length) filters.platform = platforms
+  const min = toNumber(sp.get('reach_min'))
+  const max = toNumber(sp.get('reach_max'))
+  if (min !== undefined) filters.reach_min = min
+  if (max !== undefined) filters.reach_max = max
   return filters
 }
 

@@ -1,12 +1,23 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { invalidateInfluencer } from '@/features/influencers/detail-queries'
+import { useCan } from '@/hooks/use-me'
+import { primaryAccount, toRef } from '@/lib/platforms'
 import { queryKeys } from '@/lib/query'
 import { ApiError, getErrorMessage, influencersApi, poolApi } from '@/services'
-import type { Influencer, InfluencerListParams, PoolItem } from '@/types'
+import type { AccountRef, Influencer, InfluencerListParams, Platform, PoolItem } from '@/types'
 
 /** Managers and admins get full influencers from the pool API; executives get previews. */
 export const isFullInfluencer = (item: PoolItem): item is Influencer => 'assigned_to' in item
+
+export function poolPrimary(item: PoolItem): AccountRef | null {
+  if (!isFullInfluencer(item)) return item.primary_account
+  const primary = primaryAccount(item)
+  return primary ? toRef(primary) : null
+}
+
+export const poolPlatforms = (item: PoolItem): Platform[] =>
+  isFullInfluencer(item) ? item.accounts.map((a) => a.platform) : item.platforms
 
 export function usePoolList(params: InfluencerListParams) {
   return useQuery({
@@ -75,9 +86,15 @@ export function useClaimInfluencer() {
 }
 
 export function useReleaseInfluencer(id: string) {
+  const queryClient = useQueryClient()
   const refresh = useRefreshAfterOwnerChange()
+  const canSeeAll = useCan('influencer:reassign')
   return useMutation({
     mutationFn: (reason: string) => influencersApi.release(id, { reason }),
-    onSuccess: () => refresh(id),
+    onSuccess: () => {
+      // An executive loses access: drop the cached record (contact details, calls) rather than keep it around.
+      if (!canSeeAll) queryClient.removeQueries({ queryKey: queryKeys.influencer(id) })
+      refresh(id)
+    },
   })
 }

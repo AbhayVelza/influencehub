@@ -2,6 +2,7 @@ import { X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useTeamMap } from '@/hooks/use-team'
 import { STAGE_META } from '@/lib/constants'
+import { PLATFORM_META } from '@/lib/platforms'
 import { formatFollowerRange } from '@/lib/format'
 import type { InfluencerFilters } from '@/types'
 import type { FilterChange } from './filter-bar'
@@ -25,7 +26,7 @@ export function ActiveFilters({ filters, onChange, onClear }: ActiveFiltersProps
   if (filters.q) chips.push({ key: 'q', label: `“${filters.q}”`, remove: () => onChange({ q: undefined }) })
 
   const listChips = (
-    key: 'category' | 'country' | 'state' | 'city' | 'stage' | 'assigned_to',
+    key: 'category' | 'platform' | 'country' | 'state' | 'city' | 'stage' | 'assigned_to',
     label: (value: string) => string,
   ) => {
     const values = (filters[key] ?? []) as string[]
@@ -38,17 +39,18 @@ export function ActiveFilters({ filters, onChange, onClear }: ActiveFiltersProps
     }
   }
   listChips('category', (v) => v)
+  listChips('platform', (v) => PLATFORM_META[v as keyof typeof PLATFORM_META]?.label ?? v)
   listChips('country', (v) => v)
   listChips('state', (v) => v)
   listChips('city', (v) => v)
   listChips('stage', (v) => STAGE_META[v as keyof typeof STAGE_META]?.label ?? v)
   listChips('assigned_to', (v) => `Owner: ${team.get(v)?.name ?? v}`)
 
-  if (filters.followers_min != null || filters.followers_max != null) {
+  if (filters.reach_min != null || filters.reach_max != null) {
     chips.push({
-      key: 'followers',
-      label: `Followers ${formatFollowerRange({ min: filters.followers_min, max: filters.followers_max })}`,
-      remove: () => onChange({ followers_min: undefined, followers_max: undefined }),
+      key: 'reach',
+      label: `Reach ${formatFollowerRange({ min: filters.reach_min, max: filters.reach_max })}`,
+      remove: () => onChange({ reach_min: undefined, reach_max: undefined }),
     })
   }
 

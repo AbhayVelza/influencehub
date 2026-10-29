@@ -1,6 +1,20 @@
 import type { InfiniteData, UseInfiniteQueryResult } from '@tanstack/react-query'
 import type { LucideIcon } from 'lucide-react'
-import { ArrowRightLeft, History, Package, Pencil, PhoneCall, RefreshCw, Sparkles, UserMinus, UserPlus, UserRound } from 'lucide-react'
+import {
+  ArrowRightLeft,
+  Combine,
+  History,
+  Link2,
+  Package,
+  Pencil,
+  PhoneCall,
+  PlusCircle,
+  RefreshCw,
+  Sparkles,
+  UserMinus,
+  UserPlus,
+  UserRound,
+} from 'lucide-react'
 import { EmptyState, ErrorState } from '@/components/common/states'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -17,7 +31,10 @@ const ICONS: Record<ActivityType, LucideIcon> = {
   call_logged: PhoneCall,
   package_created: Package,
   package_updated: Package,
-  ig_synced: RefreshCw,
+  account_synced: RefreshCw,
+  account_added: PlusCircle,
+  connect_link_sent: Link2,
+  merged: Combine,
   claimed: UserPlus,
   released: UserMinus,
 }

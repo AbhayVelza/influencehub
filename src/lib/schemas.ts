@@ -1,12 +1,14 @@
 import { z } from 'zod'
 import { ALL_STAGES, CALL_OUTCOMES, DEFAULT_COUNTRY_CODE, PACKAGE_STATUSES } from '@/lib/constants'
 import { localInputToIso, parseCompactNumber } from '@/lib/format'
+import { normalizeHandle, PLATFORMS } from '@/lib/platforms'
+import type { Platform } from '@/types'
 
 // Validation shared by every form and inline edit, so a value accepted in one place is accepted everywhere.
 
 const E164 = /^\+[1-9]\d{7,14}$/
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-const HANDLE = /^[a-z0-9._]{1,30}$/
+const HANDLE = /^[a-z0-9._-]{1,60}$/
 
 /** "98765 43210" → "+919876543210"; keeps an explicit country code. Empty → null. */
 export function normalizePhone(value: string | null | undefined): string | null {
@@ -16,15 +18,21 @@ export function normalizePhone(value: string | null | undefined): string | null 
   return compact.startsWith('+') ? compact : `${DEFAULT_COUNTRY_CODE}${compact.replace(/^0+/, '')}`
 }
 
-/**
- * "@RiyaStyle", "instagram.com/riyastyle", "https://www.instagram.com/riyastyle/?hl=en" → "riyastyle".
- * Format isn't checked here; fieldSchemas.instagram_handle does that.
- */
-export function normalizeHandle(value: string): string {
-  const trimmed = value.trim()
-  const fromUrl = trimmed.match(/instagram\.com\/([^/?#\s]+)/i)?.[1]
-  return (fromUrl ?? trimmed).replace(/^@+/, '').replace(/\/+$/, '').toLowerCase()
-}
+export { normalizeHandle }
+
+/** A handle for one platform (its profile URLs are unpacked too). */
+export const handleSchema = (platform?: Platform) =>
+  z
+    .string()
+    .transform((v) => normalizeHandle(v, platform))
+    .pipe(z.string().regex(HANDLE, 'Use 1–60 letters, numbers, dots, dashes or underscores'))
+
+/** Optional count typed as 12000, 12k or 1.2m; empty → null. */
+export const countField = z
+  .string()
+  .trim()
+  .refine((v) => v === '' || parseCompactNumber(v) !== undefined, 'Use a number like 12000, 12k or 1.2m')
+  .transform((v) => (v ? parseCompactNumber(v)! : null))
 
 /** Trimmed text; empty becomes null. */
 const optionalText = (max: number, label: string) =>
@@ -40,10 +48,7 @@ const requiredText = (max: number, label: string) =>
 export const fieldSchemas = {
   name: requiredText(100, 'Name'),
   category: requiredText(50, 'Category'),
-  instagram_handle: z
-    .string()
-    .transform(normalizeHandle)
-    .pipe(z.string().regex(HANDLE, 'Use 1–30 letters, numbers, dots or underscores')),
+  handle: handleSchema(),
   phone: z
     .string()
     .transform(normalizePhone)
@@ -75,7 +80,7 @@ export const MAX_TAGS = 20
 /** Owner select: "" means unassigned. */
 const ownerField = z.string().transform((v) => v || null)
 
-/** Details the user adds on top of an Instagram profile (and the core of the manual form). */
+/** Details the user adds on top of a looked-up profile (and the core of the manual form). */
 export const influencerDetailsSchema = z.object({
   name: fieldSchemas.name,
   category: fieldSchemas.category,
@@ -89,15 +94,39 @@ export const influencerDetailsSchema = z.object({
 
 export type InfluencerDetailsInput = z.input<typeof influencerDetailsSchema>
 
+/** One account row in the manual form / Add account dialog. */
+export const accountInputSchema = z
+  .object({
+    platform: z.enum(PLATFORMS as [Platform, ...Platform[]]),
+    handle: z.string(),
+    /** Followers / subscribers / page followers, typed in (optional). */
+    audience: countField,
+    /** Personal Instagram / Facebook profile: can't be looked up, so it's manual. */
+    personal: z.boolean(),
+  })
+  .transform((v, ctx) => {
+    const handle = handleSchema(v.platform).safeParse(v.handle)
+    if (!handle.success) {
+      ctx.addIssue({ code: 'custom', path: ['handle'], message: handle.error.issues[0]?.message ?? 'Invalid handle' })
+      return z.NEVER
+    }
+    return { ...v, handle: handle.data }
+  })
+
+export type AccountInput = z.input<typeof accountInputSchema>
+
 export const manualInfluencerSchema = influencerDetailsSchema.extend({
-  instagram_handle: fieldSchemas.instagram_handle,
-  account_type: z.enum(['business', 'creator', 'personal', 'unknown']),
-  /** Optional manual estimate, e.g. for personal accounts Instagram won't share. */
-  followers: z
-    .string()
-    .trim()
-    .refine((v) => v === '' || parseCompactNumber(v) !== undefined, 'Use a number like 12000, 12k or 1.2m')
-    .transform((v) => (v ? parseCompactNumber(v)! : null)),
+  accounts: z
+    .array(accountInputSchema)
+    .min(1, 'Add at least one account')
+    .superRefine((accounts, ctx) => {
+      const seen = new Set<string>()
+      accounts.forEach((a, i) => {
+        const key = `${a.platform}:${a.handle}`
+        if (seen.has(key)) ctx.addIssue({ code: 'custom', path: [i, 'handle'], message: 'Same account twice' })
+        seen.add(key)
+      })
+    }),
   notes: fieldSchemas.notes,
 })
 

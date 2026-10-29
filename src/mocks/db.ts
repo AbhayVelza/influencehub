@@ -2,12 +2,13 @@ import { TZDate } from '@date-fns/tz'
 import { differenceInCalendarDays } from 'date-fns'
 import { APP_TIMEZONE } from '@/lib/constants'
 import { getMockUserId } from '@/lib/mock-user'
+import { audienceOf, primaryAccount, toRef, totalReach } from '@/lib/platforms'
 import type {
+  AccountSnapshot,
   Activity,
   ActivityType,
   CallLog,
   Category,
-  FollowerSnapshot,
   Influencer,
   InfluencerSummary,
   InstagramSettings,
@@ -15,6 +16,7 @@ import type {
   Package,
   PoolSettings,
   SavedView,
+  SocialAccount,
   SyncRun,
   User,
 } from '@/types'
@@ -36,7 +38,15 @@ interface Fixtures {
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000
-const DATE_KEYS = new Set(['created_at', 'updated_at', 'last_synced_at', 'follow_up_date', 'sent_at', 'delivered_at'])
+const DATE_KEYS = new Set([
+  'created_at',
+  'updated_at',
+  'last_synced_at',
+  'follow_up_date',
+  'sent_at',
+  'delivered_at',
+  'connect_link_expires_at',
+])
 
 /** Moves every timestamp forward by whole days so "today" in the fixtures is always today. */
 function shiftDates<T>(value: T, offsetMs: number): T {
@@ -65,7 +75,7 @@ const data = load()
 /** Connected business account with 20 scheduled runs, one every 6 h, ending just now. */
 function createInstagramSettings(): InstagramSettings {
   const intervalHours = 6
-  const syncable = data.influencers.filter((i) => i.account_type === 'business' || i.account_type === 'creator').length
+  const syncable = data.influencers.flatMap((i) => i.accounts).filter((a) => a.platform === 'instagram' && a.sync_method === 'lookup').length
   const hour = 60 * 60 * 1000
   const latest = Math.floor(Date.now() / (intervalHours * hour)) * intervalHours * hour
   const last_runs: SyncRun[] = Array.from({ length: 20 }, (_, i) => {
@@ -102,6 +112,8 @@ export const db = {
   poolSettings: { claim_limit: null, auto_release_days: null } as PoolSettings,
   /** CSV files "uploaded" to presigned URLs, by key. */
   uploads: new Map<string, string>(),
+  /** Duplicate pair ids a manager dismissed ("not the same creator"). */
+  dismissedDuplicates: new Set<string>(),
 }
 
 let idCounter = 0
@@ -124,11 +136,29 @@ export function findInfluencer(id: string): Influencer | undefined {
   return db.influencers.find((i) => i.id === id)
 }
 
+export function findAccount(id: string): { influencer: Influencer; account: SocialAccount } | undefined {
+  for (const influencer of db.influencers) {
+    const account = influencer.accounts.find((a) => a.id === id)
+    if (account) return { influencer, account }
+  }
+  return undefined
+}
+
+/** Recomputes what's derived from the accounts (call after any account change). */
+export function refreshDerived(inf: Influencer) {
+  if (!inf.accounts.some((a) => a.is_primary) && inf.accounts[0]) inf.accounts[0].is_primary = true
+  inf.accounts.sort((a, b) => Number(b.is_primary) - Number(a.is_primary))
+  inf.total_reach = totalReach(inf.accounts)
+  inf.is_verified = inf.accounts.some((a) => a.is_verified)
+  inf.profile_pic_url = primaryAccount(inf)?.profile_pic_url ?? inf.accounts.find((a) => a.profile_pic_url)?.profile_pic_url ?? null
+}
+
 export function toSummary(inf: Influencer): InfluencerSummary {
+  const primary = primaryAccount(inf)
   return {
     id: inf.id,
     name: inf.name,
-    instagram_handle: inf.instagram_handle,
+    primary_account: primary ? toRef(primary) : null,
     profile_pic_url: inf.profile_pic_url,
     phone: inf.phone,
     stage: inf.stage,
@@ -187,35 +217,33 @@ function seeded(seedText: string) {
   }
 }
 
-export function snapshotsFor(inf: Influencer): FollowerSnapshot[] {
-  if (inf.followers == null || inf.last_synced_at == null) return []
-  const rand = seeded(inf.id)
+export function snapshotsFor(account: SocialAccount): AccountSnapshot[] {
+  const audience = audienceOf(account)
+  if (audience == null || account.last_synced_at == null) return []
+  const rand = seeded(account.id)
   const weeks = 12
   const growth = 0.004 + rand() * 0.02
-  const end = Date.parse(inf.last_synced_at)
+  const end = Date.parse(account.last_synced_at)
   return Array.from({ length: weeks }, (_, i) => {
     const back = weeks - 1 - i
     const factor = (1 + growth) ** -back * (1 + (rand() - 0.5) * 0.004)
-    return {
-      followers: Math.round(inf.followers! * factor),
-      following: Math.max(0, (inf.following ?? 0) - Math.round(back * rand() * 3)),
-      engagement_rate: Math.round(Math.max(0.3, (inf.engagement_rate ?? 2) * (0.85 + rand() * 0.3)) * 100) / 100,
-      captured_at: new Date(end - back * 7 * DAY_MS).toISOString(),
-    }
+    return { audience: Math.round(audience * factor), captured_at: new Date(end - back * 7 * DAY_MS).toISOString() }
   })
 }
 
-export function mediaFor(inf: Influencer): MediaItem[] {
-  if (inf.followers == null || inf.last_synced_at == null) return []
-  const rand = seeded(`${inf.id}-media`)
-  const end = Date.parse(inf.last_synced_at)
-  let t = end
+/** Recent posts / videos for synced Instagram and YouTube accounts. */
+export function mediaFor(account: SocialAccount): MediaItem[] {
+  const audience = audienceOf(account)
+  if (audience == null || account.last_synced_at == null || (account.platform !== 'instagram' && account.platform !== 'youtube')) return []
+  const rand = seeded(`${account.id}-media`)
+  const rate = account.platform === 'instagram' ? (account.metrics.engagement_rate ?? 2) : 1.5
+  let t = Date.parse(account.last_synced_at)
   return Array.from({ length: 6 }, (_, i) => {
     t -= (1 + rand() * 4) * DAY_MS
-    const likes = Math.round(inf.followers! * (inf.engagement_rate ?? 2) * 0.01 * (0.6 + rand() * 0.8))
+    const likes = Math.round(audience * rate * 0.01 * (0.6 + rand() * 0.8))
     return {
-      thumbnail: `https://picsum.photos/seed/${inf.instagram_handle}-${i}/320/320`,
-      permalink: `${inf.profile_url}p/${inf.instagram_handle.slice(0, 4)}${i}${Math.floor(rand() * 1e6).toString(36)}/`,
+      thumbnail: `https://picsum.photos/seed/${account.handle}-${account.platform}-${i}/320/320`,
+      permalink: `${account.profile_url.replace(/\/$/, '')}/p/${account.handle.slice(0, 4)}${i}${Math.floor(rand() * 1e6).toString(36)}/`,
       likes,
       comments: Math.round(likes * (0.01 + rand() * 0.04)),
       posted_at: new Date(t).toISOString(),

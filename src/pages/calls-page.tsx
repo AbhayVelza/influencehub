@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { PageHeader } from '@/components/common/page-header'
 import { Pagination } from '@/components/common/pagination'
 import { PersonAvatar } from '@/components/common/person-avatar'
+import { AccountLabel } from '@/components/common/platform-badge'
 import { EmptyState, ErrorState } from '@/components/common/states'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -53,7 +54,7 @@ function InfluencerCell({ call }: { call: CallLogWithInfluencer }) {
         <Link to={`/influencers/${call.influencer_id}?tab=calls`} className="block truncate font-medium hover:underline">
           {call.influencer.name}
         </Link>
-        <p className="truncate text-xs text-muted-foreground">@{call.influencer.instagram_handle}</p>
+        <AccountLabel account={call.influencer.primary_account} block className="text-xs text-muted-foreground" />
       </div>
     </div>
   )

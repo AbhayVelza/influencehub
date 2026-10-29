@@ -8,6 +8,7 @@ import { MultiSelectFilter } from '@/components/common/multi-select-filter'
 import { PageHeader } from '@/components/common/page-header'
 import { Pagination } from '@/components/common/pagination'
 import { PersonAvatar } from '@/components/common/person-avatar'
+import { AccountLabel } from '@/components/common/platform-badge'
 import { EmptyState, ErrorState } from '@/components/common/states'
 import { Button } from '@/components/ui/button'
 import {
@@ -215,7 +216,7 @@ export default function PackagesPage() {
                           <Link to={`/influencers/${pkg.influencer_id}?tab=packages`} className="block truncate font-medium hover:underline">
                             {pkg.influencer.name}
                           </Link>
-                          <p className="truncate text-xs text-muted-foreground">@{pkg.influencer.instagram_handle}</p>
+                          <AccountLabel account={pkg.influencer.primary_account} block className="text-xs text-muted-foreground" />
                         </div>
                       </div>
                     </TableCell>

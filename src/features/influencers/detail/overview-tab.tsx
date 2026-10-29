@@ -209,14 +209,6 @@ export function OverviewTab({ influencer }: { influencer: Influencer }) {
               </a>
             )}
           />
-          <InlineTextField
-            label="Instagram"
-            value={influencer.instagram_handle}
-            schema={fieldSchemas.instagram_handle}
-            onSave={(instagram_handle) => save({ instagram_handle })}
-            disabled={!canEdit}
-            render={(v) => `@${v}`}
-          />
           <InlineSelectField
             label="Category"
             value={influencer.category}

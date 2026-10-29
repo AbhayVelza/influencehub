@@ -1,20 +1,22 @@
 import { csvCell } from '@/lib/csv'
 import { dayKey, todayKey } from '@/lib/format'
 import { can } from '@/lib/permissions'
-import { normalizeHandle, normalizePhone } from '@/lib/schemas'
+import { normalizeHandle, PLATFORM_META, PLATFORMS, primaryAccount, toRef } from '@/lib/platforms'
+import { normalizePhone } from '@/lib/schemas'
 import { getAllowedTransitions, isOverride } from '@/lib/stages'
 import type {
+  AccountCreate,
   CheckHandleResponse,
   ExpiringClaim,
   Influencer,
   InfluencerCreate,
-  InstagramProfile,
+  Platform,
   PoolItem,
   Stage,
   User,
 } from '@/types'
-import { currentUser, db, findInfluencer, logActivity, nextId, nowIso, previousStageOf, toSummary } from './db'
-import { JobFailure } from './jobs'
+import { currentUser, db, findInfluencer, logActivity, nextId, nowIso, previousStageOf, refreshDerived, toSummary } from './db'
+import { buildAccount } from './social'
 
 export { parseCsv } from '@/lib/csv'
 
@@ -30,7 +32,7 @@ export function filterInfluencers(
   source: Influencer[] = db.influencers,
   { limitedSearch = false } = {},
 ): Influencer[] {
-  const q = params.get('q')?.trim().toLowerCase()
+  const q = params.get('q')?.trim().toLowerCase().replace(/^@/, '')
   const sets = {
     category: params.getAll('category'),
     country: params.getAll('country'),
@@ -39,22 +41,22 @@ export function filterInfluencers(
     stage: params.getAll('stage'),
     assigned_to: params.getAll('assigned_to'),
   }
-  const min = params.get('followers_min')
-  const max = params.get('followers_max')
+  const platforms = params.getAll('platform')
+  const min = params.get('reach_min')
+  const max = params.get('reach_max')
 
   return source.filter((inf) => {
     if (q) {
-      const fields = limitedSearch
-        ? [inf.name, inf.instagram_handle, inf.city]
-        : [inf.name, inf.instagram_handle, inf.email, inf.phone, inf.city]
-      const haystack = fields.join(' ').toLowerCase()
-      if (!haystack.includes(q.replace(/^@/, ''))) return false
+      const handles = inf.accounts.map((a) => a.handle)
+      const fields = limitedSearch ? [inf.name, ...handles, inf.city] : [inf.name, ...handles, inf.email, inf.phone, inf.city]
+      if (!fields.join(' ').toLowerCase().includes(q)) return false
     }
     for (const [key, values] of Object.entries(sets)) {
       if (values.length && !values.includes(String(inf[key as keyof typeof sets] ?? ''))) return false
     }
-    if (min && (inf.followers == null || inf.followers < Number(min))) return false
-    if (max && (inf.followers == null || inf.followers > Number(max))) return false
+    if (platforms.length && !inf.accounts.some((a) => platforms.includes(a.platform))) return false
+    if (min && (inf.total_reach == null || inf.total_reach < Number(min))) return false
+    if (max && (inf.total_reach == null || inf.total_reach > Number(max))) return false
     return true
   })
 }
@@ -86,44 +88,53 @@ export function sortInfluencers(list: Influencer[], sort: string | null): Influe
 
 export type CreateResult = { ok: true; influencer: Influencer } | { ok: false; status: number; code: string; message: string }
 
-export function createInfluencer(body: InfluencerCreate, source: 'instagram' | 'manual' | 'csv'): CreateResult {
-  const name = body.name?.trim()
-  const handle = body.instagram_handle ? normalizeHandle(body.instagram_handle) : ''
-  if (!name) return { ok: false, status: 422, code: 'validation_error', message: 'Name is required' }
-  if (!handle || !/^[a-z0-9._]{1,30}$/.test(handle)) {
-    return { ok: false, status: 422, code: 'validation_error', message: 'Enter a valid Instagram handle' }
-  }
-  if (!body.category) return { ok: false, status: 422, code: 'validation_error', message: 'Category is required' }
-  if (db.influencers.some((i) => i.instagram_handle === handle)) {
-    return { ok: false, status: 409, code: 'handle_taken', message: `@${handle} is already in the CRM` }
-  }
+const HANDLE = /^[a-z0-9._-]{1,60}$/
 
-  const accountType = body.account_type ?? 'unknown'
-  const hasIgData = body.followers != null && (accountType === 'business' || accountType === 'creator')
+/** Checks new accounts: known platform, valid handle, not repeated, not already in the CRM. */
+export function validateAccounts(accounts: AccountCreate[] | undefined, ownerId?: string): { ok: true } | Failure {
+  const seen = new Set<string>()
+  for (const a of accounts ?? []) {
+    if (!PLATFORMS.includes(a?.platform)) return { ok: false, status: 422, code: 'validation_error', message: 'Unknown platform' }
+    const handle = normalizeHandle(a.handle ?? '', a.platform)
+    const label = PLATFORM_META[a.platform].label
+    if (!HANDLE.test(handle)) return { ok: false, status: 422, code: 'validation_error', message: `Enter a valid ${label} handle` }
+    const key = `${a.platform}:${handle}`
+    if (seen.has(key)) return { ok: false, status: 422, code: 'validation_error', message: `${label} @${handle} is listed twice` }
+    seen.add(key)
+    const existing = findByHandle(a.platform, handle)
+    if (existing && existing.id !== ownerId) {
+      return { ok: false, status: 409, code: 'handle_taken', message: `${label} @${handle} is already in the CRM` }
+    }
+  }
+  return { ok: true }
+}
+
+export function createInfluencer(body: InfluencerCreate, source: 'lookup' | 'manual' | 'csv'): CreateResult {
+  const name = body.name?.trim()
+  if (!name) return { ok: false, status: 422, code: 'validation_error', message: 'Name is required' }
+  if (!body.category) return { ok: false, status: 422, code: 'validation_error', message: 'Category is required' }
+  if (!Array.isArray(body.accounts) || body.accounts.length === 0) {
+    return { ok: false, status: 422, code: 'validation_error', message: 'Add at least one social account' }
+  }
+  const checked = validateAccounts(body.accounts)
+  if (!checked.ok) return checked
+
   const now = nowIso()
   const address = body.address ?? null
   const influencer: Influencer = {
     id: nextId('inf'),
     name,
     category: body.category,
-    instagram_handle: handle,
-    profile_url: `https://www.instagram.com/${handle}/`,
     phone: normalizePhone(body.phone),
     email: body.email?.trim().toLowerCase() || null,
     address,
     city: body.city ?? address?.city ?? null,
     state: body.state ?? address?.state ?? null,
     country: body.country ?? address?.country ?? null,
-    followers: body.followers ?? null,
-    following: body.following ?? null,
-    posts_count: body.posts_count ?? null,
-    engagement_rate: body.engagement_rate ?? null,
-    bio: body.bio ?? null,
-    is_verified: body.is_verified ?? false,
-    account_type: accountType,
-    profile_pic_url: body.profile_pic_url ?? null,
-    ig_sync_status: accountType === 'personal' ? 'not_synced' : hasIgData ? 'synced' : 'pending',
-    last_synced_at: hasIgData ? now : null,
+    profile_pic_url: null,
+    is_verified: false,
+    accounts: [],
+    total_reach: null,
     stage: 'data_gathered',
     assigned_to: body.assigned_to ?? null,
     tags: body.tags ?? [],
@@ -132,10 +143,16 @@ export function createInfluencer(body: InfluencerCreate, source: 'instagram' | '
     created_at: now,
     updated_at: now,
   }
+  influencer.accounts = body.accounts.map((a, i) => buildAccount(influencer, a, i === 0))
+  refreshDerived(influencer)
   db.influencers.unshift(influencer)
   logActivity(influencer.id, 'created', { source })
   if (influencer.assigned_to) logActivity(influencer.id, 'assigned', { from: null, to: influencer.assigned_to })
   return { ok: true, influencer }
+}
+
+export function findByHandle(platform: Platform, handle: string): Influencer | undefined {
+  return db.influencers.find((i) => i.accounts.some((a) => a.platform === platform && a.handle === handle))
 }
 
 /** Managers/admins can set any owner. Executives only pick themselves or nobody when they add an influencer. */
@@ -163,17 +180,31 @@ export function findVisible(id: string, user: User = currentUser()): Influencer 
 
 export const poolInfluencers = () => db.influencers.filter((i) => i.assigned_to === null)
 
-/** Executives get a preview: no phone, email, address, notes, tags or Instagram internals. */
+/** Executives get a preview: no phone, email, address, notes, tags or account details beyond the handles. */
 export function toPoolItem(inf: Influencer, user: User = currentUser()): PoolItem {
   if (user.role !== 'executive') return inf
-  const { id, name, category, instagram_handle, profile_url, profile_pic_url, is_verified, followers, city, state, country, stage, created_at } =
-    inf
-  return { id, name, category, instagram_handle, profile_url, profile_pic_url, is_verified, followers, city, state, country, stage, created_at }
+  const { id, name, category, profile_pic_url, is_verified, total_reach, city, state, country, stage, created_at } = inf
+  const primary = primaryAccount(inf)
+  return {
+    id,
+    name,
+    category,
+    profile_pic_url,
+    is_verified,
+    total_reach,
+    city,
+    state,
+    country,
+    stage,
+    created_at,
+    primary_account: primary ? toRef(primary) : null,
+    platforms: [...new Set(inf.accounts.map((a) => a.platform))],
+  }
 }
 
 /** Duplicate check as this user may see it: an executive learns that a teammate owns the handle, not which influencer. */
-export function handleStatus(handle: string, user: User = currentUser()): CheckHandleResponse {
-  const existing = db.influencers.find((i) => i.instagram_handle === handle)
+export function handleStatus(platform: Platform, handle: string, user: User = currentUser()): CheckHandleResponse {
+  const existing = findByHandle(platform, handle)
   if (!existing) return { available: true, influencer_id: null, conflict: null }
   if (existing.assigned_to === null) return { available: false, influencer_id: existing.id, conflict: 'in_pool' }
   if (canSee(user, existing)) return { available: false, influencer_id: existing.id, conflict: 'exists' }
@@ -328,135 +359,18 @@ export function changeStage(inf: Influencer, to: Stage, reason: string | undefin
 }
 
 // ---------------------------------------------------------------------------
-// Instagram simulation
-
-function hash(text: string): number {
-  let h = 0
-  for (let i = 0; i < text.length; i++) h = (Math.imul(31, h) + text.charCodeAt(i)) | 0
-  return Math.abs(h)
-}
-
-function titleCase(username: string): string {
-  return username
-    .replace(/[._\d]+/g, ' ')
-    .trim()
-    .split(/\s+/)
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(' ')
-}
-
-/**
- * Deterministic fake profile. Usernames containing "personal", "notfound" or "ratelimit"
- * simulate the matching Instagram errors.
- */
-export function lookupInstagram(username: string): InstagramProfile {
-  if (username.includes('ratelimit')) {
-    throw new JobFailure('rate_limited', 'Instagram rate limit reached. Try again in a few minutes.')
-  }
-  if (username.includes('notfound')) {
-    throw new JobFailure('not_found', `No Instagram account found for @${username}`)
-  }
-  if (username.includes('personal')) {
-    throw new JobFailure(
-      'personal_account',
-      `@${username} is a personal account. Instagram only shares data for Business and Creator accounts — add details manually.`,
-    )
-  }
-  const h = hash(username)
-  const followers = 4000 + (h % 900_000)
-  return {
-    username,
-    name: titleCase(username) || username,
-    bio: 'Creator • Collabs via DM',
-    followers,
-    following: 150 + (h % 1500),
-    posts_count: 80 + (h % 2000),
-    engagement_rate: Math.round((1 + (h % 700) / 100) * 100) / 100,
-    is_verified: followers > 700_000,
-    account_type: h % 3 === 0 ? 'business' : 'creator',
-    profile_pic_url: `https://i.pravatar.cc/300?u=${username}`,
-    profile_url: `https://www.instagram.com/${username}/`,
-  }
-}
-
-/** Applied when a sync job finishes. */
-export function completeSync(id: string): { influencer_id: string; followers: number | null } {
-  const inf = findInfluencer(id)
-  if (!inf) throw new JobFailure('not_found', 'Influencer no longer exists')
-  if (inf.account_type === 'personal') {
-    inf.ig_sync_status = 'not_synced'
-    throw new JobFailure(
-      'personal_account',
-      'This is a personal account. Instagram only shares data for Business and Creator accounts.',
-    )
-  }
-  if (inf.account_type === 'unknown' && inf.ig_sync_status === 'error') {
-    throw new JobFailure('not_found', `No Instagram account found for @${inf.instagram_handle}`)
-  }
-  // Same simulated failures as the lookup: handles containing "personal", "notfound" or "ratelimit".
-  let profile: InstagramProfile
-  try {
-    profile = lookupInstagram(inf.instagram_handle)
-  } catch (err) {
-    if (err instanceof JobFailure && err.code === 'personal_account') {
-      inf.account_type = 'personal'
-      inf.ig_sync_status = 'not_synced'
-    } else {
-      inf.ig_sync_status = 'error'
-    }
-    inf.updated_at = nowIso()
-    throw err
-  }
-  if (inf.followers == null) {
-    Object.assign(inf, {
-      followers: profile.followers,
-      following: profile.following,
-      posts_count: profile.posts_count,
-      engagement_rate: profile.engagement_rate,
-      bio: profile.bio,
-      is_verified: profile.is_verified,
-      account_type: profile.account_type,
-      profile_pic_url: profile.profile_pic_url,
-    })
-  } else {
-    inf.followers = Math.round(inf.followers * (1 + Math.random() * 0.01))
-  }
-  inf.ig_sync_status = 'synced'
-  inf.last_synced_at = nowIso()
-  inf.updated_at = inf.last_synced_at
-  logActivity(inf.id, 'ig_synced', { followers: inf.followers }, null)
-  return { influencer_id: inf.id, followers: inf.followers }
-}
-
-// ---------------------------------------------------------------------------
 // CSV
 
-export const EXPORT_COLUMNS: (keyof Influencer)[] = [
-  'name',
-  'instagram_handle',
-  'category',
-  'followers',
-  'engagement_rate',
-  'phone',
-  'email',
-  'city',
-  'state',
-  'country',
-  'stage',
-  'assigned_to',
-  'ig_sync_status',
-  'last_synced_at',
-  'tags',
-  'created_at',
-]
+const EXPORT_COLUMNS = ['name', 'category', 'total_reach', 'phone', 'email', 'city', 'state', 'country', 'stage', 'assigned_to', 'tags', 'created_at'] as const
 
+/** One handle column per platform, after the details. */
 export function toCsv(list: Influencer[]): string {
   const team = new Map(db.team.map((u) => [u.id, u.name]))
-  const lines = [EXPORT_COLUMNS.join(',')]
+  const lines = [[...EXPORT_COLUMNS, ...PLATFORMS].join(',')]
   for (const inf of list) {
-    lines.push(
-      EXPORT_COLUMNS.map((col) => csvCell(col === 'assigned_to' ? team.get(inf.assigned_to ?? '') : inf[col])).join(','),
-    )
+    const details = EXPORT_COLUMNS.map((col) => csvCell(col === 'assigned_to' ? team.get(inf.assigned_to ?? '') : inf[col]))
+    const handles = PLATFORMS.map((p) => csvCell(inf.accounts.filter((a) => a.platform === p).map((a) => a.handle).join('; ')))
+    lines.push([...details, ...handles].join(','))
   }
   return lines.join('\n')
 }

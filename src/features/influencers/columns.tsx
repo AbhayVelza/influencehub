@@ -1,11 +1,13 @@
 import type { ColumnDef, RowData } from '@tanstack/react-table'
-import { BadgeCheck, ExternalLink } from 'lucide-react'
+import { BadgeCheck } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { PersonAvatar } from '@/components/common/person-avatar'
+import { AccountLabel, PlatformMarks } from '@/components/common/platform-badge'
 import { StageBadge } from '@/components/common/stage-badge'
 import { SyncStatusBadge } from '@/components/common/sync-status-badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { formatCompact, formatDateTime, formatNumber, formatRelative } from '@/lib/format'
+import { primaryAccount, toRef } from '@/lib/platforms'
 import type { Influencer, InfluencerSortKey, User } from '@/types'
 
 declare module '@tanstack/react-table' {
@@ -80,27 +82,26 @@ export function buildColumns(team: Map<string, User>): ColumnDef<Influencer>[] {
     },
     {
       id: 'handle',
-      header: 'Account',
-      meta: { label: 'Account' },
-      cell: ({ row }) => (
-        <a
-          href={row.original.profile_url}
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground hover:underline"
-        >
-          @{row.original.instagram_handle}
-          <ExternalLink className="size-3" />
-        </a>
-      ),
+      header: 'Primary account',
+      meta: { label: 'Primary account' },
+      cell: ({ row }) => {
+        const primary = primaryAccount(row.original)
+        return <AccountLabel account={primary && toRef(primary)} link className="max-w-48 text-muted-foreground" />
+      },
     },
     {
-      id: 'followers',
-      header: 'Followers',
-      meta: { label: 'Followers', sortKey: 'followers', sortDescFirst: true, align: 'right' },
+      id: 'platforms',
+      header: 'Platforms',
+      meta: { label: 'Platforms' },
+      cell: ({ row }) => <PlatformMarks platforms={row.original.accounts.map((a) => a.platform)} />,
+    },
+    {
+      id: 'total_reach',
+      header: 'Total reach',
+      meta: { label: 'Total reach', sortKey: 'total_reach', sortDescFirst: true, align: 'right' },
       cell: ({ row }) => {
-        const n = row.original.followers
-        return n == null ? muted : <span title={formatNumber(n)}>{formatCompact(n)}</span>
+        const n = row.original.total_reach
+        return n == null ? muted : <span title={`${formatNumber(n)} across ${row.original.accounts.length} account(s)`}>{formatCompact(n)}</span>
       },
     },
     {
@@ -171,21 +172,26 @@ export function buildColumns(team: Map<string, User>): ColumnDef<Influencer>[] {
     {
       id: 'sync',
       header: 'Sync',
-      meta: { label: 'Sync status' },
-      cell: ({ row }) => <SyncStatusBadge status={row.original.ig_sync_status} />,
+      meta: { label: 'Sync status (primary)' },
+      cell: ({ row }) => {
+        const primary = primaryAccount(row.original)
+        return primary ? <SyncStatusBadge status={primary.sync_status} /> : muted
+      },
     },
     {
       id: 'last_synced_at',
       header: 'Last synced',
-      meta: { label: 'Last synced', sortKey: 'last_synced_at', sortDescFirst: true, hiddenByDefault: true },
-      cell: ({ row }) =>
-        row.original.last_synced_at ? (
-          <span className="whitespace-nowrap" title={formatDateTime(row.original.last_synced_at)}>
-            {formatRelative(row.original.last_synced_at)}
+      meta: { label: 'Last synced', hiddenByDefault: true },
+      cell: ({ row }) => {
+        const at = primaryAccount(row.original)?.last_synced_at
+        return at ? (
+          <span className="whitespace-nowrap" title={formatDateTime(at)}>
+            {formatRelative(at)}
           </span>
         ) : (
           muted
-        ),
+        )
+      },
     },
   ]
 }

@@ -1,6 +1,7 @@
 import type { LucideIcon } from 'lucide-react'
-import { Inbox, LayoutDashboard, Package, PhoneCall, Settings, SquareKanban, Users } from 'lucide-react'
+import { CopyCheck, Inbox, LayoutDashboard, Package, PhoneCall, Settings, SquareKanban, Users } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
+import { useDuplicatePairs } from '@/features/duplicates/queries'
 import { usePoolCount } from '@/features/pool/queries'
 import { useDefaultMine, useFollowUps } from '@/hooks/use-follow-ups'
 import { useCan } from '@/hooks/use-me'
@@ -47,11 +48,16 @@ export function Sidebar() {
   const canSeeSettings = useCan('integrations:manage')
   const { data: dueToday } = useFollowUps('today', 1, 25, useDefaultMine())
   const poolCount = usePoolCount()
+  const canMerge = useCan('influencer:merge')
+  const duplicates = useDuplicatePairs()
 
   const items: NavItem[] = [
     { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
     { to: '/influencers', label: 'Influencers', icon: Users },
     { to: '/pool', label: 'Unassigned Pool', icon: Inbox, badge: poolCount, badgeLabel: 'unassigned' },
+    ...(canMerge
+      ? [{ to: '/duplicates', label: 'Possible duplicates', icon: CopyCheck, badge: duplicates.data?.total, badgeLabel: 'to review' }]
+      : []),
     { to: '/pipeline', label: 'Pipeline', icon: SquareKanban },
     { to: '/calls', label: 'Calls & Follow-ups', icon: PhoneCall, badge: dueToday?.total, badgeLabel: 'due today' },
     { to: '/packages', label: 'Packages', icon: Package },

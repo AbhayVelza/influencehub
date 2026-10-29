@@ -1,5 +1,6 @@
 import { http } from '@/services/http'
 import type {
+  AccountCreate,
   Activity,
   BulkRequest,
   BulkResult,
@@ -7,15 +8,15 @@ import type {
   CallLogCreate,
   CheckHandleResponse,
   FilterOptions,
-  FollowerSnapshot,
   Influencer,
   InfluencerCreate,
   InfluencerListParams,
   InfluencerUpdate,
-  JobRef,
-  MediaItem,
+  MergeRequest,
   Paginated,
+  Platform,
   ReleaseRequest,
+  SocialAccount,
   StageChangeRequest,
 } from '@/types'
 
@@ -28,8 +29,8 @@ export const influencersApi = {
   filterOptions: (params: { country?: string[]; state?: string[] } = {}, signal?: AbortSignal) =>
     http.get<FilterOptions>(`${base}/filter-options`, params, signal),
 
-  checkHandle: (handle: string, signal?: AbortSignal) =>
-    http.get<CheckHandleResponse>(`${base}/check-handle`, { handle }, signal),
+  checkHandle: (platform: Platform, handle: string, signal?: AbortSignal) =>
+    http.get<CheckHandleResponse>(`${base}/check-handle`, { platform, handle }, signal),
 
   get: (id: string, signal?: AbortSignal) => http.get<Influencer>(`${base}/${id}`, undefined, signal),
 
@@ -52,12 +53,11 @@ export const influencersApi = {
   activity: (id: string, params: { page?: number; page_size?: number } = {}, signal?: AbortSignal) =>
     http.get<Paginated<Activity>>(`${base}/${id}/activity`, params, signal),
 
-  snapshots: (id: string, signal?: AbortSignal) =>
-    http.get<Paginated<FollowerSnapshot>>(`${base}/${id}/snapshots`, undefined, signal),
+  /** 409 `handle_taken` / `in_pool` / `assigned_to_other` when the handle is already in the CRM. */
+  addAccount: (id: string, body: AccountCreate) => http.post<SocialAccount>(`${base}/${id}/accounts`, body),
 
-  media: (id: string, signal?: AbortSignal) => http.get<Paginated<MediaItem>>(`${base}/${id}/media`, undefined, signal),
-
-  sync: (id: string) => http.post<JobRef>(`${base}/${id}/sync`),
+  /** Folds merge_id into keep_id (manager/admin). Returns the surviving influencer. */
+  merge: (body: MergeRequest) => http.post<Influencer>(`${base}/merge`, body),
 
   calls: (id: string, params: { page?: number; page_size?: number } = {}, signal?: AbortSignal) =>
     http.get<Paginated<CallLog>>(`${base}/${id}/calls`, params, signal),

@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { PersonAvatar } from '@/components/common/person-avatar'
+import { formatHandle, primaryAccount } from '@/lib/platforms'
 import { StageBadge } from '@/components/common/stage-badge'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -54,7 +55,7 @@ export function InfluencerPicker({
                       <PersonAvatar name={inf.name} src={inf.profile_pic_url} className="size-7" />
                       <span className="min-w-0 flex-1">
                         <span className="block truncate font-medium">{inf.name}</span>
-                        <span className="block truncate text-xs text-muted-foreground">@{inf.instagram_handle}</span>
+                        <span className="block truncate text-xs text-muted-foreground">{formatHandle(primaryAccount(inf))}</span>
                       </span>
                       <StageBadge stage={inf.stage} />
                     </CommandItem>

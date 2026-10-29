@@ -14,6 +14,8 @@ export type Permission =
   | 'stage:reopen'
   | 'influencer:reassign'
   | 'influencer:delete'
+  /** Review possible duplicates and merge two influencers. */
+  | 'influencer:merge'
   | 'data:import'
   | 'data:export'
   | 'stage:override'
@@ -39,6 +41,7 @@ const MANAGER: Permission[] = [
   'stage:reopen',
   'influencer:reassign',
   'influencer:delete',
+  'influencer:merge',
   'data:import',
   'data:export',
 ]

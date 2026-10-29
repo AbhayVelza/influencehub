@@ -97,8 +97,6 @@
       "id": "inf_001",
       "name": "Riya Shah",
       "category": "Fashion",
-      "instagram_handle": "riyastyle",
-      "profile_url": "https://www.instagram.com/riyastyle/",
       "phone": "+917333614739",
       "email": "riyastyle.collabs@example.com",
       "address": {
@@ -112,16 +110,8 @@
       "city": "Pune",
       "state": "Maharashtra",
       "country": "India",
-      "followers": 245300,
-      "following": 1683,
-      "posts_count": 2366,
-      "engagement_rate": 2.63,
-      "bio": "Pune | Everyday & festive looks ✨ | Styling tips daily | Collabs via DM",
       "is_verified": false,
-      "account_type": "business",
       "profile_pic_url": "https://i.pravatar.cc/300?u=riyastyle",
-      "ig_sync_status": "synced",
-      "last_synced_at": "2026-10-26T19:30:00.000Z",
       "stage": "onboarded",
       "assigned_to": "usr_04",
       "tags": [
@@ -135,14 +125,71 @@
         "ig_connected": true
       },
       "created_at": "2026-08-02T00:30:00.000Z",
-      "updated_at": "2026-10-26T08:30:00.000Z"
+      "updated_at": "2026-10-26T08:30:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_001_ig",
+          "influencer_id": "inf_001",
+          "platform": "instagram",
+          "handle": "riyastyle",
+          "profile_url": "https://www.instagram.com/riyastyle/",
+          "is_primary": true,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-26T19:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Riya Shah",
+          "profile_pic_url": "https://i.pravatar.cc/300?u=riyastyle",
+          "bio": "Pune | Everyday & festive looks ✨ | Styling tips daily | Collabs via DM | YT: youtube.com/@riyastyle",
+          "links": [
+            "https://www.youtube.com/@riyastyle"
+          ],
+          "is_verified": false,
+          "created_at": "2026-08-02T00:30:00.000Z",
+          "metrics": {
+            "followers": 245300,
+            "following": 1683,
+            "posts": 2366,
+            "engagement_rate": 2.63,
+            "avg_likes": 6451,
+            "avg_comments": 226,
+            "account_type": "business"
+          }
+        },
+        {
+          "id": "acc_001_yo",
+          "influencer_id": "inf_001",
+          "platform": "youtube",
+          "handle": "riyastyle",
+          "profile_url": "https://www.youtube.com/@riyastyle",
+          "is_primary": false,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T18:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Riya Shah",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-08-02T00:30:00.000Z",
+          "metrics": {
+            "subscribers": 103026,
+            "total_views": 14963300,
+            "video_count": 47,
+            "avg_views_recent": 44154,
+            "channel_country": "IN"
+          }
+        }
+      ],
+      "total_reach": 348326
     },
     {
       "id": "inf_002",
       "name": "Aarav Mehta",
       "category": "Tech",
-      "instagram_handle": "aaravtechtalks",
-      "profile_url": "https://www.instagram.com/aaravtechtalks/",
       "phone": "+916864486486",
       "email": "aaravtechtalks.collabs@example.com",
       "address": {
@@ -156,16 +203,8 @@
       "city": "Mumbai",
       "state": "Maharashtra",
       "country": "India",
-      "followers": 297804,
-      "following": 337,
-      "posts_count": 1522,
-      "engagement_rate": 4.23,
-      "bio": "Gadgets, unboxings & honest reviews 📱 | Mumbai",
       "is_verified": false,
-      "account_type": "creator",
       "profile_pic_url": "https://i.pravatar.cc/300?u=aaravtechtalks",
-      "ig_sync_status": "synced",
-      "last_synced_at": "2026-10-27T21:30:00.000Z",
       "stage": "package_sent",
       "assigned_to": "usr_04",
       "tags": [
@@ -181,30 +220,76 @@
         "ig_connected": true
       },
       "created_at": "2026-09-22T02:30:00.000Z",
-      "updated_at": "2026-10-14T14:46:00.000Z"
+      "updated_at": "2026-10-14T14:46:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_002_ig",
+          "influencer_id": "inf_002",
+          "platform": "instagram",
+          "handle": "aaravtechtalks",
+          "profile_url": "https://www.instagram.com/aaravtechtalks/",
+          "is_primary": true,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T21:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Aarav Mehta",
+          "profile_pic_url": "https://i.pravatar.cc/300?u=aaravtechtalks",
+          "bio": "Gadgets, unboxings & honest reviews 📱 | Mumbai",
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-09-22T02:30:00.000Z",
+          "metrics": {
+            "followers": 297804,
+            "following": 337,
+            "posts": 1522,
+            "engagement_rate": 4.23,
+            "avg_likes": 12597,
+            "avg_comments": 441,
+            "account_type": "creator"
+          }
+        },
+        {
+          "id": "acc_002_ti",
+          "influencer_id": "inf_002",
+          "platform": "tiktok",
+          "handle": "aaravtechtalks",
+          "profile_url": "https://www.tiktok.com/@aaravtechtalks",
+          "is_primary": false,
+          "sync_method": "connect",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T22:30:00.000Z",
+          "connect_status": "connected",
+          "connect_link_expires_at": null,
+          "display_name": "Aarav Mehta",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-09-22T02:30:00.000Z",
+          "metrics": {
+            "followers": 238243,
+            "following": 126,
+            "total_likes": 2829138,
+            "video_count": 68
+          }
+        }
+      ],
+      "total_reach": 536047
     },
     {
       "id": "inf_003",
       "name": "Priya Nair",
       "category": "Food",
-      "instagram_handle": "priyaeatskochi",
-      "profile_url": "https://www.instagram.com/priyaeatskochi/",
       "phone": null,
       "email": null,
       "address": null,
       "city": "Kochi",
       "state": "Kerala",
       "country": "India",
-      "followers": null,
-      "following": null,
-      "posts_count": null,
-      "engagement_rate": null,
-      "bio": null,
       "is_verified": false,
-      "account_type": "unknown",
       "profile_pic_url": null,
-      "ig_sync_status": "pending",
-      "last_synced_at": null,
       "stage": "data_gathered",
       "assigned_to": "usr_04",
       "tags": [],
@@ -216,14 +301,67 @@
         "ig_connected": false
       },
       "created_at": "2026-08-31T06:30:00.000Z",
-      "updated_at": "2026-08-31T06:30:00.000Z"
+      "updated_at": "2026-08-31T06:30:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_003_ig",
+          "influencer_id": "inf_003",
+          "platform": "instagram",
+          "handle": "priyaeatskochi",
+          "profile_url": "https://www.instagram.com/priyaeatskochi/",
+          "is_primary": true,
+          "sync_method": "lookup",
+          "sync_status": "pending",
+          "last_synced_at": null,
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Priya Nair",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-08-31T06:30:00.000Z",
+          "metrics": {
+            "followers": null,
+            "following": null,
+            "posts": null,
+            "engagement_rate": null,
+            "avg_likes": null,
+            "avg_comments": null,
+            "account_type": null
+          }
+        },
+        {
+          "id": "acc_003_th",
+          "influencer_id": "inf_003",
+          "platform": "threads",
+          "handle": "priyaeatskochi",
+          "profile_url": "https://www.threads.net/@priyaeatskochi",
+          "is_primary": false,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T18:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Priya Nair",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-08-31T06:30:00.000Z",
+          "metrics": {
+            "followers": 4400,
+            "avg_likes_recent": 80,
+            "avg_replies_recent": 10
+          }
+        }
+      ],
+      "total_reach": 4400
     },
     {
       "id": "inf_004",
       "name": "Kabir Malhotra",
       "category": "Fitness",
-      "instagram_handle": "kabirfitlife",
-      "profile_url": "https://www.instagram.com/kabirfitlife/",
       "phone": "+918978097444",
       "email": "kabirfitlife.collabs@example.com",
       "address": {
@@ -237,16 +375,8 @@
       "city": "New Delhi",
       "state": "Delhi",
       "country": "India",
-      "followers": 7388,
-      "following": 601,
-      "posts_count": 2085,
-      "engagement_rate": 6.6,
-      "bio": "Coach | Strength & mobility 💪 | New Delhi | Free plans in highlights",
       "is_verified": false,
-      "account_type": "creator",
       "profile_pic_url": "https://i.pravatar.cc/300?u=kabirfitlife",
-      "ig_sync_status": "synced",
-      "last_synced_at": "2026-10-26T21:30:00.000Z",
       "stage": "delivered",
       "assigned_to": "usr_02",
       "tags": [
@@ -261,14 +391,68 @@
         "ig_connected": true
       },
       "created_at": "2026-06-13T05:30:00.000Z",
-      "updated_at": "2026-09-11T22:19:00.000Z"
+      "updated_at": "2026-09-11T22:19:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_004_ig",
+          "influencer_id": "inf_004",
+          "platform": "instagram",
+          "handle": "kabirfitlife",
+          "profile_url": "https://www.instagram.com/kabirfitlife/",
+          "is_primary": true,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-26T21:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Kabir Malhotra",
+          "profile_pic_url": "https://i.pravatar.cc/300?u=kabirfitlife",
+          "bio": "Coach | Strength & mobility 💪 | New Delhi | Free plans in highlights",
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-06-13T05:30:00.000Z",
+          "metrics": {
+            "followers": 7388,
+            "following": 601,
+            "posts": 2085,
+            "engagement_rate": 6.6,
+            "avg_likes": 488,
+            "avg_comments": 17,
+            "account_type": "creator"
+          }
+        },
+        {
+          "id": "acc_004_pi",
+          "influencer_id": "inf_004",
+          "platform": "pinterest",
+          "handle": "kabirfitlife",
+          "profile_url": "https://www.pinterest.com/kabirfitlife/",
+          "is_primary": false,
+          "sync_method": "connect",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T06:30:00.000Z",
+          "connect_status": "connected",
+          "connect_link_expires_at": null,
+          "display_name": "Kabir Malhotra",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-06-13T05:30:00.000Z",
+          "metrics": {
+            "followers": 887,
+            "monthly_views": 22903,
+            "pin_count": 344,
+            "board_count": 12
+          }
+        }
+      ],
+      "total_reach": 8275
     },
     {
       "id": "inf_005",
       "name": "Ananya Reddy",
       "category": "Beauty",
-      "instagram_handle": "ananyaglows",
-      "profile_url": "https://www.instagram.com/ananyaglows/",
       "phone": "+917829091933",
       "email": "ananyaglows.collabs@example.com",
       "address": {
@@ -282,16 +466,8 @@
       "city": "Hyderabad",
       "state": "Telangana",
       "country": "India",
-      "followers": 65982,
-      "following": 1292,
-      "posts_count": 976,
-      "engagement_rate": 3.9,
-      "bio": "Skincare + makeup that works 💄 | Hyderabad | Honest reviews only",
       "is_verified": false,
-      "account_type": "creator",
       "profile_pic_url": "https://i.pravatar.cc/300?u=ananyaglows",
-      "ig_sync_status": "synced",
-      "last_synced_at": "2026-10-26T17:30:00.000Z",
       "stage": "contacted",
       "assigned_to": "usr_02",
       "tags": [
@@ -306,14 +482,118 @@
         "ig_connected": false
       },
       "created_at": "2026-07-29T00:30:00.000Z",
-      "updated_at": "2026-09-02T20:40:00.000Z"
+      "updated_at": "2026-09-02T20:40:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_005_ig",
+          "influencer_id": "inf_005",
+          "platform": "instagram",
+          "handle": "ananyaglows",
+          "profile_url": "https://www.instagram.com/ananyaglows/",
+          "is_primary": true,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-26T17:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Ananya Reddy",
+          "profile_pic_url": "https://i.pravatar.cc/300?u=ananyaglows",
+          "bio": "Skincare + makeup that works 💄 | Hyderabad | Honest reviews only | YT: youtube.com/@ananyaglows",
+          "links": [
+            "https://www.youtube.com/@ananyaglows"
+          ],
+          "is_verified": false,
+          "created_at": "2026-07-29T00:30:00.000Z",
+          "metrics": {
+            "followers": 65982,
+            "following": 1292,
+            "posts": 976,
+            "engagement_rate": 3.9,
+            "avg_likes": 2573,
+            "avg_comments": 90,
+            "account_type": "creator"
+          }
+        },
+        {
+          "id": "acc_005_yo",
+          "influencer_id": "inf_005",
+          "platform": "youtube",
+          "handle": "ananyaglows",
+          "profile_url": "https://www.youtube.com/@ananyaglows",
+          "is_primary": false,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T18:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Ananya Reddy",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-07-29T00:30:00.000Z",
+          "metrics": {
+            "subscribers": 27712,
+            "total_views": 4024902,
+            "video_count": 75,
+            "avg_views_recent": 11877,
+            "channel_country": "IN"
+          }
+        },
+        {
+          "id": "acc_005_fa",
+          "influencer_id": "inf_005",
+          "platform": "facebook",
+          "handle": "ananyaglows",
+          "profile_url": "https://www.facebook.com/ananyaglows",
+          "is_primary": false,
+          "sync_method": "manual",
+          "sync_status": "not_synced",
+          "last_synced_at": null,
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Ananya Reddy",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-07-29T00:30:00.000Z",
+          "metrics": {
+            "page_followers": 3400,
+            "page_likes": null,
+            "page_category": null
+          }
+        },
+        {
+          "id": "acc_005_li",
+          "influencer_id": "inf_005",
+          "platform": "linkedin",
+          "handle": "ananyaglows",
+          "profile_url": "https://www.linkedin.com/in/ananyaglows",
+          "is_primary": false,
+          "sync_method": "manual",
+          "sync_status": "not_synced",
+          "last_synced_at": null,
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Ananya Reddy",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-07-29T00:30:00.000Z",
+          "metrics": {
+            "followers": 1385,
+            "connections": 545
+          }
+        }
+      ],
+      "total_reach": 98479
     },
     {
       "id": "inf_006",
       "name": "Ishaan Kapoor",
       "category": "Lifestyle",
-      "instagram_handle": "ishaankapoor",
-      "profile_url": "https://www.instagram.com/ishaankapoor/",
       "phone": "+917977877523",
       "email": "ishaankapoor.collabs@example.com",
       "address": {
@@ -327,16 +607,8 @@
       "city": "Mumbai",
       "state": "Maharashtra",
       "country": "India",
-      "followers": 330492,
-      "following": 1362,
-      "posts_count": 291,
-      "engagement_rate": 4.12,
-      "bio": "Living, loving, sharing ☕ | Mumbai | Home • Style • Life",
       "is_verified": false,
-      "account_type": "business",
       "profile_pic_url": "https://i.pravatar.cc/300?u=ishaankapoor",
-      "ig_sync_status": "synced",
-      "last_synced_at": "2026-10-27T19:30:00.000Z",
       "stage": "onboarded",
       "assigned_to": "usr_03",
       "tags": [
@@ -351,30 +623,75 @@
         "ig_connected": true
       },
       "created_at": "2026-07-04T01:30:00.000Z",
-      "updated_at": "2026-10-24T04:30:00.000Z"
+      "updated_at": "2026-10-24T04:30:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_006_ig",
+          "influencer_id": "inf_006",
+          "platform": "instagram",
+          "handle": "ishaankapoor",
+          "profile_url": "https://www.instagram.com/ishaankapoor/",
+          "is_primary": true,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T19:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Ishaan Kapoor",
+          "profile_pic_url": "https://i.pravatar.cc/300?u=ishaankapoor",
+          "bio": "Living, loving, sharing ☕ | Mumbai | Home • Style • Life | Vlogs: youtube.com/@ishaantalks",
+          "links": [
+            "https://www.youtube.com/@ishaantalks"
+          ],
+          "is_verified": false,
+          "created_at": "2026-07-04T01:30:00.000Z",
+          "metrics": {
+            "followers": 330492,
+            "following": 1362,
+            "posts": 291,
+            "engagement_rate": 4.12,
+            "avg_likes": 13616,
+            "avg_comments": 477,
+            "account_type": "business"
+          }
+        },
+        {
+          "id": "acc_006_sn",
+          "influencer_id": "inf_006",
+          "platform": "snapchat",
+          "handle": "ishaankapoor",
+          "profile_url": "https://www.snapchat.com/add/ishaankapoor",
+          "is_primary": false,
+          "sync_method": "manual",
+          "sync_status": "not_synced",
+          "last_synced_at": null,
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Ishaan Kapoor",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-07-04T01:30:00.000Z",
+          "metrics": {
+            "subscribers": 16525
+          }
+        }
+      ],
+      "total_reach": 347017
     },
     {
       "id": "inf_007",
       "name": "Meera Iyer",
       "category": "Parenting",
-      "instagram_handle": "meerathemom",
-      "profile_url": "https://www.instagram.com/meerathemom/",
       "phone": null,
       "email": "meerathemom.collabs@example.com",
       "address": null,
       "city": "Chennai",
       "state": "Tamil Nadu",
       "country": "India",
-      "followers": 177391,
-      "following": 1792,
-      "posts_count": 254,
-      "engagement_rate": 2.94,
-      "bio": "Parent of two 👶 | Real parenting, real moments | Chennai",
       "is_verified": false,
-      "account_type": "unknown",
       "profile_pic_url": "https://i.pravatar.cc/300?u=meerathemom",
-      "ig_sync_status": "error",
-      "last_synced_at": "2026-10-24T06:30:00.000Z",
       "stage": "data_gathered",
       "assigned_to": "usr_03",
       "tags": [
@@ -390,30 +707,76 @@
         "ig_connected": false
       },
       "created_at": "2026-07-26T06:30:00.000Z",
-      "updated_at": "2026-07-26T06:30:00.000Z"
+      "updated_at": "2026-07-26T06:30:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_007_ig",
+          "influencer_id": "inf_007",
+          "platform": "instagram",
+          "handle": "meerathemom",
+          "profile_url": "https://www.instagram.com/meerathemom/",
+          "is_primary": true,
+          "sync_method": "lookup",
+          "sync_status": "error",
+          "last_synced_at": "2026-10-24T06:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Meera Iyer",
+          "profile_pic_url": "https://i.pravatar.cc/300?u=meerathemom",
+          "bio": "Parent of two 👶 | Real parenting, real moments | Chennai",
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-07-26T06:30:00.000Z",
+          "metrics": {
+            "followers": 177391,
+            "following": 1792,
+            "posts": 254,
+            "engagement_rate": 2.94,
+            "avg_likes": 5215,
+            "avg_comments": 183,
+            "account_type": null
+          }
+        },
+        {
+          "id": "acc_007_ti",
+          "influencer_id": "inf_007",
+          "platform": "tiktok",
+          "handle": "meerathemom",
+          "profile_url": "https://www.tiktok.com/@meerathemom",
+          "is_primary": false,
+          "sync_method": "connect",
+          "sync_status": "not_synced",
+          "last_synced_at": null,
+          "connect_status": "link_sent",
+          "connect_link_expires_at": "2026-11-02T06:30:00.000Z",
+          "display_name": "Meera Iyer",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-07-26T06:30:00.000Z",
+          "metrics": {
+            "followers": null,
+            "following": null,
+            "total_likes": null,
+            "video_count": null
+          }
+        }
+      ],
+      "total_reach": 177391
     },
     {
       "id": "inf_008",
       "name": "Rohan Desai",
       "category": "Finance",
-      "instagram_handle": "rohanonmoney",
-      "profile_url": "https://www.instagram.com/rohanonmoney/",
       "phone": "+917148119645",
       "email": "rohanonmoney.collabs@example.com",
       "address": null,
       "city": "Ahmedabad",
       "state": "Gujarat",
       "country": "India",
-      "followers": null,
-      "following": null,
-      "posts_count": null,
-      "engagement_rate": null,
-      "bio": null,
       "is_verified": false,
-      "account_type": "personal",
       "profile_pic_url": null,
-      "ig_sync_status": "not_synced",
-      "last_synced_at": null,
       "stage": "contacted",
       "assigned_to": "usr_02",
       "tags": [
@@ -428,14 +791,43 @@
         "ig_connected": false
       },
       "created_at": "2026-10-04T22:30:00.000Z",
-      "updated_at": "2026-10-12T14:18:00.000Z"
+      "updated_at": "2026-10-12T14:18:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_008_ig",
+          "influencer_id": "inf_008",
+          "platform": "instagram",
+          "handle": "rohanonmoney",
+          "profile_url": "https://www.instagram.com/rohanonmoney/",
+          "is_primary": true,
+          "sync_method": "manual",
+          "sync_status": "not_synced",
+          "last_synced_at": null,
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Rohan Desai",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-10-04T22:30:00.000Z",
+          "metrics": {
+            "followers": null,
+            "following": null,
+            "posts": null,
+            "engagement_rate": null,
+            "avg_likes": null,
+            "avg_comments": null,
+            "account_type": "personal"
+          }
+        }
+      ],
+      "total_reach": null
     },
     {
       "id": "inf_009",
       "name": "Sneha Kulkarni",
       "category": "Travel",
-      "instagram_handle": "snehawanders",
-      "profile_url": "https://www.instagram.com/snehawanders/",
       "phone": "+918372761149",
       "email": "snehawanders.collabs@example.com",
       "address": {
@@ -449,16 +841,8 @@
       "city": "Pune",
       "state": "Maharashtra",
       "country": "India",
-      "followers": 52088,
-      "following": 582,
-      "posts_count": 515,
-      "engagement_rate": 4.83,
-      "bio": "Slow travel & hidden gems 🌏 | Based in Pune",
       "is_verified": false,
-      "account_type": "creator",
       "profile_pic_url": "https://i.pravatar.cc/300?u=snehawanders",
-      "ig_sync_status": "synced",
-      "last_synced_at": "2026-10-27T22:30:00.000Z",
       "stage": "package_sent",
       "assigned_to": "usr_03",
       "tags": [
@@ -472,30 +856,79 @@
         "ig_connected": true
       },
       "created_at": "2026-08-30T05:30:00.000Z",
-      "updated_at": "2026-10-03T11:53:00.000Z"
+      "updated_at": "2026-10-03T11:53:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_009_ig",
+          "influencer_id": "inf_009",
+          "platform": "instagram",
+          "handle": "snehawanders",
+          "profile_url": "https://www.instagram.com/snehawanders/",
+          "is_primary": true,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T22:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Sneha Kulkarni",
+          "profile_pic_url": "https://i.pravatar.cc/300?u=snehawanders",
+          "bio": "Slow travel & hidden gems 🌏 | Based in Pune | YT: youtube.com/@snehawanders",
+          "links": [
+            "https://www.youtube.com/@snehawanders"
+          ],
+          "is_verified": false,
+          "created_at": "2026-08-30T05:30:00.000Z",
+          "metrics": {
+            "followers": 52088,
+            "following": 582,
+            "posts": 515,
+            "engagement_rate": 4.83,
+            "avg_likes": 2516,
+            "avg_comments": 88,
+            "account_type": "creator"
+          }
+        },
+        {
+          "id": "acc_009_yo",
+          "influencer_id": "inf_009",
+          "platform": "youtube",
+          "handle": "snehawanders",
+          "profile_url": "https://www.youtube.com/@snehawanders",
+          "is_primary": false,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T18:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Sneha Kulkarni",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-08-30T05:30:00.000Z",
+          "metrics": {
+            "subscribers": 21877,
+            "total_views": 3177368,
+            "video_count": 103,
+            "avg_views_recent": 9376,
+            "channel_country": "IN"
+          }
+        }
+      ],
+      "total_reach": 73965
     },
     {
       "id": "inf_010",
       "name": "Arjun Pillai",
       "category": "Gaming",
-      "instagram_handle": "arjunplays",
-      "profile_url": "https://www.instagram.com/arjunplays/",
       "phone": "+917998517034",
       "email": "arjunplays.collabs@example.com",
       "address": null,
       "city": "Bengaluru",
       "state": "Karnataka",
       "country": "India",
-      "followers": null,
-      "following": null,
-      "posts_count": null,
-      "engagement_rate": null,
-      "bio": null,
       "is_verified": false,
-      "account_type": "unknown",
       "profile_pic_url": null,
-      "ig_sync_status": "pending",
-      "last_synced_at": null,
       "stage": "data_gathered",
       "assigned_to": null,
       "tags": [
@@ -509,14 +942,91 @@
         "ig_connected": false
       },
       "created_at": "2026-08-23T05:30:00.000Z",
-      "updated_at": "2026-10-28T04:30:00.000Z"
+      "updated_at": "2026-10-28T04:30:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_010_ig",
+          "influencer_id": "inf_010",
+          "platform": "instagram",
+          "handle": "arjunplays",
+          "profile_url": "https://www.instagram.com/arjunplays/",
+          "is_primary": true,
+          "sync_method": "lookup",
+          "sync_status": "pending",
+          "last_synced_at": null,
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Arjun Pillai",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-08-23T05:30:00.000Z",
+          "metrics": {
+            "followers": null,
+            "following": null,
+            "posts": null,
+            "engagement_rate": null,
+            "avg_likes": null,
+            "avg_comments": null,
+            "account_type": null
+          }
+        },
+        {
+          "id": "acc_010_fa",
+          "influencer_id": "inf_010",
+          "platform": "facebook",
+          "handle": "arjunplays.page",
+          "profile_url": "https://www.facebook.com/arjunplays.page",
+          "is_primary": false,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T18:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Arjun Pillai",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-08-23T05:30:00.000Z",
+          "metrics": {
+            "page_followers": 6200,
+            "page_likes": 5400,
+            "page_category": "Gaming video creator"
+          }
+        },
+        {
+          "id": "acc_010_th",
+          "influencer_id": "inf_010",
+          "platform": "threads",
+          "handle": "arjunplays",
+          "profile_url": "https://www.threads.net/@arjunplays",
+          "is_primary": false,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T18:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Arjun Pillai",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-08-23T05:30:00.000Z",
+          "metrics": {
+            "followers": 4400,
+            "avg_likes_recent": 80,
+            "avg_replies_recent": 10
+          }
+        }
+      ],
+      "total_reach": 10600
     },
     {
       "id": "inf_011",
       "name": "Tanvi Joshi",
       "category": "Beauty",
-      "instagram_handle": "tanviglam",
-      "profile_url": "https://www.instagram.com/tanviglam/",
       "phone": "+916173035570",
       "email": "tanviglam.collabs@example.com",
       "address": {
@@ -530,16 +1040,8 @@
       "city": "Mumbai",
       "state": "Maharashtra",
       "country": "India",
-      "followers": 21062,
-      "following": 1410,
-      "posts_count": 630,
-      "engagement_rate": 6.05,
-      "bio": "Skincare + makeup that works 💄 | Mumbai | Honest reviews only",
       "is_verified": false,
-      "account_type": "creator",
       "profile_pic_url": "https://i.pravatar.cc/300?u=tanviglam",
-      "ig_sync_status": "synced",
-      "last_synced_at": "2026-10-26T20:30:00.000Z",
       "stage": "delivered",
       "assigned_to": "usr_04",
       "tags": [
@@ -554,30 +1056,51 @@
         "ig_connected": true
       },
       "created_at": "2026-09-29T03:30:00.000Z",
-      "updated_at": "2026-10-15T15:31:00.000Z"
+      "updated_at": "2026-10-15T15:31:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_011_ig",
+          "influencer_id": "inf_011",
+          "platform": "instagram",
+          "handle": "tanviglam",
+          "profile_url": "https://www.instagram.com/tanviglam/",
+          "is_primary": true,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-26T20:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Tanvi Joshi",
+          "profile_pic_url": "https://i.pravatar.cc/300?u=tanviglam",
+          "bio": "Skincare + makeup that works 💄 | Mumbai | Honest reviews only",
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-09-29T03:30:00.000Z",
+          "metrics": {
+            "followers": 21062,
+            "following": 1410,
+            "posts": 630,
+            "engagement_rate": 6.05,
+            "avg_likes": 1274,
+            "avg_comments": 45,
+            "account_type": "creator"
+          }
+        }
+      ],
+      "total_reach": 21062
     },
     {
       "id": "inf_012",
       "name": "Vikram Singh",
       "category": "Travel",
-      "instagram_handle": "vikramroams",
-      "profile_url": "https://www.instagram.com/vikramroams/",
       "phone": "+917148739334",
       "email": "vikramroams.collabs@example.com",
       "address": null,
       "city": "Jaipur",
       "state": "Rajasthan",
       "country": "India",
-      "followers": null,
-      "following": null,
-      "posts_count": null,
-      "engagement_rate": null,
-      "bio": null,
       "is_verified": false,
-      "account_type": "personal",
       "profile_pic_url": null,
-      "ig_sync_status": "not_synced",
-      "last_synced_at": null,
       "stage": "on_hold",
       "assigned_to": "usr_04",
       "tags": [
@@ -592,30 +1115,76 @@
         "ig_connected": false
       },
       "created_at": "2026-07-31T02:30:00.000Z",
-      "updated_at": "2026-09-20T06:49:00.000Z"
+      "updated_at": "2026-09-20T06:49:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_012_ig",
+          "influencer_id": "inf_012",
+          "platform": "instagram",
+          "handle": "vikramroams",
+          "profile_url": "https://www.instagram.com/vikramroams/",
+          "is_primary": true,
+          "sync_method": "manual",
+          "sync_status": "not_synced",
+          "last_synced_at": null,
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Vikram Singh",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-07-31T02:30:00.000Z",
+          "metrics": {
+            "followers": null,
+            "following": null,
+            "posts": null,
+            "engagement_rate": null,
+            "avg_likes": null,
+            "avg_comments": null,
+            "account_type": "personal"
+          }
+        },
+        {
+          "id": "acc_012_ti",
+          "influencer_id": "inf_012",
+          "platform": "tiktok",
+          "handle": "vikramroams",
+          "profile_url": "https://www.tiktok.com/@vikramroams",
+          "is_primary": false,
+          "sync_method": "connect",
+          "sync_status": "not_synced",
+          "last_synced_at": null,
+          "connect_status": "link_sent",
+          "connect_link_expires_at": "2026-10-26T06:30:00.000Z",
+          "display_name": "Vikram Singh",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-07-31T02:30:00.000Z",
+          "metrics": {
+            "followers": null,
+            "following": null,
+            "total_likes": null,
+            "video_count": null
+          }
+        }
+      ],
+      "total_reach": null
     },
     {
       "id": "inf_013",
       "name": "Neha Agarwal",
       "category": "Food",
-      "instagram_handle": "nehacooks",
-      "profile_url": "https://www.instagram.com/nehacooks/",
       "phone": "+919528163404",
       "email": "nehacooks.collabs@example.com",
       "address": null,
       "city": "Kolkata",
       "state": "West Bengal",
       "country": "India",
-      "followers": 65443,
-      "following": 902,
-      "posts_count": 154,
-      "engagement_rate": 5.31,
-      "bio": "Eating my way through Kolkata 🍛 | Street food & home recipes",
       "is_verified": false,
-      "account_type": "unknown",
       "profile_pic_url": "https://i.pravatar.cc/300?u=nehacooks",
-      "ig_sync_status": "error",
-      "last_synced_at": "2026-10-23T06:30:00.000Z",
       "stage": "data_gathered",
       "assigned_to": null,
       "tags": [
@@ -631,14 +1200,96 @@
         "ig_connected": false
       },
       "created_at": "2026-06-24T22:30:00.000Z",
-      "updated_at": "2026-10-26T06:30:00.000Z"
+      "updated_at": "2026-10-26T06:30:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_013_ig",
+          "influencer_id": "inf_013",
+          "platform": "instagram",
+          "handle": "nehacooks",
+          "profile_url": "https://www.instagram.com/nehacooks/",
+          "is_primary": true,
+          "sync_method": "lookup",
+          "sync_status": "error",
+          "last_synced_at": "2026-10-23T06:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Neha Agarwal",
+          "profile_pic_url": "https://i.pravatar.cc/300?u=nehacooks",
+          "bio": "Eating my way through Kolkata 🍛 | Street food & home recipes | YT: youtube.com/@nehacooks",
+          "links": [
+            "https://www.youtube.com/@nehacooks"
+          ],
+          "is_verified": false,
+          "created_at": "2026-06-24T22:30:00.000Z",
+          "metrics": {
+            "followers": 65443,
+            "following": 902,
+            "posts": 154,
+            "engagement_rate": 5.31,
+            "avg_likes": 3475,
+            "avg_comments": 122,
+            "account_type": null
+          }
+        },
+        {
+          "id": "acc_013_yo",
+          "influencer_id": "inf_013",
+          "platform": "youtube",
+          "handle": "nehacooks",
+          "profile_url": "https://www.youtube.com/@nehacooks",
+          "is_primary": false,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T18:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Neha Agarwal",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-06-24T22:30:00.000Z",
+          "metrics": {
+            "subscribers": 27486,
+            "total_views": 3992023,
+            "video_count": 131,
+            "avg_views_recent": 11780,
+            "channel_country": "IN"
+          }
+        },
+        {
+          "id": "acc_013_pi",
+          "influencer_id": "inf_013",
+          "platform": "pinterest",
+          "handle": "nehacooks",
+          "profile_url": "https://www.pinterest.com/nehacooks/",
+          "is_primary": false,
+          "sync_method": "connect",
+          "sync_status": "not_synced",
+          "last_synced_at": null,
+          "connect_status": "not_connected",
+          "connect_link_expires_at": null,
+          "display_name": "Neha Agarwal",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-06-24T22:30:00.000Z",
+          "metrics": {
+            "followers": null,
+            "monthly_views": null,
+            "pin_count": null,
+            "board_count": null
+          }
+        }
+      ],
+      "total_reach": 92929
     },
     {
       "id": "inf_014",
       "name": "Karan Bhatia",
       "category": "Tech",
-      "instagram_handle": "karanunboxes",
-      "profile_url": "https://www.instagram.com/karanunboxes/",
       "phone": "+919259348930",
       "email": "karanunboxes.collabs@example.com",
       "address": {
@@ -652,16 +1303,8 @@
       "city": "Gurugram",
       "state": "Haryana",
       "country": "India",
-      "followers": 96072,
-      "following": 770,
-      "posts_count": 225,
-      "engagement_rate": 3.37,
-      "bio": "Gadgets, unboxings & honest reviews 📱 | Gurugram",
       "is_verified": false,
-      "account_type": "business",
       "profile_pic_url": "https://i.pravatar.cc/300?u=karanunboxes",
-      "ig_sync_status": "synced",
-      "last_synced_at": "2026-10-26T22:30:00.000Z",
       "stage": "contacted",
       "assigned_to": null,
       "tags": [
@@ -677,14 +1320,43 @@
         "ig_connected": false
       },
       "created_at": "2026-10-07T23:30:00.000Z",
-      "updated_at": "2026-10-14T13:11:00.000Z"
+      "updated_at": "2026-10-14T13:11:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_014_ig",
+          "influencer_id": "inf_014",
+          "platform": "instagram",
+          "handle": "karanunboxes",
+          "profile_url": "https://www.instagram.com/karanunboxes/",
+          "is_primary": true,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-26T22:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Karan Bhatia",
+          "profile_pic_url": "https://i.pravatar.cc/300?u=karanunboxes",
+          "bio": "Gadgets, unboxings & honest reviews 📱 | Gurugram",
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-10-07T23:30:00.000Z",
+          "metrics": {
+            "followers": 96072,
+            "following": 770,
+            "posts": 225,
+            "engagement_rate": 3.37,
+            "avg_likes": 3238,
+            "avg_comments": 113,
+            "account_type": "business"
+          }
+        }
+      ],
+      "total_reach": 96072
     },
     {
       "id": "inf_015",
       "name": "Diya Menon",
       "category": "Fashion",
-      "instagram_handle": "diyadresses",
-      "profile_url": "https://www.instagram.com/diyadresses/",
       "phone": "+919165150051",
       "email": "diyadresses.collabs@example.com",
       "address": {
@@ -698,16 +1370,8 @@
       "city": "Bengaluru",
       "state": "Karnataka",
       "country": "India",
-      "followers": 68968,
-      "following": 1603,
-      "posts_count": 2058,
-      "engagement_rate": 5.18,
-      "bio": "Bengaluru | Everyday & festive looks ✨ | Styling tips daily | Collabs via DM",
       "is_verified": false,
-      "account_type": "business",
       "profile_pic_url": "https://i.pravatar.cc/300?u=diyadresses",
-      "ig_sync_status": "synced",
-      "last_synced_at": "2026-10-27T17:30:00.000Z",
       "stage": "onboarded",
       "assigned_to": "usr_04",
       "tags": [
@@ -723,14 +1387,67 @@
         "ig_connected": true
       },
       "created_at": "2026-10-16T06:30:00.000Z",
-      "updated_at": "2026-10-23T13:32:00.000Z"
+      "updated_at": "2026-10-23T13:32:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_015_ig",
+          "influencer_id": "inf_015",
+          "platform": "instagram",
+          "handle": "diyadresses",
+          "profile_url": "https://www.instagram.com/diyadresses/",
+          "is_primary": true,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T17:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Diya Menon",
+          "profile_pic_url": "https://i.pravatar.cc/300?u=diyadresses",
+          "bio": "Bengaluru | Everyday & festive looks ✨ | Styling tips daily | Collabs via DM",
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-10-16T06:30:00.000Z",
+          "metrics": {
+            "followers": 68968,
+            "following": 1603,
+            "posts": 2058,
+            "engagement_rate": 5.18,
+            "avg_likes": 3573,
+            "avg_comments": 125,
+            "account_type": "business"
+          }
+        },
+        {
+          "id": "acc_015_fa",
+          "influencer_id": "inf_015",
+          "platform": "facebook",
+          "handle": "diyadresses.page",
+          "profile_url": "https://www.facebook.com/diyadresses.page",
+          "is_primary": false,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T18:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Diya Menon",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-10-16T06:30:00.000Z",
+          "metrics": {
+            "page_followers": 21380,
+            "page_likes": 18621,
+            "page_category": "Clothing (Brand)"
+          }
+        }
+      ],
+      "total_reach": 90348
     },
     {
       "id": "inf_016",
       "name": "Aditya Rao",
       "category": "Fitness",
-      "instagram_handle": "adityalifts",
-      "profile_url": "https://www.instagram.com/adityalifts/",
       "phone": "+919664824055",
       "email": "adityalifts.collabs@example.com",
       "address": {
@@ -744,16 +1461,8 @@
       "city": "Bengaluru",
       "state": "Karnataka",
       "country": "India",
-      "followers": 715475,
-      "following": 1506,
-      "posts_count": 1468,
-      "engagement_rate": 2.74,
-      "bio": "Coach | Strength & mobility 💪 | Bengaluru | Free plans in highlights",
       "is_verified": true,
-      "account_type": "business",
       "profile_pic_url": "https://i.pravatar.cc/300?u=adityalifts",
-      "ig_sync_status": "synced",
-      "last_synced_at": "2026-10-26T22:30:00.000Z",
       "stage": "package_sent",
       "assigned_to": "usr_03",
       "tags": [
@@ -768,30 +1477,74 @@
         "ig_connected": true
       },
       "created_at": "2026-06-14T01:30:00.000Z",
-      "updated_at": "2026-08-24T16:37:00.000Z"
+      "updated_at": "2026-08-24T16:37:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_016_ig",
+          "influencer_id": "inf_016",
+          "platform": "instagram",
+          "handle": "adityalifts",
+          "profile_url": "https://www.instagram.com/adityalifts/",
+          "is_primary": true,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-26T22:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Aditya Rao",
+          "profile_pic_url": "https://i.pravatar.cc/300?u=adityalifts",
+          "bio": "Coach | Strength & mobility 💪 | Bengaluru | Free plans in highlights",
+          "links": [],
+          "is_verified": true,
+          "created_at": "2026-06-14T01:30:00.000Z",
+          "metrics": {
+            "followers": 715475,
+            "following": 1506,
+            "posts": 1468,
+            "engagement_rate": 2.74,
+            "avg_likes": 19604,
+            "avg_comments": 686,
+            "account_type": "business"
+          }
+        },
+        {
+          "id": "acc_016_li",
+          "influencer_id": "inf_016",
+          "platform": "linkedin",
+          "handle": "adityalifts",
+          "profile_url": "https://www.linkedin.com/in/adityalifts",
+          "is_primary": false,
+          "sync_method": "manual",
+          "sync_status": "not_synced",
+          "last_synced_at": null,
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Aditya Rao",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-06-14T01:30:00.000Z",
+          "metrics": {
+            "followers": 1792,
+            "connections": 644
+          }
+        }
+      ],
+      "total_reach": 717267
     },
     {
       "id": "inf_017",
       "name": "Pooja Sharma",
       "category": "Lifestyle",
-      "instagram_handle": "poojasharmaofficial",
-      "profile_url": "https://www.instagram.com/poojasharmaofficial/",
       "phone": "+916473378858",
       "email": "poojasharmaofficial.collabs@example.com",
       "address": null,
       "city": "New Delhi",
       "state": "Delhi",
       "country": "India",
-      "followers": 460035,
-      "following": 1064,
-      "posts_count": 1262,
-      "engagement_rate": 3.22,
-      "bio": "Living, loving, sharing ☕ | New Delhi | Home • Style • Life",
       "is_verified": false,
-      "account_type": "business",
       "profile_pic_url": "https://i.pravatar.cc/300?u=poojasharmaofficial",
-      "ig_sync_status": "synced",
-      "last_synced_at": "2026-10-26T14:30:00.000Z",
       "stage": "rejected",
       "assigned_to": "usr_03",
       "tags": [
@@ -806,30 +1559,128 @@
         "ig_connected": false
       },
       "created_at": "2026-06-11T03:30:00.000Z",
-      "updated_at": "2026-08-13T15:40:00.000Z"
+      "updated_at": "2026-08-13T15:40:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_017_ig",
+          "influencer_id": "inf_017",
+          "platform": "instagram",
+          "handle": "poojasharmaofficial",
+          "profile_url": "https://www.instagram.com/poojasharmaofficial/",
+          "is_primary": true,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-26T14:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Pooja Sharma",
+          "profile_pic_url": "https://i.pravatar.cc/300?u=poojasharmaofficial",
+          "bio": "Living, loving, sharing ☕ | New Delhi | Home • Style • Life | YT: youtube.com/@poojasharmaofficial",
+          "links": [
+            "https://www.youtube.com/@poojasharmaofficial"
+          ],
+          "is_verified": false,
+          "created_at": "2026-06-11T03:30:00.000Z",
+          "metrics": {
+            "followers": 460035,
+            "following": 1064,
+            "posts": 1262,
+            "engagement_rate": 3.22,
+            "avg_likes": 14813,
+            "avg_comments": 518,
+            "account_type": "business"
+          }
+        },
+        {
+          "id": "acc_017_yo",
+          "influencer_id": "inf_017",
+          "platform": "youtube",
+          "handle": "poojasharmaofficial",
+          "profile_url": "https://www.youtube.com/@poojasharmaofficial",
+          "is_primary": false,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T18:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Pooja Sharma",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-06-11T03:30:00.000Z",
+          "metrics": {
+            "subscribers": 193215,
+            "total_views": 28062135,
+            "video_count": 159,
+            "avg_views_recent": 82806,
+            "channel_country": "IN"
+          }
+        },
+        {
+          "id": "acc_017_ti",
+          "influencer_id": "inf_017",
+          "platform": "tiktok",
+          "handle": "poojasharmaofficial",
+          "profile_url": "https://www.tiktok.com/@poojasharmaofficial",
+          "is_primary": false,
+          "sync_method": "connect",
+          "sync_status": "not_synced",
+          "last_synced_at": null,
+          "connect_status": "not_connected",
+          "connect_link_expires_at": null,
+          "display_name": "Pooja Sharma",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-06-11T03:30:00.000Z",
+          "metrics": {
+            "followers": null,
+            "following": null,
+            "total_likes": null,
+            "video_count": null
+          }
+        },
+        {
+          "id": "acc_017_th",
+          "influencer_id": "inf_017",
+          "platform": "threads",
+          "handle": "poojasharmaofficial",
+          "profile_url": "https://www.threads.net/@poojasharmaofficial",
+          "is_primary": false,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T18:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Pooja Sharma",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-06-11T03:30:00.000Z",
+          "metrics": {
+            "followers": 101208,
+            "avg_likes_recent": 1840,
+            "avg_replies_recent": 186
+          }
+        }
+      ],
+      "total_reach": 754458
     },
     {
       "id": "inf_018",
       "name": "Siddharth Jain",
       "category": "Finance",
-      "instagram_handle": "sidinvests",
-      "profile_url": "https://www.instagram.com/sidinvests/",
       "phone": "+917947081313",
       "email": null,
       "address": null,
       "city": "Indore",
       "state": "Madhya Pradesh",
       "country": "India",
-      "followers": null,
-      "following": null,
-      "posts_count": null,
-      "engagement_rate": null,
-      "bio": null,
       "is_verified": false,
-      "account_type": "personal",
       "profile_pic_url": null,
-      "ig_sync_status": "not_synced",
-      "last_synced_at": null,
       "stage": "data_gathered",
       "assigned_to": null,
       "tags": [],
@@ -841,14 +1692,43 @@
         "ig_connected": false
       },
       "created_at": "2026-10-05T05:30:00.000Z",
-      "updated_at": "2026-10-28T04:30:00.000Z"
+      "updated_at": "2026-10-28T04:30:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_018_ig",
+          "influencer_id": "inf_018",
+          "platform": "instagram",
+          "handle": "sidinvests",
+          "profile_url": "https://www.instagram.com/sidinvests/",
+          "is_primary": true,
+          "sync_method": "manual",
+          "sync_status": "not_synced",
+          "last_synced_at": null,
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Siddharth Jain",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-10-05T05:30:00.000Z",
+          "metrics": {
+            "followers": null,
+            "following": null,
+            "posts": null,
+            "engagement_rate": null,
+            "avg_likes": null,
+            "avg_comments": null,
+            "account_type": "personal"
+          }
+        }
+      ],
+      "total_reach": null
     },
     {
       "id": "inf_019",
       "name": "Kavya Krishnan",
       "category": "Beauty",
-      "instagram_handle": "kavyaskincare",
-      "profile_url": "https://www.instagram.com/kavyaskincare/",
       "phone": "+918020329740",
       "email": "kavyaskincare.collabs@example.com",
       "address": {
@@ -862,16 +1742,8 @@
       "city": "Coimbatore",
       "state": "Tamil Nadu",
       "country": "India",
-      "followers": 3400000,
-      "following": 1691,
-      "posts_count": 737,
-      "engagement_rate": 1.83,
-      "bio": "Skincare + makeup that works 💄 | Coimbatore | Honest reviews only",
       "is_verified": true,
-      "account_type": "business",
       "profile_pic_url": "https://i.pravatar.cc/300?u=kavyaskincare",
-      "ig_sync_status": "synced",
-      "last_synced_at": "2026-10-28T04:30:00.000Z",
       "stage": "delivered",
       "assigned_to": "usr_01",
       "tags": [
@@ -885,30 +1757,73 @@
         "ig_connected": true
       },
       "created_at": "2026-10-04T06:30:00.000Z",
-      "updated_at": "2026-10-17T17:18:00.000Z"
+      "updated_at": "2026-10-17T17:18:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_019_ig",
+          "influencer_id": "inf_019",
+          "platform": "instagram",
+          "handle": "kavyaskincare",
+          "profile_url": "https://www.instagram.com/kavyaskincare/",
+          "is_primary": true,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-28T04:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Kavya Krishnan",
+          "profile_pic_url": "https://i.pravatar.cc/300?u=kavyaskincare",
+          "bio": "Skincare + makeup that works 💄 | Coimbatore | Honest reviews only",
+          "links": [],
+          "is_verified": true,
+          "created_at": "2026-10-04T06:30:00.000Z",
+          "metrics": {
+            "followers": 3400000,
+            "following": 1691,
+            "posts": 737,
+            "engagement_rate": 1.83,
+            "avg_likes": 62220,
+            "avg_comments": 2178,
+            "account_type": "business"
+          }
+        },
+        {
+          "id": "acc_019_sn",
+          "influencer_id": "inf_019",
+          "platform": "snapchat",
+          "handle": "kavyaskincare",
+          "profile_url": "https://www.snapchat.com/add/kavyaskincare",
+          "is_primary": false,
+          "sync_method": "manual",
+          "sync_status": "not_synced",
+          "last_synced_at": null,
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Kavya Krishnan",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-10-04T06:30:00.000Z",
+          "metrics": {
+            "subscribers": 170000
+          }
+        }
+      ],
+      "total_reach": 3570000
     },
     {
       "id": "inf_020",
       "name": "Nikhil Verma",
       "category": "Food",
-      "instagram_handle": "nikhilkhaata",
-      "profile_url": "https://www.instagram.com/nikhilkhaata/",
       "phone": "+916483155382",
       "email": "nikhilkhaata.collabs@example.com",
       "address": null,
       "city": "Lucknow",
       "state": "Uttar Pradesh",
       "country": "India",
-      "followers": 30473,
-      "following": 1717,
-      "posts_count": 655,
-      "engagement_rate": 5.82,
-      "bio": "Eating my way through Lucknow 🍛 | Street food & home recipes",
       "is_verified": false,
-      "account_type": "creator",
       "profile_pic_url": "https://i.pravatar.cc/300?u=nikhilkhaata",
-      "ig_sync_status": "error",
-      "last_synced_at": "2026-10-21T06:30:00.000Z",
       "stage": "contacted",
       "assigned_to": "usr_04",
       "tags": [
@@ -924,14 +1839,67 @@
         "ig_connected": false
       },
       "created_at": "2026-06-19T22:30:00.000Z",
-      "updated_at": "2026-08-14T01:34:00.000Z"
+      "updated_at": "2026-08-14T01:34:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_020_ig",
+          "influencer_id": "inf_020",
+          "platform": "instagram",
+          "handle": "nikhilkhaata",
+          "profile_url": "https://www.instagram.com/nikhilkhaata/",
+          "is_primary": true,
+          "sync_method": "lookup",
+          "sync_status": "error",
+          "last_synced_at": "2026-10-21T06:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Nikhil Verma",
+          "profile_pic_url": "https://i.pravatar.cc/300?u=nikhilkhaata",
+          "bio": "Eating my way through Lucknow 🍛 | Street food & home recipes",
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-06-19T22:30:00.000Z",
+          "metrics": {
+            "followers": 30473,
+            "following": 1717,
+            "posts": 655,
+            "engagement_rate": 5.82,
+            "avg_likes": 1774,
+            "avg_comments": 62,
+            "account_type": "creator"
+          }
+        },
+        {
+          "id": "acc_020_fa",
+          "influencer_id": "inf_020",
+          "platform": "facebook",
+          "handle": "nikhilkhaata.page",
+          "profile_url": "https://www.facebook.com/nikhilkhaata.page",
+          "is_primary": false,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T18:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Nikhil Verma",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-06-19T22:30:00.000Z",
+          "metrics": {
+            "page_followers": 9447,
+            "page_likes": 8228,
+            "page_category": "Food & beverage"
+          }
+        }
+      ],
+      "total_reach": 39920
     },
     {
       "id": "inf_021",
       "name": "Aisha Khan",
       "category": "Fashion",
-      "instagram_handle": "aishakhanstyle",
-      "profile_url": "https://www.instagram.com/aishakhanstyle/",
       "phone": "+919667191973",
       "email": "aishakhanstyle.collabs@example.com",
       "address": {
@@ -945,16 +1913,8 @@
       "city": "Hyderabad",
       "state": "Telangana",
       "country": "India",
-      "followers": 511004,
-      "following": 231,
-      "posts_count": 1500,
-      "engagement_rate": 3.36,
-      "bio": "Hyderabad | Everyday & festive looks ✨ | Styling tips daily | Collabs via DM",
       "is_verified": false,
-      "account_type": "business",
       "profile_pic_url": "https://i.pravatar.cc/300?u=aishakhanstyle",
-      "ig_sync_status": "synced",
-      "last_synced_at": "2026-10-26T14:30:00.000Z",
       "stage": "onboarded",
       "assigned_to": "usr_02",
       "tags": [
@@ -970,30 +1930,79 @@
         "ig_connected": true
       },
       "created_at": "2026-08-07T06:30:00.000Z",
-      "updated_at": "2026-09-13T02:07:00.000Z"
+      "updated_at": "2026-09-13T02:07:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_021_ig",
+          "influencer_id": "inf_021",
+          "platform": "instagram",
+          "handle": "aishakhanstyle",
+          "profile_url": "https://www.instagram.com/aishakhanstyle/",
+          "is_primary": true,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-26T14:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Aisha Khan",
+          "profile_pic_url": "https://i.pravatar.cc/300?u=aishakhanstyle",
+          "bio": "Hyderabad | Everyday & festive looks ✨ | Styling tips daily | Collabs via DM | YT: youtube.com/@aishakhanstyle",
+          "links": [
+            "https://www.youtube.com/@aishakhanstyle"
+          ],
+          "is_verified": false,
+          "created_at": "2026-08-07T06:30:00.000Z",
+          "metrics": {
+            "followers": 511004,
+            "following": 231,
+            "posts": 1500,
+            "engagement_rate": 3.36,
+            "avg_likes": 17170,
+            "avg_comments": 601,
+            "account_type": "business"
+          }
+        },
+        {
+          "id": "acc_021_yo",
+          "influencer_id": "inf_021",
+          "platform": "youtube",
+          "handle": "aishakhanstyle",
+          "profile_url": "https://www.youtube.com/@aishakhanstyle",
+          "is_primary": false,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T18:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Aisha Khan",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-08-07T06:30:00.000Z",
+          "metrics": {
+            "subscribers": 214622,
+            "total_views": 31171244,
+            "video_count": 187,
+            "avg_views_recent": 91981,
+            "channel_country": "IN"
+          }
+        }
+      ],
+      "total_reach": 725626
     },
     {
       "id": "inf_022",
       "name": "Rahul Gupta",
       "category": "Gaming",
-      "instagram_handle": "rahulgg",
-      "profile_url": "https://www.instagram.com/rahulgg/",
       "phone": "+919634203954",
       "email": "rahulgg.collabs@example.com",
       "address": null,
       "city": "Noida",
       "state": "Uttar Pradesh",
       "country": "India",
-      "followers": null,
-      "following": null,
-      "posts_count": null,
-      "engagement_rate": null,
-      "bio": null,
       "is_verified": false,
-      "account_type": "personal",
       "profile_pic_url": null,
-      "ig_sync_status": "not_synced",
-      "last_synced_at": null,
       "stage": "data_gathered",
       "assigned_to": "usr_04",
       "tags": [],
@@ -1005,14 +2014,93 @@
         "ig_connected": false
       },
       "created_at": "2026-09-02T02:30:00.000Z",
-      "updated_at": "2026-10-23T05:30:00.000Z"
+      "updated_at": "2026-10-23T05:30:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_022_ig",
+          "influencer_id": "inf_022",
+          "platform": "instagram",
+          "handle": "rahulgg",
+          "profile_url": "https://www.instagram.com/rahulgg/",
+          "is_primary": true,
+          "sync_method": "manual",
+          "sync_status": "not_synced",
+          "last_synced_at": null,
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Rahul Gupta",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-09-02T02:30:00.000Z",
+          "metrics": {
+            "followers": null,
+            "following": null,
+            "posts": null,
+            "engagement_rate": null,
+            "avg_likes": null,
+            "avg_comments": null,
+            "account_type": "personal"
+          }
+        },
+        {
+          "id": "acc_022_ti",
+          "influencer_id": "inf_022",
+          "platform": "tiktok",
+          "handle": "rahulgg",
+          "profile_url": "https://www.tiktok.com/@rahulgg",
+          "is_primary": false,
+          "sync_method": "connect",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T22:30:00.000Z",
+          "connect_status": "connected",
+          "connect_link_expires_at": null,
+          "display_name": "Rahul Gupta",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-09-02T02:30:00.000Z",
+          "metrics": {
+            "followers": 16000,
+            "following": 186,
+            "total_likes": 190000,
+            "video_count": 148
+          }
+        },
+        {
+          "id": "acc_022_pi",
+          "influencer_id": "inf_022",
+          "platform": "pinterest",
+          "handle": "rahulgg",
+          "profile_url": "https://www.pinterest.com/rahulgg/",
+          "is_primary": false,
+          "sync_method": "connect",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T06:30:00.000Z",
+          "connect_status": "connected",
+          "connect_link_expires_at": null,
+          "display_name": "Rahul Gupta",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-09-02T02:30:00.000Z",
+          "metrics": {
+            "followers": 2400,
+            "monthly_views": 62000,
+            "pin_count": 542,
+            "board_count": 10
+          }
+        }
+      ],
+      "total_reach": 18400
     },
     {
       "id": "inf_023",
       "name": "Shreya Banerjee",
       "category": "Lifestyle",
-      "instagram_handle": "shreyabanerjee",
-      "profile_url": "https://www.instagram.com/shreyabanerjee/",
       "phone": "+919575092299",
       "email": "shreyabanerjee.collabs@example.com",
       "address": {
@@ -1026,16 +2114,8 @@
       "city": "Kolkata",
       "state": "West Bengal",
       "country": "India",
-      "followers": 178305,
-      "following": 370,
-      "posts_count": 997,
-      "engagement_rate": 3.23,
-      "bio": "Living, loving, sharing ☕ | Kolkata | Home • Style • Life",
       "is_verified": false,
-      "account_type": "creator",
       "profile_pic_url": "https://i.pravatar.cc/300?u=shreyabanerjee",
-      "ig_sync_status": "synced",
-      "last_synced_at": "2026-10-28T02:30:00.000Z",
       "stage": "package_sent",
       "assigned_to": "usr_01",
       "tags": [
@@ -1051,14 +2131,43 @@
         "ig_connected": true
       },
       "created_at": "2026-10-05T22:30:00.000Z",
-      "updated_at": "2026-10-18T10:12:00.000Z"
+      "updated_at": "2026-10-18T10:12:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_023_ig",
+          "influencer_id": "inf_023",
+          "platform": "instagram",
+          "handle": "shreyabanerjee",
+          "profile_url": "https://www.instagram.com/shreyabanerjee/",
+          "is_primary": true,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-28T02:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Shreya Banerjee",
+          "profile_pic_url": "https://i.pravatar.cc/300?u=shreyabanerjee",
+          "bio": "Living, loving, sharing ☕ | Kolkata | Home • Style • Life",
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-10-05T22:30:00.000Z",
+          "metrics": {
+            "followers": 178305,
+            "following": 370,
+            "posts": 997,
+            "engagement_rate": 3.23,
+            "avg_likes": 5759,
+            "avg_comments": 202,
+            "account_type": "creator"
+          }
+        }
+      ],
+      "total_reach": 178305
     },
     {
       "id": "inf_024",
       "name": "Varun Chopra",
       "category": "Fitness",
-      "instagram_handle": "varunchoprafit",
-      "profile_url": "https://www.instagram.com/varunchoprafit/",
       "phone": "+917270734980",
       "email": "varunchoprafit.collabs@example.com",
       "address": {
@@ -1072,16 +2181,8 @@
       "city": "Chandigarh",
       "state": "Chandigarh",
       "country": "India",
-      "followers": 67564,
-      "following": 1219,
-      "posts_count": 882,
-      "engagement_rate": 4.57,
-      "bio": "Coach | Strength & mobility 💪 | Chandigarh | Free plans in highlights",
       "is_verified": false,
-      "account_type": "creator",
       "profile_pic_url": "https://i.pravatar.cc/300?u=varunchoprafit",
-      "ig_sync_status": "synced",
-      "last_synced_at": "2026-10-28T03:30:00.000Z",
       "stage": "on_hold",
       "assigned_to": "usr_03",
       "tags": [
@@ -1096,30 +2197,75 @@
         "ig_connected": true
       },
       "created_at": "2026-08-25T01:30:00.000Z",
-      "updated_at": "2026-09-28T07:21:00.000Z"
+      "updated_at": "2026-09-28T07:21:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_024_ig",
+          "influencer_id": "inf_024",
+          "platform": "instagram",
+          "handle": "varunchoprafit",
+          "profile_url": "https://www.instagram.com/varunchoprafit/",
+          "is_primary": true,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-28T03:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Varun Chopra",
+          "profile_pic_url": "https://i.pravatar.cc/300?u=varunchoprafit",
+          "bio": "Coach | Strength & mobility 💪 | Chandigarh | Free plans in highlights",
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-08-25T01:30:00.000Z",
+          "metrics": {
+            "followers": 67564,
+            "following": 1219,
+            "posts": 882,
+            "engagement_rate": 4.57,
+            "avg_likes": 3088,
+            "avg_comments": 108,
+            "account_type": "creator"
+          }
+        },
+        {
+          "id": "acc_024_th",
+          "influencer_id": "inf_024",
+          "platform": "threads",
+          "handle": "varunchoprafit",
+          "profile_url": "https://www.threads.net/@varunchoprafit",
+          "is_primary": false,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T18:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Varun Chopra",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-08-25T01:30:00.000Z",
+          "metrics": {
+            "followers": 14864,
+            "avg_likes_recent": 270,
+            "avg_replies_recent": 29
+          }
+        }
+      ],
+      "total_reach": 82428
     },
     {
       "id": "inf_025",
       "name": "Ira Saxena",
       "category": "Parenting",
-      "instagram_handle": "irasaxenaparenting",
-      "profile_url": "https://www.instagram.com/irasaxenaparenting/",
       "phone": "+917579625684",
       "email": "irasaxenaparenting.collabs@example.com",
       "address": null,
       "city": "Mumbai",
       "state": "Maharashtra",
       "country": "India",
-      "followers": null,
-      "following": null,
-      "posts_count": null,
-      "engagement_rate": null,
-      "bio": null,
       "is_verified": false,
-      "account_type": "personal",
       "profile_pic_url": null,
-      "ig_sync_status": "not_synced",
-      "last_synced_at": null,
       "stage": "contacted",
       "assigned_to": "usr_03",
       "tags": [
@@ -1133,30 +2279,103 @@
         "ig_connected": false
       },
       "created_at": "2026-10-02T00:30:00.000Z",
-      "updated_at": "2026-10-11T10:27:00.000Z"
+      "updated_at": "2026-10-11T10:27:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_025_ig",
+          "influencer_id": "inf_025",
+          "platform": "instagram",
+          "handle": "irasaxenaparenting",
+          "profile_url": "https://www.instagram.com/irasaxenaparenting/",
+          "is_primary": true,
+          "sync_method": "manual",
+          "sync_status": "not_synced",
+          "last_synced_at": null,
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Ira Saxena",
+          "profile_pic_url": null,
+          "bio": "YT: youtube.com/@irasaxenaparenting",
+          "links": [
+            "https://www.youtube.com/@irasaxenaparenting"
+          ],
+          "is_verified": false,
+          "created_at": "2026-10-02T00:30:00.000Z",
+          "metrics": {
+            "followers": null,
+            "following": null,
+            "posts": null,
+            "engagement_rate": null,
+            "avg_likes": null,
+            "avg_comments": null,
+            "account_type": "personal"
+          }
+        },
+        {
+          "id": "acc_025_yo",
+          "influencer_id": "inf_025",
+          "platform": "youtube",
+          "handle": "irasaxenaparenting",
+          "profile_url": "https://www.youtube.com/@irasaxenaparenting",
+          "is_primary": false,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T18:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Ira Saxena",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-10-02T00:30:00.000Z",
+          "metrics": {
+            "subscribers": 8400,
+            "total_views": 1220000,
+            "video_count": 215,
+            "avg_views_recent": 3600,
+            "channel_country": "IN"
+          }
+        },
+        {
+          "id": "acc_025_fa",
+          "influencer_id": "inf_025",
+          "platform": "facebook",
+          "handle": "irasaxenaparenting.page",
+          "profile_url": "https://www.facebook.com/irasaxenaparenting.page",
+          "is_primary": false,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T18:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Ira Saxena",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-10-02T00:30:00.000Z",
+          "metrics": {
+            "page_followers": 6200,
+            "page_likes": 5400,
+            "page_category": "Personal blog"
+          }
+        }
+      ],
+      "total_reach": 14600
     },
     {
       "id": "inf_026",
       "name": "Manav Patel",
       "category": "Tech",
-      "instagram_handle": "manavtech",
-      "profile_url": "https://www.instagram.com/manavtech/",
       "phone": "+919255472636",
       "email": "manavtech.collabs@example.com",
       "address": null,
       "city": "Surat",
       "state": "Gujarat",
       "country": "India",
-      "followers": 162000,
-      "following": null,
-      "posts_count": null,
-      "engagement_rate": null,
-      "bio": null,
       "is_verified": false,
-      "account_type": "personal",
       "profile_pic_url": null,
-      "ig_sync_status": "not_synced",
-      "last_synced_at": null,
       "stage": "rejected",
       "assigned_to": "usr_03",
       "tags": [
@@ -1172,14 +2391,43 @@
         "ig_connected": false
       },
       "created_at": "2026-06-28T01:30:00.000Z",
-      "updated_at": "2026-08-03T18:29:00.000Z"
+      "updated_at": "2026-08-03T18:29:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_026_ig",
+          "influencer_id": "inf_026",
+          "platform": "instagram",
+          "handle": "manavtech",
+          "profile_url": "https://www.instagram.com/manavtech/",
+          "is_primary": true,
+          "sync_method": "manual",
+          "sync_status": "not_synced",
+          "last_synced_at": null,
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Manav Patel",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-06-28T01:30:00.000Z",
+          "metrics": {
+            "followers": 162000,
+            "following": null,
+            "posts": null,
+            "engagement_rate": null,
+            "avg_likes": null,
+            "avg_comments": null,
+            "account_type": "personal"
+          }
+        }
+      ],
+      "total_reach": 162000
     },
     {
       "id": "inf_027",
       "name": "Nandini Bose",
       "category": "Travel",
-      "instagram_handle": "nandinitravels",
-      "profile_url": "https://www.instagram.com/nandinitravels/",
       "phone": "+919057185096",
       "email": "nandinitravels.collabs@example.com",
       "address": {
@@ -1193,16 +2441,8 @@
       "city": "Kolkata",
       "state": "West Bengal",
       "country": "India",
-      "followers": 13907,
-      "following": 309,
-      "posts_count": 1503,
-      "engagement_rate": 7.89,
-      "bio": "Slow travel & hidden gems 🌏 | Based in Kolkata",
       "is_verified": false,
-      "account_type": "creator",
       "profile_pic_url": "https://i.pravatar.cc/300?u=nandinitravels",
-      "ig_sync_status": "synced",
-      "last_synced_at": "2026-10-28T02:30:00.000Z",
       "stage": "delivered",
       "assigned_to": "usr_03",
       "tags": [
@@ -1216,30 +2456,99 @@
         "ig_connected": true
       },
       "created_at": "2026-08-23T05:30:00.000Z",
-      "updated_at": "2026-10-07T15:03:00.000Z"
+      "updated_at": "2026-10-07T15:03:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_027_ig",
+          "influencer_id": "inf_027",
+          "platform": "instagram",
+          "handle": "nandinitravels",
+          "profile_url": "https://www.instagram.com/nandinitravels/",
+          "is_primary": true,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-28T02:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Nandini Bose",
+          "profile_pic_url": "https://i.pravatar.cc/300?u=nandinitravels",
+          "bio": "Slow travel & hidden gems 🌏 | Based in Kolkata",
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-08-23T05:30:00.000Z",
+          "metrics": {
+            "followers": 13907,
+            "following": 309,
+            "posts": 1503,
+            "engagement_rate": 7.89,
+            "avg_likes": 1097,
+            "avg_comments": 38,
+            "account_type": "creator"
+          }
+        },
+        {
+          "id": "acc_027_ti",
+          "influencer_id": "inf_027",
+          "platform": "tiktok",
+          "handle": "nandinitravels",
+          "profile_url": "https://www.tiktok.com/@nandinitravels",
+          "is_primary": false,
+          "sync_method": "connect",
+          "sync_status": "not_synced",
+          "last_synced_at": null,
+          "connect_status": "link_sent",
+          "connect_link_expires_at": "2026-11-02T06:30:00.000Z",
+          "display_name": "Nandini Bose",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-08-23T05:30:00.000Z",
+          "metrics": {
+            "followers": null,
+            "following": null,
+            "total_likes": null,
+            "video_count": null
+          }
+        },
+        {
+          "id": "acc_027_li",
+          "influencer_id": "inf_027",
+          "platform": "linkedin",
+          "handle": "nandinitravels",
+          "profile_url": "https://www.linkedin.com/in/nandinitravels",
+          "is_primary": false,
+          "sync_method": "manual",
+          "sync_status": "not_synced",
+          "last_synced_at": null,
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Nandini Bose",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-08-23T05:30:00.000Z",
+          "metrics": {
+            "followers": 2199,
+            "connections": 743
+          }
+        }
+      ],
+      "total_reach": 16106
     },
     {
       "id": "inf_028",
       "name": "Yash Thakur",
       "category": "Other",
-      "instagram_handle": "yashthakurcomedy",
-      "profile_url": "https://www.instagram.com/yashthakurcomedy/",
       "phone": "+918094341783",
       "email": "yashthakurcomedy.collabs@example.com",
       "address": null,
       "city": "Nagpur",
       "state": "Maharashtra",
       "country": "India",
-      "followers": 1422000,
-      "following": null,
-      "posts_count": null,
-      "engagement_rate": null,
-      "bio": null,
       "is_verified": false,
-      "account_type": "personal",
       "profile_pic_url": null,
-      "ig_sync_status": "not_synced",
-      "last_synced_at": null,
       "stage": "data_gathered",
       "assigned_to": null,
       "tags": [
@@ -1253,14 +2562,43 @@
         "ig_connected": false
       },
       "created_at": "2026-08-26T06:30:00.000Z",
-      "updated_at": "2026-10-27T07:30:00.000Z"
+      "updated_at": "2026-10-27T07:30:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_028_ig",
+          "influencer_id": "inf_028",
+          "platform": "instagram",
+          "handle": "yashthakurcomedy",
+          "profile_url": "https://www.instagram.com/yashthakurcomedy/",
+          "is_primary": true,
+          "sync_method": "manual",
+          "sync_status": "not_synced",
+          "last_synced_at": null,
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Yash Thakur",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-08-26T06:30:00.000Z",
+          "metrics": {
+            "followers": 1422000,
+            "following": null,
+            "posts": null,
+            "engagement_rate": null,
+            "avg_likes": null,
+            "avg_comments": null,
+            "account_type": "personal"
+          }
+        }
+      ],
+      "total_reach": 1422000
     },
     {
       "id": "inf_029",
       "name": "Zoya Mirza",
       "category": "Beauty",
-      "instagram_handle": "zoyamakeup",
-      "profile_url": "https://www.instagram.com/zoyamakeup/",
       "phone": "+917895341479",
       "email": "zoyamakeup.collabs@example.com",
       "address": {
@@ -1274,16 +2612,8 @@
       "city": "New Delhi",
       "state": "Delhi",
       "country": "India",
-      "followers": 119993,
-      "following": 936,
-      "posts_count": 2301,
-      "engagement_rate": 3.97,
-      "bio": "Skincare + makeup that works 💄 | New Delhi | Honest reviews only",
       "is_verified": false,
-      "account_type": "creator",
       "profile_pic_url": "https://i.pravatar.cc/300?u=zoyamakeup",
-      "ig_sync_status": "synced",
-      "last_synced_at": "2026-10-28T05:30:00.000Z",
       "stage": "onboarded",
       "assigned_to": "usr_04",
       "tags": [
@@ -1298,14 +2628,71 @@
         "ig_connected": true
       },
       "created_at": "2026-10-05T01:30:00.000Z",
-      "updated_at": "2026-10-17T12:24:00.000Z"
+      "updated_at": "2026-10-17T12:24:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_029_ig",
+          "influencer_id": "inf_029",
+          "platform": "instagram",
+          "handle": "zoyamakeup",
+          "profile_url": "https://www.instagram.com/zoyamakeup/",
+          "is_primary": true,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-28T05:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Zoya Mirza",
+          "profile_pic_url": "https://i.pravatar.cc/300?u=zoyamakeup",
+          "bio": "Skincare + makeup that works 💄 | New Delhi | Honest reviews only | YT: youtube.com/@zoyamakeup",
+          "links": [
+            "https://www.youtube.com/@zoyamakeup"
+          ],
+          "is_verified": false,
+          "created_at": "2026-10-05T01:30:00.000Z",
+          "metrics": {
+            "followers": 119993,
+            "following": 936,
+            "posts": 2301,
+            "engagement_rate": 3.97,
+            "avg_likes": 4764,
+            "avg_comments": 167,
+            "account_type": "creator"
+          }
+        },
+        {
+          "id": "acc_029_yo",
+          "influencer_id": "inf_029",
+          "platform": "youtube",
+          "handle": "zoyamakeup",
+          "profile_url": "https://www.youtube.com/@zoyamakeup",
+          "is_primary": false,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T18:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Zoya Mirza",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-10-05T01:30:00.000Z",
+          "metrics": {
+            "subscribers": 50397,
+            "total_views": 7319573,
+            "video_count": 243,
+            "avg_views_recent": 21599,
+            "channel_country": "IN"
+          }
+        }
+      ],
+      "total_reach": 170390
     },
     {
       "id": "inf_030",
       "name": "Harsh Vardhan",
       "category": "Food",
-      "instagram_handle": "harshtastes",
-      "profile_url": "https://www.instagram.com/harshtastes/",
       "phone": "+916887399226",
       "email": "harshtastes.collabs@example.com",
       "address": {
@@ -1319,16 +2706,8 @@
       "city": "Jaipur",
       "state": "Rajasthan",
       "country": "India",
-      "followers": 406838,
-      "following": 1063,
-      "posts_count": 420,
-      "engagement_rate": 3.26,
-      "bio": "Eating my way through Jaipur 🍛 | Street food & home recipes",
       "is_verified": false,
-      "account_type": "creator",
       "profile_pic_url": "https://i.pravatar.cc/300?u=harshtastes",
-      "ig_sync_status": "synced",
-      "last_synced_at": "2026-10-28T01:30:00.000Z",
       "stage": "package_sent",
       "assigned_to": "usr_03",
       "tags": [
@@ -1344,30 +2723,75 @@
         "ig_connected": true
       },
       "created_at": "2026-07-13T04:30:00.000Z",
-      "updated_at": "2026-09-16T01:03:00.000Z"
+      "updated_at": "2026-09-16T01:03:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_030_ig",
+          "influencer_id": "inf_030",
+          "platform": "instagram",
+          "handle": "harshtastes",
+          "profile_url": "https://www.instagram.com/harshtastes/",
+          "is_primary": true,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-28T01:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Harsh Vardhan",
+          "profile_pic_url": "https://i.pravatar.cc/300?u=harshtastes",
+          "bio": "Eating my way through Jaipur 🍛 | Street food & home recipes",
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-07-13T04:30:00.000Z",
+          "metrics": {
+            "followers": 406838,
+            "following": 1063,
+            "posts": 420,
+            "engagement_rate": 3.26,
+            "avg_likes": 13263,
+            "avg_comments": 464,
+            "account_type": "creator"
+          }
+        },
+        {
+          "id": "acc_030_fa",
+          "influencer_id": "inf_030",
+          "platform": "facebook",
+          "handle": "harshtastes",
+          "profile_url": "https://www.facebook.com/harshtastes",
+          "is_primary": false,
+          "sync_method": "manual",
+          "sync_status": "not_synced",
+          "last_synced_at": null,
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Harsh Vardhan",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-07-13T04:30:00.000Z",
+          "metrics": {
+            "page_followers": null,
+            "page_likes": null,
+            "page_category": null
+          }
+        }
+      ],
+      "total_reach": 406838
     },
     {
       "id": "inf_031",
       "name": "Simran Kaur",
       "category": "Fashion",
-      "instagram_handle": "simrankaurstyle",
-      "profile_url": "https://www.instagram.com/simrankaurstyle/",
       "phone": "+917631023148",
       "email": "simrankaurstyle.collabs@example.com",
       "address": null,
       "city": "Amritsar",
       "state": "Punjab",
       "country": "India",
-      "followers": 105555,
-      "following": 1326,
-      "posts_count": 693,
-      "engagement_rate": 4.19,
-      "bio": "Amritsar | Everyday & festive looks ✨ | Styling tips daily | Collabs via DM",
       "is_verified": false,
-      "account_type": "creator",
       "profile_pic_url": "https://i.pravatar.cc/300?u=simrankaurstyle",
-      "ig_sync_status": "synced",
-      "last_synced_at": "2026-10-26T20:30:00.000Z",
       "stage": "contacted",
       "assigned_to": "usr_03",
       "tags": [
@@ -1383,30 +2807,100 @@
         "ig_connected": false
       },
       "created_at": "2026-06-09T01:30:00.000Z",
-      "updated_at": "2026-10-28T04:30:00.000Z"
+      "updated_at": "2026-10-28T04:30:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_031_ig",
+          "influencer_id": "inf_031",
+          "platform": "instagram",
+          "handle": "simrankaurstyle",
+          "profile_url": "https://www.instagram.com/simrankaurstyle/",
+          "is_primary": true,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-26T20:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Simran Kaur",
+          "profile_pic_url": "https://i.pravatar.cc/300?u=simrankaurstyle",
+          "bio": "Amritsar | Everyday & festive looks ✨ | Styling tips daily | Collabs via DM",
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-06-09T01:30:00.000Z",
+          "metrics": {
+            "followers": 105555,
+            "following": 1326,
+            "posts": 693,
+            "engagement_rate": 4.19,
+            "avg_likes": 4423,
+            "avg_comments": 155,
+            "account_type": "creator"
+          }
+        },
+        {
+          "id": "acc_031_th",
+          "influencer_id": "inf_031",
+          "platform": "threads",
+          "handle": "simrankaurstyle",
+          "profile_url": "https://www.threads.net/@simrankaurstyle",
+          "is_primary": false,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T18:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Simran Kaur",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-06-09T01:30:00.000Z",
+          "metrics": {
+            "followers": 23222,
+            "avg_likes_recent": 422,
+            "avg_replies_recent": 44
+          }
+        },
+        {
+          "id": "acc_031_pi",
+          "influencer_id": "inf_031",
+          "platform": "pinterest",
+          "handle": "simrankaurstyle",
+          "profile_url": "https://www.pinterest.com/simrankaurstyle/",
+          "is_primary": false,
+          "sync_method": "connect",
+          "sync_status": "not_synced",
+          "last_synced_at": null,
+          "connect_status": "not_connected",
+          "connect_link_expires_at": null,
+          "display_name": "Simran Kaur",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-06-09T01:30:00.000Z",
+          "metrics": {
+            "followers": null,
+            "monthly_views": null,
+            "pin_count": null,
+            "board_count": null
+          }
+        }
+      ],
+      "total_reach": 128777
     },
     {
       "id": "inf_032",
       "name": "Dev Arora",
       "category": "Finance",
-      "instagram_handle": "devarorafinance",
-      "profile_url": "https://www.instagram.com/devarorafinance/",
       "phone": "+918107921137",
       "email": "devarorafinance.collabs@example.com",
       "address": null,
       "city": "Gurugram",
       "state": "Haryana",
       "country": "India",
-      "followers": null,
-      "following": null,
-      "posts_count": null,
-      "engagement_rate": null,
-      "bio": null,
       "is_verified": false,
-      "account_type": "business",
       "profile_pic_url": null,
-      "ig_sync_status": "pending",
-      "last_synced_at": null,
       "stage": "data_gathered",
       "assigned_to": "usr_03",
       "tags": [
@@ -1420,30 +2914,98 @@
         "ig_connected": false
       },
       "created_at": "2026-09-01T00:30:00.000Z",
-      "updated_at": "2026-10-25T05:30:00.000Z"
+      "updated_at": "2026-10-25T05:30:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_032_ig",
+          "influencer_id": "inf_032",
+          "platform": "instagram",
+          "handle": "devarorafinance",
+          "profile_url": "https://www.instagram.com/devarorafinance/",
+          "is_primary": true,
+          "sync_method": "lookup",
+          "sync_status": "pending",
+          "last_synced_at": null,
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Dev Arora",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-09-01T00:30:00.000Z",
+          "metrics": {
+            "followers": null,
+            "following": null,
+            "posts": null,
+            "engagement_rate": null,
+            "avg_likes": null,
+            "avg_comments": null,
+            "account_type": "business"
+          }
+        },
+        {
+          "id": "acc_032_ti",
+          "influencer_id": "inf_032",
+          "platform": "tiktok",
+          "handle": "devarorafinance",
+          "profile_url": "https://www.tiktok.com/@devarorafinance",
+          "is_primary": false,
+          "sync_method": "connect",
+          "sync_status": "not_synced",
+          "last_synced_at": null,
+          "connect_status": "link_sent",
+          "connect_link_expires_at": "2026-10-26T06:30:00.000Z",
+          "display_name": "Dev Arora",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-09-01T00:30:00.000Z",
+          "metrics": {
+            "followers": null,
+            "following": null,
+            "total_likes": null,
+            "video_count": null
+          }
+        },
+        {
+          "id": "acc_032_sn",
+          "influencer_id": "inf_032",
+          "platform": "snapchat",
+          "handle": "devarorafinance",
+          "profile_url": "https://www.snapchat.com/add/devarorafinance",
+          "is_primary": false,
+          "sync_method": "manual",
+          "sync_status": "not_synced",
+          "last_synced_at": null,
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Dev Arora",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-09-01T00:30:00.000Z",
+          "metrics": {
+            "subscribers": 1000
+          }
+        }
+      ],
+      "total_reach": 1000
     },
     {
       "id": "inf_033",
       "name": "Ritika Sinha",
       "category": "Lifestyle",
-      "instagram_handle": "ritikasinha",
-      "profile_url": "https://www.instagram.com/ritikasinha/",
       "phone": "+916692859526",
       "email": "ritikasinha.collabs@example.com",
       "address": null,
       "city": "Patna",
       "state": "Bihar",
       "country": "India",
-      "followers": 249303,
-      "following": 807,
-      "posts_count": 315,
-      "engagement_rate": 3.95,
-      "bio": "Living, loving, sharing ☕ | Patna | Home • Style • Life",
       "is_verified": false,
-      "account_type": "business",
       "profile_pic_url": "https://i.pravatar.cc/300?u=ritikasinha",
-      "ig_sync_status": "synced",
-      "last_synced_at": "2026-10-26T22:30:00.000Z",
       "stage": "rejected",
       "assigned_to": null,
       "tags": [
@@ -1459,14 +3021,71 @@
         "ig_connected": false
       },
       "created_at": "2026-09-05T23:30:00.000Z",
-      "updated_at": "2026-10-06T06:22:00.000Z"
+      "updated_at": "2026-10-06T06:22:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_033_ig",
+          "influencer_id": "inf_033",
+          "platform": "instagram",
+          "handle": "ritikasinha",
+          "profile_url": "https://www.instagram.com/ritikasinha/",
+          "is_primary": true,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-26T22:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Ritika Sinha",
+          "profile_pic_url": "https://i.pravatar.cc/300?u=ritikasinha",
+          "bio": "Living, loving, sharing ☕ | Patna | Home • Style • Life | YT: youtube.com/@ritikasinha",
+          "links": [
+            "https://www.youtube.com/@ritikasinha"
+          ],
+          "is_verified": false,
+          "created_at": "2026-09-05T23:30:00.000Z",
+          "metrics": {
+            "followers": 249303,
+            "following": 807,
+            "posts": 315,
+            "engagement_rate": 3.95,
+            "avg_likes": 9847,
+            "avg_comments": 345,
+            "account_type": "business"
+          }
+        },
+        {
+          "id": "acc_033_yo",
+          "influencer_id": "inf_033",
+          "platform": "youtube",
+          "handle": "ritikasinha",
+          "profile_url": "https://www.youtube.com/@ritikasinha",
+          "is_primary": false,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T18:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Ritika Sinha",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-09-05T23:30:00.000Z",
+          "metrics": {
+            "subscribers": 104707,
+            "total_views": 15207483,
+            "video_count": 271,
+            "avg_views_recent": 44875,
+            "channel_country": "IN"
+          }
+        }
+      ],
+      "total_reach": 354010
     },
     {
       "id": "inf_034",
       "name": "Om Yadav",
       "category": "Travel",
-      "instagram_handle": "omyadavtravels",
-      "profile_url": "https://www.instagram.com/omyadavtravels/",
       "phone": "+918003624544",
       "email": "omyadavtravels.collabs@example.com",
       "address": {
@@ -1480,16 +3099,8 @@
       "city": "Panaji",
       "state": "Goa",
       "country": "India",
-      "followers": 19935,
-      "following": 1703,
-      "posts_count": 1076,
-      "engagement_rate": 6.34,
-      "bio": "Slow travel & hidden gems 🌏 | Based in Panaji",
       "is_verified": false,
-      "account_type": "creator",
       "profile_pic_url": "https://i.pravatar.cc/300?u=omyadavtravels",
-      "ig_sync_status": "synced",
-      "last_synced_at": "2026-10-28T05:30:00.000Z",
       "stage": "delivered",
       "assigned_to": "usr_03",
       "tags": [
@@ -1504,30 +3115,51 @@
         "ig_connected": true
       },
       "created_at": "2026-09-26T02:30:00.000Z",
-      "updated_at": "2026-10-15T16:18:00.000Z"
+      "updated_at": "2026-10-15T16:18:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_034_ig",
+          "influencer_id": "inf_034",
+          "platform": "instagram",
+          "handle": "omyadavtravels",
+          "profile_url": "https://www.instagram.com/omyadavtravels/",
+          "is_primary": true,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-28T05:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Om Yadav",
+          "profile_pic_url": "https://i.pravatar.cc/300?u=omyadavtravels",
+          "bio": "Slow travel & hidden gems 🌏 | Based in Panaji",
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-09-26T02:30:00.000Z",
+          "metrics": {
+            "followers": 19935,
+            "following": 1703,
+            "posts": 1076,
+            "engagement_rate": 6.34,
+            "avg_likes": 1264,
+            "avg_comments": 44,
+            "account_type": "creator"
+          }
+        }
+      ],
+      "total_reach": 19935
     },
     {
       "id": "inf_035",
       "name": "Lakshmi Venkatesh",
       "category": "Parenting",
-      "instagram_handle": "lakshmiandkids",
-      "profile_url": "https://www.instagram.com/lakshmiandkids/",
       "phone": "+919365617506",
       "email": "lakshmiandkids.collabs@example.com",
       "address": null,
       "city": "Mysuru",
       "state": "Karnataka",
       "country": "India",
-      "followers": 97490,
-      "following": 847,
-      "posts_count": 780,
-      "engagement_rate": 3.64,
-      "bio": "Parent of two 👶 | Real parenting, real moments | Mysuru",
       "is_verified": false,
-      "account_type": "creator",
       "profile_pic_url": "https://i.pravatar.cc/300?u=lakshmiandkids",
-      "ig_sync_status": "synced",
-      "last_synced_at": "2026-10-28T03:30:00.000Z",
       "stage": "on_hold",
       "assigned_to": null,
       "tags": [
@@ -1542,14 +3174,67 @@
         "ig_connected": false
       },
       "created_at": "2026-09-28T01:30:00.000Z",
-      "updated_at": "2026-10-10T10:30:00.000Z"
+      "updated_at": "2026-10-10T10:30:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_035_ig",
+          "influencer_id": "inf_035",
+          "platform": "instagram",
+          "handle": "lakshmiandkids",
+          "profile_url": "https://www.instagram.com/lakshmiandkids/",
+          "is_primary": true,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-28T03:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Lakshmi Venkatesh",
+          "profile_pic_url": "https://i.pravatar.cc/300?u=lakshmiandkids",
+          "bio": "Parent of two 👶 | Real parenting, real moments | Mysuru",
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-09-28T01:30:00.000Z",
+          "metrics": {
+            "followers": 97490,
+            "following": 847,
+            "posts": 780,
+            "engagement_rate": 3.64,
+            "avg_likes": 3549,
+            "avg_comments": 124,
+            "account_type": "creator"
+          }
+        },
+        {
+          "id": "acc_035_fa",
+          "influencer_id": "inf_035",
+          "platform": "facebook",
+          "handle": "lakshmiandkids.page",
+          "profile_url": "https://www.facebook.com/lakshmiandkids.page",
+          "is_primary": false,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T18:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Lakshmi Venkatesh",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-09-28T01:30:00.000Z",
+          "metrics": {
+            "page_followers": 30222,
+            "page_likes": 26322,
+            "page_category": "Personal blog"
+          }
+        }
+      ],
+      "total_reach": 127712
     },
     {
       "id": "inf_036",
       "name": "Emma Collins",
       "category": "Beauty",
-      "instagram_handle": "emmacollinsbeauty",
-      "profile_url": "https://www.instagram.com/emmacollinsbeauty/",
       "phone": "+447739831644",
       "email": "emmacollinsbeauty.collabs@example.com",
       "address": {
@@ -1563,16 +3248,8 @@
       "city": "London",
       "state": "England",
       "country": "United Kingdom",
-      "followers": 261706,
-      "following": 1274,
-      "posts_count": 623,
-      "engagement_rate": 4.09,
-      "bio": "Skincare + makeup that works 💄 | London | Honest reviews only",
       "is_verified": false,
-      "account_type": "creator",
       "profile_pic_url": "https://i.pravatar.cc/300?u=emmacollinsbeauty",
-      "ig_sync_status": "synced",
-      "last_synced_at": "2026-10-28T02:30:00.000Z",
       "stage": "contacted",
       "assigned_to": null,
       "tags": [
@@ -1587,14 +3264,43 @@
         "ig_connected": false
       },
       "created_at": "2026-05-31T04:30:00.000Z",
-      "updated_at": "2026-10-23T05:30:00.000Z"
+      "updated_at": "2026-10-23T05:30:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_036_ig",
+          "influencer_id": "inf_036",
+          "platform": "instagram",
+          "handle": "emmacollinsbeauty",
+          "profile_url": "https://www.instagram.com/emmacollinsbeauty/",
+          "is_primary": true,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-28T02:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Emma Collins",
+          "profile_pic_url": "https://i.pravatar.cc/300?u=emmacollinsbeauty",
+          "bio": "Skincare + makeup that works 💄 | London | Honest reviews only",
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-05-31T04:30:00.000Z",
+          "metrics": {
+            "followers": 261706,
+            "following": 1274,
+            "posts": 623,
+            "engagement_rate": 4.09,
+            "avg_likes": 10704,
+            "avg_comments": 375,
+            "account_type": "creator"
+          }
+        }
+      ],
+      "total_reach": 261706
     },
     {
       "id": "inf_037",
       "name": "Liam Carter",
       "category": "Tech",
-      "instagram_handle": "liamcartertech",
-      "profile_url": "https://www.instagram.com/liamcartertech/",
       "phone": "+12131788509",
       "email": "liamcartertech.collabs@example.com",
       "address": {
@@ -1608,16 +3314,8 @@
       "city": "Austin",
       "state": "Texas",
       "country": "United States",
-      "followers": 381128,
-      "following": 500,
-      "posts_count": 1551,
-      "engagement_rate": 2.51,
-      "bio": "Gadgets, unboxings & honest reviews 📱 | Austin",
       "is_verified": false,
-      "account_type": "business",
       "profile_pic_url": "https://i.pravatar.cc/300?u=liamcartertech",
-      "ig_sync_status": "synced",
-      "last_synced_at": "2026-10-27T04:30:00.000Z",
       "stage": "onboarded",
       "assigned_to": "usr_02",
       "tags": [
@@ -1631,30 +3329,104 @@
         "ig_connected": true
       },
       "created_at": "2026-09-19T02:30:00.000Z",
-      "updated_at": "2026-10-28T04:30:00.000Z"
+      "updated_at": "2026-10-28T04:30:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_037_ig",
+          "influencer_id": "inf_037",
+          "platform": "instagram",
+          "handle": "liamcartertech",
+          "profile_url": "https://www.instagram.com/liamcartertech/",
+          "is_primary": true,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T04:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Liam Carter",
+          "profile_pic_url": "https://i.pravatar.cc/300?u=liamcartertech",
+          "bio": "Gadgets, unboxings & honest reviews 📱 | Austin | YT: youtube.com/@liamcartertech",
+          "links": [
+            "https://www.youtube.com/@liamcartertech"
+          ],
+          "is_verified": false,
+          "created_at": "2026-09-19T02:30:00.000Z",
+          "metrics": {
+            "followers": 381128,
+            "following": 500,
+            "posts": 1551,
+            "engagement_rate": 2.51,
+            "avg_likes": 9566,
+            "avg_comments": 335,
+            "account_type": "business"
+          }
+        },
+        {
+          "id": "acc_037_yo",
+          "influencer_id": "inf_037",
+          "platform": "youtube",
+          "handle": "liamcartertech",
+          "profile_url": "https://www.youtube.com/@liamcartertech",
+          "is_primary": false,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T18:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Liam Carter",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-09-19T02:30:00.000Z",
+          "metrics": {
+            "subscribers": 160074,
+            "total_views": 23248808,
+            "video_count": 299,
+            "avg_views_recent": 68603,
+            "channel_country": "US"
+          }
+        },
+        {
+          "id": "acc_037_ti",
+          "influencer_id": "inf_037",
+          "platform": "tiktok",
+          "handle": "liamcartertech",
+          "profile_url": "https://www.tiktok.com/@liamcartertech",
+          "is_primary": false,
+          "sync_method": "connect",
+          "sync_status": "not_synced",
+          "last_synced_at": null,
+          "connect_status": "not_connected",
+          "connect_link_expires_at": null,
+          "display_name": "Liam Carter",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-09-19T02:30:00.000Z",
+          "metrics": {
+            "followers": null,
+            "following": null,
+            "total_likes": null,
+            "video_count": null
+          }
+        }
+      ],
+      "total_reach": 541202
     },
     {
       "id": "inf_038",
       "name": "Sofia Martinez",
       "category": "Fitness",
-      "instagram_handle": "sofiamoves",
-      "profile_url": "https://www.instagram.com/sofiamoves/",
       "phone": "+12127925731",
       "email": "sofiamoves.collabs@example.com",
       "address": null,
       "city": "Los Angeles",
       "state": "California",
       "country": "United States",
-      "followers": 20000,
-      "following": null,
-      "posts_count": null,
-      "engagement_rate": null,
-      "bio": null,
       "is_verified": false,
-      "account_type": "personal",
       "profile_pic_url": null,
-      "ig_sync_status": "not_synced",
-      "last_synced_at": null,
       "stage": "data_gathered",
       "assigned_to": null,
       "tags": [
@@ -1670,14 +3442,90 @@
         "ig_connected": false
       },
       "created_at": "2026-06-02T04:30:00.000Z",
-      "updated_at": "2026-10-27T11:30:00.000Z"
+      "updated_at": "2026-10-27T11:30:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_038_ig",
+          "influencer_id": "inf_038",
+          "platform": "instagram",
+          "handle": "sofiamoves",
+          "profile_url": "https://www.instagram.com/sofiamoves/",
+          "is_primary": true,
+          "sync_method": "manual",
+          "sync_status": "not_synced",
+          "last_synced_at": null,
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Sofia Martinez",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-06-02T04:30:00.000Z",
+          "metrics": {
+            "followers": 20000,
+            "following": null,
+            "posts": null,
+            "engagement_rate": null,
+            "avg_likes": null,
+            "avg_comments": null,
+            "account_type": "personal"
+          }
+        },
+        {
+          "id": "acc_038_th",
+          "influencer_id": "inf_038",
+          "platform": "threads",
+          "handle": "sofiamoves",
+          "profile_url": "https://www.threads.net/@sofiamoves",
+          "is_primary": false,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T18:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Sofia Martinez",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-06-02T04:30:00.000Z",
+          "metrics": {
+            "followers": 4400,
+            "avg_likes_recent": 80,
+            "avg_replies_recent": 10
+          }
+        },
+        {
+          "id": "acc_038_li",
+          "influencer_id": "inf_038",
+          "platform": "linkedin",
+          "handle": "sofiamoves",
+          "profile_url": "https://www.linkedin.com/in/sofiamoves",
+          "is_primary": false,
+          "sync_method": "manual",
+          "sync_status": "not_synced",
+          "last_synced_at": null,
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Sofia Martinez",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-06-02T04:30:00.000Z",
+          "metrics": {
+            "followers": 2606,
+            "connections": 842
+          }
+        }
+      ],
+      "total_reach": 27006
     },
     {
       "id": "inf_039",
       "name": "Chloe Tan",
       "category": "Food",
-      "instagram_handle": "chloetaneats",
-      "profile_url": "https://www.instagram.com/chloetaneats/",
       "phone": "+6581422093",
       "email": "chloetaneats.collabs@example.com",
       "address": {
@@ -1691,16 +3539,8 @@
       "city": "Singapore",
       "state": "Singapore",
       "country": "Singapore",
-      "followers": 54213,
-      "following": 906,
-      "posts_count": 2400,
-      "engagement_rate": 5.29,
-      "bio": "Eating my way through Singapore 🍛 | Street food & home recipes",
       "is_verified": false,
-      "account_type": "business",
       "profile_pic_url": "https://i.pravatar.cc/300?u=chloetaneats",
-      "ig_sync_status": "synced",
-      "last_synced_at": "2026-10-28T01:30:00.000Z",
       "stage": "package_sent",
       "assigned_to": "usr_02",
       "tags": [
@@ -1716,14 +3556,43 @@
         "ig_connected": true
       },
       "created_at": "2026-06-06T00:30:00.000Z",
-      "updated_at": "2026-08-19T11:33:00.000Z"
+      "updated_at": "2026-08-19T11:33:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_039_ig",
+          "influencer_id": "inf_039",
+          "platform": "instagram",
+          "handle": "chloetaneats",
+          "profile_url": "https://www.instagram.com/chloetaneats/",
+          "is_primary": true,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-28T01:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Chloe Tan",
+          "profile_pic_url": "https://i.pravatar.cc/300?u=chloetaneats",
+          "bio": "Eating my way through Singapore 🍛 | Street food & home recipes",
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-06-06T00:30:00.000Z",
+          "metrics": {
+            "followers": 54213,
+            "following": 906,
+            "posts": 2400,
+            "engagement_rate": 5.29,
+            "avg_likes": 2868,
+            "avg_comments": 100,
+            "account_type": "business"
+          }
+        }
+      ],
+      "total_reach": 54213
     },
     {
       "id": "inf_040",
       "name": "Noah Williams",
       "category": "Fashion",
-      "instagram_handle": "noahwears",
-      "profile_url": "https://www.instagram.com/noahwears/",
       "phone": "+15121504303",
       "email": "noahwears.collabs@example.com",
       "address": {
@@ -1737,16 +3606,8 @@
       "city": "New York",
       "state": "New York",
       "country": "United States",
-      "followers": 3825,
-      "following": 315,
-      "posts_count": 700,
-      "engagement_rate": 10.18,
-      "bio": "New York | Everyday & festive looks ✨ | Styling tips daily | Collabs via DM",
       "is_verified": false,
-      "account_type": "business",
       "profile_pic_url": "https://i.pravatar.cc/300?u=noahwears",
-      "ig_sync_status": "synced",
-      "last_synced_at": "2026-10-27T23:30:00.000Z",
       "stage": "delivered",
       "assigned_to": "usr_04",
       "tags": [
@@ -1760,14 +3621,92 @@
         "ig_connected": true
       },
       "created_at": "2026-06-13T04:30:00.000Z",
-      "updated_at": "2026-08-25T14:55:00.000Z"
+      "updated_at": "2026-08-25T14:55:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_040_ig",
+          "influencer_id": "inf_040",
+          "platform": "instagram",
+          "handle": "noahwears",
+          "profile_url": "https://www.instagram.com/noahwears/",
+          "is_primary": true,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T23:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Noah Williams",
+          "profile_pic_url": "https://i.pravatar.cc/300?u=noahwears",
+          "bio": "New York | Everyday & festive looks ✨ | Styling tips daily | Collabs via DM",
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-06-13T04:30:00.000Z",
+          "metrics": {
+            "followers": 3825,
+            "following": 315,
+            "posts": 700,
+            "engagement_rate": 10.18,
+            "avg_likes": 389,
+            "avg_comments": 14,
+            "account_type": "business"
+          }
+        },
+        {
+          "id": "acc_040_fa",
+          "influencer_id": "inf_040",
+          "platform": "facebook",
+          "handle": "noahwears.page",
+          "profile_url": "https://www.facebook.com/noahwears.page",
+          "is_primary": false,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T18:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Noah Williams",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-06-13T04:30:00.000Z",
+          "metrics": {
+            "page_followers": 1186,
+            "page_likes": 1033,
+            "page_category": "Clothing (Brand)"
+          }
+        },
+        {
+          "id": "acc_040_pi",
+          "influencer_id": "inf_040",
+          "platform": "pinterest",
+          "handle": "noahwears",
+          "profile_url": "https://www.pinterest.com/noahwears/",
+          "is_primary": false,
+          "sync_method": "connect",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T06:30:00.000Z",
+          "connect_status": "connected",
+          "connect_link_expires_at": null,
+          "display_name": "Noah Williams",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-06-13T04:30:00.000Z",
+          "metrics": {
+            "followers": 459,
+            "monthly_views": 11858,
+            "pin_count": 740,
+            "board_count": 8
+          }
+        }
+      ],
+      "total_reach": 5470
     },
     {
       "id": "inf_041",
       "name": "Aaliyah Rahman",
       "category": "Lifestyle",
-      "instagram_handle": "aaliyahindubai",
-      "profile_url": "https://www.instagram.com/aaliyahindubai/",
       "phone": "+971569308877",
       "email": "aaliyahindubai.collabs@example.com",
       "address": {
@@ -1781,16 +3720,8 @@
       "city": "Dubai",
       "state": "Dubai",
       "country": "United Arab Emirates",
-      "followers": 531009,
-      "following": 708,
-      "posts_count": 267,
-      "engagement_rate": 3.31,
-      "bio": "Living, loving, sharing ☕ | Dubai | Home • Style • Life",
       "is_verified": false,
-      "account_type": "business",
       "profile_pic_url": "https://i.pravatar.cc/300?u=aaliyahindubai",
-      "ig_sync_status": "synced",
-      "last_synced_at": "2026-10-27T16:30:00.000Z",
       "stage": "contacted",
       "assigned_to": "usr_03",
       "tags": [
@@ -1804,30 +3735,79 @@
         "ig_connected": false
       },
       "created_at": "2026-09-25T04:30:00.000Z",
-      "updated_at": "2026-10-28T04:30:00.000Z"
+      "updated_at": "2026-10-28T04:30:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_041_ig",
+          "influencer_id": "inf_041",
+          "platform": "instagram",
+          "handle": "aaliyahindubai",
+          "profile_url": "https://www.instagram.com/aaliyahindubai/",
+          "is_primary": true,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T16:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Aaliyah Rahman",
+          "profile_pic_url": "https://i.pravatar.cc/300?u=aaliyahindubai",
+          "bio": "Living, loving, sharing ☕ | Dubai | Home • Style • Life | YT: youtube.com/@aaliyahindubai",
+          "links": [
+            "https://www.youtube.com/@aaliyahindubai"
+          ],
+          "is_verified": false,
+          "created_at": "2026-09-25T04:30:00.000Z",
+          "metrics": {
+            "followers": 531009,
+            "following": 708,
+            "posts": 267,
+            "engagement_rate": 3.31,
+            "avg_likes": 17576,
+            "avg_comments": 615,
+            "account_type": "business"
+          }
+        },
+        {
+          "id": "acc_041_yo",
+          "influencer_id": "inf_041",
+          "platform": "youtube",
+          "handle": "aaliyahindubai",
+          "profile_url": "https://www.youtube.com/@aaliyahindubai",
+          "is_primary": false,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T18:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Aaliyah Rahman",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-09-25T04:30:00.000Z",
+          "metrics": {
+            "subscribers": 223024,
+            "total_views": 32391549,
+            "video_count": 327,
+            "avg_views_recent": 95582,
+            "channel_country": "AE"
+          }
+        }
+      ],
+      "total_reach": 754033
     },
     {
       "id": "inf_042",
       "name": "Olivia Brown",
       "category": "Travel",
-      "instagram_handle": "oliviaexplores",
-      "profile_url": "https://www.instagram.com/oliviaexplores/",
       "phone": "+61478315100",
       "email": "oliviaexplores.collabs@example.com",
       "address": null,
       "city": "Sydney",
       "state": "New South Wales",
       "country": "Australia",
-      "followers": 28986,
-      "following": 1012,
-      "posts_count": 1496,
-      "engagement_rate": 6.2,
-      "bio": "Slow travel & hidden gems 🌏 | Based in Sydney",
       "is_verified": false,
-      "account_type": "creator",
       "profile_pic_url": "https://i.pravatar.cc/300?u=oliviaexplores",
-      "ig_sync_status": "synced",
-      "last_synced_at": "2026-10-27T01:30:00.000Z",
       "stage": "data_gathered",
       "assigned_to": null,
       "tags": [
@@ -1842,14 +3822,68 @@
         "ig_connected": false
       },
       "created_at": "2026-08-11T23:30:00.000Z",
-      "updated_at": "2026-10-21T06:30:00.000Z"
+      "updated_at": "2026-10-21T06:30:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_042_ig",
+          "influencer_id": "inf_042",
+          "platform": "instagram",
+          "handle": "oliviaexplores",
+          "profile_url": "https://www.instagram.com/oliviaexplores/",
+          "is_primary": true,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T01:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Olivia Brown",
+          "profile_pic_url": "https://i.pravatar.cc/300?u=oliviaexplores",
+          "bio": "Slow travel & hidden gems 🌏 | Based in Sydney",
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-08-11T23:30:00.000Z",
+          "metrics": {
+            "followers": 28986,
+            "following": 1012,
+            "posts": 1496,
+            "engagement_rate": 6.2,
+            "avg_likes": 1797,
+            "avg_comments": 63,
+            "account_type": "creator"
+          }
+        },
+        {
+          "id": "acc_042_ti",
+          "influencer_id": "inf_042",
+          "platform": "tiktok",
+          "handle": "oliviaexplores",
+          "profile_url": "https://www.tiktok.com/@oliviaexplores",
+          "is_primary": false,
+          "sync_method": "connect",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T22:30:00.000Z",
+          "connect_status": "connected",
+          "connect_link_expires_at": null,
+          "display_name": "Olivia Brown",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-08-11T23:30:00.000Z",
+          "metrics": {
+            "followers": 23189,
+            "following": 246,
+            "total_likes": 275367,
+            "video_count": 228
+          }
+        }
+      ],
+      "total_reach": 52175
     },
     {
       "id": "inf_043",
       "name": "Ethan Nguyen",
       "category": "Gaming",
-      "instagram_handle": "ethanplaysttv",
-      "profile_url": "https://www.instagram.com/ethanplaysttv/",
       "phone": "+16045327116",
       "email": "ethanplaysttv.collabs@example.com",
       "address": {
@@ -1863,16 +3897,8 @@
       "city": "Toronto",
       "state": "Ontario",
       "country": "Canada",
-      "followers": 17127,
-      "following": 1429,
-      "posts_count": 521,
-      "engagement_rate": 5.97,
-      "bio": "Streamer & esports fan 🎮 | Toronto | Live on weekends",
       "is_verified": false,
-      "account_type": "creator",
       "profile_pic_url": "https://i.pravatar.cc/300?u=ethanplaysttv",
-      "ig_sync_status": "synced",
-      "last_synced_at": "2026-10-27T13:30:00.000Z",
       "stage": "onboarded",
       "assigned_to": "usr_03",
       "tags": [
@@ -1886,30 +3912,51 @@
         "ig_connected": true
       },
       "created_at": "2026-06-03T04:30:00.000Z",
-      "updated_at": "2026-08-24T08:26:00.000Z"
+      "updated_at": "2026-08-24T08:26:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_043_ig",
+          "influencer_id": "inf_043",
+          "platform": "instagram",
+          "handle": "ethanplaysttv",
+          "profile_url": "https://www.instagram.com/ethanplaysttv/",
+          "is_primary": true,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T13:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Ethan Nguyen",
+          "profile_pic_url": "https://i.pravatar.cc/300?u=ethanplaysttv",
+          "bio": "Streamer & esports fan 🎮 | Toronto | Live on weekends",
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-06-03T04:30:00.000Z",
+          "metrics": {
+            "followers": 17127,
+            "following": 1429,
+            "posts": 521,
+            "engagement_rate": 5.97,
+            "avg_likes": 1022,
+            "avg_comments": 36,
+            "account_type": "creator"
+          }
+        }
+      ],
+      "total_reach": 17127
     },
     {
       "id": "inf_044",
       "name": "Hannah Lee",
       "category": "Parenting",
-      "instagram_handle": "hannahleefamily",
-      "profile_url": "https://www.instagram.com/hannahleefamily/",
       "phone": "+16043885419",
       "email": "hannahleefamily.collabs@example.com",
       "address": null,
       "city": "Vancouver",
       "state": "British Columbia",
       "country": "Canada",
-      "followers": 184566,
-      "following": 588,
-      "posts_count": 741,
-      "engagement_rate": 3.59,
-      "bio": "Parent of two 👶 | Real parenting, real moments | Vancouver",
       "is_verified": false,
-      "account_type": "creator",
       "profile_pic_url": "https://i.pravatar.cc/300?u=hannahleefamily",
-      "ig_sync_status": "synced",
-      "last_synced_at": "2026-10-27T16:30:00.000Z",
       "stage": "rejected",
       "assigned_to": "usr_02",
       "tags": [
@@ -1925,30 +3972,51 @@
         "ig_connected": false
       },
       "created_at": "2026-09-13T03:30:00.000Z",
-      "updated_at": "2026-10-01T14:14:00.000Z"
+      "updated_at": "2026-10-01T14:14:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_044_ig",
+          "influencer_id": "inf_044",
+          "platform": "instagram",
+          "handle": "hannahleefamily",
+          "profile_url": "https://www.instagram.com/hannahleefamily/",
+          "is_primary": true,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T16:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Hannah Lee",
+          "profile_pic_url": "https://i.pravatar.cc/300?u=hannahleefamily",
+          "bio": "Parent of two 👶 | Real parenting, real moments | Vancouver",
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-09-13T03:30:00.000Z",
+          "metrics": {
+            "followers": 184566,
+            "following": 588,
+            "posts": 741,
+            "engagement_rate": 3.59,
+            "avg_likes": 6626,
+            "avg_comments": 232,
+            "account_type": "creator"
+          }
+        }
+      ],
+      "total_reach": 184566
     },
     {
       "id": "inf_045",
       "name": "Jack Thompson",
       "category": "Fitness",
-      "instagram_handle": "jacktrains",
-      "profile_url": "https://www.instagram.com/jacktrains/",
       "phone": "+447921318348",
       "email": "jacktrains.collabs@example.com",
       "address": null,
       "city": "Manchester",
       "state": "England",
       "country": "United Kingdom",
-      "followers": 263235,
-      "following": 257,
-      "posts_count": 2355,
-      "engagement_rate": 3.84,
-      "bio": "Coach | Strength & mobility 💪 | Manchester | Free plans in highlights",
       "is_verified": false,
-      "account_type": "creator",
       "profile_pic_url": "https://i.pravatar.cc/300?u=jacktrains",
-      "ig_sync_status": "synced",
-      "last_synced_at": "2026-10-27T13:30:00.000Z",
       "stage": "contacted",
       "assigned_to": "usr_04",
       "tags": [
@@ -1963,14 +4031,141 @@
         "ig_connected": false
       },
       "created_at": "2026-10-11T00:30:00.000Z",
-      "updated_at": "2026-10-18T15:55:00.000Z"
+      "updated_at": "2026-10-18T15:55:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_045_ig",
+          "influencer_id": "inf_045",
+          "platform": "instagram",
+          "handle": "jacktrains",
+          "profile_url": "https://www.instagram.com/jacktrains/",
+          "is_primary": true,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T13:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Jack Thompson",
+          "profile_pic_url": "https://i.pravatar.cc/300?u=jacktrains",
+          "bio": "Coach | Strength & mobility 💪 | Manchester | Free plans in highlights | YT: youtube.com/@jacktrains",
+          "links": [
+            "https://www.youtube.com/@jacktrains"
+          ],
+          "is_verified": false,
+          "created_at": "2026-10-11T00:30:00.000Z",
+          "metrics": {
+            "followers": 263235,
+            "following": 257,
+            "posts": 2355,
+            "engagement_rate": 3.84,
+            "avg_likes": 10108,
+            "avg_comments": 354,
+            "account_type": "creator"
+          }
+        },
+        {
+          "id": "acc_045_yo",
+          "influencer_id": "inf_045",
+          "platform": "youtube",
+          "handle": "jacktrains",
+          "profile_url": "https://www.youtube.com/@jacktrains",
+          "is_primary": false,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T18:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Jack Thompson",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-10-11T00:30:00.000Z",
+          "metrics": {
+            "subscribers": 110559,
+            "total_views": 16057335,
+            "video_count": 55,
+            "avg_views_recent": 47382,
+            "channel_country": "GB"
+          }
+        },
+        {
+          "id": "acc_045_fa",
+          "influencer_id": "inf_045",
+          "platform": "facebook",
+          "handle": "jacktrains.page",
+          "profile_url": "https://www.facebook.com/jacktrains.page",
+          "is_primary": false,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T18:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Jack Thompson",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-10-11T00:30:00.000Z",
+          "metrics": {
+            "page_followers": 81603,
+            "page_likes": 71073,
+            "page_category": "Fitness trainer"
+          }
+        },
+        {
+          "id": "acc_045_th",
+          "influencer_id": "inf_045",
+          "platform": "threads",
+          "handle": "jacktrains",
+          "profile_url": "https://www.threads.net/@jacktrains",
+          "is_primary": false,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T18:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Jack Thompson",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-10-11T00:30:00.000Z",
+          "metrics": {
+            "followers": 57912,
+            "avg_likes_recent": 1053,
+            "avg_replies_recent": 107
+          }
+        },
+        {
+          "id": "acc_045_sn",
+          "influencer_id": "inf_045",
+          "platform": "snapchat",
+          "handle": "jacktrains",
+          "profile_url": "https://www.snapchat.com/add/jacktrains",
+          "is_primary": false,
+          "sync_method": "manual",
+          "sync_status": "not_synced",
+          "last_synced_at": null,
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Jack Thompson",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-10-11T00:30:00.000Z",
+          "metrics": {
+            "subscribers": 13162
+          }
+        }
+      ],
+      "total_reach": 526471
     },
     {
       "id": "inf_046",
       "name": "Mia Fernandes",
       "category": "Fashion",
-      "instagram_handle": "miafernandes",
-      "profile_url": "https://www.instagram.com/miafernandes/",
       "phone": "+971504087598",
       "email": "miafernandes.collabs@example.com",
       "address": {
@@ -1984,16 +4179,8 @@
       "city": "Dubai",
       "state": "Dubai",
       "country": "United Arab Emirates",
-      "followers": 334432,
-      "following": 1457,
-      "posts_count": 1403,
-      "engagement_rate": 3.11,
-      "bio": "Dubai | Everyday & festive looks ✨ | Styling tips daily | Collabs via DM",
       "is_verified": false,
-      "account_type": "business",
       "profile_pic_url": "https://i.pravatar.cc/300?u=miafernandes",
-      "ig_sync_status": "synced",
-      "last_synced_at": "2026-10-28T00:30:00.000Z",
       "stage": "package_sent",
       "assigned_to": "usr_04",
       "tags": [
@@ -2008,30 +4195,51 @@
         "ig_connected": true
       },
       "created_at": "2026-08-09T04:30:00.000Z",
-      "updated_at": "2026-10-02T21:22:00.000Z"
+      "updated_at": "2026-10-02T21:22:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_046_ig",
+          "influencer_id": "inf_046",
+          "platform": "instagram",
+          "handle": "miafernandes",
+          "profile_url": "https://www.instagram.com/miafernandes/",
+          "is_primary": true,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-28T00:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Mia Fernandes",
+          "profile_pic_url": "https://i.pravatar.cc/300?u=miafernandes",
+          "bio": "Dubai | Everyday & festive looks ✨ | Styling tips daily | Collabs via DM",
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-08-09T04:30:00.000Z",
+          "metrics": {
+            "followers": 334432,
+            "following": 1457,
+            "posts": 1403,
+            "engagement_rate": 3.11,
+            "avg_likes": 10401,
+            "avg_comments": 364,
+            "account_type": "business"
+          }
+        }
+      ],
+      "total_reach": 334432
     },
     {
       "id": "inf_047",
       "name": "Lucas Silva",
       "category": "Food",
-      "instagram_handle": "lucascooks",
-      "profile_url": "https://www.instagram.com/lucascooks/",
       "phone": "+14164110073",
       "email": "lucascooks.collabs@example.com",
       "address": null,
       "city": "Toronto",
       "state": "Ontario",
       "country": "Canada",
-      "followers": 729433,
-      "following": 1430,
-      "posts_count": 839,
-      "engagement_rate": 2.63,
-      "bio": "Eating my way through Toronto 🍛 | Street food & home recipes",
       "is_verified": false,
-      "account_type": "business",
       "profile_pic_url": "https://i.pravatar.cc/300?u=lucascooks",
-      "ig_sync_status": "synced",
-      "last_synced_at": "2026-10-26T18:30:00.000Z",
       "stage": "on_hold",
       "assigned_to": "usr_04",
       "tags": [
@@ -2045,30 +4253,76 @@
         "ig_connected": false
       },
       "created_at": "2026-10-14T05:30:00.000Z",
-      "updated_at": "2026-10-22T17:10:00.000Z"
+      "updated_at": "2026-10-22T17:10:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_047_ig",
+          "influencer_id": "inf_047",
+          "platform": "instagram",
+          "handle": "lucascooks",
+          "profile_url": "https://www.instagram.com/lucascooks/",
+          "is_primary": true,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-26T18:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Lucas Silva",
+          "profile_pic_url": "https://i.pravatar.cc/300?u=lucascooks",
+          "bio": "Eating my way through Toronto 🍛 | Street food & home recipes",
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-10-14T05:30:00.000Z",
+          "metrics": {
+            "followers": 729433,
+            "following": 1430,
+            "posts": 839,
+            "engagement_rate": 2.63,
+            "avg_likes": 19184,
+            "avg_comments": 671,
+            "account_type": "business"
+          }
+        },
+        {
+          "id": "acc_047_ti",
+          "influencer_id": "inf_047",
+          "platform": "tiktok",
+          "handle": "lucascooks",
+          "profile_url": "https://www.tiktok.com/@lucascooks",
+          "is_primary": false,
+          "sync_method": "connect",
+          "sync_status": "not_synced",
+          "last_synced_at": null,
+          "connect_status": "link_sent",
+          "connect_link_expires_at": "2026-11-02T06:30:00.000Z",
+          "display_name": "Lucas Silva",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-10-14T05:30:00.000Z",
+          "metrics": {
+            "followers": null,
+            "following": null,
+            "total_likes": null,
+            "video_count": null
+          }
+        }
+      ],
+      "total_reach": 729433
     },
     {
       "id": "inf_048",
       "name": "Ava Mitchell",
       "category": "Beauty",
-      "instagram_handle": "avamitchellmua",
-      "profile_url": "https://www.instagram.com/avamitchellmua/",
       "phone": null,
       "email": "avamitchellmua.collabs@example.com",
       "address": null,
       "city": "Melbourne",
       "state": "Victoria",
       "country": "Australia",
-      "followers": 36660,
-      "following": 779,
-      "posts_count": 1152,
-      "engagement_rate": 5.71,
-      "bio": "Skincare + makeup that works 💄 | Melbourne | Honest reviews only",
       "is_verified": false,
-      "account_type": "creator",
       "profile_pic_url": "https://i.pravatar.cc/300?u=avamitchellmua",
-      "ig_sync_status": "synced",
-      "last_synced_at": "2026-10-28T02:30:00.000Z",
       "stage": "data_gathered",
       "assigned_to": null,
       "tags": [
@@ -2084,14 +4338,43 @@
         "ig_connected": false
       },
       "created_at": "2026-08-26T22:30:00.000Z",
-      "updated_at": "2026-10-27T10:30:00.000Z"
+      "updated_at": "2026-10-27T10:30:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_048_ig",
+          "influencer_id": "inf_048",
+          "platform": "instagram",
+          "handle": "avamitchellmua",
+          "profile_url": "https://www.instagram.com/avamitchellmua/",
+          "is_primary": true,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-28T02:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Ava Mitchell",
+          "profile_pic_url": "https://i.pravatar.cc/300?u=avamitchellmua",
+          "bio": "Skincare + makeup that works 💄 | Melbourne | Honest reviews only",
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-08-26T22:30:00.000Z",
+          "metrics": {
+            "followers": 36660,
+            "following": 779,
+            "posts": 1152,
+            "engagement_rate": 5.71,
+            "avg_likes": 2093,
+            "avg_comments": 73,
+            "account_type": "creator"
+          }
+        }
+      ],
+      "total_reach": 36660
     },
     {
       "id": "inf_049",
       "name": "Ryan O'Connor",
       "category": "Finance",
-      "instagram_handle": "ryanmoneytalks",
-      "profile_url": "https://www.instagram.com/ryanmoneytalks/",
       "phone": "+353878001674",
       "email": "ryanmoneytalks.collabs@example.com",
       "address": {
@@ -2105,16 +4388,8 @@
       "city": "Dublin",
       "state": "Leinster",
       "country": "Ireland",
-      "followers": 97177,
-      "following": 396,
-      "posts_count": 1869,
-      "engagement_rate": 4.98,
-      "bio": "Making money simple 📈 | Personal finance & investing | Dublin",
       "is_verified": false,
-      "account_type": "business",
       "profile_pic_url": "https://i.pravatar.cc/300?u=ryanmoneytalks",
-      "ig_sync_status": "synced",
-      "last_synced_at": "2026-10-27T07:30:00.000Z",
       "stage": "onboarded",
       "assigned_to": "usr_03",
       "tags": [
@@ -2130,30 +4405,99 @@
         "ig_connected": true
       },
       "created_at": "2026-06-25T22:30:00.000Z",
-      "updated_at": "2026-10-28T04:30:00.000Z"
+      "updated_at": "2026-10-28T04:30:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_049_ig",
+          "influencer_id": "inf_049",
+          "platform": "instagram",
+          "handle": "ryanmoneytalks",
+          "profile_url": "https://www.instagram.com/ryanmoneytalks/",
+          "is_primary": true,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T07:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Ryan O'Connor",
+          "profile_pic_url": "https://i.pravatar.cc/300?u=ryanmoneytalks",
+          "bio": "Making money simple 📈 | Personal finance & investing | Dublin",
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-06-25T22:30:00.000Z",
+          "metrics": {
+            "followers": 97177,
+            "following": 396,
+            "posts": 1869,
+            "engagement_rate": 4.98,
+            "avg_likes": 4839,
+            "avg_comments": 169,
+            "account_type": "business"
+          }
+        },
+        {
+          "id": "acc_049_pi",
+          "influencer_id": "inf_049",
+          "platform": "pinterest",
+          "handle": "ryanmoneytalks",
+          "profile_url": "https://www.pinterest.com/ryanmoneytalks/",
+          "is_primary": false,
+          "sync_method": "connect",
+          "sync_status": "not_synced",
+          "last_synced_at": null,
+          "connect_status": "not_connected",
+          "connect_link_expires_at": null,
+          "display_name": "Ryan O'Connor",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-06-25T22:30:00.000Z",
+          "metrics": {
+            "followers": null,
+            "monthly_views": null,
+            "pin_count": null,
+            "board_count": null
+          }
+        },
+        {
+          "id": "acc_049_li",
+          "influencer_id": "inf_049",
+          "platform": "linkedin",
+          "handle": "ryanmoneytalks",
+          "profile_url": "https://www.linkedin.com/in/ryanmoneytalks",
+          "is_primary": false,
+          "sync_method": "manual",
+          "sync_status": "not_synced",
+          "last_synced_at": null,
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Ryan O'Connor",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-06-25T22:30:00.000Z",
+          "metrics": {
+            "followers": 3013,
+            "connections": 941
+          }
+        }
+      ],
+      "total_reach": 100190
     },
     {
       "id": "inf_050",
       "name": "Sara Al Hashimi",
       "category": "Lifestyle",
-      "instagram_handle": "sarahashimi",
-      "profile_url": "https://www.instagram.com/sarahashimi/",
       "phone": "+971563264429",
       "email": "sarahashimi.collabs@example.com",
       "address": null,
       "city": "Abu Dhabi",
       "state": "Abu Dhabi",
       "country": "United Arab Emirates",
-      "followers": 14291,
-      "following": 1779,
-      "posts_count": 454,
-      "engagement_rate": 7.13,
-      "bio": "Living, loving, sharing ☕ | Abu Dhabi | Home • Style • Life",
       "is_verified": false,
-      "account_type": "creator",
       "profile_pic_url": "https://i.pravatar.cc/300?u=sarahashimi",
-      "ig_sync_status": "synced",
-      "last_synced_at": "2026-10-27T22:30:00.000Z",
       "stage": "data_gathered",
       "assigned_to": null,
       "tags": [
@@ -2168,7 +4512,279 @@
         "ig_connected": false
       },
       "created_at": "2026-06-10T02:30:00.000Z",
-      "updated_at": "2026-10-26T05:30:00.000Z"
+      "updated_at": "2026-10-26T05:30:00.000Z",
+      "accounts": [
+        {
+          "id": "acc_050_ig",
+          "influencer_id": "inf_050",
+          "platform": "instagram",
+          "handle": "sarahashimi",
+          "profile_url": "https://www.instagram.com/sarahashimi/",
+          "is_primary": true,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T22:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Sara Al Hashimi",
+          "profile_pic_url": "https://i.pravatar.cc/300?u=sarahashimi",
+          "bio": "Living, loving, sharing ☕ | Abu Dhabi | Home • Style • Life",
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-06-10T02:30:00.000Z",
+          "metrics": {
+            "followers": 14291,
+            "following": 1779,
+            "posts": 454,
+            "engagement_rate": 7.13,
+            "avg_likes": 1019,
+            "avg_comments": 36,
+            "account_type": "creator"
+          }
+        },
+        {
+          "id": "acc_050_fa",
+          "influencer_id": "inf_050",
+          "platform": "facebook",
+          "handle": "sarahashimi.page",
+          "profile_url": "https://www.facebook.com/sarahashimi.page",
+          "is_primary": false,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T18:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Sara Al Hashimi",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-06-10T02:30:00.000Z",
+          "metrics": {
+            "page_followers": 4430,
+            "page_likes": 3859,
+            "page_category": "Digital creator"
+          }
+        }
+      ],
+      "total_reach": 18721
+    },
+    {
+      "id": "inf_051",
+      "name": "Riya S.",
+      "category": "Fashion",
+      "phone": null,
+      "email": "riyastyle.collabs@example.com",
+      "address": null,
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "country": "India",
+      "profile_pic_url": null,
+      "is_verified": false,
+      "accounts": [
+        {
+          "id": "acc_051_yo",
+          "influencer_id": "inf_051",
+          "platform": "youtube",
+          "handle": "riyashahvlogs",
+          "profile_url": "https://www.youtube.com/@riyashahvlogs",
+          "is_primary": true,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T18:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Riya S.",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-10-25T06:30:00.000Z",
+          "metrics": {
+            "subscribers": 82400,
+            "total_views": 4120000,
+            "video_count": 96,
+            "avg_views_recent": 23100,
+            "channel_country": "IN"
+          }
+        }
+      ],
+      "total_reach": 82400,
+      "stage": "data_gathered",
+      "assigned_to": "usr_02",
+      "tags": [],
+      "notes": "Signed up through the brand form",
+      "onboarding_checklist": {
+        "called": false,
+        "terms_agreed": false,
+        "address_collected": false,
+        "ig_connected": false
+      },
+      "created_at": "2026-10-25T06:30:00.000Z",
+      "updated_at": "2026-10-25T06:30:00.000Z"
+    },
+    {
+      "id": "inf_052",
+      "name": "Ishaan Talks",
+      "category": "Lifestyle",
+      "phone": null,
+      "email": null,
+      "address": null,
+      "city": "Pune",
+      "state": "Maharashtra",
+      "country": "India",
+      "profile_pic_url": null,
+      "is_verified": false,
+      "accounts": [
+        {
+          "id": "acc_052_yo",
+          "influencer_id": "inf_052",
+          "platform": "youtube",
+          "handle": "ishaantalks",
+          "profile_url": "https://www.youtube.com/@ishaantalks",
+          "is_primary": true,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T18:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Ishaan Talks",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-10-26T06:30:00.000Z",
+          "metrics": {
+            "subscribers": 154000,
+            "total_views": 18300000,
+            "video_count": 212,
+            "avg_views_recent": 41200,
+            "channel_country": "IN"
+          }
+        }
+      ],
+      "total_reach": 154000,
+      "stage": "data_gathered",
+      "assigned_to": "usr_04",
+      "tags": [],
+      "notes": null,
+      "onboarding_checklist": {
+        "called": false,
+        "terms_agreed": false,
+        "address_collected": false,
+        "ig_connected": false
+      },
+      "created_at": "2026-10-26T06:30:00.000Z",
+      "updated_at": "2026-10-26T06:30:00.000Z"
+    },
+    {
+      "id": "inf_053",
+      "name": "Arjun P",
+      "category": "Gaming",
+      "phone": null,
+      "email": null,
+      "address": null,
+      "city": "Chennai",
+      "state": "Tamil Nadu",
+      "country": "India",
+      "profile_pic_url": null,
+      "is_verified": false,
+      "accounts": [
+        {
+          "id": "acc_053_ti",
+          "influencer_id": "inf_053",
+          "platform": "tiktok",
+          "handle": "arjunplays",
+          "profile_url": "https://www.tiktok.com/@arjunplays",
+          "is_primary": true,
+          "sync_method": "connect",
+          "sync_status": "not_synced",
+          "last_synced_at": null,
+          "connect_status": "not_connected",
+          "connect_link_expires_at": null,
+          "display_name": "Arjun P",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-10-24T06:30:00.000Z",
+          "metrics": {
+            "followers": null,
+            "following": null,
+            "total_likes": null,
+            "video_count": null
+          }
+        }
+      ],
+      "total_reach": null,
+      "stage": "data_gathered",
+      "assigned_to": "usr_03",
+      "tags": [],
+      "notes": null,
+      "onboarding_checklist": {
+        "called": false,
+        "terms_agreed": false,
+        "address_collected": false,
+        "ig_connected": false
+      },
+      "created_at": "2026-10-24T06:30:00.000Z",
+      "updated_at": "2026-10-24T06:30:00.000Z"
+    },
+    {
+      "id": "inf_054",
+      "name": "Kabir Malhothra",
+      "category": "Fitness",
+      "phone": null,
+      "email": null,
+      "address": null,
+      "city": "New Delhi",
+      "state": "Delhi",
+      "country": "India",
+      "profile_pic_url": null,
+      "is_verified": false,
+      "accounts": [
+        {
+          "id": "acc_054_in",
+          "influencer_id": "inf_054",
+          "platform": "instagram",
+          "handle": "kabir.trains",
+          "profile_url": "https://www.instagram.com/kabir.trains/",
+          "is_primary": true,
+          "sync_method": "lookup",
+          "sync_status": "synced",
+          "last_synced_at": "2026-10-27T18:30:00.000Z",
+          "connect_status": null,
+          "connect_link_expires_at": null,
+          "display_name": "Kabir Malhothra",
+          "profile_pic_url": null,
+          "bio": null,
+          "links": [],
+          "is_verified": false,
+          "created_at": "2026-10-27T06:30:00.000Z",
+          "metrics": {
+            "followers": 8600,
+            "following": 410,
+            "posts": 132,
+            "engagement_rate": 4.1,
+            "avg_likes": 353,
+            "avg_comments": 12,
+            "account_type": "creator"
+          }
+        }
+      ],
+      "total_reach": 8600,
+      "stage": "data_gathered",
+      "assigned_to": "usr_02",
+      "tags": [],
+      "notes": null,
+      "onboarding_checklist": {
+        "called": false,
+        "terms_agreed": false,
+        "address_collected": false,
+        "ig_connected": false
+      },
+      "created_at": "2026-10-27T06:30:00.000Z",
+      "updated_at": "2026-10-27T06:30:00.000Z"
     }
   ],
   "calls": [
@@ -6392,6 +9008,27 @@
       "created_at": "2026-10-24T04:30:00.000Z"
     },
     {
+      "id": "act_0346",
+      "influencer_id": "inf_053",
+      "actor": "usr_03",
+      "type": "created",
+      "payload": {
+        "source": "manual"
+      },
+      "created_at": "2026-10-24T06:30:00.000Z"
+    },
+    {
+      "id": "act_0347",
+      "influencer_id": "inf_053",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_03"
+      },
+      "created_at": "2026-10-24T06:30:00.000Z"
+    },
+    {
       "id": "act_0280",
       "influencer_id": "inf_032",
       "actor": "usr_03",
@@ -6410,6 +9047,27 @@
       "payload": {
         "from": "usr_03",
         "reason": "Reassigning after the team reshuffle"
+      },
+      "created_at": "2026-10-25T06:30:00.000Z"
+    },
+    {
+      "id": "act_0342",
+      "influencer_id": "inf_051",
+      "actor": "usr_02",
+      "type": "created",
+      "payload": {
+        "source": "manual"
+      },
+      "created_at": "2026-10-25T06:30:00.000Z"
+    },
+    {
+      "id": "act_0343",
+      "influencer_id": "inf_051",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_02"
       },
       "created_at": "2026-10-25T06:30:00.000Z"
     },
@@ -6447,6 +9105,27 @@
       "created_at": "2026-10-26T06:30:00.000Z"
     },
     {
+      "id": "act_0344",
+      "influencer_id": "inf_052",
+      "actor": "usr_04",
+      "type": "created",
+      "payload": {
+        "source": "manual"
+      },
+      "created_at": "2026-10-26T06:30:00.000Z"
+    },
+    {
+      "id": "act_0345",
+      "influencer_id": "inf_052",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_04"
+      },
+      "created_at": "2026-10-26T06:30:00.000Z"
+    },
+    {
       "id": "act_0283",
       "influencer_id": "inf_001",
       "actor": "usr_04",
@@ -6461,9 +9140,11 @@
       "id": "act_0284",
       "influencer_id": "inf_017",
       "actor": null,
-      "type": "ig_synced",
+      "type": "account_synced",
       "payload": {
-        "followers": 460035
+        "platform": "instagram",
+        "handle": "poojasharmaofficial",
+        "audience": 460035
       },
       "created_at": "2026-10-26T14:30:00.000Z"
     },
@@ -6471,9 +9152,11 @@
       "id": "act_0285",
       "influencer_id": "inf_021",
       "actor": null,
-      "type": "ig_synced",
+      "type": "account_synced",
       "payload": {
-        "followers": 511004
+        "platform": "instagram",
+        "handle": "aishakhanstyle",
+        "audience": 511004
       },
       "created_at": "2026-10-26T14:30:00.000Z"
     },
@@ -6481,9 +9164,11 @@
       "id": "act_0286",
       "influencer_id": "inf_005",
       "actor": null,
-      "type": "ig_synced",
+      "type": "account_synced",
       "payload": {
-        "followers": 65982
+        "platform": "instagram",
+        "handle": "ananyaglows",
+        "audience": 65982
       },
       "created_at": "2026-10-26T17:30:00.000Z"
     },
@@ -6491,9 +9176,11 @@
       "id": "act_0287",
       "influencer_id": "inf_047",
       "actor": null,
-      "type": "ig_synced",
+      "type": "account_synced",
       "payload": {
-        "followers": 729433
+        "platform": "instagram",
+        "handle": "lucascooks",
+        "audience": 729433
       },
       "created_at": "2026-10-26T18:30:00.000Z"
     },
@@ -6501,9 +9188,11 @@
       "id": "act_0288",
       "influencer_id": "inf_001",
       "actor": null,
-      "type": "ig_synced",
+      "type": "account_synced",
       "payload": {
-        "followers": 245300
+        "platform": "instagram",
+        "handle": "riyastyle",
+        "audience": 245300
       },
       "created_at": "2026-10-26T19:30:00.000Z"
     },
@@ -6511,9 +9200,11 @@
       "id": "act_0289",
       "influencer_id": "inf_011",
       "actor": null,
-      "type": "ig_synced",
+      "type": "account_synced",
       "payload": {
-        "followers": 21062
+        "platform": "instagram",
+        "handle": "tanviglam",
+        "audience": 21062
       },
       "created_at": "2026-10-26T20:30:00.000Z"
     },
@@ -6521,9 +9212,11 @@
       "id": "act_0290",
       "influencer_id": "inf_031",
       "actor": null,
-      "type": "ig_synced",
+      "type": "account_synced",
       "payload": {
-        "followers": 105555
+        "platform": "instagram",
+        "handle": "simrankaurstyle",
+        "audience": 105555
       },
       "created_at": "2026-10-26T20:30:00.000Z"
     },
@@ -6531,9 +9224,11 @@
       "id": "act_0291",
       "influencer_id": "inf_004",
       "actor": null,
-      "type": "ig_synced",
+      "type": "account_synced",
       "payload": {
-        "followers": 7388
+        "platform": "instagram",
+        "handle": "kabirfitlife",
+        "audience": 7388
       },
       "created_at": "2026-10-26T21:30:00.000Z"
     },
@@ -6541,9 +9236,11 @@
       "id": "act_0292",
       "influencer_id": "inf_014",
       "actor": null,
-      "type": "ig_synced",
+      "type": "account_synced",
       "payload": {
-        "followers": 96072
+        "platform": "instagram",
+        "handle": "karanunboxes",
+        "audience": 96072
       },
       "created_at": "2026-10-26T22:30:00.000Z"
     },
@@ -6551,9 +9248,11 @@
       "id": "act_0293",
       "influencer_id": "inf_016",
       "actor": null,
-      "type": "ig_synced",
+      "type": "account_synced",
       "payload": {
-        "followers": 715475
+        "platform": "instagram",
+        "handle": "adityalifts",
+        "audience": 715475
       },
       "created_at": "2026-10-26T22:30:00.000Z"
     },
@@ -6561,9 +9260,11 @@
       "id": "act_0294",
       "influencer_id": "inf_033",
       "actor": null,
-      "type": "ig_synced",
+      "type": "account_synced",
       "payload": {
-        "followers": 249303
+        "platform": "instagram",
+        "handle": "ritikasinha",
+        "audience": 249303
       },
       "created_at": "2026-10-26T22:30:00.000Z"
     },
@@ -6571,9 +9272,11 @@
       "id": "act_0295",
       "influencer_id": "inf_042",
       "actor": null,
-      "type": "ig_synced",
+      "type": "account_synced",
       "payload": {
-        "followers": 28986
+        "platform": "instagram",
+        "handle": "oliviaexplores",
+        "audience": 28986
       },
       "created_at": "2026-10-27T01:30:00.000Z"
     },
@@ -6592,9 +9295,11 @@
       "id": "act_0296",
       "influencer_id": "inf_037",
       "actor": null,
-      "type": "ig_synced",
+      "type": "account_synced",
       "payload": {
-        "followers": 381128
+        "platform": "instagram",
+        "handle": "liamcartertech",
+        "audience": 381128
       },
       "created_at": "2026-10-27T04:30:00.000Z"
     },
@@ -6618,6 +9323,27 @@
       "created_at": "2026-10-27T06:30:00.000Z"
     },
     {
+      "id": "act_0348",
+      "influencer_id": "inf_054",
+      "actor": "usr_02",
+      "type": "created",
+      "payload": {
+        "source": "manual"
+      },
+      "created_at": "2026-10-27T06:30:00.000Z"
+    },
+    {
+      "id": "act_0349",
+      "influencer_id": "inf_054",
+      "actor": "usr_02",
+      "type": "assigned",
+      "payload": {
+        "from": null,
+        "to": "usr_02"
+      },
+      "created_at": "2026-10-27T06:30:00.000Z"
+    },
+    {
       "id": "act_0297",
       "influencer_id": "inf_028",
       "actor": "usr_04",
@@ -6632,9 +9358,11 @@
       "id": "act_0298",
       "influencer_id": "inf_049",
       "actor": null,
-      "type": "ig_synced",
+      "type": "account_synced",
       "payload": {
-        "followers": 97177
+        "platform": "instagram",
+        "handle": "ryanmoneytalks",
+        "audience": 97177
       },
       "created_at": "2026-10-27T07:30:00.000Z"
     },
@@ -6686,9 +9414,11 @@
       "id": "act_0301",
       "influencer_id": "inf_043",
       "actor": null,
-      "type": "ig_synced",
+      "type": "account_synced",
       "payload": {
-        "followers": 17127
+        "platform": "instagram",
+        "handle": "ethanplaysttv",
+        "audience": 17127
       },
       "created_at": "2026-10-27T13:30:00.000Z"
     },
@@ -6696,9 +9426,11 @@
       "id": "act_0302",
       "influencer_id": "inf_045",
       "actor": null,
-      "type": "ig_synced",
+      "type": "account_synced",
       "payload": {
-        "followers": 263235
+        "platform": "instagram",
+        "handle": "jacktrains",
+        "audience": 263235
       },
       "created_at": "2026-10-27T13:30:00.000Z"
     },
@@ -6706,9 +9438,11 @@
       "id": "act_0303",
       "influencer_id": "inf_041",
       "actor": null,
-      "type": "ig_synced",
+      "type": "account_synced",
       "payload": {
-        "followers": 531009
+        "platform": "instagram",
+        "handle": "aaliyahindubai",
+        "audience": 531009
       },
       "created_at": "2026-10-27T16:30:00.000Z"
     },
@@ -6716,9 +9450,11 @@
       "id": "act_0304",
       "influencer_id": "inf_044",
       "actor": null,
-      "type": "ig_synced",
+      "type": "account_synced",
       "payload": {
-        "followers": 184566
+        "platform": "instagram",
+        "handle": "hannahleefamily",
+        "audience": 184566
       },
       "created_at": "2026-10-27T16:30:00.000Z"
     },
@@ -6726,9 +9462,11 @@
       "id": "act_0305",
       "influencer_id": "inf_015",
       "actor": null,
-      "type": "ig_synced",
+      "type": "account_synced",
       "payload": {
-        "followers": 68968
+        "platform": "instagram",
+        "handle": "diyadresses",
+        "audience": 68968
       },
       "created_at": "2026-10-27T17:30:00.000Z"
     },
@@ -6747,9 +9485,11 @@
       "id": "act_0306",
       "influencer_id": "inf_006",
       "actor": null,
-      "type": "ig_synced",
+      "type": "account_synced",
       "payload": {
-        "followers": 330492
+        "platform": "instagram",
+        "handle": "ishaankapoor",
+        "audience": 330492
       },
       "created_at": "2026-10-27T19:30:00.000Z"
     },
@@ -6768,9 +9508,11 @@
       "id": "act_0307",
       "influencer_id": "inf_002",
       "actor": null,
-      "type": "ig_synced",
+      "type": "account_synced",
       "payload": {
-        "followers": 297804
+        "platform": "instagram",
+        "handle": "aaravtechtalks",
+        "audience": 297804
       },
       "created_at": "2026-10-27T21:30:00.000Z"
     },
@@ -6778,9 +9520,11 @@
       "id": "act_0308",
       "influencer_id": "inf_009",
       "actor": null,
-      "type": "ig_synced",
+      "type": "account_synced",
       "payload": {
-        "followers": 52088
+        "platform": "instagram",
+        "handle": "snehawanders",
+        "audience": 52088
       },
       "created_at": "2026-10-27T22:30:00.000Z"
     },
@@ -6788,9 +9532,11 @@
       "id": "act_0309",
       "influencer_id": "inf_050",
       "actor": null,
-      "type": "ig_synced",
+      "type": "account_synced",
       "payload": {
-        "followers": 14291
+        "platform": "instagram",
+        "handle": "sarahashimi",
+        "audience": 14291
       },
       "created_at": "2026-10-27T22:30:00.000Z"
     },
@@ -6798,9 +9544,11 @@
       "id": "act_0310",
       "influencer_id": "inf_040",
       "actor": null,
-      "type": "ig_synced",
+      "type": "account_synced",
       "payload": {
-        "followers": 3825
+        "platform": "instagram",
+        "handle": "noahwears",
+        "audience": 3825
       },
       "created_at": "2026-10-27T23:30:00.000Z"
     },
@@ -6808,9 +9556,11 @@
       "id": "act_0311",
       "influencer_id": "inf_046",
       "actor": null,
-      "type": "ig_synced",
+      "type": "account_synced",
       "payload": {
-        "followers": 334432
+        "platform": "instagram",
+        "handle": "miafernandes",
+        "audience": 334432
       },
       "created_at": "2026-10-28T00:30:00.000Z"
     },
@@ -6818,9 +9568,11 @@
       "id": "act_0312",
       "influencer_id": "inf_030",
       "actor": null,
-      "type": "ig_synced",
+      "type": "account_synced",
       "payload": {
-        "followers": 406838
+        "platform": "instagram",
+        "handle": "harshtastes",
+        "audience": 406838
       },
       "created_at": "2026-10-28T01:30:00.000Z"
     },
@@ -6828,9 +9580,11 @@
       "id": "act_0313",
       "influencer_id": "inf_039",
       "actor": null,
-      "type": "ig_synced",
+      "type": "account_synced",
       "payload": {
-        "followers": 54213
+        "platform": "instagram",
+        "handle": "chloetaneats",
+        "audience": 54213
       },
       "created_at": "2026-10-28T01:30:00.000Z"
     },
@@ -6838,9 +9592,11 @@
       "id": "act_0314",
       "influencer_id": "inf_023",
       "actor": null,
-      "type": "ig_synced",
+      "type": "account_synced",
       "payload": {
-        "followers": 178305
+        "platform": "instagram",
+        "handle": "shreyabanerjee",
+        "audience": 178305
       },
       "created_at": "2026-10-28T02:30:00.000Z"
     },
@@ -6848,9 +9604,11 @@
       "id": "act_0315",
       "influencer_id": "inf_027",
       "actor": null,
-      "type": "ig_synced",
+      "type": "account_synced",
       "payload": {
-        "followers": 13907
+        "platform": "instagram",
+        "handle": "nandinitravels",
+        "audience": 13907
       },
       "created_at": "2026-10-28T02:30:00.000Z"
     },
@@ -6858,9 +9616,11 @@
       "id": "act_0316",
       "influencer_id": "inf_036",
       "actor": null,
-      "type": "ig_synced",
+      "type": "account_synced",
       "payload": {
-        "followers": 261706
+        "platform": "instagram",
+        "handle": "emmacollinsbeauty",
+        "audience": 261706
       },
       "created_at": "2026-10-28T02:30:00.000Z"
     },
@@ -6868,9 +9628,11 @@
       "id": "act_0317",
       "influencer_id": "inf_048",
       "actor": null,
-      "type": "ig_synced",
+      "type": "account_synced",
       "payload": {
-        "followers": 36660
+        "platform": "instagram",
+        "handle": "avamitchellmua",
+        "audience": 36660
       },
       "created_at": "2026-10-28T02:30:00.000Z"
     },
@@ -6878,9 +9640,11 @@
       "id": "act_0318",
       "influencer_id": "inf_024",
       "actor": null,
-      "type": "ig_synced",
+      "type": "account_synced",
       "payload": {
-        "followers": 67564
+        "platform": "instagram",
+        "handle": "varunchoprafit",
+        "audience": 67564
       },
       "created_at": "2026-10-28T03:30:00.000Z"
     },
@@ -6888,9 +9652,11 @@
       "id": "act_0319",
       "influencer_id": "inf_035",
       "actor": null,
-      "type": "ig_synced",
+      "type": "account_synced",
       "payload": {
-        "followers": 97490
+        "platform": "instagram",
+        "handle": "lakshmiandkids",
+        "audience": 97490
       },
       "created_at": "2026-10-28T03:30:00.000Z"
     },
@@ -6931,9 +9697,11 @@
       "id": "act_0322",
       "influencer_id": "inf_019",
       "actor": null,
-      "type": "ig_synced",
+      "type": "account_synced",
       "payload": {
-        "followers": 3400000
+        "platform": "instagram",
+        "handle": "kavyaskincare",
+        "audience": 3400000
       },
       "created_at": "2026-10-28T04:30:00.000Z"
     },
@@ -6985,9 +9753,11 @@
       "id": "act_0327",
       "influencer_id": "inf_029",
       "actor": null,
-      "type": "ig_synced",
+      "type": "account_synced",
       "payload": {
-        "followers": 119993
+        "platform": "instagram",
+        "handle": "zoyamakeup",
+        "audience": 119993
       },
       "created_at": "2026-10-28T05:30:00.000Z"
     },
@@ -6995,9 +9765,11 @@
       "id": "act_0328",
       "influencer_id": "inf_034",
       "actor": null,
-      "type": "ig_synced",
+      "type": "account_synced",
       "payload": {
-        "followers": 19935
+        "platform": "instagram",
+        "handle": "omyadavtravels",
+        "audience": 19935
       },
       "created_at": "2026-10-28T05:30:00.000Z"
     }
@@ -7014,7 +9786,7 @@
           "Pune"
         ]
       },
-      "sort": "-followers",
+      "sort": "-total_reach",
       "created_by": "usr_03",
       "created_at": "2026-10-08T06:30:00.000Z"
     },
@@ -7025,9 +9797,9 @@
         "city": [
           "Mumbai"
         ],
-        "followers_min": 100000
+        "reach_min": 100000
       },
-      "sort": "-followers",
+      "sort": "-total_reach",
       "created_by": "usr_02",
       "created_at": "2026-10-16T06:30:00.000Z"
     }

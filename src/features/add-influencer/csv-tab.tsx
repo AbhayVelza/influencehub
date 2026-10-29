@@ -1,4 +1,4 @@
-import { useQueryClient } from '@tanstack/react-query'
+import { useQueries, useQueryClient } from '@tanstack/react-query'
 import { CircleAlert, Download, FileUp, Loader2, RotateCcw, TriangleAlert, Upload } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type DragEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -15,15 +15,19 @@ import {
   autoMatchColumns,
   IMPORT_FIELDS,
   mapImportRow,
+  missingMappings,
   templateCsv,
   validateImportRow,
   type ImportField,
+  type ValidatedImportRow,
 } from '@/lib/csv-import'
 import { formatNumber } from '@/lib/format'
 import { queryKeys } from '@/lib/query'
 import { cn } from '@/lib/utils'
+import { ConfidenceBadge } from '@/features/duplicates/duplicate-warning'
 import { getErrorMessage, importsApi } from '@/services'
 import type { CsvColumnMapping, CsvDuplicatePolicy, CsvImportResult } from '@/types'
+import { findDuplicates } from './queries'
 
 const MAX_BYTES = 2 * 1024 * 1024
 const MAX_ROWS = 5000
@@ -108,6 +112,38 @@ function UploadStep({ onParsed }: { onParsed: (parsed: ParsedFile) => void }) {
   )
 }
 
+/** "Possible duplicate" flags for the previewed rows, from POST /duplicates/check. */
+function useRowMatches(rows: ValidatedImportRow[]) {
+  return useQueries({
+    queries: rows.map((row) => {
+      const body = {
+        name: row.values.name ?? null,
+        email: row.values.email ?? null,
+        phone: row.values.phone ?? null,
+        city: row.values.city ?? null,
+        accounts: row.accounts,
+      }
+      return {
+        queryKey: ['csv-duplicates', body],
+        queryFn: () => findDuplicates(body),
+        enabled: Object.keys(row.errors).length === 0,
+        staleTime: 60_000,
+      }
+    }),
+  })
+}
+
+function MatchCell({ matches }: { matches: Awaited<ReturnType<typeof findDuplicates>> | undefined }) {
+  const top = matches?.[0]
+  if (!top) return <span className="text-muted-foreground">—</span>
+  return (
+    <span className="block space-y-0.5" title={top.reasons.join(' · ')}>
+      <span className="block truncate font-medium">{top.influencer?.name ?? 'A teammate’s creator'}</span>
+      <ConfidenceBadge confidence={top.confidence} />
+    </span>
+  )
+}
+
 function MappingStep({
   parsed,
   onBack,
@@ -115,11 +151,11 @@ function MappingStep({
 }: {
   parsed: ParsedFile
   onBack: () => void
-  onImport: (options: { mapping: CsvColumnMapping; fetchInstagram: boolean; onDuplicate: CsvDuplicatePolicy }) => void
+  onImport: (options: { mapping: CsvColumnMapping; fetchProfiles: boolean; onDuplicate: CsvDuplicatePolicy }) => void
 }) {
   const categories = useCategories()
   const [mapping, setMapping] = useState<CsvColumnMapping>(() => autoMatchColumns(parsed.headers))
-  const [fetchInstagram, setFetchInstagram] = useState(true)
+  const [fetchProfiles, setFetchProfiles] = useState(true)
   const [onDuplicate, setOnDuplicate] = useState<CsvDuplicatePolicy>('skip')
   const categoryNames = useMemo(
     () => (categories.data?.items ?? []).filter((c) => c.is_active).map((c) => c.name),
@@ -130,20 +166,22 @@ function MappingStep({
     () => parsed.rows.map((row) => validateImportRow(mapImportRow(row, parsed.headers, mapping), categoryNames)),
     [parsed, mapping, categoryNames],
   )
-  // Handles repeated within the file: later copies are skipped as duplicates.
+  // Accounts repeated within the file: later rows are skipped as duplicates.
   const repeated = useMemo(() => {
     const seen = new Set<string>()
     return validated.map((v) => {
-      const handle = v.values.instagram_handle
-      if (!handle) return false
-      if (seen.has(handle)) return true
-      seen.add(handle)
-      return false
+      const keys = v.accounts.map((a) => `${a.platform}:${a.handle}`)
+      const dup = keys.some((k) => seen.has(k))
+      keys.forEach((k) => seen.add(k))
+      return dup
     })
   }, [validated])
   const invalidRows = validated.filter((v) => Object.keys(v.errors).length > 0).length
-  const missingRequired = IMPORT_FIELDS.filter((f) => f.required && !mapping[f.key])
+  const missingRequired = missingMappings(mapping)
   const shownFields = IMPORT_FIELDS.filter((f) => mapping[f.key])
+  const previewRows = useMemo(() => validated.slice(0, PREVIEW_ROWS), [validated])
+  const rowMatches = useRowMatches(previewRows)
+  const flagged = rowMatches.filter((m) => m.data?.length).length
 
   return (
     <div className="space-y-5">
@@ -157,6 +195,7 @@ function MappingStep({
               <Label htmlFor={`map-${field.key}`} className="text-xs">
                 {field.label}
                 {field.required && <span className="text-destructive"> *</span>}
+                {field.handle && <span className="sr-only"> handle</span>}
               </Label>
               <Select
                 value={mapping[field.key] ?? SKIP}
@@ -177,9 +216,10 @@ function MappingStep({
             </div>
           ))}
         </div>
+        <p className="text-xs text-muted-foreground">One column per platform; map at least one of them.</p>
         {missingRequired.length > 0 && (
           <p role="alert" className="text-xs text-destructive">
-            Match a column for {missingRequired.map((f) => f.label).join(' and ')}.
+            Match a column for {missingRequired.join(' and ')}.
           </p>
         )}
       </section>
@@ -192,6 +232,7 @@ function MappingStep({
             <span className={cn(invalidRows > 0 && 'font-medium text-destructive')}>
               {formatNumber(invalidRows)} with errors (won’t import)
             </span>
+            {flagged > 0 && <> · {formatNumber(flagged)} may match existing creators</>}
           </p>
         </div>
         <div className="max-h-64 overflow-auto rounded-md border">
@@ -204,6 +245,7 @@ function MappingStep({
                     {f.label}
                   </th>
                 ))}
+                <th className="px-2 py-1.5 text-left font-medium whitespace-nowrap">Possible duplicate</th>
               </tr>
             </thead>
             <tbody>
@@ -215,8 +257,14 @@ function MappingStep({
                     <td className="px-2 py-1 align-top text-muted-foreground tabular-nums">
                       {i + 2}
                       {repeated[i] && (
-                        <span className="ml-1 rounded bg-muted px-1" title="Same handle earlier in the file">
+                        <span className="ml-1 rounded bg-muted px-1" title="Same account earlier in the file">
                           dup
+                        </span>
+                      )}
+                      {errors.accounts && (
+                        <span className="mt-0.5 flex items-start gap-1 text-[11px] leading-tight text-destructive">
+                          <CircleAlert className="mt-px size-3 shrink-0" />
+                          {errors.accounts}
                         </span>
                       )}
                     </td>
@@ -245,6 +293,9 @@ function MappingStep({
                         </td>
                       )
                     })}
+                    <td className="max-w-44 px-2 py-1 align-top">
+                      <MatchCell matches={rowMatches[i]?.data} />
+                    </td>
                   </tr>
                 )
               })}
@@ -255,14 +306,16 @@ function MappingStep({
 
       <section className="space-y-3 rounded-md border p-3">
         <label className="flex items-start gap-2 text-sm">
-          <Checkbox checked={fetchInstagram} onCheckedChange={(v) => setFetchInstagram(!!v)} className="mt-0.5" />
+          <Checkbox checked={fetchProfiles} onCheckedChange={(v) => setFetchProfiles(!!v)} className="mt-0.5" />
           <span>
-            Fetch Instagram data for imported rows
-            <span className="block text-xs text-muted-foreground">Business and Creator accounts get followers, bio and picture.</span>
+            Fetch public profiles for imported rows
+            <span className="block text-xs text-muted-foreground">
+              Instagram, YouTube, Threads and Facebook Page stats. TikTok and Pinterest wait for a connect link.
+            </span>
           </span>
         </label>
         <fieldset className="space-y-1">
-          <legend className="text-sm">If a handle is already in the CRM</legend>
+          <legend className="text-sm">If an account is already in the CRM</legend>
           <div role="radiogroup" className="flex gap-4 text-sm">
             {(['skip', 'update'] as const).map((policy) => (
               <label key={policy} className="flex items-center gap-2">
@@ -287,7 +340,7 @@ function MappingStep({
         </Button>
         <Button
           disabled={missingRequired.length > 0 || invalidRows === parsed.rows.length}
-          onClick={() => onImport({ mapping, fetchInstagram, onDuplicate })}
+          onClick={() => onImport({ mapping, fetchProfiles, onDuplicate })}
         >
           Import {formatNumber(parsed.rows.length - invalidRows)} rows
         </Button>
@@ -313,8 +366,8 @@ function Summary({ result, onDone, onAgain }: { result: CsvImportResult; onDone:
     downloadCsv(
       'influencehub-import-errors.csv',
       toCsvText(
-        ['row', 'instagram_handle', 'error'],
-        result.errors.map((e) => [e.row, e.instagram_handle ?? '', e.message]),
+        ['row', 'handle', 'error'],
+        result.errors.map((e) => [e.row, e.handle ?? '', e.message]),
       ),
     )
 
@@ -327,9 +380,9 @@ function Summary({ result, onDone, onAgain }: { result: CsvImportResult; onDone:
         <Stat label="Duplicates skipped" value={result.duplicates} />
         <Stat label="Failed" value={result.failed} tone="bad" />
       </div>
-      {result.instagram && (
+      {result.profiles && (
         <p className="text-sm text-muted-foreground">
-          Instagram: {formatNumber(result.instagram.synced)} synced, {formatNumber(result.instagram.failed)} couldn’t be
+          Profiles: {formatNumber(result.profiles.synced)} accounts synced, {formatNumber(result.profiles.failed)} couldn’t be
           fetched (personal, not found or rate limited).
         </p>
       )}
@@ -348,7 +401,7 @@ function Summary({ result, onDone, onAgain }: { result: CsvImportResult; onDone:
                 {result.errors.slice(0, 50).map((e) => (
                   <tr key={e.row} className="border-t">
                     <td className="px-2 py-1 tabular-nums">{e.row}</td>
-                    <td className="px-2 py-1">{e.instagram_handle ?? '—'}</td>
+                    <td className="px-2 py-1">{e.handle ?? '—'}</td>
                     <td className="px-2 py-1">{e.message}</td>
                   </tr>
                 ))}
@@ -399,7 +452,7 @@ export function CsvTab({ onDone, onBusyChange }: { onDone: () => void; onBusyCha
     }
   }, [status, queryClient])
 
-  const start = async (options: { mapping: CsvColumnMapping; fetchInstagram: boolean; onDuplicate: CsvDuplicatePolicy }) => {
+  const start = async (options: { mapping: CsvColumnMapping; fetchProfiles: boolean; onDuplicate: CsvDuplicatePolicy }) => {
     if (!parsed) return
     setStarting(true)
     try {
@@ -408,7 +461,7 @@ export function CsvTab({ onDone, onBusyChange }: { onDone: () => void; onBusyCha
       const { job_id } = await importsApi.startCsvImport({
         key,
         mapping: options.mapping,
-        fetch_instagram: options.fetchInstagram,
+        fetch_profiles: options.fetchProfiles,
         on_duplicate: options.onDuplicate,
       })
       setJobId(job_id)

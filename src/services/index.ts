@@ -3,7 +3,8 @@ export { influencersApi } from '@/services/influencers'
 export { callsApi } from '@/services/calls'
 export { packagesApi } from '@/services/packages'
 export { poolApi } from '@/services/pool'
-export { jobsApi, instagramApi, importsApi, exportsApi } from '@/services/jobs'
+export { jobsApi, importsApi, exportsApi } from '@/services/jobs'
+export { accountsApi, duplicatesApi, lookupApi } from '@/services/accounts'
 export {
   meApi,
   pipelineApi,

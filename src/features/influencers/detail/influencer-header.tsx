@@ -16,6 +16,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { PersonAvatar } from '@/components/common/person-avatar'
+import { AccountLabel, PlatformMarks } from '@/components/common/platform-badge'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -41,7 +42,8 @@ import { ReleaseDialog } from '@/features/pool/release-dialog'
 import { useCan, useMe } from '@/hooks/use-me'
 import { useTeam } from '@/hooks/use-team'
 import { copyToClipboard } from '@/lib/clipboard'
-import { formatLocation } from '@/lib/format'
+import { formatCompact, formatLocation, formatNumber } from '@/lib/format'
+import { PLATFORM_META, primaryAccount, toRef } from '@/lib/platforms'
 import { getErrorMessage } from '@/services'
 import type { Influencer, Stage } from '@/types'
 import { listReturnPath } from '../list-params'
@@ -151,6 +153,7 @@ export function InfluencerHeader({
       onError: (err) => toast.error('Couldn’t release', { description: getErrorMessage(err) }),
     })
   const location = formatLocation([influencer.city, influencer.state, influencer.country])
+  const primary = primaryAccount(influencer)
 
   const onDelete = () =>
     remove.mutate(undefined, {
@@ -178,18 +181,16 @@ export function InfluencerHeader({
               {influencer.name}
               {influencer.is_verified && <BadgeCheck className="size-5 text-sky-500" aria-label="Verified account" />}
             </h1>
-            <a
-              href={influencer.profile_url}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground hover:underline"
-            >
-              @{influencer.instagram_handle}
-              <ExternalLink className="size-3.5" />
-            </a>
+            <AccountLabel account={primary && toRef(primary)} link className="text-sm text-muted-foreground" />
           </div>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
             <span className="rounded-full border px-2 py-0.5 text-xs text-foreground">{influencer.category}</span>
+            <PlatformMarks platforms={influencer.accounts.map((a) => a.platform)} />
+            {influencer.total_reach != null && (
+              <span title={formatNumber(influencer.total_reach)}>
+                <span className="font-medium text-foreground tabular-nums">{formatCompact(influencer.total_reach)}</span> total reach
+              </span>
+            )}
             {location !== '—' && (
               <span className="inline-flex items-center gap-1">
                 <MapPin className="size-3.5" />
@@ -224,16 +225,20 @@ export function InfluencerHeader({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-52">
-              <DropdownMenuItem asChild>
-                <a href={influencer.profile_url} target="_blank" rel="noreferrer">
-                  <ExternalLink />
-                  Open on Instagram
-                </a>
-              </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => copyToClipboard(influencer.profile_url, 'Profile link copied')}>
-                <Copy />
-                Copy profile link
-              </DropdownMenuItem>
+              {primary && (
+                <>
+                  <DropdownMenuItem asChild>
+                    <a href={primary.profile_url} target="_blank" rel="noreferrer">
+                      <ExternalLink />
+                      Open on {PLATFORM_META[primary.platform].label}
+                    </a>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => copyToClipboard(primary.profile_url, 'Profile link copied')}>
+                    <Copy />
+                    Copy profile link
+                  </DropdownMenuItem>
+                </>
+              )}
               {canRelease && (
                 <DropdownMenuItem onSelect={() => setReleasing(true)}>
                   <Inbox />

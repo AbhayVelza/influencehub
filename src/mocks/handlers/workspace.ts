@@ -20,6 +20,7 @@ import type {
   User,
 } from '@/types'
 import { currentUser, db, findInfluencer, nextId, nowIso, stageEnteredAt, toSummary, type StoredCategory } from '../db'
+import { primaryAccount, toRef } from '@/lib/platforms'
 import { canSee, filterInfluencers, poolInfluencers, visibleInfluencers } from '../domain'
 import { all, api, apiError, forbidden, latency, notFound, readJson } from '../utils'
 import { followUpBucket, isMine, withInfluencer } from './calls'
@@ -227,9 +228,9 @@ export const workspaceHandlers = [
           .map((i) => ({
             id: i.id,
             name: i.name,
-            instagram_handle: i.instagram_handle,
+            primary_account: primaryAccount(i) ? toRef(primaryAccount(i)!) : null,
             profile_pic_url: i.profile_pic_url,
-            followers: i.followers,
+            total_reach: i.total_reach,
             category: i.category,
             assigned_to: i.assigned_to,
             stage: i.stage,

@@ -15,6 +15,18 @@ export type PackageStatus = 'preparing' | 'sent' | 'in_transit' | 'delivered' | 
 
 export type AccountType = 'business' | 'creator' | 'personal' | 'unknown'
 
+export type Platform = 'instagram' | 'youtube' | 'tiktok' | 'facebook' | 'threads' | 'pinterest' | 'linkedin' | 'snapchat'
+
+/**
+ * How an account's stats arrive. lookup: we fetch public data (Instagram, YouTube, Threads, Facebook Pages).
+ * connect: the creator authorises us via a connect link (TikTok, Pinterest). manual: typed in (LinkedIn,
+ * Snapchat, and personal Instagram / Facebook profiles).
+ */
+export type SyncMethod = 'lookup' | 'connect' | 'manual'
+
+/** Connect-method accounts only. `expired` = a link was sent and lapsed unused. */
+export type ConnectStatus = 'not_connected' | 'link_sent' | 'connected' | 'expired'
+
 export type SyncStatus = 'synced' | 'pending' | 'not_synced' | 'error'
 
 export type Role = 'admin' | 'manager' | 'executive'
@@ -51,13 +63,72 @@ export interface OnboardingChecklist {
   ig_connected: boolean
 }
 
+// Per-platform stats. Every value is null until synced / entered.
+export interface PlatformMetrics {
+  instagram: {
+    followers: number | null
+    following: number | null
+    posts: number | null
+    /** Percentage, e.g. 3.4 means 3.4%. */
+    engagement_rate: number | null
+    avg_likes: number | null
+    avg_comments: number | null
+    account_type: AccountType | null
+  }
+  youtube: {
+    subscribers: number | null
+    total_views: number | null
+    video_count: number | null
+    /** Average views over the last 10 videos. */
+    avg_views_recent: number | null
+    /** ISO 3166-1 alpha-2, e.g. "IN". */
+    channel_country: string | null
+  }
+  tiktok: { followers: number | null; following: number | null; total_likes: number | null; video_count: number | null }
+  facebook: { page_followers: number | null; page_likes: number | null; page_category: string | null }
+  threads: { followers: number | null; avg_likes_recent: number | null; avg_replies_recent: number | null }
+  pinterest: { followers: number | null; monthly_views: number | null; pin_count: number | null; board_count: number | null }
+  linkedin: { followers: number | null; connections: number | null }
+  snapchat: { subscribers: number | null }
+}
+
+interface SocialAccountBase {
+  id: string
+  influencer_id: string
+  /** Lowercase, no leading @. Unique per platform across the CRM. */
+  handle: string
+  profile_url: string
+  /** Exactly one account per influencer is primary (shown first, used for avatar and "Primary account"). */
+  is_primary: boolean
+  sync_method: SyncMethod
+  /** manual accounts are always `not_synced`; connect accounts sync once connected. */
+  sync_status: SyncStatus
+  last_synced_at: ISODateString | null
+  /** Connect-method accounts only; null otherwise. */
+  connect_status: ConnectStatus | null
+  connect_link_expires_at: ISODateString | null
+  display_name: string | null
+  profile_pic_url: string | null
+  bio: string | null
+  /** Links from the profile (link in bio etc.), used for cross-platform matching. */
+  links: string[]
+  is_verified: boolean
+  created_at: ISODateString
+}
+
+export type SocialAccount = { [P in Platform]: SocialAccountBase & { platform: P; metrics: PlatformMetrics[P] } }[Platform]
+
+/** Enough to show and link an account: "@riyastyle on Instagram". */
+export interface AccountRef {
+  platform: Platform
+  handle: string
+  profile_url: string
+}
+
 export interface Influencer {
   id: string
   name: string
   category: string
-  /** Lowercase, no leading @, unique. */
-  instagram_handle: string
-  profile_url: string
   /** E.164, default country code +91. */
   phone: string | null
   email: string | null
@@ -65,17 +136,14 @@ export interface Influencer {
   city: string | null
   state: string | null
   country: string | null
-  followers: number | null
-  following: number | null
-  posts_count: number | null
-  /** Percentage, e.g. 3.4 means 3.4%. */
-  engagement_rate: number | null
-  bio: string | null
-  is_verified: boolean
-  account_type: AccountType
+  /** The primary account's picture. */
   profile_pic_url: string | null
-  ig_sync_status: SyncStatus
-  last_synced_at: ISODateString | null
+  /** True when any account is verified. */
+  is_verified: boolean
+  /** Primary first. At least one. */
+  accounts: SocialAccount[]
+  /** Sum of each account's audience (followers / subscribers / page followers); null when none is known. */
+  total_reach: number | null
   stage: Stage
   /** User id. */
   assigned_to: string | null
@@ -123,7 +191,14 @@ export type ActivityType =
   | 'call_logged'
   | 'package_created'
   | 'package_updated'
-  | 'ig_synced'
+  /** Payload `{platform, handle, audience}`; actor null (sync job). */
+  | 'account_synced'
+  /** Payload `{platform, handle}`. */
+  | 'account_added'
+  /** Payload `{platform, handle, emailed_to}`. */
+  | 'connect_link_sent'
+  /** On the surviving record. Payload `{merged_id, merged_name}`. */
+  | 'merged'
   /** Taken from the Unassigned Pool. Payload `{}`; the actor is the new owner. */
   | 'claimed'
   /** Returned to the pool. Payload `{from, reason, auto?}`; `auto: true` (actor null) for auto-release. */
@@ -139,10 +214,9 @@ export interface Activity {
   created_at: ISODateString
 }
 
-export interface FollowerSnapshot {
-  followers: number
-  following: number
-  engagement_rate: number
+/** One account's audience (followers / subscribers / page followers) at a point in time. */
+export interface AccountSnapshot {
+  audience: number
   captured_at: ISODateString
 }
 
@@ -189,7 +263,7 @@ export interface ApiErrorBody {
 export interface InfluencerSummary {
   id: string
   name: string
-  instagram_handle: string
+  primary_account: AccountRef | null
   profile_pic_url: string | null
   phone: string | null
   stage: Stage
@@ -211,15 +285,7 @@ export interface ActivityWithInfluencer extends Activity {
 // ---------------------------------------------------------------------------
 // Request params / bodies
 
-export type InfluencerSortKey =
-  | 'name'
-  | 'followers'
-  | 'engagement_rate'
-  | 'city'
-  | 'stage'
-  | 'created_at'
-  | 'updated_at'
-  | 'last_synced_at'
+export type InfluencerSortKey = 'name' | 'total_reach' | 'city' | 'stage' | 'created_at' | 'updated_at'
 
 /** `followers` ascending, `-followers` descending. */
 export type InfluencerSort = InfluencerSortKey | `-${InfluencerSortKey}`
@@ -232,8 +298,11 @@ export interface InfluencerFilters {
   city?: string[]
   stage?: Stage[]
   assigned_to?: string[]
-  followers_min?: number
-  followers_max?: number
+  /** Has an account on any of these platforms. */
+  platform?: Platform[]
+  /** Total reach range. */
+  reach_min?: number
+  reach_max?: number
 }
 
 export interface InfluencerListParams extends InfluencerFilters {
@@ -257,35 +326,49 @@ export interface FilterOptions {
   cities: FilterOption[]
   stages: FilterOption[]
   assigned_to: FilterOption[]
+  platforms: FilterOption[]
 }
 
-export type InfluencerCreate = Pick<Influencer, 'name' | 'category' | 'instagram_handle'> &
-  Partial<
-    Pick<
-      Influencer,
-      | 'phone'
-      | 'email'
-      | 'address'
-      | 'city'
-      | 'state'
-      | 'country'
-      | 'followers'
-      | 'following'
-      | 'posts_count'
-      | 'engagement_rate'
-      | 'bio'
-      | 'is_verified'
-      | 'account_type'
-      | 'profile_pic_url'
-      | 'assigned_to'
-      | 'tags'
-      | 'notes'
-    >
-  >
+/** A new account. Lookup data (from POST /lookup) can be passed through so it's saved as synced. */
+export interface AccountCreate {
+  platform: Platform
+  handle: string
+  /** Only `manual`, to keep a lookup platform's personal profile out of syncing. Defaults by platform. */
+  sync_method?: 'manual'
+  metrics?: Partial<PlatformMetrics[Platform]>
+  display_name?: string | null
+  profile_pic_url?: string | null
+  bio?: string | null
+  links?: string[]
+  is_verified?: boolean
+}
+
+export type InfluencerCreate = Pick<Influencer, 'name' | 'category'> &
+  Partial<Pick<Influencer, 'phone' | 'email' | 'address' | 'city' | 'state' | 'country' | 'assigned_to' | 'tags' | 'notes'>> & {
+    /** At least one; the first is primary. */
+    accounts: AccountCreate[]
+  }
 
 export type InfluencerUpdate = Partial<
-  Omit<Influencer, 'id' | 'stage' | 'created_at' | 'updated_at' | 'ig_sync_status' | 'last_synced_at'>
+  Omit<Influencer, 'id' | 'stage' | 'created_at' | 'updated_at' | 'accounts' | 'total_reach' | 'is_verified' | 'profile_pic_url'>
 >
+
+/** Manual accounts only: type the stats in. */
+export interface AccountUpdate {
+  metrics: Partial<PlatformMetrics[Platform]>
+}
+
+export interface ConnectLinkRequest {
+  /** Also email the link to the influencer's email address. */
+  send_email?: boolean
+}
+
+export interface ConnectLinkResponse {
+  url: string
+  expires_at: ISODateString
+  /** The address it was emailed to, when `send_email` was set. */
+  emailed_to: string | null
+}
 
 /**
  * Why a handle can't be added. `exists`: in the CRM and visible to you. `in_pool`: unassigned (claimable).
@@ -306,7 +389,7 @@ export interface StageChangeRequest {
   reason?: string
 }
 
-/** `delete` requires manager or admin. `claim` takes no value (owner = me). */
+/** `delete` requires manager or admin. `claim` takes no value (owner = me). `sync` syncs every syncable account. */
 export type BulkAction = 'change_stage' | 'assign' | 'sync' | 'delete' | 'claim'
 
 export interface BulkRequest {
@@ -356,9 +439,9 @@ export type PackageUpdate = Partial<Omit<Package, 'id' | 'influencer_id'>>
 export interface PipelineCard {
   id: string
   name: string
-  instagram_handle: string
+  primary_account: AccountRef | null
   profile_pic_url: string | null
-  followers: number | null
+  total_reach: number | null
   category: string
   assigned_to: string | null
   stage: Stage
@@ -412,23 +495,31 @@ export interface JobRef {
   job_id: string
 }
 
-/** Result of POST /instagram/lookup once the job succeeds. */
-export interface InstagramProfile {
+/** Result of POST /lookup once the job succeeds. */
+export type LookupProfile = {
+  [P in Platform]: {
+    platform: P
+    handle: string
+    profile_url: string
+    display_name: string
+    bio: string | null
+    links: string[]
+    profile_pic_url: string | null
+    is_verified: boolean
+    metrics: PlatformMetrics[P]
+    /** Other accounts found in the bio or links, e.g. a YouTube channel. */
+    linked_accounts: AccountRef[]
+  }
+}[Platform]
+
+export interface LookupRequest {
+  /** A lookup-method platform: instagram, youtube, threads or facebook (public Pages). */
+  platform: Platform
   username: string
-  name: string
-  bio: string | null
-  followers: number
-  following: number
-  posts_count: number
-  engagement_rate: number
-  is_verified: boolean
-  account_type: AccountType
-  profile_pic_url: string | null
-  profile_url: string
 }
 
 /** Failed jobs carry the first three; the 409s come back immediately (see HandleConflict). */
-export type InstagramLookupErrorCode =
+export type LookupErrorCode =
   | 'personal_account'
   | 'not_found'
   | 'rate_limited'
@@ -441,8 +532,21 @@ export interface CsvPresignResponse {
   key: string
 }
 
-/** Maps influencer field → CSV column header. */
-export type CsvColumnMapping = Partial<Record<keyof InfluencerCreate, string>>
+/** CSV fields: the details plus one handle column per platform. */
+export type CsvImportField =
+  | 'name'
+  | 'category'
+  | 'phone'
+  | 'email'
+  | 'city'
+  | 'state'
+  | 'country'
+  | 'tags'
+  | 'notes'
+  | Platform
+
+/** Maps field → CSV column header. */
+export type CsvColumnMapping = Partial<Record<CsvImportField, string>>
 
 /** What to do with a row whose handle is already in the CRM. */
 export type CsvDuplicatePolicy = 'skip' | 'update'
@@ -450,8 +554,8 @@ export type CsvDuplicatePolicy = 'skip' | 'update'
 export interface CsvImportRequest {
   key: string
   mapping: CsvColumnMapping
-  /** Look each imported handle up on Instagram after the rows are saved. */
-  fetch_instagram: boolean
+  /** Sync every lookup-method account after the rows are saved. */
+  fetch_profiles: boolean
   on_duplicate: CsvDuplicatePolicy
 }
 
@@ -463,10 +567,10 @@ export interface CsvImportResult {
   /** Rows skipped because the handle already exists (in the CRM or earlier in the file). */
   duplicates: number
   failed: number
-  /** Failed rows only. `row` is the 1-based line number in the file (header = 1). */
-  errors: { row: number; instagram_handle: string | null; message: string }[]
-  /** Present when fetch_instagram was requested. */
-  instagram: { synced: number; failed: number } | null
+  /** Failed rows only. `row` is the 1-based line number in the file (header = 1). `handle` = the row's first handle. */
+  errors: { row: number; handle: string | null; message: string }[]
+  /** Present when fetch_profiles was requested. */
+  profiles: { synced: number; failed: number } | null
 }
 
 export interface ExportRequest {
@@ -480,14 +584,73 @@ export interface ExportResult {
 }
 
 export interface SyncResult {
-  influencer_id: string
-  followers: number | null
+  account_id: string
+  audience: number | null
 }
 
-/** Result of the job started by a bulk `sync`. */
+/** Result of the job started by a bulk `sync`. Counts accounts; failures carry the influencer id. */
 export interface BulkSyncResult {
   synced: number
   failed: { id: string; message: string }[]
+}
+
+// ---------------------------------------------------------------------------
+// Duplicates & merge
+
+export type MatchConfidence = 'high' | 'medium' | 'low'
+
+export interface DuplicateCheckRequest {
+  name?: string | null
+  email?: string | null
+  phone?: string | null
+  /** For the "similar name + same city" signal. */
+  city?: string | null
+  /** bio / links (e.g. from a lookup) let the server match handles mentioned there. */
+  accounts: { platform: Platform; handle: string; bio?: string | null; links?: string[] }[]
+  /** Adding an account to an existing influencer: don't match it with itself. */
+  exclude_id?: string
+}
+
+/**
+ * `full`: you can see it. `pool`: unassigned. `restricted`: an executive's teammate owns it, so nothing about it
+ * is returned (id, summary and reasons are empty).
+ */
+export interface DuplicateMatch {
+  influencer_id: string | null
+  confidence: MatchConfidence
+  reasons: string[]
+  access: 'full' | 'pool' | 'restricted'
+  influencer: {
+    id: string
+    name: string
+    profile_pic_url: string | null
+    primary_account: AccountRef | null
+    city: string | null
+    assigned_to: string | null
+  } | null
+}
+
+export interface DuplicateCheckResponse {
+  /** Strongest first. */
+  matches: DuplicateMatch[]
+}
+
+/** An open pair for review (GET /duplicates, manager/admin). `id` is stable for the pair. */
+export interface DuplicatePair {
+  id: string
+  confidence: MatchConfidence
+  reasons: string[]
+  influencers: [Influencer, Influencer]
+}
+
+/** Fields the merge dialog lets you pick per record. Everything else is combined (see CLAUDE.md). */
+export type MergeField = 'name' | 'category' | 'phone' | 'email' | 'address' | 'location' | 'notes' | 'assigned_to'
+
+export interface MergeRequest {
+  keep_id: string
+  merge_id: string
+  /** Which record each value comes from; omitted fields keep the surviving record's value. */
+  field_choices: Partial<Record<MergeField, 'keep' | 'merge'>>
 }
 
 // ---------------------------------------------------------------------------
@@ -531,20 +694,11 @@ export interface InstagramSettingsUpdate {
 /** What an executive sees of an unassigned influencer before claiming it (no contact, address, notes or calls). */
 export type PoolInfluencerPreview = Pick<
   Influencer,
-  | 'id'
-  | 'name'
-  | 'category'
-  | 'instagram_handle'
-  | 'profile_url'
-  | 'profile_pic_url'
-  | 'is_verified'
-  | 'followers'
-  | 'city'
-  | 'state'
-  | 'country'
-  | 'stage'
-  | 'created_at'
->
+  'id' | 'name' | 'category' | 'profile_pic_url' | 'is_verified' | 'total_reach' | 'city' | 'state' | 'country' | 'stage' | 'created_at'
+> & {
+  primary_account: AccountRef | null
+  platforms: Platform[]
+}
 
 /** GET /pool and /pool/{id}: full influencers for managers and admins, previews for executives. */
 export type PoolItem = Influencer | PoolInfluencerPreview

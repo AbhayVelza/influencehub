@@ -27,8 +27,10 @@ export const queryKeys = {
   influencer: (id: string) => ['influencers', 'detail', id] as const,
   influencerActivity: (id: string) => ['influencers', 'detail', id, 'activity'] as const,
   influencerCalls: (id: string) => ['influencers', 'detail', id, 'calls'] as const,
-  influencerSnapshots: (id: string) => ['influencers', 'detail', id, 'snapshots'] as const,
-  influencerMedia: (id: string) => ['influencers', 'detail', id, 'media'] as const,
+  accountSnapshots: (influencerId: string, accountId: string) => ['influencers', 'detail', influencerId, 'snapshots', accountId] as const,
+  accountMedia: (influencerId: string, accountId: string) => ['influencers', 'detail', influencerId, 'media', accountId] as const,
+  /** Open duplicate pairs (manager/admin), and their count for the sidebar. */
+  duplicates: ['duplicates'] as const,
   /** Prefix for the Unassigned Pool (under `influencers`, so influencer invalidations refresh it too). */
   pool: ['influencers', 'pool'] as const,
   poolList: (params: InfluencerListParams) => ['influencers', 'pool', 'list', params] as const,

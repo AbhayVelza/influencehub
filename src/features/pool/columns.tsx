@@ -1,13 +1,14 @@
 import type { ColumnDef } from '@tanstack/react-table'
-import { BadgeCheck, ExternalLink, UserRound } from 'lucide-react'
+import { BadgeCheck, UserRound } from 'lucide-react'
 import { PersonAvatar } from '@/components/common/person-avatar'
+import { AccountLabel, PlatformMarks } from '@/components/common/platform-badge'
 import { StageBadge } from '@/components/common/stage-badge'
 import { Button } from '@/components/ui/button'
 import { selectColumn } from '@/features/influencers/columns'
 import { formatCompact, formatDateTime, formatNumber, formatRelative } from '@/lib/format'
 import type { PoolItem } from '@/types'
 import { AssignMenu } from './pool-preview'
-import { isFullInfluencer } from './queries'
+import { isFullInfluencer, poolPlatforms, poolPrimary } from './queries'
 
 const muted = <span className="text-muted-foreground">—</span>
 
@@ -91,30 +92,20 @@ export function buildPoolColumns({ canReassign, busy, onOpen, onClaim, onAssign 
       id: 'account',
       header: 'Primary account',
       meta: { label: 'Primary account' },
-      cell: ({ row }) => (
-        <a
-          href={row.original.profile_url}
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground hover:underline"
-        >
-          @{row.original.instagram_handle}
-          <ExternalLink className="size-3" />
-        </a>
-      ),
+      cell: ({ row }) => <AccountLabel account={poolPrimary(row.original)} link className="max-w-48 text-muted-foreground" />,
     },
     {
       id: 'platforms',
       header: 'Platforms',
       meta: { label: 'Platforms' },
-      cell: () => 'Instagram',
+      cell: ({ row }) => <PlatformMarks platforms={poolPlatforms(row.original)} />,
     },
     {
-      id: 'followers',
-      header: 'Followers',
-      meta: { label: 'Followers', sortKey: 'followers', sortDescFirst: true, align: 'right' },
+      id: 'total_reach',
+      header: 'Total reach',
+      meta: { label: 'Total reach', sortKey: 'total_reach', sortDescFirst: true, align: 'right' },
       cell: ({ row }) => {
-        const n = row.original.followers
+        const n = row.original.total_reach
         return n == null ? muted : <span title={formatNumber(n)}>{formatCompact(n)}</span>
       },
     },

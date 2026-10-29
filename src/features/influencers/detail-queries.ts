@@ -1,6 +1,6 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/query'
-import { influencersApi } from '@/services'
+import { accountsApi, influencersApi } from '@/services'
 import type { Activity, Influencer, InfluencerUpdate, Stage, StageChangeRequest } from '@/types'
 
 const ACTIVITY_PAGE_SIZE = 50
@@ -33,18 +33,18 @@ export function useInfluencerActivity(id: string) {
   })
 }
 
-export function useSnapshots(id: string, enabled: boolean) {
+export function useAccountSnapshots(influencerId: string, accountId: string, enabled: boolean) {
   return useQuery({
-    queryKey: queryKeys.influencerSnapshots(id),
-    queryFn: ({ signal }) => influencersApi.snapshots(id, signal),
+    queryKey: queryKeys.accountSnapshots(influencerId, accountId),
+    queryFn: ({ signal }) => accountsApi.snapshots(accountId, signal),
     enabled,
   })
 }
 
-export function useMedia(id: string, enabled: boolean) {
+export function useAccountMedia(influencerId: string, accountId: string, enabled: boolean) {
   return useQuery({
-    queryKey: queryKeys.influencerMedia(id),
-    queryFn: ({ signal }) => influencersApi.media(id, signal),
+    queryKey: queryKeys.accountMedia(influencerId, accountId),
+    queryFn: ({ signal }) => accountsApi.media(accountId, signal),
     enabled,
   })
 }

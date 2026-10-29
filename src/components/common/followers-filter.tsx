@@ -16,12 +16,14 @@ const PRESETS: { label: string; range: Range }[] = [
 ]
 
 interface FollowersFilterProps {
+  /** Button text, e.g. "Total reach". */
+  label?: string
   min?: number
   max?: number
   onChange: (range: Range) => void
 }
 
-export function FollowersFilter({ min, max, onChange }: FollowersFilterProps) {
+export function FollowersFilter({ label = 'Followers', min, max, onChange }: FollowersFilterProps) {
   const [open, setOpen] = useState(false)
   const [minText, setMinText] = useState('')
   const [maxText, setMaxText] = useState('')
@@ -65,7 +67,7 @@ export function FollowersFilter({ min, max, onChange }: FollowersFilterProps) {
           size="sm"
           className={cn('gap-1.5', active && 'border-primary/40 bg-primary/5 dark:bg-primary/10')}
         >
-          <span className={cn(active && 'text-muted-foreground')}>Followers</span>
+          <span className={cn(active && 'text-muted-foreground')}>{label}</span>
           {active && <span>{formatFollowerRange({ min, max })}</span>}
           <ChevronDown className="opacity-60" />
         </Button>

@@ -1,8 +1,9 @@
 import { useEffect } from 'react'
 import { FollowersFilter } from '@/components/common/followers-filter'
 import { MultiSelectFilter } from '@/components/common/multi-select-filter'
+import { PlatformMark } from '@/components/common/platform-badge'
 import { StageDot } from '@/components/common/stage-badge'
-import type { InfluencerFilters, Stage } from '@/types'
+import type { InfluencerFilters, Platform, Stage } from '@/types'
 import { useFilterOptions, type FilterSource } from './queries'
 
 /** Stable empty selection, so effect dependencies don't change every render. */
@@ -21,7 +22,7 @@ interface InfluencerFilterBarProps {
   source?: FilterSource
 }
 
-/** Category / Country → State → City / Stage / Assigned / Followers. Shared by the list, pipeline and pool. */
+/** Category / Platform / Country → State → City / Stage / Assigned / Total reach. Shared by the list, pipeline and pool. */
 export function InfluencerFilterBar({ filters, onChange, hideStage, hideAssigned, source = 'influencers' }: InfluencerFilterBarProps) {
   const country = filters.country ?? NONE
   const state = filters.state ?? NONE
@@ -52,6 +53,20 @@ export function InfluencerFilterBar({ filters, onChange, hideStage, hideAssigned
         onChange={(category) => onChange({ category })}
         loading={isLoading}
         hint={hint}
+      />
+      <MultiSelectFilter
+        label="Platform"
+        options={options?.platforms.filter((o) => o.count > 0)}
+        selected={filters.platform ?? []}
+        onChange={(next) => onChange({ platform: next as Platform[] })}
+        loading={isLoading}
+        hint={hint}
+        renderOption={(o) => (
+          <>
+            <PlatformMark platform={o.value as Platform} />
+            {o.label}
+          </>
+        )}
       />
       <MultiSelectFilter
         label="Country"
@@ -105,9 +120,10 @@ export function InfluencerFilterBar({ filters, onChange, hideStage, hideAssigned
         />
       )}
       <FollowersFilter
-        min={filters.followers_min}
-        max={filters.followers_max}
-        onChange={({ min, max }) => onChange({ followers_min: min, followers_max: max })}
+        label="Total reach"
+        min={filters.reach_min}
+        max={filters.reach_max}
+        onChange={({ min, max }) => onChange({ reach_min: min, reach_max: max })}
       />
     </div>
   )
