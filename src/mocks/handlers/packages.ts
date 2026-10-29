@@ -3,11 +3,12 @@ import { PACKAGE_STATUSES } from '@/lib/constants'
 import { dayKey } from '@/lib/format'
 import type { Package, PackageCreate, PackageUpdate, PackageWithInfluencer } from '@/types'
 import { db, findInfluencer, logActivity, nextId, nowIso, toSummary } from '../db'
-import { changeStage } from '../domain'
+import { changeStage, findVisible } from '../domain'
 import { api, apiError, latency, notFound, paginate, readJson } from '../utils'
 
+/** Null when the influencer is gone or not visible to the caller (executives: only their own). */
 function withInfluencer(pkg: Package): PackageWithInfluencer | null {
-  const inf = findInfluencer(pkg.influencer_id)
+  const inf = findVisible(pkg.influencer_id)
   return inf ? { ...pkg, influencer: toSummary(inf) } : null
 }
 
@@ -56,7 +57,7 @@ export const packageHandlers = [
   http.post(api('/packages'), async ({ request }) => {
     await latency()
     const body = await readJson<PackageCreate>(request)
-    const inf = findInfluencer(body.influencer_id)
+    const inf = findVisible(body.influencer_id)
     if (!inf) return apiError(422, 'validation_error', 'Choose an influencer')
     const itemsError = validateItems(body.items)
     if (itemsError) return apiError(422, 'validation_error', itemsError)
@@ -83,7 +84,7 @@ export const packageHandlers = [
   http.patch(api('/packages/:id'), async ({ params, request }) => {
     await latency()
     const pkg = db.packages.find((p) => p.id === params.id)
-    if (!pkg) return notFound('Package')
+    if (!pkg || !findVisible(pkg.influencer_id)) return notFound('Package')
     const body = await readJson<PackageUpdate>(request)
     if (body.items !== undefined) {
       const itemsError = validateItems(body.items)

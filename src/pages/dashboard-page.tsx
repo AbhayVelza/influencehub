@@ -144,8 +144,8 @@ function RecentActivity({ items }: { items: DashboardSummary['recent_activity'] 
 function DashboardSkeleton() {
   return (
     <div className="space-y-4" aria-busy="true" aria-label="Loading dashboard">
-      <div className="grid grid-cols-5 gap-3">
-        {Array.from({ length: 5 }, (_, i) => (
+      <div className="grid grid-cols-3 gap-3 xl:grid-cols-6">
+        {Array.from({ length: 6 }, (_, i) => (
           <Skeleton key={i} className="h-24" />
         ))}
       </div>
@@ -170,8 +170,14 @@ export default function DashboardPage() {
         <ErrorState title="Couldn’t load the dashboard" error={summary.error} onRetry={() => summary.refetch()} />
       ) : (
         <>
-          <section aria-label="Key numbers" className="grid grid-cols-5 gap-3">
-            <Kpi label="Total influencers" value={summary.data.kpis.total} to="/influencers" />
+          <section aria-label="Key numbers" className="grid grid-cols-3 gap-3 xl:grid-cols-6">
+            <Kpi label={me?.role === 'executive' ? 'My influencers' : 'Total influencers'} value={summary.data.kpis.total} to="/influencers" />
+            <Kpi
+              label="Unassigned Pool"
+              value={summary.data.kpis.pool}
+              to="/pool"
+              hint={summary.data.kpis.claimed_this_week === null ? undefined : `${formatNumber(summary.data.kpis.claimed_this_week)} claimed this week`}
+            />
             <Kpi label="Contacted this week" value={summary.data.kpis.contacted_this_week} hint="Moved to Contacted since Monday" />
             <Kpi label="Onboarded this month" value={summary.data.kpis.onboarded_this_month} />
             <Kpi label="Packages in transit" value={summary.data.kpis.packages_in_transit} to="/packages?status=sent&status=in_transit" />

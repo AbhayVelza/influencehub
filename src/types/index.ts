@@ -124,6 +124,10 @@ export type ActivityType =
   | 'package_created'
   | 'package_updated'
   | 'ig_synced'
+  /** Taken from the Unassigned Pool. Payload `{}`; the actor is the new owner. */
+  | 'claimed'
+  /** Returned to the pool. Payload `{from, reason, auto?}`; `auto: true` (actor null) for auto-release. */
+  | 'released'
 
 export interface Activity {
   id: string
@@ -283,9 +287,17 @@ export type InfluencerUpdate = Partial<
   Omit<Influencer, 'id' | 'stage' | 'created_at' | 'updated_at' | 'ig_sync_status' | 'last_synced_at'>
 >
 
+/**
+ * Why a handle can't be added. `exists`: in the CRM and visible to you. `in_pool`: unassigned (claimable).
+ * `assigned_to_other`: owned by a teammate an executive can't see (no id is returned).
+ */
+export type HandleConflict = 'exists' | 'in_pool' | 'assigned_to_other'
+
 export interface CheckHandleResponse {
   available: boolean
+  /** Null when available, or for `assigned_to_other`. */
   influencer_id: string | null
+  conflict: HandleConflict | null
 }
 
 export interface StageChangeRequest {
@@ -294,8 +306,8 @@ export interface StageChangeRequest {
   reason?: string
 }
 
-/** `delete` requires manager or admin. */
-export type BulkAction = 'change_stage' | 'assign' | 'sync' | 'delete'
+/** `delete` requires manager or admin. `claim` takes no value (owner = me). */
+export type BulkAction = 'change_stage' | 'assign' | 'sync' | 'delete' | 'claim'
 
 export interface BulkRequest {
   ids: string[]
@@ -308,6 +320,11 @@ export interface BulkResult {
   failed: { id: string; code: string; message: string }[]
   /** Present for async actions (sync). */
   job_id: string | null
+}
+
+export interface ReleaseRequest {
+  /** Required; recorded in the activity log. */
+  reason: string
 }
 
 export interface CallLogCreate {
@@ -361,6 +378,10 @@ export interface PipelineResponse {
 export interface DashboardSummary {
   kpis: {
     total: number
+    /** Influencers with no owner. */
+    pool: number
+    /** Claims since Monday 00:00 IST. Null for executives. */
+    claimed_this_week: number | null
     contacted_this_week: number
     onboarded_this_month: number
     packages_in_transit: number
@@ -406,7 +427,14 @@ export interface InstagramProfile {
   profile_url: string
 }
 
-export type InstagramLookupErrorCode = 'personal_account' | 'not_found' | 'rate_limited' | 'already_exists'
+/** Failed jobs carry the first three; the 409s come back immediately (see HandleConflict). */
+export type InstagramLookupErrorCode =
+  | 'personal_account'
+  | 'not_found'
+  | 'rate_limited'
+  | 'already_exists'
+  | 'in_pool'
+  | 'assigned_to_other'
 
 export interface CsvPresignResponse {
   upload_url: string
@@ -495,6 +523,44 @@ export interface InstagramSettings {
 
 export interface InstagramSettingsUpdate {
   sync_interval_hours: SyncIntervalHours
+}
+
+// ---------------------------------------------------------------------------
+// Unassigned Pool
+
+/** What an executive sees of an unassigned influencer before claiming it (no contact, address, notes or calls). */
+export type PoolInfluencerPreview = Pick<
+  Influencer,
+  | 'id'
+  | 'name'
+  | 'category'
+  | 'instagram_handle'
+  | 'profile_url'
+  | 'profile_pic_url'
+  | 'is_verified'
+  | 'followers'
+  | 'city'
+  | 'state'
+  | 'country'
+  | 'stage'
+  | 'created_at'
+>
+
+/** GET /pool and /pool/{id}: full influencers for managers and admins, previews for executives. */
+export type PoolItem = Influencer | PoolInfluencerPreview
+
+export interface PoolSettings {
+  /** Most uncontacted (data_gathered) influencers one executive may hold; null = no limit. */
+  claim_limit: number | null
+  /** Claimed influencers with no call logged within this many days return to the pool; null = off. */
+  auto_release_days: number | null
+}
+
+/** One of my claims that the auto-release job will return to the pool by tomorrow (IST). */
+export interface ExpiringClaim {
+  influencer: InfluencerSummary
+  claimed_at: ISODateString
+  release_at: ISODateString
 }
 
 // ---------------------------------------------------------------------------

@@ -2,13 +2,13 @@ import {
   flexRender,
   getCoreRowModel,
   useReactTable,
+  type ColumnDef,
   type RowSelectionState,
   type Updater,
   type VisibilityState,
 } from '@tanstack/react-table'
 import { ArrowDown, ArrowUp, ArrowUpDown, Settings2 } from 'lucide-react'
 import { useMemo, useState, type MouseEvent, type ReactNode } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -21,46 +21,52 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { useTeamMap } from '@/hooks/use-team'
 import { cn } from '@/lib/utils'
-import type { Influencer, InfluencerSort, InfluencerSortKey } from '@/types'
-import { buildColumns } from './columns'
+import type { InfluencerSort, InfluencerSortKey } from '@/types'
 
-const VISIBILITY_KEY = 'influencehub-influencer-columns'
 const SKELETON_ROWS = 8
 
-function loadVisibility(defaults: VisibilityState): VisibilityState {
+function loadVisibility(key: string, defaults: VisibilityState): VisibilityState {
   try {
-    const stored = JSON.parse(localStorage.getItem(VISIBILITY_KEY) ?? 'null') as VisibilityState | null
+    const stored = JSON.parse(localStorage.getItem(key) ?? 'null') as VisibilityState | null
     return stored ? { ...defaults, ...stored } : defaults
   } catch {
     return defaults
   }
 }
 
-function saveVisibility(state: VisibilityState) {
+function saveVisibility(key: string, state: VisibilityState) {
   try {
-    localStorage.setItem(VISIBILITY_KEY, JSON.stringify(state))
+    localStorage.setItem(key, JSON.stringify(state))
   } catch {
     // Not persisted; the choice lasts for this session.
   }
 }
 
-interface InfluencersTableProps {
-  rows: Influencer[]
+interface InfluencersTableProps<T extends { id: string }> {
+  rows: T[]
+  columns: ColumnDef<T>[]
+  /** localStorage key for the user's column choices. */
+  visibilityKey: string
+  /** Clicking a row (outside its links and controls). */
+  onOpenRow: (row: T) => void
   isLoading: boolean
   /** Showing the previous page while the next one loads. */
   isStale: boolean
   sort: InfluencerSort | undefined
   onSortChange: (sort: InfluencerSort | undefined) => void
   selectedIds: Set<string>
-  onSelectionChange: (changes: { selected: Influencer[]; deselected: Influencer[] }) => void
+  onSelectionChange: (changes: { selected: T[]; deselected: T[] }) => void
   /** Rendered in place of rows when there are none (empty / error state). */
   emptyContent: ReactNode
 }
 
-export function InfluencersTable({
+/** Server-sorted, selectable table with column visibility. Used by the influencers list and the pool. */
+export function InfluencersTable<T extends { id: string }>({
   rows,
+  columns,
+  visibilityKey,
+  onOpenRow,
   isLoading,
   isStale,
   sort,
@@ -68,15 +74,12 @@ export function InfluencersTable({
   selectedIds,
   onSelectionChange,
   emptyContent,
-}: InfluencersTableProps) {
-  const navigate = useNavigate()
-  const team = useTeamMap()
-  const columns = useMemo(() => buildColumns(team), [team])
+}: InfluencersTableProps<T>) {
   const defaultVisibility = useMemo(
     () => Object.fromEntries(columns.map((c) => [c.id!, !c.meta?.hiddenByDefault])) as VisibilityState,
     [columns],
   )
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(() => loadVisibility(defaultVisibility))
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(() => loadVisibility(visibilityKey, defaultVisibility))
 
   const rowSelection = useMemo<RowSelectionState>(
     () => Object.fromEntries(rows.filter((r) => selectedIds.has(r.id)).map((r) => [r.id, true])),
@@ -94,7 +97,7 @@ export function InfluencersTable({
   const onVisibilityChange = (updater: Updater<VisibilityState>) => {
     setColumnVisibility((prev) => {
       const next = typeof updater === 'function' ? updater(prev) : updater
-      saveVisibility(next)
+      saveVisibility(visibilityKey, next)
       return next
     })
   }
@@ -123,9 +126,9 @@ export function InfluencersTable({
     onSortChange(undefined)
   }
 
-  const onRowClick = (event: MouseEvent, id: string) => {
-    if ((event.target as HTMLElement).closest('a, button, input, label, [role="checkbox"]')) return
-    navigate(`/influencers/${id}`)
+  const onRowClick = (event: MouseEvent, row: T) => {
+    if ((event.target as HTMLElement).closest('a, button, input, label, [role="checkbox"], [role="menu"]')) return
+    onOpenRow(row)
   }
 
   const visibleColumns = table.getVisibleLeafColumns()
@@ -233,7 +236,7 @@ export function InfluencersTable({
                   key={row.id}
                   data-state={row.getIsSelected() ? 'selected' : undefined}
                   className="cursor-pointer"
-                  onClick={(e) => onRowClick(e, row.id)}
+                  onClick={(e) => onRowClick(e, row.original)}
                 >
                   {row.getVisibleCells().map((cell) => {
                     const meta = cell.column.columnDef.meta

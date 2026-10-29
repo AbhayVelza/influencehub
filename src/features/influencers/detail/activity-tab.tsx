@@ -1,6 +1,6 @@
 import type { InfiniteData, UseInfiniteQueryResult } from '@tanstack/react-query'
 import type { LucideIcon } from 'lucide-react'
-import { ArrowRightLeft, History, Package, Pencil, PhoneCall, RefreshCw, Sparkles, UserRound } from 'lucide-react'
+import { ArrowRightLeft, History, Package, Pencil, PhoneCall, RefreshCw, Sparkles, UserMinus, UserPlus, UserRound } from 'lucide-react'
 import { EmptyState, ErrorState } from '@/components/common/states'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -18,6 +18,8 @@ const ICONS: Record<ActivityType, LucideIcon> = {
   package_created: Package,
   package_updated: Package,
   ig_synced: RefreshCw,
+  claimed: UserPlus,
+  released: UserMinus,
 }
 
 interface ActivityTabProps {

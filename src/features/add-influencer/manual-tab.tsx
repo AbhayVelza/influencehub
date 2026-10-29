@@ -10,15 +10,16 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { useDebouncedValue } from '@/hooks/use-debounced-value'
-import { useMe } from '@/hooks/use-me'
+import { useCan, useMe } from '@/hooks/use-me'
 import { ACCOUNT_TYPE_LABEL } from '@/lib/constants'
 import { fieldSchemas, manualInfluencerSchema, normalizeHandle, validateField } from '@/lib/schemas'
-import { ApiError, getErrorMessage, influencersApi } from '@/services'
+import { getErrorMessage, influencersApi } from '@/services'
 import type { AccountType } from '@/types'
 import { AlreadyInCrm } from './already-in-crm'
+import { conflictFromError, type ConflictState } from './conflict'
 import type { ManualPrefill } from './context'
 import { DetailsFields, Field } from './details-fields'
-import { detailDefaults, useCreateInfluencer } from './queries'
+import { afterCreate, detailDefaults, useCreateInfluencer } from './queries'
 
 const ACCOUNT_TYPES = Object.keys(ACCOUNT_TYPE_LABEL) as AccountType[]
 
@@ -37,7 +38,10 @@ function useHandleCheck(handle: string) {
   return {
     handle: debounced,
     checking: valid && (!settled || query.isFetching),
-    taken: settled && query.data?.available === false ? (query.data.influencer_id ?? null) : undefined,
+    taken:
+      settled && query.data?.available === false
+        ? { handle: debounced, id: query.data.influencer_id, conflict: query.data.conflict ?? 'exists' }
+        : undefined,
     available: settled && query.data?.available === true,
   }
 }
@@ -45,8 +49,9 @@ function useHandleCheck(handle: string) {
 export function ManualTab({ prefill, onDone }: { prefill?: ManualPrefill; onDone: () => void }) {
   const navigate = useNavigate()
   const { data: me } = useMe()
+  const canReassign = useCan('influencer:reassign')
   const create = useCreateInfluencer()
-  const [serverConflict, setServerConflict] = useState<{ handle: string; id: string | null } | null>(null)
+  const [serverConflict, setServerConflict] = useState<ConflictState | null>(null)
   const form = useForm({
     resolver: zodResolver(manualInfluencerSchema),
     defaultValues: {
@@ -60,21 +65,19 @@ export function ManualTab({ prefill, onDone }: { prefill?: ManualPrefill; onDone
   const { register, control, formState } = form
   const handleInput = useWatch({ control, name: 'instagram_handle' }) ?? ''
   const check = useHandleCheck(handleInput)
-  const conflict = check.taken !== undefined ? { handle: check.handle, id: check.taken } : serverConflict
+  const conflict: ConflictState | null = check.taken ?? serverConflict
 
   const onSubmit = form.handleSubmit(async (values) => {
     if (check.taken !== undefined) return
     try {
       const created = await create.mutateAsync(values)
-      toast.success(`${created.name} added`)
+      const next = afterCreate(created, canReassign)
+      toast.success(next.message)
       onDone()
-      navigate(`/influencers/${created.id}`)
+      navigate(next.path)
     } catch (err) {
-      if (err instanceof ApiError && err.code === 'handle_taken') {
-        const res = await influencersApi.checkHandle(values.instagram_handle).catch(() => null)
-        setServerConflict({ handle: values.instagram_handle, id: res?.influencer_id ?? null })
-        return
-      }
+      const found = await conflictFromError(err, normalizeHandle(values.instagram_handle))
+      if (found) return setServerConflict(found)
       toast.error('Couldn’t add the influencer', { description: getErrorMessage(err) })
     }
   })
@@ -136,7 +139,7 @@ export function ManualTab({ prefill, onDone }: { prefill?: ManualPrefill; onDone
             <Input id="m-followers" inputMode="decimal" aria-invalid={!!formState.errors.followers} {...register('followers')} />
           </Field>
         </div>
-        {conflict && <AlreadyInCrm handle={conflict.handle} influencerId={conflict.id} onOpen={onDone} />}
+        {conflict && <AlreadyInCrm {...conflict} onDone={onDone} />}
         <DetailsFields idPrefix="m" showName={false} />
         <Field id="m-notes" label="Notes" error={formState.errors.notes}>
           <Textarea id="m-notes" rows={2} {...register('notes')} />

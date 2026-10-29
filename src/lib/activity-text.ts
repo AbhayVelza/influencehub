@@ -40,5 +40,14 @@ export function describeActivity(activity: Activity, team: Map<string, User>): {
       }
     case 'ig_synced':
       return { text: `Synced from Instagram${typeof p.followers === 'number' ? ` · ${formatCompact(p.followers)} followers` : ''}` }
+    case 'claimed':
+      return { text: 'Claimed from the Unassigned Pool' }
+    case 'released':
+      return {
+        text: p.auto
+          ? `Returned to the pool automatically${p.from ? ` from ${name(p.from)}` : ''}`
+          : `Released to the pool${p.from && p.from !== activity.actor ? ` from ${name(p.from)}` : ''}`,
+        detail: typeof p.reason === 'string' ? p.reason : undefined,
+      }
   }
 }

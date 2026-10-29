@@ -15,6 +15,7 @@ import type {
   JobRef,
   MediaItem,
   Paginated,
+  ReleaseRequest,
   StageChangeRequest,
 } from '@/types'
 
@@ -41,6 +42,12 @@ export const influencersApi = {
   changeStage: (id: string, body: StageChangeRequest) => http.post<Influencer>(`${base}/${id}/stage`, body),
 
   bulk: (body: BulkRequest) => http.post<BulkResult>(`${base}/bulk`, body),
+
+  /** Owner = me. 409 `already_claimed` if a teammate got there first, 409 `claim_limit_reached` over the limit. */
+  claim: (id: string) => http.post<Influencer>(`${base}/${id}/claim`),
+
+  /** Back to the Unassigned Pool; the reason is required and goes in the activity log. */
+  release: (id: string, body: ReleaseRequest) => http.post<void>(`${base}/${id}/release`, body),
 
   activity: (id: string, params: { page?: number; page_size?: number } = {}, signal?: AbortSignal) =>
     http.get<Paginated<Activity>>(`${base}/${id}/activity`, params, signal),

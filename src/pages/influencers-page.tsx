@@ -1,6 +1,6 @@
 import { Download, Plus, SearchX, Upload, Users } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { PageHeader } from '@/components/common/page-header'
 import { Pagination } from '@/components/common/pagination'
 import { EmptyState, ErrorState } from '@/components/common/states'
@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { useAddInfluencer } from '@/features/add-influencer/context'
 import { ActiveFilters } from '@/features/influencers/active-filters'
 import { BulkActionsBar } from '@/features/influencers/bulk-actions-bar'
+import { buildColumns } from '@/features/influencers/columns'
 import { InfluencerFilterBar } from '@/features/influencers/filter-bar'
 import { InfluencersTable } from '@/features/influencers/influencers-table'
 import {
@@ -22,6 +23,7 @@ import { useInfluencerList } from '@/features/influencers/queries'
 import { SavedViewsMenu } from '@/features/influencers/saved-views-menu'
 import { useExportInfluencers } from '@/features/influencers/use-export'
 import { useCan } from '@/hooks/use-me'
+import { useTeamMap } from '@/hooks/use-team'
 import { formatNumber } from '@/lib/format'
 import type { Influencer } from '@/types'
 
@@ -33,7 +35,12 @@ export default function InfluencersPage() {
   const canImport = useCan('data:import')
   const canExport = useCan('data:export')
   const canCreate = useCan('influencer:create')
+  // Executives' list holds only their own influencers, so filtering by owner means nothing to them.
+  const canReassign = useCan('influencer:reassign')
   const addInfluencer = useAddInfluencer()
+  const navigate = useNavigate()
+  const team = useTeamMap()
+  const columns = useMemo(() => buildColumns(team), [team])
 
   const rows = useMemo(() => query.data?.items ?? [], [query.data])
   const total = query.data?.total ?? 0
@@ -77,12 +84,23 @@ export default function InfluencersPage() {
         </Button>
       }
     />
-  ) : (
+  ) : canReassign ? (
     <EmptyState
       icon={Users}
       title="No influencers yet"
       description="Add influencers from Instagram, enter them manually, or import a CSV."
       action={canCreate && <Button onClick={() => addInfluencer.open()}>Add influencer</Button>}
+    />
+  ) : (
+    <EmptyState
+      icon={Users}
+      title="You don’t own any influencers yet"
+      description="Claim some from the Unassigned Pool, or add a new one."
+      action={
+        <Button asChild>
+          <Link to="/pool">Open the pool</Link>
+        </Button>
+      }
     />
   )
 
@@ -135,11 +153,14 @@ export default function InfluencersPage() {
           />
         </div>
 
-        <InfluencerFilterBar filters={filters} onChange={list.setFilters} />
+        <InfluencerFilterBar filters={filters} onChange={list.setFilters} hideAssigned={!canReassign} />
         <ActiveFilters filters={filters} onChange={list.setFilters} onClear={list.clearFilters} />
 
         <InfluencersTable
           rows={rows}
+          columns={columns}
+          visibilityKey="influencehub-influencer-columns"
+          onOpenRow={(row) => navigate(`/influencers/${row.id}`)}
           isLoading={query.isPending}
           isStale={query.isPlaceholderData}
           sort={sort}

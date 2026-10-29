@@ -10,6 +10,7 @@ import type {
   DashboardSummary,
   InstagramSettingsUpdate,
   PipelineResponse,
+  PoolSettings,
   Role,
   SavedView,
   SavedViewCreate,
@@ -19,7 +20,7 @@ import type {
   User,
 } from '@/types'
 import { currentUser, db, findInfluencer, nextId, nowIso, stageEnteredAt, toSummary, type StoredCategory } from '../db'
-import { filterInfluencers } from '../domain'
+import { canSee, filterInfluencers, poolInfluencers, visibleInfluencers } from '../domain'
 import { all, api, apiError, forbidden, latency, notFound, readJson } from '../utils'
 import { followUpBucket, isMine, withInfluencer } from './calls'
 
@@ -75,7 +76,7 @@ export const workspaceHandlers = [
     if (body.role !== undefined && !ROLES.includes(body.role)) return apiError(422, 'validation_error', 'Choose a role')
     const demoting = body.role !== undefined && body.role !== user.role
     const deactivating = body.is_active === false && user.is_active
-    if (user.id === db.currentUserId && (demoting || deactivating)) {
+    if (user.id === currentUser().id && (demoting || deactivating)) {
       return apiError(422, 'self_change', 'You can’t change your own role or deactivate yourself')
     }
     // There must always be at least one active admin.
@@ -154,6 +155,29 @@ export const workspaceHandlers = [
     return HttpResponse.json(db.instagramSettings)
   }),
 
+  // ---- Unassigned Pool guards ----------------------------------------------
+  http.get(api('/settings/pool'), async () => {
+    await latency()
+    if (!can(currentUser().role, 'pool:configure')) return forbidden('Only admins can view pool settings')
+    return HttpResponse.json(db.poolSettings)
+  }),
+
+  http.patch(api('/settings/pool'), async ({ request }) => {
+    await latency()
+    if (!can(currentUser().role, 'pool:configure')) return forbidden('Only admins can change pool settings')
+    const body = await readJson<Partial<PoolSettings>>(request)
+    const valid = (v: unknown, max: number) => v === null || (Number.isInteger(v) && (v as number) >= 1 && (v as number) <= max)
+    if (body.claim_limit !== undefined && !valid(body.claim_limit, 500)) {
+      return apiError(422, 'validation_error', 'Claim limit must be a whole number from 1 to 500, or off')
+    }
+    if (body.auto_release_days !== undefined && !valid(body.auto_release_days, 90)) {
+      return apiError(422, 'validation_error', 'Auto-release must be 1 to 90 days, or off')
+    }
+    if (body.claim_limit !== undefined) db.poolSettings.claim_limit = body.claim_limit
+    if (body.auto_release_days !== undefined) db.poolSettings.auto_release_days = body.auto_release_days
+    return HttpResponse.json(db.poolSettings)
+  }),
+
   // ---- Saved views --------------------------------------------------------
   http.get(api('/saved-views'), async () => {
     await latency()
@@ -170,7 +194,7 @@ export const workspaceHandlers = [
       name,
       filters: body.filters ?? {},
       sort: body.sort ?? null,
-      created_by: db.currentUserId,
+      created_by: currentUser().id,
       created_at: nowIso(),
     }
     db.savedViews.push(view)
@@ -194,7 +218,7 @@ export const workspaceHandlers = [
     await latency()
     const params = new URL(request.url).searchParams
     params.delete('stage') // every column is always returned
-    const list = filterInfluencers(params)
+    const list = filterInfluencers(params, visibleInfluencers())
     const now = new Date()
     const body: PipelineResponse = {
       columns: ALL_STAGES.map((stage) => {
@@ -218,29 +242,38 @@ export const workspaceHandlers = [
     return HttpResponse.json(body)
   }),
 
+  // Executives' figures cover only their own influencers (the pool count is everyone's).
   http.get(api('/dashboard/summary'), async () => {
     await latency()
-    const me = db.currentUserId
+    const user = currentUser()
+    const me = user.id
+    const influencers = visibleInfluencers(user)
+    const visible = (influencerId: string) => {
+      const inf = findInfluencer(influencerId)
+      return !!inf && canSee(user, inf)
+    }
+    const activities = db.activities.filter((a) => visible(a.influencer_id))
+    const calls = db.calls.filter((c) => visible(c.influencer_id))
     const now = new TZDate(Date.now(), APP_TIMEZONE)
     const weekStart = startOfWeek(now, { weekStartsOn: 1 }).toISOString()
     const monthStart = startOfMonth(now).toISOString()
     const movedTo = (stage: string, since: string) =>
       new Set(
-        db.activities
+        activities
           .filter((a) => a.type === 'stage_changed' && a.payload.to === stage && a.created_at >= since)
           .map((a) => a.influencer_id),
       ).size
 
     const tally = (key: (i: (typeof db.influencers)[number]) => string | null) => {
       const counts = new Map<string, number>()
-      for (const inf of db.influencers) {
+      for (const inf of influencers) {
         const k = key(inf)
         if (k) counts.set(k, (counts.get(k) ?? 0) + 1)
       }
       return [...counts.entries()].sort((a, b) => b[1] - a[1])
     }
 
-    const openFollowUps = db.calls.filter((c) => {
+    const openFollowUps = calls.filter((c) => {
       const bucket = followUpBucket(c)
       return bucket === 'today' || bucket === 'overdue'
     })
@@ -250,19 +283,26 @@ export const workspaceHandlers = [
 
     const body: DashboardSummary = {
       kpis: {
-        total: db.influencers.length,
+        total: influencers.length,
+        pool: poolInfluencers().length,
+        claimed_this_week:
+          user.role === 'executive'
+            ? null
+            : db.activities.filter((a) => a.type === 'claimed' && a.created_at >= weekStart).length,
         contacted_this_week: movedTo('contacted', weekStart),
         onboarded_this_month: movedTo('onboarded', monthStart),
-        packages_in_transit: db.packages.filter((p) => p.status === 'sent' || p.status === 'in_transit').length,
-        follow_ups_today: db.calls.filter((c) => followUpBucket(c) === 'today').length,
+        packages_in_transit: db.packages.filter(
+          (p) => visible(p.influencer_id) && (p.status === 'sent' || p.status === 'in_transit'),
+        ).length,
+        follow_ups_today: calls.filter((c) => followUpBucket(c) === 'today').length,
       },
-      funnel: ALL_STAGES.map((stage) => ({ stage, count: db.influencers.filter((i) => i.stage === stage).length })),
+      funnel: ALL_STAGES.map((stage) => ({ stage, count: influencers.filter((i) => i.stage === stage).length })),
       by_category: tally((i) => i.category).map(([category, count]) => ({ category, count })),
       top_cities: tally((i) => i.city)
         .slice(0, 10)
         .map(([city, count]) => ({ city, count })),
       my_follow_ups: withInfluencer(mine).slice(0, 10),
-      recent_activity: [...db.activities]
+      recent_activity: [...activities]
         .sort((a, b) => b.created_at.localeCompare(a.created_at))
         .flatMap((a) => {
           const inf = findInfluencer(a.influencer_id)

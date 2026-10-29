@@ -1,6 +1,6 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/query'
-import { influencersApi, savedViewsApi } from '@/services'
+import { influencersApi, poolApi, savedViewsApi } from '@/services'
 import type { BulkRequest, InfluencerListParams, SavedViewCreate } from '@/types'
 
 export function useInfluencerList(params: InfluencerListParams) {
@@ -11,11 +11,14 @@ export function useInfluencerList(params: InfluencerListParams) {
   })
 }
 
+export type FilterSource = 'influencers' | 'pool'
+
 /** Cascading options: states narrow by country, cities by country + state. */
-export function useFilterOptions(country: string[] = [], state: string[] = []) {
+export function useFilterOptions(country: string[] = [], state: string[] = [], source: FilterSource = 'influencers') {
   return useQuery({
-    queryKey: queryKeys.filterOptions(country, state),
-    queryFn: ({ signal }) => influencersApi.filterOptions({ country, state }, signal),
+    queryKey: source === 'pool' ? queryKeys.poolFilterOptions(country, state) : queryKeys.filterOptions(country, state),
+    queryFn: ({ signal }) =>
+      source === 'pool' ? poolApi.filterOptions({ country, state }, signal) : influencersApi.filterOptions({ country, state }, signal),
     placeholderData: keepPreviousData,
     staleTime: 60_000,
   })

@@ -9,6 +9,7 @@ import { hasActiveFilters, useInfluencerListParams } from '@/features/influencer
 import { ListSearch } from '@/features/influencers/list-search'
 import { PipelineBoard } from '@/features/pipeline/pipeline-board'
 import { usePipeline } from '@/features/pipeline/queries'
+import { useCan } from '@/hooks/use-me'
 import { formatNumber } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import type { InfluencerFilters } from '@/types'
@@ -34,6 +35,7 @@ export default function PipelinePage() {
   const { stage: _ignored, ...filters } = list.filters
   const pipeline = usePipeline(filters as InfluencerFilters)
   const total = pipeline.data?.columns.reduce((sum, c) => sum + c.count, 0) ?? 0
+  const canReassign = useCan('influencer:reassign')
 
   return (
     <div className="space-y-4 p-6">
@@ -47,7 +49,7 @@ export default function PipelinePage() {
         description="Drag a card to another stage, or focus it and press Space, then use the arrow keys."
       />
       <ListSearch value={filters.q} onChange={(q) => list.setFilters({ q }, { replace: true })} />
-      <InfluencerFilterBar filters={filters} onChange={list.setFilters} hideStage />
+      <InfluencerFilterBar filters={filters} onChange={list.setFilters} hideStage hideAssigned={!canReassign} />
       <ActiveFilters filters={filters} onChange={list.setFilters} onClear={list.clearFilters} />
 
       {pipeline.isPending ? (

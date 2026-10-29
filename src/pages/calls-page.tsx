@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { LogCallDialog, type LogCallTarget } from '@/features/calls/log-call-dialog'
 import { useMarkFollowUpDone } from '@/features/calls/queries'
 import { useDefaultMine, useFollowUps } from '@/hooks/use-follow-ups'
+import { useCan } from '@/hooks/use-me'
 import { useTeamMap } from '@/hooks/use-team'
 import { CALL_OUTCOME_META } from '@/lib/constants'
 import { formatDateTime, formatRelative } from '@/lib/format'
@@ -77,6 +78,8 @@ export default function CallsPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const team = useTeamMap()
   const defaultMine = useDefaultMine()
+  // Executives only see follow-ups on influencers they own, so "only mine" would change nothing for them.
+  const canSeeTeam = useCan('influencer:reassign')
   const markDone = useMarkFollowUpDone()
   const [logFor, setLogFor] = useState<{ target: LogCallTarget; open: boolean } | null>(null)
 
@@ -124,16 +127,18 @@ export default function CallsPage() {
               </TabsTrigger>
             ))}
           </TabsList>
-          <div className="flex items-center gap-2">
-            <Switch
-              id="only-mine"
-              checked={mine}
-              onCheckedChange={(v) => update({ scope: v === defaultMine ? null : v ? 'mine' : 'all', page: null })}
-            />
-            <Label htmlFor="only-mine" className="text-sm">
-              Only my follow-ups
-            </Label>
-          </div>
+          {canSeeTeam && (
+            <div className="flex items-center gap-2">
+              <Switch
+                id="only-mine"
+                checked={mine}
+                onCheckedChange={(v) => update({ scope: v === defaultMine ? null : v ? 'mine' : 'all', page: null })}
+              />
+              <Label htmlFor="only-mine" className="text-sm">
+                Only my follow-ups
+              </Label>
+            </div>
+          )}
         </div>
         {/* One panel per tab so each trigger controls a real tabpanel; only the active one renders the table. */}
         {TABS.map((t) => (

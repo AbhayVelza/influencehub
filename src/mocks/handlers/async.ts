@@ -11,7 +11,18 @@ import type {
   InfluencerCreate,
 } from '@/types'
 import { currentUser, db, logActivity, nowIso } from '../db'
-import { completeSync, createInfluencer, filterInfluencers, lookupInstagram, normalizeHandle, parseCsv, toCsv } from '../domain'
+import {
+  assignedToOtherMessage,
+  completeSync,
+  createInfluencer,
+  filterInfluencers,
+  handleStatus,
+  inPoolMessage,
+  lookupInstagram,
+  normalizeHandle,
+  parseCsv,
+  toCsv,
+} from '../domain'
 import { createJob, readJob } from '../jobs'
 import { api, apiError, forbidden, latency, notFound, readJson } from '../utils'
 
@@ -28,9 +39,10 @@ export const asyncHandlers = [
     if (!username || !/^[a-z0-9._]{1,30}$/.test(username)) {
       return apiError(422, 'validation_error', 'Enter a valid Instagram username')
     }
-    if (db.influencers.some((i) => i.instagram_handle === username)) {
-      return apiError(409, 'already_exists', `@${username} is already in the CRM`)
-    }
+    const { conflict } = handleStatus(username)
+    if (conflict === 'exists') return apiError(409, 'already_exists', `@${username} is already in the CRM`)
+    if (conflict === 'in_pool') return apiError(409, 'in_pool', inPoolMessage(username))
+    if (conflict === 'assigned_to_other') return apiError(409, 'assigned_to_other', assignedToOtherMessage(username))
     return HttpResponse.json({ job_id: createJob(() => lookupInstagram(username), 2500) }, { status: 202 })
   }),
 

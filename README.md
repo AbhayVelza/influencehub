@@ -41,20 +41,26 @@ Copy `.env.example` to `.env.local` to override. `.env.development` turns the mo
   | `ratelimit` | Instagram rate limit |
   | anything else | A generated Business/Creator profile |
 
-  A handle already in the CRM (e.g. `riyastyle`) returns "Already in CRM".
+  A handle already in the CRM (e.g. `riyastyle`) returns "Already in CRM"; one in the Unassigned Pool (e.g.
+  `oliviaexplores`) offers "Claim it".
+- 12 influencers start unassigned (in the Unassigned Pool), 8 of them in Data Gathered. Arjun claimed `priyaeatskochi`
+  6 days ago and Sneha claimed `meerathemom` 10 days ago, both with no call since: turn on auto-release (7 days) in
+  Settings → Unassigned Pool to see one released at once and the other flagged in Arjun's notifications.
 
-## Role switcher
+## View as (who you're signed in as)
 
-With mocks on, the user menu (top right) has **View as: Admin / Manager / Executive**. It changes the
-role `/me` returns and the role the mock API enforces, so hidden buttons and 403s can be tried in the
-browser. It's stored in `localStorage` and does nothing against a real backend.
+With mocks on, the user menu (top right) has **View as**: Ananya (Admin), Rahul (Manager), and two executives,
+Sneha and Arjun. It changes who `/me` returns and who the mock API enforces permissions and scoping for, so
+hidden buttons, 403s and 404s can be tried in the browser. It's stored in `localStorage`, resets the cached
+data, and does nothing against a real backend.
 
 | | Executive | Manager | Admin |
 | --- | :---: | :---: | :---: |
-| View, add, edit, log calls, packages, standard stage moves | ✓ | ✓ | ✓ |
-| Claim an unassigned influencer | ✓ | ✓ | ✓ |
+| View, add, edit, log calls, packages, standard stage moves | own influencers | all | all |
+| Unassigned Pool | preview, Claim | full details, Assign | full details, Assign |
+| Release to the pool (reason required) | own | anyone's | anyone's |
 | Reassign, delete, reopen rejected, import / export |  | ✓ | ✓ |
-| Stage override (with reason), Settings |  |  | ✓ |
+| Stage override (with reason), Settings (incl. pool guards) |  |  | ✓ |
 
 ## More
 

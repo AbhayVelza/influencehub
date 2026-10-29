@@ -7,8 +7,10 @@ export type Permission =
   | 'call:log'
   | 'package:manage'
   | 'stage:change'
-  /** Assign an unassigned influencer to yourself. */
+  /** Take an influencer from the Unassigned Pool (owner = me). */
   | 'influencer:claim'
+  /** Return one of your own influencers to the pool (a reason is required). */
+  | 'influencer:release'
   | 'stage:reopen'
   | 'influencer:reassign'
   | 'influencer:delete'
@@ -18,6 +20,8 @@ export type Permission =
   | 'team:manage'
   | 'categories:manage'
   | 'integrations:manage'
+  /** Claim limit and auto-release for the Unassigned Pool. */
+  | 'pool:configure'
 
 const EXECUTIVE: Permission[] = [
   'influencer:view',
@@ -27,6 +31,7 @@ const EXECUTIVE: Permission[] = [
   'package:manage',
   'stage:change',
   'influencer:claim',
+  'influencer:release',
 ]
 
 const MANAGER: Permission[] = [
@@ -38,7 +43,14 @@ const MANAGER: Permission[] = [
   'data:export',
 ]
 
-const ADMIN: Permission[] = [...MANAGER, 'stage:override', 'team:manage', 'categories:manage', 'integrations:manage']
+const ADMIN: Permission[] = [
+  ...MANAGER,
+  'stage:override',
+  'team:manage',
+  'categories:manage',
+  'integrations:manage',
+  'pool:configure',
+]
 
 const ROLE_PERMISSIONS: Record<Role, ReadonlySet<Permission>> = {
   executive: new Set(EXECUTIVE),

@@ -6,7 +6,7 @@ export const jobsApi = {
 }
 
 export const instagramApi = {
-  /** Fails fast with 409 `already_exists` when the handle is already in the CRM. */
+  /** Fails fast with 409 `already_exists` / `in_pool` / `assigned_to_other` when the handle is already in the CRM. */
   lookup: (username: string) => http.post<JobRef>('/instagram/lookup', { username }),
 }
 

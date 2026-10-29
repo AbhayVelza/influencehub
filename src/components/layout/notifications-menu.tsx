@@ -1,4 +1,4 @@
-import { Bell } from 'lucide-react'
+import { Bell, Inbox } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { PersonAvatar } from '@/components/common/person-avatar'
 import { Button } from '@/components/ui/button'
@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useExpiringClaims } from '@/features/pool/queries'
 import { useDefaultMine, useFollowUps } from '@/hooks/use-follow-ups'
 import { CALL_OUTCOME_META } from '@/lib/constants'
 import { formatDate, formatRelative } from '@/lib/format'
@@ -37,16 +38,19 @@ function FollowUpRow({ call, overdue }: { call: CallLogWithInfluencer; overdue: 
   )
 }
 
-/** Follow-ups that need attention: overdue first, then due today. */
+/** Claims about to be auto-released (the day-before warning), then follow-ups: overdue first, then due today. */
 export function NotificationsMenu() {
   const navigate = useNavigate()
   const mine = useDefaultMine()
   const overdue = useFollowUps('overdue', 1, 25, mine)
   const today = useFollowUps('today', 1, 25, mine)
+  const expiring = useExpiringClaims()
+  const releases = expiring.data?.items ?? []
 
   const isLoading = overdue.isLoading || today.isLoading
   const isError = overdue.isError || today.isError
-  const total = (overdue.data?.total ?? 0) + (today.data?.total ?? 0)
+  const followUpTotal = (overdue.data?.total ?? 0) + (today.data?.total ?? 0)
+  const total = followUpTotal + releases.length
   const rows = [
     ...(overdue.data?.items ?? []).map((call) => ({ call, overdue: true })),
     ...(today.data?.items ?? []).map((call) => ({ call, overdue: false })),
@@ -58,7 +62,10 @@ export function NotificationsMenu() {
         {/* Named by hidden text rather than aria-label, so the visible badge doesn't conflict with the name. */}
         <Button variant="ghost" size="icon" className="relative">
           <Bell aria-hidden />
-          <span className="sr-only">Notifications, {total} follow-ups due</span>
+          <span className="sr-only">
+            Notifications, {followUpTotal} follow-ups due
+            {releases.length > 0 && `, ${releases.length} returning to the pool`}
+          </span>
           {total > 0 && (
             <span
               aria-hidden
@@ -70,9 +77,30 @@ export function NotificationsMenu() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-80">
+        {releases.length > 0 && (
+          <>
+            <DropdownMenuLabel>Returning to the pool</DropdownMenuLabel>
+            {releases.map((r) => (
+              <DropdownMenuItem
+                key={r.influencer.id}
+                className="gap-2.5 py-2"
+                onSelect={() => navigate(`/influencers/${r.influencer.id}?tab=calls`)}
+              >
+                <Inbox className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium">{r.influencer.name}</p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    Auto-release {formatRelative(r.release_at)} · log a call to keep them
+                  </p>
+                </div>
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuSeparator />
+          </>
+        )}
         <DropdownMenuLabel className="flex items-center justify-between">
           Follow-ups due
-          {total > 0 && <span className="text-xs font-normal text-muted-foreground">{total} open</span>}
+          {followUpTotal > 0 && <span className="text-xs font-normal text-muted-foreground">{followUpTotal} open</span>}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         {isLoading ? (

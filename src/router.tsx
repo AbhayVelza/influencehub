@@ -9,6 +9,7 @@ import {
   NotFoundPage,
   PackagesPage,
   PipelinePage,
+  PoolPage,
   SettingsPage,
 } from '@/pages/lazy'
 
@@ -19,6 +20,7 @@ export const router = createBrowserRouter([
       { index: true, element: <DashboardPage /> },
       { path: 'influencers', element: <InfluencersPage /> },
       { path: 'influencers/:id', element: <InfluencerDetailPage /> },
+      { path: 'pool', element: <PoolPage /> },
       { path: 'pipeline', element: <PipelinePage /> },
       { path: 'calls', element: <CallsPage /> },
       { path: 'packages', element: <PackagesPage /> },

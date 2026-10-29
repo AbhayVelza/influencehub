@@ -1,4 +1,17 @@
-import { ArrowLeft, BadgeCheck, ChevronDown, Copy, ExternalLink, MapPin, MoreHorizontal, Package, PhoneCall, Trash2, UserRound } from 'lucide-react'
+import {
+  ArrowLeft,
+  BadgeCheck,
+  ChevronDown,
+  Copy,
+  ExternalLink,
+  Inbox,
+  MapPin,
+  MoreHorizontal,
+  Package,
+  PhoneCall,
+  Trash2,
+  UserRound,
+} from 'lucide-react'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -23,6 +36,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { useReleaseInfluencer } from '@/features/pool/queries'
+import { ReleaseDialog } from '@/features/pool/release-dialog'
 import { useCan, useMe } from '@/hooks/use-me'
 import { useTeam } from '@/hooks/use-team'
 import { copyToClipboard } from '@/lib/clipboard'
@@ -34,44 +49,22 @@ import { useDeleteInfluencer, useUpdateInfluencer } from '../detail-queries'
 import { StageControl } from './stage-control'
 import { StageStepper } from './stage-stepper'
 
-function OwnerControl({ influencer }: { influencer: Influencer }) {
+function OwnerControl({ influencer, onRelease }: { influencer: Influencer; onRelease: () => void }) {
   const team = useTeam()
   const { data: me } = useMe()
   const canReassign = useCan('influencer:reassign')
-  const canClaim = useCan('influencer:claim')
   const update = useUpdateInfluencer(influencer.id)
   const owner = team.data?.items.find((u) => u.id === influencer.assigned_to)
-  const label = influencer.assigned_to ? (owner?.name ?? '…') : 'Unassigned'
+  const label = influencer.assigned_to ? (influencer.assigned_to === me?.id ? 'You' : (owner?.name ?? '…')) : 'Unassigned'
 
-  const assign = (userId: string | null) =>
+  const assign = (userId: string) =>
     update.mutate(
       { assigned_to: userId },
       {
-        onSuccess: () => toast.success(userId ? `Assigned to ${team.data?.items.find((u) => u.id === userId)?.name}` : 'Unassigned'),
+        onSuccess: () => toast.success(`Assigned to ${team.data?.items.find((u) => u.id === userId)?.name}`),
         onError: (err) => toast.error('Couldn’t change the owner', { description: getErrorMessage(err) }),
       },
     )
-
-  if (!canReassign && canClaim && !influencer.assigned_to && me) {
-    return (
-      <Button
-        variant="outline"
-        disabled={update.isPending}
-        onClick={() =>
-          update.mutate(
-            { assigned_to: me.id },
-            {
-              onSuccess: () => toast.success('Claimed — you’re now the owner'),
-              onError: (err) => toast.error('Couldn’t claim', { description: getErrorMessage(err) }),
-            },
-          )
-        }
-      >
-        <UserRound />
-        Unassigned · Claim
-      </Button>
-    )
-  }
 
   if (!canReassign) {
     return (
@@ -82,7 +75,7 @@ function OwnerControl({ influencer }: { influencer: Influencer }) {
             Owner: <span className="text-foreground">{label}</span>
           </span>
         </TooltipTrigger>
-        <TooltipContent>Only managers and admins can reassign an owned influencer</TooltipContent>
+        <TooltipContent>Only managers and admins can reassign. You can release it to the pool from the ⋯ menu.</TooltipContent>
       </Tooltip>
     )
   }
@@ -107,8 +100,9 @@ function OwnerControl({ influencer }: { influencer: Influencer }) {
             </DropdownMenuItem>
           ))}
         <DropdownMenuSeparator />
-        <DropdownMenuItem onSelect={() => assign(null)} disabled={!influencer.assigned_to}>
-          Unassign
+        <DropdownMenuItem onSelect={onRelease} disabled={!influencer.assigned_to}>
+          <Inbox />
+          Release to pool…
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -135,9 +129,27 @@ export function InfluencerHeader({
   onCreatePackage,
 }: InfluencerHeaderProps) {
   const navigate = useNavigate()
+  const { data: me } = useMe()
   const canDelete = useCan('influencer:delete')
+  const canReassign = useCan('influencer:reassign')
+  const canReleaseOwn = useCan('influencer:release')
   const remove = useDeleteInfluencer(influencer.id)
+  const release = useReleaseInfluencer(influencer.id)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [releasing, setReleasing] = useState(false)
+  // Executives release their own; managers and admins anyone's.
+  const canRelease = !!influencer.assigned_to && (canReassign || (canReleaseOwn && influencer.assigned_to === me?.id))
+
+  const onRelease = (reason: string) =>
+    release.mutate(reason, {
+      onSuccess: () => {
+        setReleasing(false)
+        toast.success(`${influencer.name} released to the pool`)
+        // An executive can't see it any more; the pool is where it went.
+        if (!canReassign) navigate('/pool')
+      },
+      onError: (err) => toast.error('Couldn’t release', { description: getErrorMessage(err) }),
+    })
   const location = formatLocation([influencer.city, influencer.state, influencer.country])
 
   const onDelete = () =>
@@ -195,7 +207,7 @@ export function InfluencerHeader({
           hasInterestedCall={hasInterestedCall}
           hasTrackedPackage={hasTrackedPackage}
         />
-        <OwnerControl influencer={influencer} />
+        <OwnerControl influencer={influencer} onRelease={() => setReleasing(true)} />
         <div className="ml-auto flex items-center gap-2">
           <Button variant="outline" onClick={() => onLogCall()}>
             <PhoneCall />
@@ -222,6 +234,12 @@ export function InfluencerHeader({
                 <Copy />
                 Copy profile link
               </DropdownMenuItem>
+              {canRelease && (
+                <DropdownMenuItem onSelect={() => setReleasing(true)}>
+                  <Inbox />
+                  Release to pool…
+                </DropdownMenuItem>
+              )}
               {canDelete && (
                 <>
                   <DropdownMenuSeparator />
@@ -237,6 +255,15 @@ export function InfluencerHeader({
       </div>
 
       <StageStepper stage={influencer.stage} position={pipelinePosition} />
+
+      <ReleaseDialog
+        name={influencer.name}
+        open={releasing}
+        ownOnly={!canReassign}
+        pending={release.isPending}
+        onOpenChange={setReleasing}
+        onSubmit={onRelease}
+      />
 
       <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
         <AlertDialogContent>

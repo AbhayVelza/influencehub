@@ -196,6 +196,28 @@ export const overrideSchema = z.object({
   reason: z.string().trim().min(3, 'Explain why this override is needed').max(500, 'At most 500 characters'),
 })
 
+// ---------------------------------------------------------------------------
+// Unassigned Pool
+
+export const releaseSchema = z.object({
+  reason: z.string().trim().min(3, 'Say why you’re releasing them').max(500, 'At most 500 characters'),
+})
+
+/** Empty = off (null); otherwise a whole number in range. */
+const optionalLimit = (max: number, label: string) =>
+  z
+    .string()
+    .trim()
+    .refine((v) => v === '' || (/^\d+$/.test(v) && Number(v) >= 1 && Number(v) <= max), `${label} must be a whole number from 1 to ${max}`)
+    .transform((v) => (v === '' ? null : Number(v)))
+
+export const poolSettingsSchema = z.object({
+  claim_limit: optionalLimit(500, 'Claim limit'),
+  auto_release_days: optionalLimit(90, 'Days'),
+})
+
+export type PoolSettingsInput = z.input<typeof poolSettingsSchema>
+
 /** First error message for a single value, or null when valid. */
 export function validateField<T extends z.ZodType>(schema: T, value: unknown): { ok: true; value: z.output<T> } | { ok: false; error: string } {
   const result = schema.safeParse(value)

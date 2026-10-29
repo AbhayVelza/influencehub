@@ -13,14 +13,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useMe } from '@/hooks/use-me'
+import { useTeam } from '@/hooks/use-team'
 import { useTheme } from '@/hooks/use-theme'
 import { ROLE_LABEL } from '@/lib/constants'
 import { USE_MOCKS } from '@/lib/env'
-import { setMockRole } from '@/lib/mock-role'
+import { setMockUserId } from '@/lib/mock-user'
 import type { Theme } from '@/providers/theme-context'
-import type { Role } from '@/types'
-
-const ROLES = Object.keys(ROLE_LABEL) as Role[]
+import type { User } from '@/types'
 
 const THEMES: { value: Theme; label: string; icon: typeof Sun }[] = [
   { value: 'light', label: 'Light', icon: Sun },
@@ -30,16 +29,19 @@ const THEMES: { value: Theme; label: string; icon: typeof Sun }[] = [
 
 export function UserMenu() {
   const { data: me } = useMe()
+  const team = useTeam()
   const { theme, setTheme } = useTheme()
   const queryClient = useQueryClient()
   if (!me) return null
 
-  const viewAs = async (role: Role) => {
-    setMockRole(role)
-    // Refetch everything so /me, permission-gated UI and server-checked data all reflect the new role.
-    await queryClient.invalidateQueries()
-    toast.info(`Viewing as ${ROLE_LABEL[role]}`)
+  const viewAs = async (user: User) => {
+    setMockUserId(user.id)
+    // Like signing in as someone else: drop every cached response (another person's data must not flash up), then
+    // refetch what's on screen.
+    await queryClient.resetQueries()
+    toast.info(`Viewing as ${user.name} (${ROLE_LABEL[user.role]})`)
   }
+  const members = (team.data?.items ?? []).filter((u) => u.is_active)
 
   return (
     <DropdownMenu>
@@ -70,10 +72,16 @@ export function UserMenu() {
           <>
             <DropdownMenuSeparator />
             <DropdownMenuLabel className="text-xs text-muted-foreground">View as (mock data only)</DropdownMenuLabel>
-            <DropdownMenuRadioGroup value={me.role} onValueChange={(v) => viewAs(v as Role)}>
-              {ROLES.map((role) => (
-                <DropdownMenuRadioItem key={role} value={role}>
-                  {ROLE_LABEL[role]}
+            <DropdownMenuRadioGroup
+              value={me.id}
+              onValueChange={(id) => {
+                const user = members.find((u) => u.id === id)
+                if (user) void viewAs(user)
+              }}
+            >
+              {members.map((user) => (
+                <DropdownMenuRadioItem key={user.id} value={user.id}>
+                  {ROLE_LABEL[user.role]} · {user.name}
                 </DropdownMenuRadioItem>
               ))}
             </DropdownMenuRadioGroup>

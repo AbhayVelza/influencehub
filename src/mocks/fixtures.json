@@ -206,7 +206,7 @@
       "ig_sync_status": "pending",
       "last_synced_at": null,
       "stage": "data_gathered",
-      "assigned_to": null,
+      "assigned_to": "usr_04",
       "tags": [],
       "notes": null,
       "onboarding_checklist": {
@@ -376,7 +376,7 @@
       "ig_sync_status": "error",
       "last_synced_at": "2026-10-24T06:30:00.000Z",
       "stage": "data_gathered",
-      "assigned_to": "usr_01",
+      "assigned_to": "usr_03",
       "tags": [
         "mid-tier",
         "repeat-collab",
@@ -617,7 +617,7 @@
       "ig_sync_status": "error",
       "last_synced_at": "2026-10-23T06:30:00.000Z",
       "stage": "data_gathered",
-      "assigned_to": "usr_01",
+      "assigned_to": null,
       "tags": [
         "micro",
         "regional",
@@ -663,7 +663,7 @@
       "ig_sync_status": "synced",
       "last_synced_at": "2026-10-26T22:30:00.000Z",
       "stage": "contacted",
-      "assigned_to": "usr_01",
+      "assigned_to": null,
       "tags": [
         "micro",
         "ugc",
@@ -831,7 +831,7 @@
       "ig_sync_status": "not_synced",
       "last_synced_at": null,
       "stage": "data_gathered",
-      "assigned_to": "usr_04",
+      "assigned_to": null,
       "tags": [],
       "notes": null,
       "onboarding_checklist": {
@@ -1445,7 +1445,7 @@
       "ig_sync_status": "synced",
       "last_synced_at": "2026-10-26T22:30:00.000Z",
       "stage": "rejected",
-      "assigned_to": "usr_04",
+      "assigned_to": null,
       "tags": [
         "mid-tier",
         "repeat-collab",
@@ -1529,7 +1529,7 @@
       "ig_sync_status": "synced",
       "last_synced_at": "2026-10-28T03:30:00.000Z",
       "stage": "on_hold",
-      "assigned_to": "usr_03",
+      "assigned_to": null,
       "tags": [
         "micro",
         "repeat-collab"
@@ -1574,7 +1574,7 @@
       "ig_sync_status": "synced",
       "last_synced_at": "2026-10-28T02:30:00.000Z",
       "stage": "contacted",
-      "assigned_to": "usr_01",
+      "assigned_to": null,
       "tags": [
         "mid-tier",
         "ugc"
@@ -1656,7 +1656,7 @@
       "ig_sync_status": "not_synced",
       "last_synced_at": null,
       "stage": "data_gathered",
-      "assigned_to": "usr_04",
+      "assigned_to": null,
       "tags": [
         "micro",
         "regional",
@@ -2155,7 +2155,7 @@
       "ig_sync_status": "synced",
       "last_synced_at": "2026-10-27T22:30:00.000Z",
       "stage": "data_gathered",
-      "assigned_to": "usr_01",
+      "assigned_to": null,
       "tags": [
         "micro",
         "ugc"
@@ -6077,6 +6077,17 @@
       "created_at": "2026-10-16T06:30:00.000Z"
     },
     {
+      "id": "act_0338",
+      "influencer_id": "inf_007",
+      "actor": "usr_01",
+      "type": "released",
+      "payload": {
+        "from": "usr_01",
+        "reason": "Out of my region"
+      },
+      "created_at": "2026-10-16T06:30:00.000Z"
+    },
+    {
       "id": "act_0254",
       "influencer_id": "inf_015",
       "actor": "usr_02",
@@ -6141,6 +6152,14 @@
         "to": "contacted"
       },
       "created_at": "2026-10-17T19:03:00.000Z"
+    },
+    {
+      "id": "act_0339",
+      "influencer_id": "inf_007",
+      "actor": "usr_03",
+      "type": "claimed",
+      "payload": {},
+      "created_at": "2026-10-18T06:30:00.000Z"
     },
     {
       "id": "act_0260",
@@ -6286,6 +6305,14 @@
       "created_at": "2026-10-21T23:47:00.000Z"
     },
     {
+      "id": "act_0337",
+      "influencer_id": "inf_003",
+      "actor": "usr_04",
+      "type": "claimed",
+      "payload": {},
+      "created_at": "2026-10-22T06:30:00.000Z"
+    },
+    {
       "id": "act_0273",
       "influencer_id": "inf_047",
       "actor": "usr_04",
@@ -6376,6 +6403,17 @@
       "created_at": "2026-10-25T05:30:00.000Z"
     },
     {
+      "id": "act_0340",
+      "influencer_id": "inf_032",
+      "actor": "usr_02",
+      "type": "released",
+      "payload": {
+        "from": "usr_03",
+        "reason": "Reassigning after the team reshuffle"
+      },
+      "created_at": "2026-10-25T06:30:00.000Z"
+    },
+    {
       "id": "act_0281",
       "influencer_id": "inf_050",
       "actor": "usr_01",
@@ -6394,6 +6432,17 @@
       "payload": {
         "call_id": "call_014",
         "outcome": "no_answer"
+      },
+      "created_at": "2026-10-26T06:30:00.000Z"
+    },
+    {
+      "id": "act_0332",
+      "influencer_id": "inf_035",
+      "actor": "usr_02",
+      "type": "released",
+      "payload": {
+        "from": "usr_03",
+        "reason": "Rebalancing workload while Sneha is on leave"
       },
       "created_at": "2026-10-26T06:30:00.000Z"
     },
@@ -6529,6 +6578,17 @@
       "created_at": "2026-10-27T01:30:00.000Z"
     },
     {
+      "id": "act_0331",
+      "influencer_id": "inf_038",
+      "actor": "usr_04",
+      "type": "released",
+      "payload": {
+        "from": "usr_04",
+        "reason": "Not a fit for my categories"
+      },
+      "created_at": "2026-10-27T02:30:00.000Z"
+    },
+    {
       "id": "act_0296",
       "influencer_id": "inf_037",
       "actor": null,
@@ -6537,6 +6597,25 @@
         "followers": 381128
       },
       "created_at": "2026-10-27T04:30:00.000Z"
+    },
+    {
+      "id": "act_0333",
+      "influencer_id": "inf_033",
+      "actor": "usr_04",
+      "type": "released",
+      "payload": {
+        "from": "usr_04",
+        "reason": "Rejected; free for someone to try again next quarter"
+      },
+      "created_at": "2026-10-27T04:30:00.000Z"
+    },
+    {
+      "id": "act_0341",
+      "influencer_id": "inf_032",
+      "actor": "usr_03",
+      "type": "claimed",
+      "payload": {},
+      "created_at": "2026-10-27T06:30:00.000Z"
     },
     {
       "id": "act_0297",
@@ -6571,6 +6650,17 @@
       "created_at": "2026-10-27T10:30:00.000Z"
     },
     {
+      "id": "act_0334",
+      "influencer_id": "inf_036",
+      "actor": "usr_01",
+      "type": "released",
+      "payload": {
+        "from": "usr_01",
+        "reason": "Handing over — I’m moving to partnerships"
+      },
+      "created_at": "2026-10-27T10:30:00.000Z"
+    },
+    {
       "id": "act_0300",
       "influencer_id": "inf_038",
       "actor": "usr_04",
@@ -6578,6 +6668,17 @@
       "payload": {
         "call_id": "call_055",
         "outcome": "call_back"
+      },
+      "created_at": "2026-10-27T11:30:00.000Z"
+    },
+    {
+      "id": "act_0335",
+      "influencer_id": "inf_014",
+      "actor": "usr_01",
+      "type": "released",
+      "payload": {
+        "from": "usr_01",
+        "reason": "Handing over — I’m moving to partnerships"
       },
       "created_at": "2026-10-27T11:30:00.000Z"
     },
@@ -6632,6 +6733,17 @@
       "created_at": "2026-10-27T17:30:00.000Z"
     },
     {
+      "id": "act_0329",
+      "influencer_id": "inf_013",
+      "actor": "usr_01",
+      "type": "released",
+      "payload": {
+        "from": "usr_01",
+        "reason": "Wrong contact number on file"
+      },
+      "created_at": "2026-10-27T18:30:00.000Z"
+    },
+    {
       "id": "act_0306",
       "influencer_id": "inf_006",
       "actor": null,
@@ -6640,6 +6752,17 @@
         "followers": 330492
       },
       "created_at": "2026-10-27T19:30:00.000Z"
+    },
+    {
+      "id": "act_0330",
+      "influencer_id": "inf_050",
+      "actor": "usr_01",
+      "type": "released",
+      "payload": {
+        "from": "usr_01",
+        "reason": "Based in Dubai — better for the international team"
+      },
+      "created_at": "2026-10-27T20:30:00.000Z"
     },
     {
       "id": "act_0307",
@@ -6768,6 +6891,17 @@
       "type": "ig_synced",
       "payload": {
         "followers": 97490
+      },
+      "created_at": "2026-10-28T03:30:00.000Z"
+    },
+    {
+      "id": "act_0336",
+      "influencer_id": "inf_018",
+      "actor": "usr_04",
+      "type": "released",
+      "payload": {
+        "from": "usr_04",
+        "reason": "Too many open leads this week"
       },
       "created_at": "2026-10-28T03:30:00.000Z"
     },

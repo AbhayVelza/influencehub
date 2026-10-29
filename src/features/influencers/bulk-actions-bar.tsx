@@ -122,19 +122,6 @@ export function BulkActionsBar({ rows, onClear, onSettled }: BulkActionsBarProps
     onSettled(res.failed.map((f) => f.id))
   }
 
-  /** Executives: take ownership of the unassigned rows; owned rows are skipped by the API. */
-  const claim = async () => {
-    if (!me) return
-    const res = await run(() => bulk.mutateAsync({ ids, action: 'assign', value: me.id }))
-    if (!res) return
-    report(res.succeeded.length, withName(res.failed), {
-      all: `${plural(res.succeeded.length, 'influencer')} claimed`,
-      none: 'Nothing claimed — only unassigned influencers can be claimed',
-      partial: `${res.succeeded.length} claimed, ${res.failed.length} skipped`,
-    })
-    onSettled(res.failed.map((f) => f.id))
-  }
-
   const sync = async () => {
     setIsSyncing(true)
     const toastId = toast.loading(`Syncing ${plural(ids.length, 'account')} from Instagram…`)
@@ -238,13 +225,6 @@ export function BulkActionsBar({ rows, onClear, onSettled }: BulkActionsBarProps
             <DropdownMenuItem onSelect={() => assign(null)}>Unassign</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      )}
-
-      {!can(role, 'influencer:reassign') && can(role, 'influencer:claim') && (
-        <Button variant="outline" size="sm" disabled={busy} onClick={claim}>
-          <UserRound />
-          Claim
-        </Button>
       )}
 
       <Button variant="outline" size="sm" disabled={busy} onClick={sync}>

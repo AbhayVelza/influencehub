@@ -1,7 +1,7 @@
 import { TZDate } from '@date-fns/tz'
 import { differenceInCalendarDays } from 'date-fns'
 import { APP_TIMEZONE } from '@/lib/constants'
-import { getMockRole } from '@/lib/mock-role'
+import { getMockUserId } from '@/lib/mock-user'
 import type {
   Activity,
   ActivityType,
@@ -13,6 +13,7 @@ import type {
   InstagramSettings,
   MediaItem,
   Package,
+  PoolSettings,
   SavedView,
   SyncRun,
   User,
@@ -97,6 +98,8 @@ export const db = {
   activities: data.activities,
   savedViews: data.saved_views,
   instagramSettings: createInstagramSettings(),
+  /** Both guards are off until an admin turns them on. */
+  poolSettings: { claim_limit: null, auto_release_days: null } as PoolSettings,
   /** CSV files "uploaded" to presigned URLs, by key. */
   uploads: new Map<string, string>(),
 }
@@ -109,12 +112,12 @@ export function nextId(prefix: string): string {
 
 export const nowIso = () => new Date().toISOString()
 
-/** The signed-in mock user, with the dev "View as" role applied. */
+/** The signed-in mock user: the dev "View as" choice if it's an active member, else the fixtures' default. */
 export function currentUser(): User {
-  const user = db.team.find((u) => u.id === db.currentUserId)
+  const chosen = db.team.find((u) => u.id === getMockUserId() && u.is_active)
+  const user = chosen ?? db.team.find((u) => u.id === db.currentUserId)
   if (!user) throw new Error('Mock current user missing')
-  const role = getMockRole()
-  return role ? { ...user, role } : user
+  return user
 }
 
 export function findInfluencer(id: string): Influencer | undefined {
@@ -137,7 +140,7 @@ export function logActivity(
   influencerId: string,
   type: ActivityType,
   payload: Record<string, unknown>,
-  actor: string | null = db.currentUserId,
+  actor: string | null = currentUser().id,
 ): Activity {
   const activity: Activity = {
     id: nextId('act'),

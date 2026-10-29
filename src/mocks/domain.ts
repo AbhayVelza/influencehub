@@ -1,9 +1,19 @@
 import { csvCell } from '@/lib/csv'
+import { dayKey, todayKey } from '@/lib/format'
 import { can } from '@/lib/permissions'
 import { normalizeHandle, normalizePhone } from '@/lib/schemas'
 import { getAllowedTransitions, isOverride } from '@/lib/stages'
-import type { Influencer, InfluencerCreate, InstagramProfile, Stage, User } from '@/types'
-import { currentUser, db, findInfluencer, logActivity, nextId, nowIso, previousStageOf } from './db'
+import type {
+  CheckHandleResponse,
+  ExpiringClaim,
+  Influencer,
+  InfluencerCreate,
+  InstagramProfile,
+  PoolItem,
+  Stage,
+  User,
+} from '@/types'
+import { currentUser, db, findInfluencer, logActivity, nextId, nowIso, previousStageOf, toSummary } from './db'
 import { JobFailure } from './jobs'
 
 export { parseCsv } from '@/lib/csv'
@@ -14,7 +24,12 @@ export { normalizeHandle, normalizePhone }
 // ---------------------------------------------------------------------------
 // Filtering & sorting (shared by list, pipeline and export)
 
-export function filterInfluencers(params: URLSearchParams, source: Influencer[] = db.influencers): Influencer[] {
+/** `limitedSearch`: match only fields an executive may see in the pool (no probing by phone or email). */
+export function filterInfluencers(
+  params: URLSearchParams,
+  source: Influencer[] = db.influencers,
+  { limitedSearch = false } = {},
+): Influencer[] {
   const q = params.get('q')?.trim().toLowerCase()
   const sets = {
     category: params.getAll('category'),
@@ -29,7 +44,10 @@ export function filterInfluencers(params: URLSearchParams, source: Influencer[] 
 
   return source.filter((inf) => {
     if (q) {
-      const haystack = [inf.name, inf.instagram_handle, inf.email, inf.phone, inf.city].join(' ').toLowerCase()
+      const fields = limitedSearch
+        ? [inf.name, inf.instagram_handle, inf.city]
+        : [inf.name, inf.instagram_handle, inf.email, inf.phone, inf.city]
+      const haystack = fields.join(' ').toLowerCase()
       if (!haystack.includes(q.replace(/^@/, ''))) return false
     }
     for (const [key, values] of Object.entries(sets)) {
@@ -120,13 +138,130 @@ export function createInfluencer(body: InfluencerCreate, source: 'instagram' | '
   return { ok: true, influencer }
 }
 
-/** Managers/admins can set any owner; executives can only claim an unassigned influencer for themselves. */
-export function canChangeOwner(user: User, currentOwner: string | null, to: string | null): boolean {
-  if (can(user.role, 'influencer:reassign')) return true
-  return currentOwner === null && to === user.id
+/** Managers/admins can set any owner. Executives only pick themselves or nobody when they add an influencer. */
+export function canSetOwnerOnCreate(user: User, to: string | null): boolean {
+  return can(user.role, 'influencer:reassign') || to === null || to === user.id
 }
 
-export const CLAIM_ONLY_MESSAGE = 'Executives can only claim unassigned influencers for themselves'
+export const OWNER_CHANGE_MESSAGE = 'Executives take influencers by claiming them from the pool, and hand them back by releasing'
+
+// ---------------------------------------------------------------------------
+// Visibility and the Unassigned Pool
+
+/** Executives see only influencers they own; unassigned ones are reachable only through the pool. */
+export function canSee(user: User, inf: Influencer): boolean {
+  return user.role !== 'executive' || inf.assigned_to === user.id
+}
+
+export const visibleInfluencers = (user: User = currentUser()) => db.influencers.filter((i) => canSee(user, i))
+
+/** The influencer if this user may see it; otherwise undefined, which handlers answer with 404. */
+export function findVisible(id: string, user: User = currentUser()): Influencer | undefined {
+  const inf = findInfluencer(id)
+  return inf && canSee(user, inf) ? inf : undefined
+}
+
+export const poolInfluencers = () => db.influencers.filter((i) => i.assigned_to === null)
+
+/** Executives get a preview: no phone, email, address, notes, tags or Instagram internals. */
+export function toPoolItem(inf: Influencer, user: User = currentUser()): PoolItem {
+  if (user.role !== 'executive') return inf
+  const { id, name, category, instagram_handle, profile_url, profile_pic_url, is_verified, followers, city, state, country, stage, created_at } =
+    inf
+  return { id, name, category, instagram_handle, profile_url, profile_pic_url, is_verified, followers, city, state, country, stage, created_at }
+}
+
+/** Duplicate check as this user may see it: an executive learns that a teammate owns the handle, not which influencer. */
+export function handleStatus(handle: string, user: User = currentUser()): CheckHandleResponse {
+  const existing = db.influencers.find((i) => i.instagram_handle === handle)
+  if (!existing) return { available: true, influencer_id: null, conflict: null }
+  if (existing.assigned_to === null) return { available: false, influencer_id: existing.id, conflict: 'in_pool' }
+  if (canSee(user, existing)) return { available: false, influencer_id: existing.id, conflict: 'exists' }
+  return { available: false, influencer_id: null, conflict: 'assigned_to_other' }
+}
+
+export const inPoolMessage = (handle: string) => `@${handle} is already in the Unassigned Pool`
+export const assignedToOtherMessage = (handle: string) => `@${handle} is already in the CRM, owned by a teammate`
+
+type Failure = { ok: false; status: number; code: string; message: string }
+
+/** Atomic: succeeds only while the influencer is unassigned (or already mine). */
+export function claimInfluencer(inf: Influencer, user: User = currentUser()): { ok: true; influencer: Influencer } | Failure {
+  if (inf.assigned_to === user.id) return { ok: true, influencer: inf }
+  if (inf.assigned_to) return { ok: false, status: 409, code: 'already_claimed', message: 'Already claimed by a teammate' }
+  const limit = db.poolSettings.claim_limit
+  if (limit !== null && user.role === 'executive' && inf.stage === 'data_gathered') {
+    const held = db.influencers.filter((i) => i.assigned_to === user.id && i.stage === 'data_gathered').length
+    if (held >= limit) {
+      return {
+        ok: false,
+        status: 409,
+        code: 'claim_limit_reached',
+        message: `You already hold ${held} uncontacted influencer${held === 1 ? '' : 's'} (the limit is ${limit}). Contact some before claiming more.`,
+      }
+    }
+  }
+  inf.assigned_to = user.id
+  inf.updated_at = nowIso()
+  logActivity(inf.id, 'claimed', {}, user.id)
+  return { ok: true, influencer: inf }
+}
+
+/** Returns an influencer to the pool. `actor` null = the auto-release job. */
+export function releaseInfluencer(inf: Influencer, reason: string, actor: string | null, auto = false) {
+  const from = inf.assigned_to
+  inf.assigned_to = null
+  inf.updated_at = nowIso()
+  logActivity(inf.id, 'released', auto ? { from, reason, auto: true } : { from, reason }, actor)
+}
+
+/** When the current owner claimed it, if their ownership came from a claim (not an assignment). */
+function claimedAt(inf: Influencer): string | null {
+  if (!inf.assigned_to) return null
+  for (let i = db.activities.length - 1; i >= 0; i--) {
+    const a = db.activities[i]!
+    if (a.influencer_id !== inf.id) continue
+    if (a.type === 'claimed') return a.actor === inf.assigned_to ? a.created_at : null
+    if (a.type === 'assigned' || a.type === 'released') return null
+  }
+  return null
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000
+
+/** When auto-release returns a claim to the pool: N days after claiming, unless a call has been logged since. */
+function releaseAt(inf: Influencer): string | null {
+  const days = db.poolSettings.auto_release_days
+  const claimed = days === null ? null : claimedAt(inf)
+  if (days === null || !claimed) return null
+  if (db.calls.some((c) => c.influencer_id === inf.id && c.created_at >= claimed)) return null
+  return new Date(Date.parse(claimed) + days * DAY_MS).toISOString()
+}
+
+/** The backend's scheduled auto-release job. The mock runs it before every request. */
+export function runAutoRelease(now = Date.now()) {
+  const days = db.poolSettings.auto_release_days
+  if (days === null) return
+  for (const inf of db.influencers) {
+    const at = releaseAt(inf)
+    if (at && Date.parse(at) <= now) releaseInfluencer(inf, `No call logged within ${days} days of claiming`, null, true)
+  }
+}
+
+/** My claims that auto-release returns to the pool today or tomorrow (IST): the "one day before" warning. */
+export function expiringClaims(user: User = currentUser()): ExpiringClaim[] {
+  const tomorrow = todayKey(new Date(Date.now() + DAY_MS))
+  return db.influencers
+    .filter((i) => i.assigned_to === user.id)
+    .flatMap((inf) => {
+      const release_at = releaseAt(inf)
+      const claimed_at = claimedAt(inf)
+      return release_at && claimed_at && dayKey(release_at) <= tomorrow
+        ? [{ influencer: toSummary(inf), claimed_at, release_at }]
+        : []
+    })
+    .sort((a, b) => a.release_at.localeCompare(b.release_at))
+}
 
 /** Removes an influencer with its calls, packages and activity. False if it doesn't exist. */
 export function deleteInfluencer(id: string): boolean {

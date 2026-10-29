@@ -11,6 +11,7 @@ export function invalidateInfluencer(queryClient: QueryClient, id: string) {
     queryClient.invalidateQueries({ queryKey: queryKeys.influencer(id) }),
     queryClient.invalidateQueries({ queryKey: ['influencers', 'list'] }),
     queryClient.invalidateQueries({ queryKey: ['influencers', 'filter-options'] }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.pool }),
     queryClient.invalidateQueries({ queryKey: queryKeys.pipeline }),
     queryClient.invalidateQueries({ queryKey: queryKeys.dashboard }),
   ])

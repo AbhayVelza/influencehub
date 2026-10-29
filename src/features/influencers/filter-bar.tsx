@@ -3,7 +3,7 @@ import { FollowersFilter } from '@/components/common/followers-filter'
 import { MultiSelectFilter } from '@/components/common/multi-select-filter'
 import { StageDot } from '@/components/common/stage-badge'
 import type { InfluencerFilters, Stage } from '@/types'
-import { useFilterOptions } from './queries'
+import { useFilterOptions, type FilterSource } from './queries'
 
 /** Stable empty selection, so effect dependencies don't change every render. */
 const NONE: string[] = []
@@ -15,14 +15,18 @@ interface InfluencerFilterBarProps {
   onChange: FilterChange
   /** The pipeline shows every stage as a column, so it has no Stage filter. */
   hideStage?: boolean
+  /** No owner filter: executives only see their own influencers, and the pool has no owners. */
+  hideAssigned?: boolean
+  /** Whose options and counts: the influencers list (default) or the Unassigned Pool. */
+  source?: FilterSource
 }
 
-/** Category / Country → State → City / Stage / Assigned / Followers. Shared by the list and pipeline. */
-export function InfluencerFilterBar({ filters, onChange, hideStage }: InfluencerFilterBarProps) {
+/** Category / Country → State → City / Stage / Assigned / Followers. Shared by the list, pipeline and pool. */
+export function InfluencerFilterBar({ filters, onChange, hideStage, hideAssigned, source = 'influencers' }: InfluencerFilterBarProps) {
   const country = filters.country ?? NONE
   const state = filters.state ?? NONE
   const city = filters.city ?? NONE
-  const { data: options, isLoading, isError, isPlaceholderData } = useFilterOptions(country, state)
+  const { data: options, isLoading, isError, isPlaceholderData } = useFilterOptions(country, state, source)
   const hint = isError ? 'Couldn’t load options. Try again later.' : undefined
   // States and cities depend on the selection above them; don't offer the previous narrowing while it reloads.
   const narrowing = isLoading || isPlaceholderData
@@ -89,15 +93,17 @@ export function InfluencerFilterBar({ filters, onChange, hideStage }: Influencer
           )}
         />
       )}
-      <MultiSelectFilter
-        label="Assigned"
-        options={options?.assigned_to}
-        selected={filters.assigned_to ?? []}
-        onChange={(next) => onChange({ assigned_to: next })}
-        loading={isLoading}
-        hint={hint}
-        searchPlaceholder="Search team…"
-      />
+      {!hideAssigned && (
+        <MultiSelectFilter
+          label="Assigned"
+          options={options?.assigned_to}
+          selected={filters.assigned_to ?? []}
+          onChange={(next) => onChange({ assigned_to: next })}
+          loading={isLoading}
+          hint={hint}
+          searchPlaceholder="Search team…"
+        />
+      )}
       <FollowersFilter
         min={filters.followers_min}
         max={filters.followers_max}

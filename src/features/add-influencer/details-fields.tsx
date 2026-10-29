@@ -45,7 +45,7 @@ export function Field({
 
 /**
  * Category, contact, location and owner. Used inside a FormProvider by both the Instagram and the manual
- * form. Executives can only own it themselves or leave it unassigned (the claim rule).
+ * form. Executives can only own it themselves or leave it unassigned (in the pool).
  */
 export function DetailsFields({ idPrefix, showName = true }: { idPrefix: string; showName?: boolean }) {
   const { register, control, formState } = useFormContext<InfluencerDetailsInput>()
@@ -101,7 +101,7 @@ export function DetailsFields({ idPrefix, showName = true }: { idPrefix: string;
                     {u.id === me?.id ? `${u.name} (me)` : u.name}
                   </SelectItem>
                 ))}
-                <SelectItem value={UNASSIGNED}>Unassigned</SelectItem>
+                <SelectItem value={UNASSIGNED}>Unassigned (goes to the pool)</SelectItem>
               </SelectContent>
             </Select>
           )}

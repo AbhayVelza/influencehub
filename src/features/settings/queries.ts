@@ -1,9 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/query'
 import { categoriesApi, settingsApi, teamApi } from '@/services'
-import type { CategoryUpdate, InstagramSettingsUpdate, TeamMemberCreate, TeamMemberUpdate } from '@/types'
+import type { CategoryUpdate, InstagramSettingsUpdate, PoolSettings, TeamMemberCreate, TeamMemberUpdate } from '@/types'
 
 const instagramKey = ['settings', 'instagram'] as const
+const poolKey = ['settings', 'pool'] as const
 
 export function useInstagramSettings() {
   return useQuery({ queryKey: instagramKey, queryFn: ({ signal }) => settingsApi.instagram(signal) })
@@ -14,6 +15,22 @@ export function useUpdateInstagramSettings() {
   return useMutation({
     mutationFn: (body: InstagramSettingsUpdate) => settingsApi.updateInstagram(body),
     onSuccess: (data) => queryClient.setQueryData(instagramKey, data),
+  })
+}
+
+export function usePoolSettings() {
+  return useQuery({ queryKey: poolKey, queryFn: ({ signal }) => settingsApi.pool(signal) })
+}
+
+export function useUpdatePoolSettings() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (body: Partial<PoolSettings>) => settingsApi.updatePool(body),
+    onSuccess: (data) => {
+      queryClient.setQueryData(poolKey, data)
+      // Auto-release can return claims to the pool straight away.
+      void queryClient.invalidateQueries({ queryKey: queryKeys.influencers })
+    },
   })
 }
 

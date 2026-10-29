@@ -1,7 +1,8 @@
 import { http, HttpResponse } from 'msw'
 import { dayKey, todayKey } from '@/lib/format'
 import type { CallLog, CallLogWithInfluencer, FollowUpBucket } from '@/types'
-import { db, findInfluencer, toSummary } from '../db'
+import { currentUser, db, findInfluencer, toSummary } from '../db'
+import { findVisible } from '../domain'
 import { api, latency, notFound, paginate } from '../utils'
 
 export function followUpBucket(call: CallLog, today = todayKey()): Exclude<FollowUpBucket, 'history'> | null {
@@ -28,9 +29,10 @@ export const callHandlers = [
     const params = new URL(request.url).searchParams
     const bucket = (params.get('bucket') ?? 'today') as FollowUpBucket
     const today = todayKey()
-    const me = db.currentUserId
-    // mine = calls I made, or on influencers I own.
-    const scoped = params.get('mine') === 'true' ? db.calls.filter((c) => isMine(c, me)) : db.calls
+    const user = currentUser()
+    // Only calls on influencers I can see (executives: my own); mine = calls I made, or on influencers I own.
+    const visible = db.calls.filter((c) => findVisible(c.influencer_id, user))
+    const scoped = params.get('mine') === 'true' ? visible.filter((c) => isMine(c, user.id)) : visible
 
     const list =
       bucket === 'history'
@@ -45,7 +47,7 @@ export const callHandlers = [
   http.post(api('/calls/:id/done'), async ({ params }) => {
     await latency()
     const call = db.calls.find((c) => c.id === params.id)
-    if (!call) return notFound('Call')
+    if (!call || !findVisible(call.influencer_id)) return notFound('Call')
     call.follow_up_done = true
     return HttpResponse.json(call)
   }),

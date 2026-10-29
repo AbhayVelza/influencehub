@@ -11,16 +11,17 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Progress } from '@/components/ui/progress'
 import { useJob } from '@/hooks/use-job'
-import { useMe } from '@/hooks/use-me'
+import { useCan, useMe } from '@/hooks/use-me'
 import { ACCOUNT_TYPE_LABEL } from '@/lib/constants'
 import { formatCompact, formatPercent } from '@/lib/format'
 import { fieldSchemas, influencerDetailsSchema, normalizeHandle, validateField } from '@/lib/schemas'
-import { ApiError, getErrorMessage, influencersApi, instagramApi } from '@/services'
+import { getErrorMessage, instagramApi } from '@/services'
 import type { InstagramLookupErrorCode, InstagramProfile } from '@/types'
 import { AlreadyInCrm } from './already-in-crm'
+import { conflictFromError, type ConflictState } from './conflict'
 import type { ManualPrefill } from './context'
 import { DetailsFields } from './details-fields'
-import { detailDefaults, useCreateInfluencer } from './queries'
+import { afterCreate, detailDefaults, useCreateInfluencer } from './queries'
 
 function ProfilePreview({ profile }: { profile: InstagramProfile }) {
   return (
@@ -44,7 +45,9 @@ function ProfilePreview({ profile }: { profile: InstagramProfile }) {
   )
 }
 
-const FAILURES: Record<Exclude<InstagramLookupErrorCode, 'already_exists'>, { title: string; body: string }> = {
+type LookupFailure = Exclude<InstagramLookupErrorCode, 'already_exists' | 'in_pool' | 'assigned_to_other'>
+
+const FAILURES: Record<LookupFailure, { title: string; body: string }> = {
   personal_account: {
     title: 'Personal account',
     body: 'Instagram only shares data for Business and Creator accounts. You can still add this influencer manually.',
@@ -56,8 +59,9 @@ const FAILURES: Record<Exclude<InstagramLookupErrorCode, 'already_exists'>, { ti
 function SaveProfileForm({ profile, onDone }: { profile: InstagramProfile; onDone: () => void }) {
   const navigate = useNavigate()
   const { data: me } = useMe()
+  const canReassign = useCan('influencer:reassign')
   const create = useCreateInfluencer()
-  const [conflictId, setConflictId] = useState<string | null | undefined>(undefined)
+  const [conflict, setConflict] = useState<ConflictState | null>(null)
   const form = useForm({
     resolver: zodResolver(influencerDetailsSchema),
     defaultValues: { ...detailDefaults(me?.id), name: profile.name },
@@ -77,14 +81,13 @@ function SaveProfileForm({ profile, onDone }: { profile: InstagramProfile; onDon
         account_type: profile.account_type,
         profile_pic_url: profile.profile_pic_url,
       })
-      toast.success(`${created.name} added`)
+      const next = afterCreate(created, canReassign)
+      toast.success(next.message)
       onDone()
-      navigate(`/influencers/${created.id}`)
+      navigate(next.path)
     } catch (err) {
-      if (err instanceof ApiError && err.code === 'handle_taken') {
-        setConflictId((await influencersApi.checkHandle(profile.username).catch(() => null))?.influencer_id ?? null)
-        return
-      }
+      const found = await conflictFromError(err, profile.username)
+      if (found) return setConflict(found)
       toast.error('Couldn’t add the influencer', { description: getErrorMessage(err) })
     }
   })
@@ -93,7 +96,7 @@ function SaveProfileForm({ profile, onDone }: { profile: InstagramProfile; onDon
     <FormProvider {...form}>
       <form onSubmit={onSubmit} className="space-y-4" noValidate aria-label="Add details">
         <ProfilePreview profile={profile} />
-        {conflictId !== undefined && <AlreadyInCrm handle={profile.username} influencerId={conflictId} onOpen={onDone} />}
+        {conflict && <AlreadyInCrm {...conflict} onDone={onDone} />}
         <DetailsFields idPrefix="ig" />
         <div className="flex justify-end">
           <Button type="submit" disabled={create.isPending}>
@@ -110,7 +113,7 @@ export function InstagramTab({ onDone, onManual }: { onDone: () => void; onManua
   const [inputError, setInputError] = useState<string | null>(null)
   const [handle, setHandle] = useState<string | null>(null)
   const [jobId, setJobId] = useState<string | null>(null)
-  const [conflict, setConflict] = useState<{ handle: string; id: string | null } | null>(null)
+  const [conflict, setConflict] = useState<ConflictState | null>(null)
   const lookup = useMutation({ mutationFn: (username: string) => instagramApi.lookup(username) })
   const job = useJob<InstagramProfile>(jobId)
 
@@ -125,11 +128,8 @@ export function InstagramTab({ onDone, onManual }: { onDone: () => void; onManua
     lookup.mutate(result.value, {
       onSuccess: ({ job_id }) => setJobId(job_id),
       onError: async (err) => {
-        if (err instanceof ApiError && err.code === 'already_exists') {
-          const check = await influencersApi.checkHandle(result.value).catch(() => null)
-          setConflict({ handle: result.value, id: check?.influencer_id ?? null })
-          return
-        }
+        const found = await conflictFromError(err, result.value)
+        if (found) return setConflict(found)
         setInputError(getErrorMessage(err))
       },
     })
@@ -144,7 +144,7 @@ export function InstagramTab({ onDone, onManual }: { onDone: () => void; onManua
 
   const status = job.data?.status
   const running = lookup.isPending || (jobId !== null && status !== 'succeeded' && status !== 'failed')
-  const failure = status === 'failed' ? (job.data?.error?.code as keyof typeof FAILURES | undefined) : undefined
+  const failure = status === 'failed' ? (job.data?.error?.code as LookupFailure | undefined) : undefined
   const profile = status === 'succeeded' ? job.data?.result : null
 
   if (profile) {
@@ -199,7 +199,7 @@ export function InstagramTab({ onDone, onManual }: { onDone: () => void; onManua
         </div>
       )}
 
-      {conflict && <AlreadyInCrm handle={conflict.handle} influencerId={conflict.id} onOpen={onDone} />}
+      {conflict && <AlreadyInCrm {...conflict} onDone={onDone} />}
 
       {failure && (
         <div role="alert" className="space-y-3 rounded-md border bg-muted/40 p-3 text-sm">

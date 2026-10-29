@@ -24,27 +24,32 @@ declare module '@tanstack/react-table' {
 
 const muted = <span className="text-muted-foreground">—</span>
 
+/** Row checkboxes; shared with the pool table. */
+export function selectColumn<T extends { name: string }>(): ColumnDef<T> {
+  return {
+    id: 'select',
+    enableHiding: false,
+    header: ({ table }) => (
+      <Checkbox
+        checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')}
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all on this page"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label={`Select ${row.original.name}`}
+      />
+    ),
+    meta: { className: 'w-10' },
+  }
+}
+
 export function buildColumns(team: Map<string, User>): ColumnDef<Influencer>[] {
   return [
-    {
-      id: 'select',
-      enableHiding: false,
-      header: ({ table }) => (
-        <Checkbox
-          checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')}
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all on this page"
-        />
-      ),
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label={`Select ${row.original.name}`}
-        />
-      ),
-      meta: { className: 'w-10' },
-    },
+    selectColumn<Influencer>(),
     {
       id: 'name',
       enableHiding: false,

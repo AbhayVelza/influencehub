@@ -1,6 +1,7 @@
 import type { LucideIcon } from 'lucide-react'
-import { LayoutDashboard, Package, PhoneCall, Settings, SquareKanban, Users } from 'lucide-react'
+import { Inbox, LayoutDashboard, Package, PhoneCall, Settings, SquareKanban, Users } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
+import { usePoolCount } from '@/features/pool/queries'
 import { useDefaultMine, useFollowUps } from '@/hooks/use-follow-ups'
 import { useCan } from '@/hooks/use-me'
 import { cn } from '@/lib/utils'
@@ -11,6 +12,8 @@ interface NavItem {
   icon: LucideIcon
   end?: boolean
   badge?: number
+  /** Completes the badge's spoken text, e.g. "3 due today". */
+  badgeLabel?: string
 }
 
 function SidebarLink({ item }: { item: NavItem }) {
@@ -31,7 +34,7 @@ function SidebarLink({ item }: { item: NavItem }) {
       {item.badge ? (
         <span
           className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-semibold text-primary-foreground tabular-nums"
-          aria-label={`${item.badge} due today`}
+          aria-label={`${item.badge} ${item.badgeLabel ?? ''}`.trim()}
         >
           {item.badge > 99 ? '99+' : item.badge}
         </span>
@@ -43,12 +46,14 @@ function SidebarLink({ item }: { item: NavItem }) {
 export function Sidebar() {
   const canSeeSettings = useCan('integrations:manage')
   const { data: dueToday } = useFollowUps('today', 1, 25, useDefaultMine())
+  const poolCount = usePoolCount()
 
   const items: NavItem[] = [
     { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
     { to: '/influencers', label: 'Influencers', icon: Users },
+    { to: '/pool', label: 'Unassigned Pool', icon: Inbox, badge: poolCount, badgeLabel: 'unassigned' },
     { to: '/pipeline', label: 'Pipeline', icon: SquareKanban },
-    { to: '/calls', label: 'Calls & Follow-ups', icon: PhoneCall, badge: dueToday?.total },
+    { to: '/calls', label: 'Calls & Follow-ups', icon: PhoneCall, badge: dueToday?.total, badgeLabel: 'due today' },
     { to: '/packages', label: 'Packages', icon: Package },
   ]
 

@@ -29,6 +29,12 @@ export const queryKeys = {
   influencerCalls: (id: string) => ['influencers', 'detail', id, 'calls'] as const,
   influencerSnapshots: (id: string) => ['influencers', 'detail', id, 'snapshots'] as const,
   influencerMedia: (id: string) => ['influencers', 'detail', id, 'media'] as const,
+  /** Prefix for the Unassigned Pool (under `influencers`, so influencer invalidations refresh it too). */
+  pool: ['influencers', 'pool'] as const,
+  poolList: (params: InfluencerListParams) => ['influencers', 'pool', 'list', params] as const,
+  poolFilterOptions: (country: string[], state: string[]) => ['influencers', 'pool', 'filter-options', { country, state }] as const,
+  poolItem: (id: string) => ['influencers', 'pool', 'item', id] as const,
+  poolExpiring: ['influencers', 'pool', 'expiring'] as const,
   /** Prefix for all package lists. */
   packages: ['packages'] as const,
   packageList: (params: object) => ['packages', 'list', params] as const,

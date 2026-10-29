@@ -3,9 +3,10 @@ import { PageHeader } from '@/components/common/page-header'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { CategorySettings } from '@/features/settings/category-settings'
 import { InstagramSettings } from '@/features/settings/instagram-settings'
+import { PoolSettings } from '@/features/settings/pool-settings'
 import { TeamSettings } from '@/features/settings/team-settings'
 
-const TABS = ['instagram', 'team', 'categories'] as const
+const TABS = ['instagram', 'team', 'categories', 'pool'] as const
 type Tab = (typeof TABS)[number]
 
 export default function SettingsPage() {
@@ -25,6 +26,7 @@ export default function SettingsPage() {
           <TabsTrigger value="instagram">Instagram</TabsTrigger>
           <TabsTrigger value="team">Team & roles</TabsTrigger>
           <TabsTrigger value="categories">Categories</TabsTrigger>
+          <TabsTrigger value="pool">Unassigned Pool</TabsTrigger>
         </TabsList>
         <TabsContent value="instagram">
           <InstagramSettings />
@@ -34,6 +36,9 @@ export default function SettingsPage() {
         </TabsContent>
         <TabsContent value="categories">
           <CategorySettings />
+        </TabsContent>
+        <TabsContent value="pool">
+          <PoolSettings />
         </TabsContent>
       </Tabs>
     </div>
