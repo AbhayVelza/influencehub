@@ -6,7 +6,7 @@ import { currentUser, db, logActivity, nowIso, refreshDerived } from './db'
 import { canSee } from './domain'
 import { moveDocuments } from './documents'
 
-// Cross-platform duplicate detection and merging (see "Duplicates & merge" in CLAUDE.md).
+// Cross-platform duplicate detection and merging (see "Duplicate detection" and "Merge" in docs/contract-decisions.md).
 
 const RANK: Record<MatchConfidence, number> = { high: 3, medium: 2, low: 1 }
 
@@ -26,7 +26,7 @@ function levenshtein(a: string, b: string): number {
 
 /**
  * Names compared trimmed and lowercased: at most 1 edit (Levenshtein) when the shorter one has ≤6 characters,
- * at most 2 otherwise. Empty names never match. The backend uses this exact rule (CLAUDE.md, duplicate detection).
+ * at most 2 otherwise. Empty names never match. The backend uses this exact rule (docs/contract-decisions.md, duplicate detection).
  */
 export function similarNames(a: string, b: string): boolean {
   const x = a.trim().toLowerCase()

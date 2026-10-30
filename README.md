@@ -154,5 +154,5 @@ Before calling a change done, run `npm run lint`, `npm run typecheck`, `npm run 
 
 ## More
 
-`CLAUDE.md` holds the data model, the API contract and every contract decision the backend must match
-(including the exact name-similarity rule for duplicate detection).
+`CLAUDE.md` holds the rules and conventions. `docs/` holds the data model, the API contract and every contract
+decision the backend must match (including the exact name-similarity rule for duplicate detection).

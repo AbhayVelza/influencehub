@@ -751,7 +751,7 @@ export interface DuplicatePair {
   influencers: [Influencer, Influencer]
 }
 
-/** Fields the merge dialog lets you pick per record. Everything else is combined (see CLAUDE.md). */
+/** Fields the merge dialog lets you pick per record. Everything else is combined (see docs/contract-decisions.md). */
 export type MergeField = 'name' | 'category' | 'phone' | 'email' | 'address' | 'location' | 'notes' | 'assigned_to'
 
 export interface MergeRequest {
