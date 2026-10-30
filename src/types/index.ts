@@ -58,7 +58,10 @@ export interface Address {
 
 export interface OnboardingChecklist {
   called: boolean
-  terms_agreed: boolean
+  /** Ticks automatically when an agreement is uploaded. */
+  agreement_signed: boolean
+  /** Ticks automatically when an insights summary is uploaded. */
+  insights_received: boolean
   address_collected: boolean
   ig_connected: boolean
 }
@@ -150,6 +153,8 @@ export interface Influencer {
   tags: string[]
   notes: string | null
   onboarding_checklist: OnboardingChecklist
+  /** Derived from the documents; null while the influencer is unassigned (documents are never shown for the pool). */
+  documents: DocumentSummary | null
   created_at: ISODateString
   updated_at: ISODateString
 }
@@ -203,6 +208,10 @@ export type ActivityType =
   | 'claimed'
   /** Returned to the pool. Payload `{from, reason, auto?}`; `auto: true` (actor null) for auto-release. */
   | 'released'
+  /** Payload `{document_id, type, title}`. */
+  | 'document_uploaded'
+  /** Soft delete. Payload `{document_id, type, title}`. */
+  | 'document_deleted'
 
 export interface Activity {
   id: string
@@ -227,6 +236,93 @@ export interface MediaItem {
   comments: number
   posted_at: ISODateString
 }
+
+
+// ---------------------------------------------------------------------------
+// Documents
+
+export type DocumentType = 'insights_summary' | 'agreement'
+
+/** What an influencer has on file; drives the list's Docs column and the Onboarded rule. */
+export interface DocumentSummary {
+  /** Insights summaries on file. */
+  insights_count: number
+  /** A current agreement exists. */
+  has_agreement: boolean
+}
+
+interface DocumentBase {
+  id: string
+  influencer_id: string
+  title: string
+  file_name: string
+  /** One of the allowed types (see `src/lib/documents.ts`). */
+  content_type: string
+  /** Bytes. */
+  size: number
+  /** User id. */
+  uploaded_by: string
+  uploaded_at: ISODateString
+  notes: string | null
+}
+
+/** Many per influencer. `period_*` are calendar dates (yyyy-MM-dd). */
+export interface InsightsDocument extends DocumentBase {
+  type: 'insights_summary'
+  period_start: string
+  period_end: string
+  platform: Platform | null
+}
+
+/** A new upload becomes current; older versions stay as history. `signed_on` / `valid_until` are yyyy-MM-dd. */
+export interface AgreementDocument extends DocumentBase {
+  type: 'agreement'
+  signed_on: string
+  valid_until: string | null
+  is_current: boolean
+}
+
+export type InfluencerDocument = InsightsDocument | AgreementDocument
+
+export type DocumentWithInfluencer = InfluencerDocument & { influencer: InfluencerSummary }
+
+export interface DocumentListParams {
+  type?: DocumentType[]
+  /** Creator name or handle. */
+  q?: string
+  uploaded_by?: string[]
+  /** Uploaded on or after this IST date (yyyy-MM-dd). */
+  uploaded_from?: string
+  /** Uploaded on or before this IST date (yyyy-MM-dd). */
+  uploaded_to?: string
+  page?: number
+  page_size?: number
+}
+
+export interface DocumentPresignRequest {
+  influencer_id: string
+  type: DocumentType
+  file_name: string
+  content_type: string
+  size: number
+}
+
+export interface DocumentPresignResponse {
+  upload_url: string
+  key: string
+}
+
+/** Metadata for the uploaded file (`key` from the presign step). The file's name, type and size come from the presign. */
+export type DocumentCreate = { key: string; title: string; notes?: string | null } & (
+  | { type: 'insights_summary'; period_start: string; period_end: string; platform?: Platform | null }
+  | { type: 'agreement'; signed_on: string; valid_until?: string | null }
+)
+
+export interface DocumentDownload {
+  /** Short-lived URL (presigned in production). */
+  url: string
+}
+
 
 export interface User {
   id: string
@@ -304,6 +400,10 @@ export interface InfluencerFilters {
   /** Total reach range. */
   reach_min?: number
   reach_max?: number
+  /** Has / lacks a current agreement. Influencers in the pool (no documents shown) match neither. */
+  agreement?: 'signed' | 'missing'
+  /** Has / lacks an insights summary. */
+  insights?: 'received' | 'missing'
 }
 
 export interface InfluencerListParams extends InfluencerFilters {
@@ -351,7 +451,10 @@ export type InfluencerCreate = Pick<Influencer, 'name' | 'category'> &
   }
 
 export type InfluencerUpdate = Partial<
-  Omit<Influencer, 'id' | 'stage' | 'created_at' | 'updated_at' | 'accounts' | 'total_reach' | 'is_verified' | 'profile_pic_url'>
+  Omit<
+    Influencer,
+    'id' | 'stage' | 'created_at' | 'updated_at' | 'accounts' | 'total_reach' | 'is_verified' | 'profile_pic_url' | 'documents'
+  >
 >
 
 /** Manual accounts only: type the stats in. */
@@ -470,6 +573,8 @@ export interface DashboardSummary {
     onboarded_this_month: number
     packages_in_transit: number
     follow_ups_today: number
+    /** Onboarded or beyond (onboarded, package_sent, delivered) with no current agreement. */
+    onboarded_without_agreement: number
   }
   funnel: { stage: Stage; count: number }[]
   by_category: { category: string; count: number }[]
@@ -544,6 +649,8 @@ export type CsvImportField =
   | 'country'
   | 'tags'
   | 'notes'
+  /** Optional "added on" date: dd/MM/yyyy or ISO 8601. New creators only. */
+  | 'created_at'
   | Platform
 
 /** Maps field → CSV column header. */

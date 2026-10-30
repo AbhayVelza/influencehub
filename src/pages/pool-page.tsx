@@ -126,7 +126,7 @@ export default function PoolPage() {
           placeholder={canReassign ? undefined : 'Search name, handle, city…'}
           label="Search the pool"
         />
-        <InfluencerFilterBar filters={filters} onChange={list.setFilters} source="pool" hideAssigned />
+        <InfluencerFilterBar filters={filters} onChange={list.setFilters} source="pool" hideAssigned hideDocuments />
         <ActiveFilters filters={filters} onChange={list.setFilters} onClear={list.clearFilters} />
 
         <InfluencersTable

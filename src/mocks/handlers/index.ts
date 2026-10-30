@@ -5,6 +5,7 @@ import { api } from '../utils'
 import { accountHandlers } from './accounts'
 import { asyncHandlers } from './async'
 import { callHandlers } from './calls'
+import { documentHandlers } from './documents'
 import { duplicateHandlers } from './duplicates'
 import { influencerHandlers } from './influencers'
 import { packageHandlers } from './packages'
@@ -24,6 +25,7 @@ export const handlers = [
   ...poolHandlers,
   ...callHandlers,
   ...packageHandlers,
+  ...documentHandlers,
   ...workspaceHandlers,
   ...asyncHandlers,
 ]

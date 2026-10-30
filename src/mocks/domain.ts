@@ -1,5 +1,5 @@
 import { csvCell } from '@/lib/csv'
-import { dayKey, todayKey } from '@/lib/format'
+import { dayKey, formatDate, todayKey } from '@/lib/format'
 import { can } from '@/lib/permissions'
 import { audienceOf, normalizeHandle, PLATFORM_META, PLATFORMS, primaryAccount, toRef } from '@/lib/platforms'
 import { normalizePhone } from '@/lib/schemas'
@@ -15,7 +15,20 @@ import type {
   Stage,
   User,
 } from '@/types'
-import { currentUser, db, findInfluencer, logActivity, nextId, nowIso, previousStageOf, refreshDerived, toSummary } from './db'
+import {
+  attachDocumentSummary,
+  currentUser,
+  db,
+  documentSummary,
+  findInfluencer,
+  logActivity,
+  nextId,
+  nowIso,
+  previousStageOf,
+  refreshDerived,
+  toSummary,
+} from './db'
+import { hasCurrentAgreement, purgeDocuments } from './documents'
 import { buildAccount } from './social'
 
 export { parseCsv } from '@/lib/csv'
@@ -44,6 +57,8 @@ export function filterInfluencers(
   const platforms = params.getAll('platform')
   const min = params.get('reach_min')
   const max = params.get('reach_max')
+  const agreement = params.get('agreement')
+  const insights = params.get('insights')
 
   return source.filter((inf) => {
     if (q) {
@@ -57,6 +72,13 @@ export function filterInfluencers(
     if (platforms.length && !inf.accounts.some((a) => platforms.includes(a.platform))) return false
     if (min && (inf.total_reach == null || inf.total_reach < Number(min))) return false
     if (max && (inf.total_reach == null || inf.total_reach > Number(max))) return false
+    if (agreement || insights) {
+      // Unassigned influencers have no documents to judge: they match neither "signed" nor "missing".
+      const docs = documentSummary(inf)
+      if (!docs) return false
+      if (agreement && docs.has_agreement !== (agreement === 'signed')) return false
+      if (insights && docs.insights_count > 0 !== (insights === 'received')) return false
+    }
     return true
   })
 }
@@ -113,7 +135,8 @@ export function validateAccounts(accounts: AccountCreate[] | undefined, ownerId?
   return { ok: true }
 }
 
-export function createInfluencer(body: InfluencerCreate, source: 'lookup' | 'manual' | 'csv'): CreateResult {
+/** `createdAt`: a CSV row's "added on" date; defaults to now. */
+export function createInfluencer(body: InfluencerCreate, source: 'lookup' | 'manual' | 'csv', createdAt?: string): CreateResult {
   const name = body.name?.trim()
   if (!name) return { ok: false, status: 422, code: 'validation_error', message: 'Name is required' }
   if (!body.category) return { ok: false, status: 422, code: 'validation_error', message: 'Category is required' }
@@ -123,7 +146,7 @@ export function createInfluencer(body: InfluencerCreate, source: 'lookup' | 'man
   const checked = validateAccounts(body.accounts)
   if (!checked.ok) return checked
 
-  const now = nowIso()
+  const now = createdAt ?? nowIso()
   const address = body.address ?? null
   const influencer: Influencer = {
     id: nextId('inf'),
@@ -143,12 +166,14 @@ export function createInfluencer(body: InfluencerCreate, source: 'lookup' | 'man
     assigned_to: body.assigned_to ?? null,
     tags: body.tags ?? [],
     notes: body.notes ?? null,
-    onboarding_checklist: { called: false, terms_agreed: false, address_collected: address != null, ig_connected: false },
+    onboarding_checklist: { called: false, agreement_signed: false, insights_received: false, address_collected: address != null, ig_connected: false },
+    documents: null,
     created_at: now,
     updated_at: now,
   }
   influencer.accounts = body.accounts.map((a, i) => buildAccount(influencer, a, i === 0))
   refreshDerived(influencer)
+  attachDocumentSummary(influencer)
   db.influencers.unshift(influencer)
   logActivity(influencer.id, 'created', { source })
   if (influencer.assigned_to) logActivity(influencer.id, 'assigned', { from: null, to: influencer.assigned_to })
@@ -306,6 +331,7 @@ export function deleteInfluencer(id: string): boolean {
   db.calls = db.calls.filter((c) => c.influencer_id !== id)
   db.packages = db.packages.filter((p) => p.influencer_id !== id)
   db.activities = db.activities.filter((a) => a.influencer_id !== id)
+  purgeDocuments(id)
   return true
 }
 
@@ -350,6 +376,15 @@ export function changeStage(inf: Influencer, to: Stage, reason: string | undefin
         message: 'Create a package with courier and tracking number before moving to Package Sent',
       }
     }
+    // Entering Onboarded from Contacted needs a current agreement (resuming from hold or a returned package doesn't).
+    if (to === 'onboarded' && inf.stage === 'contacted' && !hasCurrentAgreement(inf.id)) {
+      return {
+        ok: false,
+        status: 422,
+        code: 'requirement_missing',
+        message: 'Upload the signed agreement before moving to Onboarded',
+      }
+    }
   }
 
   const from = inf.stage
@@ -372,7 +407,9 @@ export function toCsv(list: Influencer[]): string {
   const team = new Map(db.team.map((u) => [u.id, u.name]))
   const lines = [[...EXPORT_COLUMNS, ...PLATFORMS].join(',')]
   for (const inf of list) {
-    const details = EXPORT_COLUMNS.map((col) => csvCell(col === 'assigned_to' ? team.get(inf.assigned_to ?? '') : inf[col]))
+    const details = EXPORT_COLUMNS.map((col) =>
+      csvCell(col === 'assigned_to' ? team.get(inf.assigned_to ?? '') : col === 'created_at' ? formatDate(inf.created_at) : inf[col]),
+    )
     const handles = PLATFORMS.map((p) => csvCell(inf.accounts.filter((a) => a.platform === p).map((a) => a.handle).join('; ')))
     lines.push([...details, ...handles].join(','))
   }

@@ -158,7 +158,8 @@ function TagsEditor({
 
 const CHECKLIST: { key: keyof OnboardingChecklist; label: string }[] = [
   { key: 'called', label: 'Called' },
-  { key: 'terms_agreed', label: 'Terms agreed' },
+  { key: 'agreement_signed', label: 'Agreement signed' },
+  { key: 'insights_received', label: 'Insights received' },
   { key: 'address_collected', label: 'Address collected' },
   { key: 'ig_connected', label: 'Instagram connected' },
 ]

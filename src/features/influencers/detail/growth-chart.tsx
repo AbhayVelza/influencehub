@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, type TooltipContentProps } from 'recharts'
 import { Button } from '@/components/ui/button'
-import { formatCompact, formatDate, formatNumber } from '@/lib/format'
+import { formatChartDate, formatCompact, formatDate, formatNumber } from '@/lib/format'
 import type { AccountSnapshot } from '@/types'
 
 const SERIES = 'var(--chart-series-1)'
@@ -71,7 +71,7 @@ export function GrowthChart({ snapshots, label = 'Followers', id }: { snapshots:
               <CartesianGrid vertical={false} stroke="var(--border)" strokeWidth={1} />
               <XAxis
                 dataKey="captured_at"
-                tickFormatter={(v: string) => formatDate(v, 'd MMM')}
+                tickFormatter={(v: string) => formatChartDate(v)}
                 tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
                 tickLine={false}
                 axisLine={false}

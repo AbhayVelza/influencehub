@@ -15,6 +15,7 @@ import {
 } from '@/features/influencers/detail-queries'
 import { ActivityTab } from '@/features/influencers/detail/activity-tab'
 import { CallsTab } from '@/features/influencers/detail/calls-tab'
+import { DocumentsTab } from '@/features/influencers/detail/documents-tab'
 import { InfluencerHeader } from '@/features/influencers/detail/influencer-header'
 import { SocialAccountsPanel } from '@/features/influencers/detail/social-accounts-panel'
 import { OverviewTab } from '@/features/influencers/detail/overview-tab'
@@ -29,7 +30,7 @@ import { useMe } from '@/hooks/use-me'
 import { ApiError } from '@/services'
 import type { Package, PoolItem } from '@/types'
 
-const TABS = ['overview', 'calls', 'packages', 'activity'] as const
+const TABS = ['overview', 'calls', 'packages', 'documents', 'activity'] as const
 type Tab = (typeof TABS)[number]
 
 function DetailSkeleton() {
@@ -168,6 +169,7 @@ export default function InfluencerDetailPage() {
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="calls">Calls{callCount ? ` (${callCount})` : ''}</TabsTrigger>
             <TabsTrigger value="packages">Packages{packageCount ? ` (${packageCount})` : ''}</TabsTrigger>
+            <TabsTrigger value="documents">Documents</TabsTrigger>
             <TabsTrigger value="activity">Activity</TabsTrigger>
           </TabsList>
           <TabsContent value="overview">
@@ -178,6 +180,9 @@ export default function InfluencerDetailPage() {
           </TabsContent>
           <TabsContent value="packages">
             <PackagesTab influencerId={data.id} onCreate={() => openPackage()} onEdit={(pkg) => openPackage(undefined, pkg)} />
+          </TabsContent>
+          <TabsContent value="documents">
+            <DocumentsTab influencer={data} />
           </TabsContent>
           <TabsContent value="activity">
             <ActivityTab activity={activity} />

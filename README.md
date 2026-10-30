@@ -13,7 +13,7 @@ platforms (Instagram, YouTube, TikTok, Facebook, Threads, Pinterest, LinkedIn, S
 | Stage | Meaning |
 | --- | --- |
 | Data Gathered → Contacted | Needs a call logged with outcome "Interested" |
-| Contacted → Onboarded | Creator agreed |
+| Contacted → Onboarded | Creator agreed; needs a current agreement on file |
 | Onboarded → Package Sent | Needs a package with courier and tracking number |
 | Package Sent → Delivered | Package arrived (a returned package moves them back to Onboarded) |
 | On Hold / Rejected | Side stages. On Hold resumes to the previous stage; reopening Rejected is manager/admin only |
@@ -24,7 +24,7 @@ Admins can override any stage move, with a required reason.
 ## Features
 
 - **Dashboard**: KPIs, pipeline funnel, by-category and top-cities charts, my follow-ups, activity feed.
-- **Influencers**: filterable (category, platform, country → state → city, stage, owner, reach), sortable table,
+- **Influencers**: filterable (category, platform, country → state → city, stage, owner, agreement, insights, reach), sortable table,
   saved views, bulk actions, CSV import / export. Filters live in the URL.
 - **Influencer detail**: stage stepper, social accounts with per-platform stats, sync / connect link / manual
   stats, growth chart and recent posts, calls, packages, activity log.
@@ -33,9 +33,13 @@ Admins can override any stage move, with a required reason.
   Optional guards: claim limit and auto-release.
 - **Possible duplicates** (manager/admin): side-by-side pairs with confidence and reasons; merge or dismiss.
   Duplicate warnings also appear before every add.
+- **Documents**: insights summaries (many) and agreements (a new upload becomes current, older versions stay as
+  history) per influencer, with a sidebar page for all of them. PDF / JPG / PNG / DOCX / XLSX up to 20 MB, upload
+  progress, PDF and image preview, soft delete (manager/admin). Uploading ticks the onboarding checklist.
 - **Pipeline** kanban, **Calls & Follow-ups**, **Packages**.
 - **Settings** (admin): Instagram integration, team and roles, categories, pool guards.
-- Light / dark theme, usable at 1024px, skeleton / empty / error states, times shown in Asia/Kolkata.
+- Light / dark theme, usable at 1024px, skeleton / empty / error states. Dates are `dd/MM/yyyy` and date-times
+  `dd/MM/yyyy, hh:mm a` in Asia/Kolkata (the API stays ISO 8601).
 
 ## Tech stack
 
@@ -47,7 +51,7 @@ dnd-kit, react-hook-form + zod, date-fns, sonner, MSW (mock API), Playwright (e2
 ```
 src/
   components/   layout shell, shared UI, shadcn/ui
-  features/     add-influencer, calls, dashboard, duplicates, influencers, packages, pipeline, pool, settings
+  features/     add-influencer, calls, dashboard, documents, duplicates, influencers, packages, pipeline, pool, settings
   pages/        one component per route
   services/     the only place that calls the API
   lib/          schemas (zod), platforms, stages, permissions, formatting, session
@@ -93,6 +97,9 @@ Copy `.env.example` to `.env.local` to override. `.env.development` turns the mo
   from an Instagram bio (Ishaan Kapoor / Ishaan Talks), the same handle on two platforms (Arjun Pillai / Arjun P),
   and a similar name in the same city (Kabir Malhotra / Kabir Malhothra).
   Dates shift on load, so "due today" and "overdue" follow-ups are always current.
+- Documents: agreements for most onboarded-and-later influencers (two have a version history), insights summaries for
+  some, and 3 onboarded influencers without an agreement (see the dashboard KPI). Uploaded files live in memory as blob
+  URLs; seeded ones are generated placeholders when previewed or downloaded.
 - Data lives in memory: a full page reload resets it.
 - Usernames that simulate failures (lookup in **Add influencer**, and **Sync now**; any lookup platform):
 
@@ -122,6 +129,8 @@ data, and does nothing against a real backend.
 | View, add, edit, log calls, packages, standard stage moves | own influencers | all | all |
 | Unassigned Pool | preview, Claim | full details, Assign | full details, Assign |
 | Release to the pool (reason required) | own | anyone's | anyone's |
+| Upload documents | own | all | all |
+| Delete documents (soft) |  | ✓ | ✓ |
 | Reassign, delete, reopen rejected, import / export, review & merge duplicates |  | ✓ | ✓ |
 | Stage override (with reason), Settings (incl. pool guards) |  |  | ✓ |
 
@@ -130,14 +139,15 @@ data, and does nothing against a real backend.
 Base URL is `VITE_API_URL` + `/api/v1`. Lists return `{ items, total, page, page_size }` and errors return
 `{ error: { code, message } }`. Long actions (lookup, sync, import, export) return a `job_id`; the UI polls
 `GET /jobs/{id}` every 2 seconds. Executives are scoped server-side to their own influencers.
-Resources: influencers, accounts, duplicates, calls, packages, pipeline, dashboard, pool, team, categories,
+Resources: influencers, accounts, duplicates, calls, packages, documents, pipeline, dashboard, pool, team, categories,
 saved views, imports / exports, settings.
 
 ## Tests
 
-`npm run test:e2e` runs 25 Playwright tests against the mock API: cascading filters and URL restore, sorting,
+`npm run test:e2e` runs 36 Playwright tests against the mock API: cascading filters and URL restore, sorting,
 bulk stage changes, stage modals, admin override, package return, the role permissions matrix, pool claim /
-release, duplicates, platforms and an axe accessibility check on every main page. Each test starts with fresh mock
+release, duplicates, platforms, the dd/MM/yyyy date format (list, detail, forms, CSV), documents (upload, preview,
+download, delete rights, scoping, checklist) and an axe accessibility check on every main page. Each test starts with fresh mock
 data and fails on any console error.
 
 Before calling a change done, run `npm run lint`, `npm run typecheck`, `npm run build` and `npm run test:e2e`.

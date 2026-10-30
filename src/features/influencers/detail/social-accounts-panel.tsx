@@ -16,6 +16,7 @@ import { Progress } from '@/components/ui/progress'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useCan } from '@/hooks/use-me'
 import { copyToClipboard } from '@/lib/clipboard'
+import { RelativeTime } from '@/components/common/relative-time'
 import { formatCompact, formatDate, formatDateTime, formatRelative } from '@/lib/format'
 import { waitForJob } from '@/lib/jobs'
 import { audienceOf, exactMetric, formatMetric, metricValue, PLATFORM_META, SYNC_METHOD_LABEL } from '@/lib/platforms'
@@ -130,7 +131,7 @@ function ConnectStatusBadge({ account }: { account: SocialAccount }) {
       <span aria-hidden className={cn('size-1.5 rounded-full', meta.dot)} />
       {meta.label}
       {status === 'link_sent' && account.connect_link_expires_at && (
-        <span title={formatDateTime(account.connect_link_expires_at)}> · expires {formatRelative(account.connect_link_expires_at)}</span>
+        <span> · expires <RelativeTime iso={account.connect_link_expires_at} /></span>
       )}
     </span>
   )
@@ -146,7 +147,7 @@ function ConnectLinkButton({ influencer, account }: { influencer: Influencer; ac
     setBusy(true)
     try {
       const res = await accountsApi.connectLink(account.id, { send_email: email })
-      if (email) toast.success('Connect link emailed', { description: `Sent to ${res.emailed_to}. It expires ${formatRelative(res.expires_at)}.` })
+      if (email) toast.success('Connect link emailed', { description: `Sent to ${res.emailed_to}. It expires ${formatRelative(res.expires_at)} (${formatDateTime(res.expires_at)}).` })
       else await copyToClipboard(res.url, 'Connect link copied')
     } catch (err) {
       toast.error('Couldn’t create the connect link', { description: getErrorMessage(err) })
@@ -228,7 +229,7 @@ function AccountView({ influencer, account }: { influencer: Influencer; account:
             <span title={formatDateTime(account.last_synced_at)}>
               <SyncStatusBadge status={syncing ? 'pending' : account.sync_status} />
               {!syncing && account.sync_status === 'synced' && account.last_synced_at && (
-                <span className="text-muted-foreground"> · {formatRelative(account.last_synced_at)}</span>
+                <span className="text-muted-foreground"> · <RelativeTime iso={account.last_synced_at} /></span>
               )}
             </span>
           ) : null}
@@ -275,7 +276,9 @@ function AccountView({ influencer, account }: { influencer: Influencer; account:
       {account.sync_status === 'error' && (
         <Notice tone="error" title="Last sync failed">
           {lastError ?? `${meta.label} didn’t return data for @${account.handle}. Check the handle or try again.`}
-          {account.last_synced_at && <p className="mt-1">Showing data from {formatRelative(account.last_synced_at)}.</p>}
+          {account.last_synced_at && <p className="mt-1">
+              Showing data from <RelativeTime iso={account.last_synced_at} />.
+            </p>}
         </Notice>
       )}
       {account.sync_status === 'pending' && !hasData && (

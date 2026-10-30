@@ -9,6 +9,15 @@ import type { InfluencerFilters, InfluencerListParams, InfluencerSort, Influence
 
 export const PAGE_SIZE_OPTIONS = [25, 50, 100]
 
+export const AGREEMENT_OPTIONS = [
+  { value: 'signed', label: 'Signed' },
+  { value: 'missing', label: 'Missing' },
+]
+export const INSIGHTS_OPTIONS = [
+  { value: 'received', label: 'Received' },
+  { value: 'missing', label: 'Missing' },
+]
+
 const SORT_KEYS: InfluencerSortKey[] = ['name', 'total_reach', 'primary_followers', 'city', 'stage', 'created_at', 'updated_at']
 
 const ARRAY_KEYS = ['category', 'country', 'state', 'city', 'assigned_to'] as const
@@ -36,6 +45,10 @@ export function parseFilters(sp: URLSearchParams): InfluencerFilters {
   if (stages.length) filters.stage = stages
   const platforms = sp.getAll('platform').filter((p): p is Platform => PLATFORMS.includes(p as Platform))
   if (platforms.length) filters.platform = platforms
+  const agreement = sp.get('agreement')
+  if (agreement === 'signed' || agreement === 'missing') filters.agreement = agreement
+  const insights = sp.get('insights')
+  if (insights === 'received' || insights === 'missing') filters.insights = insights
   const min = toNumber(sp.get('reach_min'))
   const max = toNumber(sp.get('reach_max'))
   if (min !== undefined) filters.reach_min = min

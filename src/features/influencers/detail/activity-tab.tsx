@@ -1,8 +1,11 @@
+import { RelativeTime } from '@/components/common/relative-time'
 import type { InfiniteData, UseInfiniteQueryResult } from '@tanstack/react-query'
 import type { LucideIcon } from 'lucide-react'
 import {
   ArrowRightLeft,
   Combine,
+  FilePlus2,
+  FileX2,
   History,
   Link2,
   Package,
@@ -20,7 +23,6 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useTeamMap } from '@/hooks/use-team'
 import { describeActivity } from '@/lib/activity-text'
-import { formatDateTime, formatRelative } from '@/lib/format'
 import type { Activity, ActivityType, Paginated, User } from '@/types'
 
 const ICONS: Record<ActivityType, LucideIcon> = {
@@ -37,6 +39,8 @@ const ICONS: Record<ActivityType, LucideIcon> = {
   merged: Combine,
   claimed: UserPlus,
   released: UserMinus,
+  document_uploaded: FilePlus2,
+  document_deleted: FileX2,
 }
 
 interface ActivityTabProps {
@@ -76,9 +80,7 @@ export function ActivityTab({ activity }: ActivityTabProps) {
               {detail && <p className="mt-0.5 text-sm text-muted-foreground">“{detail}”</p>}
               <p className="mt-0.5 text-xs text-muted-foreground">
                 {entry.actor ? name(entry.actor, team) : 'System'} ·{' '}
-                <time dateTime={entry.created_at} title={formatDateTime(entry.created_at)}>
-                  {formatRelative(entry.created_at)}
-                </time>
+                <RelativeTime iso={entry.created_at} />
               </p>
             </li>
           )

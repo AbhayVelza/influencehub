@@ -6,7 +6,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useInfluencerCalls, useMarkFollowUpDone } from '@/features/calls/queries'
 import { useTeamMap } from '@/hooks/use-team'
 import { CALL_OUTCOME_META } from '@/lib/constants'
-import { dayKey, formatDateTime, formatRelative, todayKey } from '@/lib/format'
+import { RelativeTime } from '@/components/common/relative-time'
+import { dayKey, formatDateTime, todayKey } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { getErrorMessage } from '@/services'
 import type { CallLog } from '@/types'
@@ -93,9 +94,7 @@ export function CallsTab({ influencerId, onLogCall }: { influencerId: string; on
               </span>
               <span className="text-muted-foreground">
                 {team.get(call.called_by)?.name ?? 'Someone'} ·{' '}
-                <time dateTime={call.created_at} title={formatDateTime(call.created_at)}>
-                  {formatRelative(call.created_at)}
-                </time>
+                <RelativeTime iso={call.created_at} />
               </span>
             </div>
             {call.notes && <p className="mt-2 text-sm whitespace-pre-wrap">{call.notes}</p>}

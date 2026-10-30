@@ -14,7 +14,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useExpiringClaims } from '@/features/pool/queries'
 import { useDefaultMine, useFollowUps } from '@/hooks/use-follow-ups'
 import { CALL_OUTCOME_META } from '@/lib/constants'
-import { formatDate, formatRelative } from '@/lib/format'
+import { RelativeTime } from '@/components/common/relative-time'
+import { formatDateTime, formatTime } from '@/lib/format'
 import type { CallLogWithInfluencer } from '@/types'
 
 const MAX_ITEMS = 8
@@ -28,9 +29,11 @@ function FollowUpRow({ call, overdue }: { call: CallLogWithInfluencer; overdue: 
         <p className="truncate text-xs text-muted-foreground">
           {CALL_OUTCOME_META[call.outcome].label} ·{' '}
           {overdue ? (
-            <span className="text-destructive">Overdue {formatRelative(call.follow_up_date)}</span>
+            <span className="text-destructive">
+              Overdue <RelativeTime iso={call.follow_up_date} />
+            </span>
           ) : (
-            `Today ${formatDate(call.follow_up_date, 'h:mm a')}`
+            <span title={formatDateTime(call.follow_up_date)}>Today {formatTime(call.follow_up_date)}</span>
           )}
         </p>
       </div>
@@ -90,7 +93,7 @@ export function NotificationsMenu() {
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">{r.influencer.name}</p>
                   <p className="truncate text-xs text-muted-foreground">
-                    Auto-release {formatRelative(r.release_at)} · log a call to keep them
+                    Auto-release <RelativeTime iso={r.release_at} /> · log a call to keep them
                   </p>
                 </div>
               </DropdownMenuItem>

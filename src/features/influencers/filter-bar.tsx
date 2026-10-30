@@ -4,10 +4,14 @@ import { MultiSelectFilter } from '@/components/common/multi-select-filter'
 import { PlatformMark } from '@/components/common/platform-badge'
 import { StageDot } from '@/components/common/stage-badge'
 import type { InfluencerFilters, Platform, Stage } from '@/types'
+import { AGREEMENT_OPTIONS, INSIGHTS_OPTIONS } from './list-params'
 import { useFilterOptions, type FilterSource } from './queries'
 
 /** Stable empty selection, so effect dependencies don't change every render. */
 const NONE: string[] = []
+
+/** These filters take one choice: a newly ticked option is last, and replaces the one before it. */
+const latestChoice = (next: string[]) => next[next.length - 1]
 
 export type FilterChange = (patch: Partial<InfluencerFilters>, options?: { replace?: boolean }) => void
 
@@ -18,12 +22,14 @@ interface InfluencerFilterBarProps {
   hideStage?: boolean
   /** No owner filter: executives only see their own influencers, and the pool has no owners. */
   hideAssigned?: boolean
+  /** Documents aren't kept for the Unassigned Pool, so it has no Agreement / Insights filters. */
+  hideDocuments?: boolean
   /** Whose options and counts: the influencers list (default) or the Unassigned Pool. */
   source?: FilterSource
 }
 
 /** Category / Platform / Country → State → City / Stage / Assigned / Total reach. Shared by the list, pipeline and pool. */
-export function InfluencerFilterBar({ filters, onChange, hideStage, hideAssigned, source = 'influencers' }: InfluencerFilterBarProps) {
+export function InfluencerFilterBar({ filters, onChange, hideStage, hideAssigned, hideDocuments, source = 'influencers' }: InfluencerFilterBarProps) {
   const country = filters.country ?? NONE
   const state = filters.state ?? NONE
   const city = filters.city ?? NONE
@@ -118,6 +124,22 @@ export function InfluencerFilterBar({ filters, onChange, hideStage, hideAssigned
           hint={hint}
           searchPlaceholder="Search team…"
         />
+      )}
+      {!hideDocuments && (
+        <>
+          <MultiSelectFilter
+            label="Agreement"
+            options={AGREEMENT_OPTIONS}
+            selected={filters.agreement ? [filters.agreement] : NONE}
+            onChange={(next) => onChange({ agreement: latestChoice(next) as InfluencerFilters['agreement'] })}
+          />
+          <MultiSelectFilter
+            label="Insights"
+            options={INSIGHTS_OPTIONS}
+            selected={filters.insights ? [filters.insights] : NONE}
+            onChange={(next) => onChange({ insights: latestChoice(next) as InfluencerFilters['insights'] })}
+          />
+        </>
       )}
       <FollowersFilter
         label="Total reach"

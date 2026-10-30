@@ -11,6 +11,10 @@ export type Permission =
   | 'influencer:claim'
   /** Return one of your own influencers to the pool (a reason is required). */
   | 'influencer:release'
+  /** Upload documents (an executive: their own influencers only; scoping is server-side). */
+  | 'document:upload'
+  /** Soft-delete a document. */
+  | 'document:delete'
   | 'stage:reopen'
   | 'influencer:reassign'
   | 'influencer:delete'
@@ -34,11 +38,13 @@ const EXECUTIVE: Permission[] = [
   'stage:change',
   'influencer:claim',
   'influencer:release',
+  'document:upload',
 ]
 
 const MANAGER: Permission[] = [
   ...EXECUTIVE,
   'stage:reopen',
+  'document:delete',
   'influencer:reassign',
   'influencer:delete',
   'influencer:merge',

@@ -15,7 +15,8 @@ import {
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { useCan, useMe } from '@/hooks/use-me'
 import { useTeam } from '@/hooks/use-team'
-import { formatCompact, formatDateTime, formatLocation, formatNumber, formatRelative } from '@/lib/format'
+import { RelativeTime } from '@/components/common/relative-time'
+import { formatCompact, formatLocation, formatNumber } from '@/lib/format'
 import type { PoolItem } from '@/types'
 import { isFullInfluencer, poolPlatforms, poolPrimary } from './queries'
 
@@ -62,7 +63,7 @@ export function PoolPreview({ item }: { item: PoolItem }) {
         </Row>
         <Row label="Location">{formatLocation([item.city, item.state, item.country])}</Row>
         <Row label="Added">
-          <span title={formatDateTime(item.created_at)}>{formatRelative(item.created_at)}</span>
+          <RelativeTime iso={item.created_at} />
         </Row>
         {full && (
           <>

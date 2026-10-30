@@ -4,6 +4,7 @@ import { RequirePermission } from '@/components/common/require-permission'
 import {
   CallsPage,
   DashboardPage,
+  DocumentsPage,
   DuplicatesPage,
   InfluencerDetailPage,
   InfluencersPage,
@@ -33,6 +34,7 @@ export const router = createBrowserRouter([
       { path: 'pipeline', element: <PipelinePage /> },
       { path: 'calls', element: <CallsPage /> },
       { path: 'packages', element: <PackagesPage /> },
+      { path: 'documents', element: <DocumentsPage /> },
       {
         path: 'settings',
         element: (

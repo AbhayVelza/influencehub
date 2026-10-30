@@ -4,6 +4,7 @@ import { normalizePhone } from '@/lib/schemas'
 import type { DuplicateCheckRequest, DuplicateMatch, DuplicatePair, Influencer, MatchConfidence, MergeField, MergeRequest, User } from '@/types'
 import { currentUser, db, logActivity, nowIso, refreshDerived } from './db'
 import { canSee } from './domain'
+import { moveDocuments } from './documents'
 
 // Cross-platform duplicate detection and merging (see "Duplicates & merge" in CLAUDE.md).
 
@@ -165,6 +166,7 @@ export function mergeInfluencers(keep: Influencer, merge: Influencer, choices: M
   for (const c of db.calls) if (c.influencer_id === merge.id) c.influencer_id = keep.id
   for (const p of db.packages) if (p.influencer_id === merge.id) p.influencer_id = keep.id
   for (const a of db.activities) if (a.influencer_id === merge.id) a.influencer_id = keep.id
+  moveDocuments(merge.id, keep.id)
   db.influencers = db.influencers.filter((i) => i.id !== merge.id)
 
   keep.updated_at = nowIso()

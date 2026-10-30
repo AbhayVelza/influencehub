@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { ALL_STAGES, CALL_OUTCOMES, DEFAULT_COUNTRY_CODE, PACKAGE_STATUSES } from '@/lib/constants'
-import { localInputToIso, parseCompactNumber } from '@/lib/format'
+import { parseCompactNumber, parseDateInput, parseDateTimeInput } from '@/lib/format'
 import { normalizeHandle, PLATFORMS } from '@/lib/platforms'
 import type { Platform } from '@/types'
 
@@ -151,7 +151,7 @@ export const callLogSchema = z
     // A string (not an enum) so the form can start with nothing chosen.
     outcome: z.string().refine((v) => (CALL_OUTCOMES as string[]).includes(v), 'Choose an outcome'),
     notes: optionalText(1000, 'Notes'),
-    /** datetime-local value, interpreted in Asia/Kolkata. */
+    /** Typed as dd/MM/yyyy, hh:mm a, interpreted in Asia/Kolkata. */
     follow_up: z.string(),
     move_to_contacted: z.boolean(),
   })
@@ -160,8 +160,8 @@ export const callLogSchema = z
       ctx.addIssue({ code: 'custom', path: ['follow_up'], message: 'Pick when to call back' })
     }
     if (value.follow_up) {
-      const iso = localInputToIso(value.follow_up)
-      if (!iso) ctx.addIssue({ code: 'custom', path: ['follow_up'], message: 'Enter a valid date and time' })
+      const iso = parseDateTimeInput(value.follow_up)
+      if (!iso) ctx.addIssue({ code: 'custom', path: ['follow_up'], message: 'Enter a valid date and time, like 31/10/2026, 05:00 PM' })
       else if (Date.parse(iso) < Date.now()) {
         ctx.addIssue({ code: 'custom', path: ['follow_up'], message: 'Pick a time in the future' })
       }
@@ -199,6 +199,59 @@ export const packageSchema = z
   })
 
 export type PackageFormInput = z.input<typeof packageSchema>
+
+// ---------------------------------------------------------------------------
+// Documents
+
+const isDay = (v: string) => /^\d{4}-\d{2}-\d{2}$/.test(v)
+
+/** A required date typed as dd/MM/yyyy; the output is yyyy-MM-dd. */
+export const dateField = (label: string) =>
+  z
+    .string()
+    .trim()
+    .min(1, `${label} is required`)
+    .refine((v) => v === '' || parseDateInput(v) !== null, 'Use dd/MM/yyyy, like 28/10/2026')
+    .transform((v) => parseDateInput(v) ?? v)
+
+/** An optional date typed as dd/MM/yyyy; empty becomes null. */
+export const optionalDateField = z
+  .string()
+  .trim()
+  .refine((v) => v === '' || parseDateInput(v) !== null, 'Use dd/MM/yyyy, like 28/10/2026')
+  .transform((v) => (v ? parseDateInput(v) : null))
+
+export const insightsFormSchema = z
+  .object({
+    title: requiredText(120, 'Title'),
+    period_start: dateField('Period start'),
+    period_end: dateField('Period end'),
+    /** "" = not tied to one platform. */
+    platform: z.string().transform((v) => (v ? (v as Platform) : null)),
+    notes: optionalText(1000, 'Notes'),
+  })
+  .superRefine((v, ctx) => {
+    if (isDay(v.period_start) && isDay(v.period_end) && v.period_start > v.period_end) {
+      ctx.addIssue({ code: 'custom', path: ['period_end'], message: 'The period must end on or after it starts' })
+    }
+  })
+
+export type InsightsFormInput = z.input<typeof insightsFormSchema>
+
+export const agreementFormSchema = z
+  .object({
+    title: requiredText(120, 'Title'),
+    signed_on: dateField('Signed on'),
+    valid_until: optionalDateField,
+    notes: optionalText(1000, 'Notes'),
+  })
+  .superRefine((v, ctx) => {
+    if (v.valid_until && isDay(v.signed_on) && v.valid_until < v.signed_on) {
+      ctx.addIssue({ code: 'custom', path: ['valid_until'], message: '“Valid until” must be on or after the signing date' })
+    }
+  })
+
+export type AgreementFormInput = z.input<typeof agreementFormSchema>
 
 // ---------------------------------------------------------------------------
 // Settings

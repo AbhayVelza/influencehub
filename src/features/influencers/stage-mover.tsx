@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useState, type ReactNode } from 'react'
 import { toast } from 'sonner'
 import { LogCallDialog, type LogCallTarget } from '@/features/calls/log-call-dialog'
+import { DocumentUploadDialog } from '@/features/documents/document-upload-dialog'
 import { PackageDrawer, type PackageTarget } from '@/features/packages/package-drawer'
 import { STAGE_META } from '@/lib/constants'
 import { queryKeys } from '@/lib/query'
@@ -20,7 +21,7 @@ export interface MoveOptions {
   /** Admin move outside the standard transitions: always asks for a reason. */
   override?: boolean
   /**
-   * Whether the target stage's requirement (interested call / tracked package) is already met.
+   * Whether the target stage's requirement (interested call / tracked package / current agreement) is already met.
    * false opens the required modal straight away; undefined tries the move and opens it only if the API
    * answers `requirement_missing`.
    */
@@ -45,6 +46,7 @@ export function useStageMover(): {
   const [reasonState, setReasonState] = useState<MoverReasonState>(null)
   const [call, setCall] = useState<{ target: LogCallTarget; open: boolean } | null>(null)
   const [pkg, setPkg] = useState<{ target: PackageTarget; open: boolean } | null>(null)
+  const [agreement, setAgreement] = useState<{ target: MoveTarget; open: boolean } | null>(null)
 
   const move = async (target: MoveTarget, to: Stage, reason?: string, optimistic?: MoveOptions['optimistic']) => {
     optimistic?.apply()
@@ -67,6 +69,7 @@ export function useStageMover(): {
 
   const openRequirement = async (target: MoveTarget, to: Stage) => {
     if (to === 'contacted') return setCall({ target, open: true })
+    if (to === 'onboarded') return setAgreement({ target, open: true })
     if (to === 'package_sent') {
       try {
         // The drawer prefills the influencer's address, so load the full record.
@@ -84,7 +87,9 @@ export function useStageMover(): {
   const requestMove = async (target: MoveTarget, to: Stage, options: MoveOptions = {}) => {
     if (options.override) return setReasonState({ target, to, mode: 'override' })
     if (to === 'on_hold' || to === 'rejected') return setReasonState({ target, to, mode: 'confirm' })
-    if ((to === 'contacted' || to === 'package_sent') && options.requirementMet === false) return openRequirement(target, to)
+    if ((to === 'contacted' || to === 'onboarded' || to === 'package_sent') && options.requirementMet === false) {
+      return openRequirement(target, to)
+    }
     if ((await move(target, to, undefined, options.optimistic)) === 'requirement') await openRequirement(target, to)
   }
 
@@ -105,6 +110,16 @@ export function useStageMover(): {
           intent="contacted"
           open={call.open}
           onOpenChange={(open) => setCall((c) => (c ? { ...c, open } : c))}
+        />
+      )}
+      {agreement && (
+        <DocumentUploadDialog
+          influencer={agreement.target}
+          type="agreement"
+          open={agreement.open}
+          onOpenChange={(open) => setAgreement((a) => (a ? { ...a, open } : a))}
+          // The requirement is met now: finish the move.
+          onUploaded={() => void move(agreement.target, 'onboarded')}
         />
       )}
       {pkg && (

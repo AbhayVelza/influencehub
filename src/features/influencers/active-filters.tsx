@@ -6,6 +6,7 @@ import { PLATFORM_META } from '@/lib/platforms'
 import { formatFollowerRange } from '@/lib/format'
 import type { InfluencerFilters } from '@/types'
 import type { FilterChange } from './filter-bar'
+import { AGREEMENT_OPTIONS, INSIGHTS_OPTIONS } from './list-params'
 
 interface Chip {
   key: string
@@ -45,6 +46,21 @@ export function ActiveFilters({ filters, onChange, onClear }: ActiveFiltersProps
   listChips('city', (v) => v)
   listChips('stage', (v) => STAGE_META[v as keyof typeof STAGE_META]?.label ?? v)
   listChips('assigned_to', (v) => `Owner: ${team.get(v)?.name ?? v}`)
+
+  if (filters.agreement) {
+    chips.push({
+      key: 'agreement',
+      label: `Agreement: ${AGREEMENT_OPTIONS.find((o) => o.value === filters.agreement)?.label}`,
+      remove: () => onChange({ agreement: undefined }),
+    })
+  }
+  if (filters.insights) {
+    chips.push({
+      key: 'insights',
+      label: `Insights: ${INSIGHTS_OPTIONS.find((o) => o.value === filters.insights)?.label}`,
+      remove: () => onChange({ insights: undefined }),
+    })
+  }
 
   if (filters.reach_min != null || filters.reach_max != null) {
     chips.push({

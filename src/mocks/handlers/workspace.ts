@@ -3,6 +3,7 @@ import { differenceInCalendarDays, startOfMonth, startOfWeek } from 'date-fns'
 import { http, HttpResponse } from 'msw'
 import { ALL_STAGES, APP_TIMEZONE, ROLE_LABEL, SYNC_INTERVAL_OPTIONS } from '@/lib/constants'
 import { can } from '@/lib/permissions'
+import { ONBOARDED_OR_LATER } from '@/lib/stages'
 import type {
   Category,
   CategoryCreate,
@@ -21,6 +22,7 @@ import type {
 } from '@/types'
 import { currentUser, db, findInfluencer, nextId, nowIso, stageEnteredAt, toSummary, type StoredCategory } from '../db'
 import { primaryAccount, toRef } from '@/lib/platforms'
+import { hasCurrentAgreement } from '../documents'
 import { canSee, filterInfluencers, poolInfluencers, visibleInfluencers } from '../domain'
 import { all, api, apiError, forbidden, latency, notFound, readJson } from '../utils'
 import { followUpBucket, isMine, withInfluencer } from './calls'
@@ -296,6 +298,9 @@ export const workspaceHandlers = [
           (p) => visible(p.influencer_id) && (p.status === 'sent' || p.status === 'in_transit'),
         ).length,
         follow_ups_today: calls.filter((c) => followUpBucket(c) === 'today').length,
+        onboarded_without_agreement: influencers.filter(
+          (i) => ONBOARDED_OR_LATER.includes(i.stage) && i.assigned_to !== null && !hasCurrentAgreement(i.id),
+        ).length,
       },
       funnel: ALL_STAGES.map((stage) => ({ stage, count: influencers.filter((i) => i.stage === stage).length })),
       by_category: tally((i) => i.category).map(([category, count]) => ({ category, count })),

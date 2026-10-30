@@ -15,10 +15,15 @@ export function InfluencerPicker({
   open,
   onOpenChange,
   onPick,
+  title = 'Create package for…',
+  eligible,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
   onPick: (influencer: Influencer) => void
+  title?: string
+  /** Only offer influencers this passes (e.g. documents can't be kept for the Unassigned Pool). */
+  eligible?: (influencer: Influencer) => boolean
 }) {
   const [search, setSearch] = useState('')
   const q = useDebouncedValue(search.trim(), 250)
@@ -32,7 +37,7 @@ export function InfluencerPicker({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="p-0 sm:max-w-md" showCloseButton={false}>
         <DialogHeader className="px-4 pt-4">
-          <DialogTitle>Create package for…</DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
           <DialogDescription>Search by name or handle.</DialogDescription>
         </DialogHeader>
         <Command shouldFilter={false}>
@@ -50,7 +55,7 @@ export function InfluencerPicker({
               <>
                 <CommandEmpty>No influencers match.</CommandEmpty>
                 <CommandGroup>
-                  {results.data.items.map((inf) => (
+                  {results.data.items.filter((inf) => eligible?.(inf) ?? true).map((inf) => (
                     <CommandItem key={inf.id} value={inf.id} onSelect={() => onPick(inf)} className="[&>svg:last-child]:hidden">
                       <PersonAvatar name={inf.name} src={inf.profile_pic_url} className="size-7" />
                       <span className="min-w-0 flex-1">
