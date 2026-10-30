@@ -1,4 +1,3 @@
-import { useQueryClient } from '@tanstack/react-query'
 import { Monitor, Moon, Sun } from 'lucide-react'
 import { toast } from 'sonner'
 import { PersonAvatar } from '@/components/common/person-avatar'
@@ -18,6 +17,7 @@ import { useTheme } from '@/hooks/use-theme'
 import { ROLE_LABEL } from '@/lib/constants'
 import { USE_MOCKS } from '@/lib/env'
 import { setMockUserId } from '@/lib/mock-user'
+import { resetSession } from '@/lib/session'
 import type { Theme } from '@/providers/theme-context'
 import type { User } from '@/types'
 
@@ -31,14 +31,12 @@ export function UserMenu() {
   const { data: me } = useMe()
   const team = useTeam()
   const { theme, setTheme } = useTheme()
-  const queryClient = useQueryClient()
   if (!me) return null
 
   const viewAs = async (user: User) => {
     setMockUserId(user.id)
-    // Like signing in as someone else: drop every cached response (another person's data must not flash up), then
-    // refetch what's on screen.
-    await queryClient.resetQueries()
+    // Like signing in as someone else: another person's data must not flash up.
+    await resetSession()
     toast.info(`Viewing as ${user.name} (${ROLE_LABEL[user.role]})`)
   }
   const members = (team.data?.items ?? []).filter((u) => u.is_active)

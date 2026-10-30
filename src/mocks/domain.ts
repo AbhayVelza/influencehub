@@ -1,7 +1,7 @@
 import { csvCell } from '@/lib/csv'
 import { dayKey, todayKey } from '@/lib/format'
 import { can } from '@/lib/permissions'
-import { normalizeHandle, PLATFORM_META, PLATFORMS, primaryAccount, toRef } from '@/lib/platforms'
+import { audienceOf, normalizeHandle, PLATFORM_META, PLATFORMS, primaryAccount, toRef } from '@/lib/platforms'
 import { normalizePhone } from '@/lib/schemas'
 import { getAllowedTransitions, isOverride } from '@/lib/stages'
 import type {
@@ -66,10 +66,14 @@ const STAGE_ORDER: Stage[] = ['data_gathered', 'contacted', 'onboarded', 'packag
 export function sortInfluencers(list: Influencer[], sort: string | null): Influencer[] {
   const raw = sort || '-created_at'
   const desc = raw.startsWith('-')
-  const key = raw.replace(/^-/, '') as keyof Influencer
+  const key = raw.replace(/^-/, '')
   const value = (inf: Influencer): string | number | null => {
     if (key === 'stage') return STAGE_ORDER.indexOf(inf.stage)
-    const v = inf[key]
+    if (key === 'primary_followers') {
+      const primary = primaryAccount(inf)
+      return primary && audienceOf(primary)
+    }
+    const v = inf[key as keyof Influencer]
     return typeof v === 'number' || typeof v === 'string' ? v : null
   }
   return [...list].sort((a, b) => {

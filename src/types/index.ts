@@ -285,9 +285,10 @@ export interface ActivityWithInfluencer extends Activity {
 // ---------------------------------------------------------------------------
 // Request params / bodies
 
-export type InfluencerSortKey = 'name' | 'total_reach' | 'city' | 'stage' | 'created_at' | 'updated_at'
+/** `primary_followers` = the primary account's audience (followers / subscribers / page followers). */
+export type InfluencerSortKey = 'name' | 'total_reach' | 'primary_followers' | 'city' | 'stage' | 'created_at' | 'updated_at'
 
-/** `followers` ascending, `-followers` descending. */
+/** `total_reach` ascending, `-total_reach` descending. */
 export type InfluencerSort = InfluencerSortKey | `-${InfluencerSortKey}`
 
 export interface InfluencerFilters {

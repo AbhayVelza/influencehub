@@ -9,7 +9,7 @@ import type { InfluencerFilters, InfluencerListParams, InfluencerSort, Influence
 
 export const PAGE_SIZE_OPTIONS = [25, 50, 100]
 
-const SORT_KEYS: InfluencerSortKey[] = ['name', 'total_reach', 'city', 'stage', 'created_at', 'updated_at']
+const SORT_KEYS: InfluencerSortKey[] = ['name', 'total_reach', 'primary_followers', 'city', 'stage', 'created_at', 'updated_at']
 
 const ARRAY_KEYS = ['category', 'country', 'state', 'city', 'assigned_to'] as const
 

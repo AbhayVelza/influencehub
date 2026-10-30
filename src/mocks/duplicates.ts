@@ -23,14 +23,15 @@ function levenshtein(a: string, b: string): number {
   return row[b.length]!
 }
 
-const squashName = (name: string) => name.toLowerCase().normalize('NFKD').replace(/[^a-z\s]/g, '').replace(/\s+/g, ' ').trim()
-
-/** Same name, or one or two typos apart (only for names long enough that two edits still mean something). */
+/**
+ * Names compared trimmed and lowercased: at most 1 edit (Levenshtein) when the shorter one has ≤6 characters,
+ * at most 2 otherwise. Empty names never match. The backend uses this exact rule (CLAUDE.md, duplicate detection).
+ */
 export function similarNames(a: string, b: string): boolean {
-  const x = squashName(a)
-  const y = squashName(b)
+  const x = a.trim().toLowerCase()
+  const y = b.trim().toLowerCase()
   if (!x || !y) return false
-  return x === y || (Math.min(x.length, y.length) >= 8 && levenshtein(x, y) <= 2)
+  return levenshtein(x, y) <= (Math.min(x.length, y.length) <= 6 ? 1 : 2)
 }
 
 type Candidate = DuplicateCheckRequest
@@ -79,7 +80,7 @@ function compare(c: Candidate, inf: Influencer): { confidence: MatchConfidence; 
     }
   }
 
-  if (c.name && c.city && inf.city && c.city.trim().toLowerCase() === inf.city.toLowerCase() && similarNames(c.name, inf.name)) {
+  if (c.name && c.city && inf.city && c.city.trim().toLowerCase() === inf.city.trim().toLowerCase() && similarNames(c.name, inf.name)) {
     add('low', `Similar name in the same city (${inf.city})`)
   }
 

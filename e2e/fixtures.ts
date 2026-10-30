@@ -13,6 +13,15 @@ export async function signInAs(page: Page, user: keyof typeof USERS) {
   await page.addInitScript((id) => localStorage.setItem('influencehub-mock-user', id), USERS[user])
 }
 
+/** Switches user in the running app through the "View as" menu (keeps the in-memory mock data). */
+export async function viewAs(page: Page, name: string) {
+  await page.getByRole('button', { name: 'Account menu' }).click()
+  await page.getByRole('menuitemradio', { name: new RegExp(name) }).click()
+  await expect(toast(page, `Viewing as ${name}`)).toBeVisible()
+}
+
+export const toast = (page: Page, text: string | RegExp) => page.locator('[data-sonner-toast]', { hasText: text }).first()
+
 /** Calls the API from the page, so it goes through the mock with the page's identity and data. */
 export async function api<T = unknown>(page: Page, path: string, init?: { method?: string; body?: unknown }) {
   // Right after a navigation the mock service worker may not be in control yet (the dev server would answer).

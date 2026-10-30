@@ -82,7 +82,8 @@ Async actions return job_id; UI polls GET /jobs/{id} every 2 s.
 
 ## Contract decisions (backend must match; source of truth for types is `src/types/index.ts`)
 - Multi-value query params are repeated keys: `?stage=a&stage=b`.
-- Sorting: `sort=field` ascending, `sort=-field` descending (nulls last). Sort keys: name, total_reach, city, stage,
+- Sorting: `sort=field` ascending, `sort=-field` descending (nulls last). Sort keys: name, total_reach,
+  primary_followers (the primary account's audience metric: followers / subscribers / page_followers), city, stage,
   created_at, updated_at.
 - Job statuses: `queued | running | succeeded | failed`; `progress` 0–100; `error {code, message}` when failed.
 - **Accounts**: `total_reach` = sum of each account's audience metric (followers / subscribers / page_followers),
@@ -115,7 +116,10 @@ Async actions return job_id; UI polls GET /jobs/{id} every 2 s.
   links?}], exclude_id?}` → `{matches[{influencer_id, confidence, reasons[], access, influencer}]}`), strongest first.
   Signals: same email or phone → high; an account's handle / URL found in another account's bio or links (either
   direction) → high; the same platform + handle → high; the same handle on a different platform → medium; similar
-  name (normalised, ≤2 edits for names ≥8 letters) + same city → low. A match's confidence = its strongest signal.
+  name + same city (both trimmed, lowercased) → low. **Similar name** (exact rule, `similarNames` in
+  `src/mocks/duplicates.ts`): trim and lowercase both names; empty never matches; `n` = length in characters of the
+  shorter one; match when Levenshtein distance (insert / delete / substitute, each cost 1) ≤ 1 if `n` ≤ 6, else ≤ 2.
+  A match's confidence = its strongest signal.
   `access`: `full` (you can see it), `pool` (unassigned), `restricted` (an executive's teammate owns it:
   `influencer_id`, `influencer` and `reasons` are empty — the UI says only "matches a creator assigned to a
   teammate"). The UI calls it before every add (manual, lookup, add account, CSV preview rows) and offers
@@ -224,8 +228,8 @@ Async actions return job_id; UI polls GET /jobs/{id} every 2 s.
    pipeline funnel (click → filtered list), by-category + top-cities bars, my follow-ups, activity feed.
 3. **Influencers list**: header w/ count + Import CSV / Export / + Add; search; Saved views; filters
    Category/Platform/Country/State/City/Stage/Assigned/Total reach; chips; table; bulk bar; pagination. Columns:
-   name+avatar+verified, category, primary account, platforms, total reach, phone, email, city, state, country,
-   stage, assigned to, sync (primary), last synced (primary). Filters in URL.
+   name+avatar+verified, category, primary account, platforms, total reach, primary followers, phone, email, city,
+   state, country, stage, assigned to, sync (primary), last synced (primary). Filters in URL.
 4. **Influencer detail**: header (avatar, name, primary account, category, platforms, total reach, location, Stage ▾,
    Owner ▾, Log call, Create package, ⋯) + stage stepper. Left: **Social accounts** — a list of accounts (tabs), each
    with its platform's stat cards (`PLATFORM_META` labels), method + status (Sync now / Send connect link (copy or
@@ -254,10 +258,13 @@ Then: Unassigned Pool; multi-platform accounts, Facebook, connect links, duplica
 ## Rules
 - All API calls only through `src/services`; no hardcoded URLs (env vars).
 - MSW toggled by `VITE_USE_MOCKS` (a build-time literal, see vite.config). Dev "View as" signs the mock API in
-  as any active team member (`src/lib/mock-user.ts`); switching resets the query cache. Without it, production builds contain
-  no MSW code, fixtures or worker script. Every production chunk stays under 500 kB (vendor groups in vite.config).
+  as any active team member (`src/lib/mock-user.ts`). Switching user / role and signing out must call `resetSession`
+  (`src/lib/session.ts`: cancels requests, clears the query + mutation cache, remounts the routes). Without
+  VITE_USE_MOCKS, production builds contain no MSW code, fixtures or worker script. Every production chunk stays
+  under 500 kB (vendor groups in vite.config).
 - E2E: `npm run test:e2e` (Playwright, `e2e/`) starts or reuses the dev server on port 5199 with mocks; each test gets
   fresh mock data and fails on any console error. Navigate in-app after changing data (a reload resets the mocks).
+  `e2e/a11y.spec.ts` runs axe (`@axe-core/playwright`) on every main page: no serious or critical violations.
 
 ## Conventions (reuse, don't duplicate)
 - Validation: `src/lib/schemas.ts` (forms, inline edits, CSV rows via `src/lib/csv-import.ts`, the mock API).

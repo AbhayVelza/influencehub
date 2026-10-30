@@ -7,7 +7,7 @@ import { StageBadge } from '@/components/common/stage-badge'
 import { SyncStatusBadge } from '@/components/common/sync-status-badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { formatCompact, formatDateTime, formatNumber, formatRelative } from '@/lib/format'
-import { primaryAccount, toRef } from '@/lib/platforms'
+import { audienceOf, PLATFORM_META, primaryAccount, toRef } from '@/lib/platforms'
 import type { Influencer, InfluencerSortKey, User } from '@/types'
 
 declare module '@tanstack/react-table' {
@@ -102,6 +102,17 @@ export function buildColumns(team: Map<string, User>): ColumnDef<Influencer>[] {
       cell: ({ row }) => {
         const n = row.original.total_reach
         return n == null ? muted : <span title={`${formatNumber(n)} across ${row.original.accounts.length} account(s)`}>{formatCompact(n)}</span>
+      },
+    },
+    {
+      id: 'primary_followers',
+      header: 'Primary followers',
+      meta: { label: 'Primary followers', sortKey: 'primary_followers', sortDescFirst: true, align: 'right' },
+      cell: ({ row }) => {
+        const primary = primaryAccount(row.original)
+        const n = primary && audienceOf(primary)
+        if (!primary || n == null) return muted
+        return <span title={`${formatNumber(n)} ${PLATFORM_META[primary.platform].audienceLabel.toLowerCase()}`}>{formatCompact(n)}</span>
       },
     },
     {
