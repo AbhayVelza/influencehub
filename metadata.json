@@ -1,0 +1,8 @@
+{
+  "name": "InfluenceHub",
+  "description": "Influencer CRM and pipeline management platform for tracking creators, outreach, packages, and agreements.",
+  "permissions": [],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

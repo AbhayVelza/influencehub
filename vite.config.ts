@@ -26,9 +26,19 @@ const vendor = (name: string, packages: string[], priority: number) => ({
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), 'VITE_')
-  const useMocks = env.VITE_USE_MOCKS === 'true'
+  const useMocks = env.VITE_USE_MOCKS ? env.VITE_USE_MOCKS === 'true' : true
 
   return {
+    server: {
+      host: '0.0.0.0',
+      port: 3000,
+      allowedHosts: true,
+    },
+    preview: {
+      host: '0.0.0.0',
+      port: 3000,
+      allowedHosts: true,
+    },
     plugins: [react(), tailwindcss(), dropMockWorker(useMocks)],
     resolve: {
       alias: {
