@@ -144,7 +144,7 @@ export function createInfluencer(body: InfluencerCreate, source: 'lookup' | 'man
     return { ok: false, status: 422, code: 'validation_error', message: 'Add at least one social account' }
   }
   const checked = validateAccounts(body.accounts)
-  if (!checked.ok) return checked
+  if (!checked.ok) return checked as Failure
 
   const now = createdAt ?? nowIso()
   const address = body.address ?? null
