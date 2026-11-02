@@ -19,7 +19,8 @@ import { useDefaultMine, useFollowUps } from '@/hooks/use-follow-ups'
 import { useCan } from '@/hooks/use-me'
 import { useTeamMap } from '@/hooks/use-team'
 import { CALL_OUTCOME_META } from '@/lib/constants'
-import { formatDateTime, formatRelative } from '@/lib/format'
+import { RelativeTime } from '@/components/common/relative-time'
+import { formatDateTime } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { getErrorMessage } from '@/services'
 import type { CallLogWithInfluencer, FollowUpBucket } from '@/types'
@@ -191,8 +192,8 @@ export default function CallsPage() {
                           return (
                             <TableRow key={call.id}>
                               {history && (
-                                <TableCell className="whitespace-nowrap" title={formatDateTime(call.created_at)}>
-                                  {formatRelative(call.created_at)}
+                                <TableCell className="whitespace-nowrap">
+                                  <RelativeTime iso={call.created_at} />
                                 </TableCell>
                               )}
                               <TableCell>
@@ -217,7 +218,7 @@ export default function CallsPage() {
                                       {formatDateTime(call.follow_up_date)}
                                     </span>
                                     <span className="block text-xs text-muted-foreground">
-                                      {call.follow_up_done ? 'Done' : formatRelative(call.follow_up_date)}
+                                      {call.follow_up_done ? 'Done' : <RelativeTime iso={call.follow_up_date} />}
                                     </span>
                                   </>
                                 ) : (

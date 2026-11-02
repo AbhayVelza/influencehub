@@ -1,6 +1,6 @@
 import { QueryClient } from '@tanstack/react-query'
 import { ApiError } from '@/services/http'
-import type { FollowUpBucket, InfluencerListParams } from '@/types'
+import type { DocumentListParams, FollowUpBucket, InfluencerListParams } from '@/types'
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -29,6 +29,10 @@ export const queryKeys = {
   influencerCalls: (id: string) => ['influencers', 'detail', id, 'calls'] as const,
   accountSnapshots: (influencerId: string, accountId: string) => ['influencers', 'detail', influencerId, 'snapshots', accountId] as const,
   accountMedia: (influencerId: string, accountId: string) => ['influencers', 'detail', influencerId, 'media', accountId] as const,
+  influencerDocuments: (id: string) => ['influencers', 'detail', id, 'documents'] as const,
+  /** Prefix for the Documents page lists. */
+  documents: ['documents'] as const,
+  documentList: (params: DocumentListParams) => ['documents', 'list', params] as const,
   /** Open duplicate pairs (manager/admin), and their count for the sidebar. */
   duplicates: ['duplicates'] as const,
   /** Prefix for the Unassigned Pool (under `influencers`, so influencer invalidations refresh it too). */

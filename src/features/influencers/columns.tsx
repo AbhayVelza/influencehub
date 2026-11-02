@@ -2,11 +2,13 @@ import type { ColumnDef, RowData } from '@tanstack/react-table'
 import { BadgeCheck } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { PersonAvatar } from '@/components/common/person-avatar'
+import { DocFlags } from '@/features/documents/doc-flags'
 import { AccountLabel, PlatformMarks } from '@/components/common/platform-badge'
 import { StageBadge } from '@/components/common/stage-badge'
 import { SyncStatusBadge } from '@/components/common/sync-status-badge'
 import { Checkbox } from '@/components/ui/checkbox'
-import { formatCompact, formatDateTime, formatNumber, formatRelative } from '@/lib/format'
+import { RelativeTime } from '@/components/common/relative-time'
+import { formatCompact, formatNumber } from '@/lib/format'
 import { audienceOf, PLATFORM_META, primaryAccount, toRef } from '@/lib/platforms'
 import type { Influencer, InfluencerSortKey, User } from '@/types'
 
@@ -181,6 +183,17 @@ export function buildColumns(team: Map<string, User>): ColumnDef<Influencer>[] {
       },
     },
     {
+      id: 'docs',
+      header: 'Docs',
+      meta: { label: 'Docs' },
+      cell: ({ row }) => {
+        // Documents aren't kept for the Unassigned Pool.
+        const docs = row.original.documents
+        if (!docs) return muted
+        return <DocFlags documents={docs} />
+      },
+    },
+    {
       id: 'sync',
       header: 'Sync',
       meta: { label: 'Sync status (primary)' },
@@ -196,9 +209,7 @@ export function buildColumns(team: Map<string, User>): ColumnDef<Influencer>[] {
       cell: ({ row }) => {
         const at = primaryAccount(row.original)?.last_synced_at
         return at ? (
-          <span className="whitespace-nowrap" title={formatDateTime(at)}>
-            {formatRelative(at)}
-          </span>
+          <RelativeTime iso={at} className="whitespace-nowrap" />
         ) : (
           muted
         )

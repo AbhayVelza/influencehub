@@ -7,7 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { SYNC_INTERVAL_OPTIONS } from '@/lib/constants'
-import { formatDate, formatDateTime, formatNumber, formatRelative } from '@/lib/format'
+import { RelativeTime } from '@/components/common/relative-time'
+import { formatDate, formatDateTime, formatNumber } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { getErrorMessage } from '@/services'
 import type { SyncIntervalHours, SyncRunStatus, TokenStatus } from '@/types'
@@ -132,8 +133,8 @@ export function InstagramSettings() {
                 {TOKEN[s.token_status].label}
               </span>
               {s.token_expires_at && (
-                <span className="block text-xs text-muted-foreground" title={formatDateTime(s.token_expires_at)}>
-                  {s.token_status === 'expired' ? 'Expired' : 'Expires'} {formatRelative(s.token_expires_at)} ({formatDate(s.token_expires_at)})
+                <span className="block text-xs text-muted-foreground">
+                  {s.token_status === 'expired' ? 'Expired' : 'Expires'} <RelativeTime iso={s.token_expires_at} /> ({formatDate(s.token_expires_at)})
                 </span>
               )}
             </dd>

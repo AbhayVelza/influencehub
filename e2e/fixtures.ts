@@ -25,7 +25,8 @@ export const toast = (page: Page, text: string | RegExp) => page.locator('[data-
 /** Calls the API from the page, so it goes through the mock with the page's identity and data. */
 export async function api<T = unknown>(page: Page, path: string, init?: { method?: string; body?: unknown }) {
   // Right after a navigation the mock service worker may not be in control yet (the dev server would answer).
-  await page.waitForFunction(() => navigator.serviceWorker?.controller != null)
+  // The app renders only once the mock API has started, so wait for that too.
+  await page.waitForFunction(() => navigator.serviceWorker?.controller != null && (document.getElementById('root')?.childElementCount ?? 0) > 0)
   return page.evaluate(
     async ([p, i]) => {
       const res = await fetch(`/api/v1${p}`, {

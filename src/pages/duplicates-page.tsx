@@ -13,7 +13,8 @@ import { ConfidenceBadge } from '@/features/duplicates/duplicate-warning'
 import { MergeDialog } from '@/features/duplicates/merge-dialog'
 import { useDismissDuplicate, useDuplicatePairs } from '@/features/duplicates/queries'
 import { useTeamMap } from '@/hooks/use-team'
-import { formatCompact, formatLocation, formatNumber, formatRelative } from '@/lib/format'
+import { RelativeTime } from '@/components/common/relative-time'
+import { formatCompact, formatLocation, formatNumber } from '@/lib/format'
 import { primaryAccount, toRef } from '@/lib/platforms'
 import { getErrorMessage } from '@/services'
 import type { DuplicatePair, Influencer } from '@/types'
@@ -30,7 +31,7 @@ function Side({ influencer }: { influencer: Influencer }) {
     ['Location', formatLocation([influencer.city, influencer.state, influencer.country])],
     ['Stage', <StageBadge key="s" stage={influencer.stage} />],
     ['Owner', influencer.assigned_to ? (team.get(influencer.assigned_to)?.name ?? '…') : 'Unassigned'],
-    ['Added', formatRelative(influencer.created_at)],
+    ['Added', <RelativeTime key="a" iso={influencer.created_at} />],
   ]
   return (
     <div className="min-w-0 space-y-3 rounded-lg border p-3">

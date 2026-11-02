@@ -10,6 +10,8 @@ const PAGES = [
   ['Pipeline', '/pipeline'],
   ['Calls & Follow-ups', '/calls'],
   ['Packages', '/packages'],
+  ['Documents', '/documents'],
+  ['Influencer documents', '/influencers/inf_006?tab=documents'],
   ['Settings', '/settings'],
 ] as const
 

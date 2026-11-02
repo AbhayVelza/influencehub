@@ -1,7 +1,8 @@
 import { CALL_OUTCOME_META, PACKAGE_STATUS_META, STAGE_META } from '@/lib/constants'
+import { DOCUMENT_TYPE_META } from '@/lib/documents'
 import { formatCompact } from '@/lib/format'
 import { PLATFORM_META } from '@/lib/platforms'
-import type { Activity, CallOutcome, PackageStatus, Platform, Stage, User } from '@/types'
+import type { Activity, CallOutcome, DocumentType, PackageStatus, Platform, Stage, User } from '@/types'
 
 const FIELD_LABELS: Record<string, string> = {
   instagram_handle: 'Instagram handle',
@@ -55,6 +56,14 @@ export function describeActivity(activity: Activity, team: Map<string, User>): {
       }
     case 'claimed':
       return { text: 'Claimed from the Unassigned Pool' }
+    case 'document_uploaded':
+    case 'document_deleted': {
+      const kind = DOCUMENT_TYPE_META[p.type as DocumentType]?.label.toLowerCase() ?? 'document'
+      return {
+        text: `${activity.type === 'document_uploaded' ? 'Uploaded' : 'Deleted'} ${/^[aeiou]/.test(kind) ? 'an' : 'a'} ${kind}`,
+        detail: typeof p.title === 'string' ? p.title : undefined,
+      }
+    }
     case 'released':
       return {
         text: p.auto

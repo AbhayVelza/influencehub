@@ -5,7 +5,8 @@ import { AccountLabel, PlatformMarks } from '@/components/common/platform-badge'
 import { StageBadge } from '@/components/common/stage-badge'
 import { Button } from '@/components/ui/button'
 import { selectColumn } from '@/features/influencers/columns'
-import { formatCompact, formatDateTime, formatNumber, formatRelative } from '@/lib/format'
+import { RelativeTime } from '@/components/common/relative-time'
+import { formatCompact, formatNumber } from '@/lib/format'
 import type { PoolItem } from '@/types'
 import { AssignMenu } from './pool-preview'
 import { isFullInfluencer, poolPlatforms, poolPrimary } from './queries'
@@ -139,9 +140,7 @@ export function buildPoolColumns({ canReassign, busy, onOpen, onClaim, onAssign 
       header: 'Added',
       meta: { label: 'Added', sortKey: 'created_at', sortDescFirst: true, hiddenByDefault: true },
       cell: ({ row }) => (
-        <span className="whitespace-nowrap" title={formatDateTime(row.original.created_at)}>
-          {formatRelative(row.original.created_at)}
-        </span>
+        <RelativeTime iso={row.original.created_at} className="whitespace-nowrap" />
       ),
     },
     {

@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react'
-import { CopyCheck, Inbox, LayoutDashboard, Package, PhoneCall, Settings, SquareKanban, Users } from 'lucide-react'
+import { CopyCheck, FileText, Inbox, LayoutDashboard, Package, PhoneCall, Settings, SquareKanban, Users } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 import { useDuplicatePairs } from '@/features/duplicates/queries'
 import { usePoolCount } from '@/features/pool/queries'
@@ -61,6 +61,7 @@ export function Sidebar() {
     { to: '/pipeline', label: 'Pipeline', icon: SquareKanban },
     { to: '/calls', label: 'Calls & Follow-ups', icon: PhoneCall, badge: dueToday?.total, badgeLabel: 'due today' },
     { to: '/packages', label: 'Packages', icon: Package },
+    { to: '/documents', label: 'Documents', icon: FileText },
   ]
 
   return (

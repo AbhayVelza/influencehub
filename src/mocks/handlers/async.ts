@@ -116,7 +116,7 @@ export const asyncHandlers = [
             return
           }
           // Only fields present in the row overwrite; tags are merged; new handles are added as accounts.
-          const { tags, ...rest } = values
+          const { tags, created_at: _ignored, ...rest } = values
           const fields = Object.keys(raw).filter((k) => k in rest)
           Object.assign(existing, Object.fromEntries(Object.entries(rest).filter(([k]) => fields.includes(k))))
           if (tags) existing.tags = [...new Set([...existing.tags, ...tags])]
@@ -131,7 +131,8 @@ export const asyncHandlers = [
           return
         }
 
-        const res = createInfluencer({ ...values, accounts } as InfluencerCreate, 'csv')
+        const { created_at, ...fields } = values
+        const res = createInfluencer({ ...fields, accounts } as InfluencerCreate, 'csv', created_at)
         if (res.ok) {
           result.created++
           touched.push(res.influencer)

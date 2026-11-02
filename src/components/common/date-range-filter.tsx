@@ -1,13 +1,13 @@
 import { TZDate } from '@date-fns/tz'
-import { format, startOfMonth, subDays } from 'date-fns'
+import { startOfMonth, subDays } from 'date-fns'
 import { CalendarRange, ChevronDown } from 'lucide-react'
 import { useState } from 'react'
+import { DateInput } from '@/components/common/date-input'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { APP_TIMEZONE } from '@/lib/constants'
-import { formatDate } from '@/lib/format'
+import { dayToInput, formatDay, parseDateInput, toDayKey } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
 export interface DateRange {
@@ -16,7 +16,7 @@ export interface DateRange {
   to?: string
 }
 
-const ymd = (d: Date) => format(d, 'yyyy-MM-dd')
+const ymd = toDayKey
 
 function presets(): { label: string; range: DateRange }[] {
   const today = new TZDate(Date.now(), APP_TIMEZONE)
@@ -27,13 +27,27 @@ function presets(): { label: string; range: DateRange }[] {
   ]
 }
 
-const short = (day: string) => formatDate(`${day}T12:00:00+05:30`, 'd MMM')
+const short = formatDay
+
+interface Draft {
+  from: string
+  to: string
+}
+
+const toDraft = (range: DateRange): Draft => ({ from: dayToInput(range.from), to: dayToInput(range.to) })
 
 export function DateRangeFilter({ label, value, onChange }: { label: string; value: DateRange; onChange: (range: DateRange) => void }) {
   const [open, setOpen] = useState(false)
-  const [draft, setDraft] = useState<DateRange>(value)
+  const [draft, setDraft] = useState<Draft>(toDraft(value))
   const active = !!(value.from || value.to)
-  const invalid = !!(draft.from && draft.to && draft.from > draft.to)
+
+  // The text fields take dd/MM/yyyy; the range itself is yyyy-MM-dd.
+  const from = parseDateInput(draft.from)
+  const to = parseDateInput(draft.to)
+  const badFrom = draft.from.trim() !== '' && !from
+  const badTo = draft.to.trim() !== '' && !to
+  const reversed = !!(from && to && from > to)
+  const invalid = badFrom || badTo || reversed
 
   const apply = (range: DateRange) => {
     onChange(range)
@@ -44,7 +58,7 @@ export function DateRangeFilter({ label, value, onChange }: { label: string; val
     <Popover
       open={open}
       onOpenChange={(next) => {
-        if (next) setDraft(value)
+        if (next) setDraft(toDraft(value))
         setOpen(next)
       }}
     >
@@ -73,21 +87,22 @@ export function DateRangeFilter({ label, value, onChange }: { label: string; val
             <Label htmlFor="range-from" className="text-xs">
               From
             </Label>
-            <Input id="range-from" type="date" value={draft.from ?? ''} onChange={(e) => setDraft((d) => ({ ...d, from: e.target.value || undefined }))} />
+            <DateInput id="range-from" value={draft.from} aria-invalid={badFrom} onChange={(e) => setDraft((d) => ({ ...d, from: e.target.value }))} />
           </div>
           <div className="grid gap-1">
             <Label htmlFor="range-to" className="text-xs">
               To
             </Label>
-            <Input id="range-to" type="date" value={draft.to ?? ''} onChange={(e) => setDraft((d) => ({ ...d, to: e.target.value || undefined }))} />
+            <DateInput id="range-to" value={draft.to} aria-invalid={badTo} onChange={(e) => setDraft((d) => ({ ...d, to: e.target.value }))} />
           </div>
         </div>
-        {invalid && <p className="text-xs text-destructive">“From” is after “To”</p>}
+        {(badFrom || badTo) && <p className="text-xs text-destructive">Use dd/MM/yyyy</p>}
+        {reversed && <p className="text-xs text-destructive">“From” is after “To”</p>}
         <div className="flex justify-between">
           <Button variant="ghost" size="sm" disabled={!active} onClick={() => apply({})}>
             Clear
           </Button>
-          <Button size="sm" disabled={invalid} onClick={() => apply(draft)}>
+          <Button size="sm" disabled={invalid} onClick={() => apply({ from: from ?? undefined, to: to ?? undefined })}>
             Apply
           </Button>
         </div>

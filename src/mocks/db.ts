@@ -9,7 +9,9 @@ import type {
   ActivityType,
   CallLog,
   Category,
+  DocumentSummary,
   Influencer,
+  InfluencerDocument,
   InfluencerSummary,
   InstagramSettings,
   MediaItem,
@@ -25,12 +27,26 @@ import fixturesJson from './fixtures.json'
 /** Categories as stored; `influencer_count` is computed per response. */
 export type StoredCategory = Omit<Category, 'influencer_count'>
 
+/** A document as stored: soft-deleted ones stay in the list with `deleted_at` set and are never served. */
+export type StoredDocument = InfluencerDocument & { deleted_at: string | null }
+
+/** An upload the presign step prepared; `blob` arrives with the PUT. */
+export interface PendingUpload {
+  influencer_id: string
+  type: InfluencerDocument['type']
+  file_name: string
+  content_type: string
+  size: number
+  blob: Blob | null
+}
+
 interface Fixtures {
   generated_at: string
   current_user_id: string
   team: User[]
   categories: StoredCategory[]
   influencers: Influencer[]
+  documents: InfluencerDocument[]
   calls: CallLog[]
   packages: Package[]
   activities: Activity[]
@@ -46,7 +62,10 @@ const DATE_KEYS = new Set([
   'sent_at',
   'delivered_at',
   'connect_link_expires_at',
+  'uploaded_at',
 ])
+/** Calendar dates (yyyy-MM-dd), shifted like the timestamps. */
+const DAY_KEYS = new Set(['period_start', 'period_end', 'signed_on', 'valid_until'])
 
 /** Moves every timestamp forward by whole days so "today" in the fixtures is always today. */
 function shiftDates<T>(value: T, offsetMs: number): T {
@@ -57,7 +76,9 @@ function shiftDates<T>(value: T, offsetMs: number): T {
       out[key] =
         DATE_KEYS.has(key) && typeof v === 'string'
           ? new Date(Date.parse(v) + offsetMs).toISOString()
-          : shiftDates(v, offsetMs)
+          : DAY_KEYS.has(key) && typeof v === 'string'
+            ? new Date(Date.parse(`${v}T00:00:00Z`) + offsetMs).toISOString().slice(0, 10)
+            : shiftDates(v, offsetMs)
     }
     return out as T
   }
@@ -71,6 +92,29 @@ function load(): Fixtures {
 }
 
 const data = load()
+
+/**
+ * An influencer's `documents` summary is derived (and null in the pool), so it's computed whenever the object is
+ * serialised instead of being kept in step with every owner change. The stored field is only a placeholder.
+ */
+export function attachDocumentSummary(inf: Influencer): Influencer {
+  Object.defineProperty(inf, 'toJSON', {
+    enumerable: false,
+    configurable: true,
+    value: () => ({ ...inf, documents: documentSummary(inf) }),
+  })
+  return inf
+}
+
+/** What's on file for an influencer (null in the pool: documents aren't shown for unassigned influencers). */
+export function documentSummary(inf: Influencer): DocumentSummary | null {
+  if (inf.assigned_to === null) return null
+  const mine = db.documents.filter((d) => d.influencer_id === inf.id && !d.deleted_at)
+  return {
+    insights_count: mine.filter((d) => d.type === 'insights_summary').length,
+    has_agreement: mine.some((d) => d.type === 'agreement' && d.is_current),
+  }
+}
 
 /** Connected business account with 20 scheduled runs, one every 6 h, ending just now. */
 function createInstagramSettings(): InstagramSettings {
@@ -102,7 +146,12 @@ export const db = {
   currentUserId: data.current_user_id,
   team: data.team,
   categories: data.categories,
-  influencers: data.influencers,
+  influencers: data.influencers.map((i) => attachDocumentSummary({ ...i, documents: null })),
+  documents: data.documents.map((d): StoredDocument => ({ ...d, deleted_at: null })),
+  /** Uploads by presign key (the files stay in memory; downloads are blob URLs). */
+  documentUploads: new Map<string, PendingUpload>(),
+  /** Blob URL per stored document id, made on first download. */
+  documentUrls: new Map<string, string>(),
   calls: data.calls,
   packages: data.packages,
   activities: data.activities,

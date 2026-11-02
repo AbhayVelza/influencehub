@@ -12,12 +12,17 @@ export const STAGE_TRANSITIONS: Record<Stage, Stage[]> = {
   rejected: ['data_gathered'],
 }
 
+/** Stages an influencer has to have a current agreement on file for (the dashboard's "Onboarded without agreement"). */
+export const ONBOARDED_OR_LATER: Stage[] = ['onboarded', 'package_sent', 'delivered']
+
 /** What must exist before an influencer can enter a stage. */
-export type StageRequirement = 'interested_call' | 'package_with_tracking'
+export type StageRequirement = 'interested_call' | 'package_with_tracking' | 'current_agreement'
 
 export const STAGE_REQUIREMENTS: Partial<Record<Stage, StageRequirement>> = {
   contacted: 'interested_call',
   package_sent: 'package_with_tracking',
+  /** Only when entering from Contacted (resuming from hold or a returned package keeps what's on file). */
+  onboarded: 'current_agreement',
 }
 
 /** Transitions any role may make (before admin override). */

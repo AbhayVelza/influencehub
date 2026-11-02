@@ -1,4 +1,5 @@
 import { toCsvText } from '@/lib/csv'
+import { parseImportDate } from '@/lib/format'
 import { PLATFORM_META, PLATFORMS } from '@/lib/platforms'
 import { fieldSchemas, handleSchema, MAX_TAGS, validateField } from '@/lib/schemas'
 import type { AccountCreate, CsvColumnMapping, CsvImportField, InfluencerCreate, Platform } from '@/types'
@@ -29,6 +30,7 @@ export const IMPORT_FIELDS: { key: ImportField; label: string; required?: boolea
   ...PLATFORMS.map((p) => ({ key: p, label: PLATFORM_META[p].label, handle: true, aliases: PLATFORM_ALIASES[p] })),
   { key: 'tags', label: 'Tags', aliases: ['tags', 'labels', 'keywords'] },
   { key: 'notes', label: 'Notes', aliases: ['notes', 'note', 'comments', 'remarks'] },
+  { key: 'created_at', label: 'Added on', aliases: ['created at', 'created', 'added on', 'date added', 'added', 'date'] },
 ]
 
 const squash = (header: string) => header.trim().toLowerCase().replace(/[_\-.]+/g, ' ').replace(/\s+/g, ' ')
@@ -73,8 +75,8 @@ export function mapImportRow(row: string[], headers: string[], mapping: CsvColum
 type ImportErrorKey = ImportField | 'accounts'
 
 export interface ValidatedImportRow {
-  /** Ready-to-save values for the fields present in the row. */
-  values: Partial<Omit<InfluencerCreate, 'accounts'>> & { name?: string; category: string }
+  /** Ready-to-save values for the fields present in the row. `created_at` is an ISO timestamp. */
+  values: Partial<Omit<InfluencerCreate, 'accounts'>> & { name?: string; category: string; created_at?: string }
   /** One per handle cell, in platform order. */
   accounts: AccountCreate[]
   errors: Partial<Record<ImportErrorKey, string>>
@@ -100,6 +102,12 @@ export function validateImportRow(raw: RawImportRow, categoryNames: string[]): V
   text('state')
   text('country')
   text('notes')
+
+  if (raw.created_at) {
+    const created = parseImportDate(raw.created_at)
+    if (created) values.created_at = created
+    else errors.created_at = 'Use dd/MM/yyyy or an ISO date like 2026-10-28'
+  }
 
   for (const platform of PLATFORMS) {
     const cell = raw[platform]

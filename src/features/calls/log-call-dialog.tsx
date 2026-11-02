@@ -1,9 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { TZDate } from '@date-fns/tz'
-import { addDays, format, set } from 'date-fns'
 import { useEffect } from 'react'
 import { Controller, useForm, useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
+import { DateTimeInput } from '@/components/common/date-input'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
@@ -14,13 +13,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { useChangeStage } from '@/features/influencers/detail-queries'
 import { useMe } from '@/hooks/use-me'
-import { APP_TIMEZONE, CALL_OUTCOME_META, CALL_OUTCOMES } from '@/lib/constants'
-import { localInputToIso } from '@/lib/format'
+import { CALL_OUTCOME_META, CALL_OUTCOMES } from '@/lib/constants'
+import { dateTimeInputFromNow, parseDateTimeInput } from '@/lib/format'
 import { callLogSchema, type CallLogFormInput } from '@/lib/schemas'
 import { getStandardTransitions } from '@/lib/stages'
 import { cn } from '@/lib/utils'
@@ -40,12 +38,6 @@ interface LogCallDialogProps {
   onOpenChange: (open: boolean) => void
   /** Opened from Stage → Contacted: preselect "Interested" and the move. */
   intent?: 'contacted'
-}
-
-/** Follow-up shortcuts, in Asia/Kolkata. */
-function quickPick(days: number, hour: number): string {
-  const base = addDays(new TZDate(Date.now(), APP_TIMEZONE), days)
-  return format(set(base, { hours: hour, minutes: 0, seconds: 0, milliseconds: 0 }), "yyyy-MM-dd'T'HH:mm")
 }
 
 const QUICK_PICKS = [
@@ -80,7 +72,7 @@ export function LogCallDialog({ influencer, open, onOpenChange, intent }: LogCal
       await logCall.mutateAsync({
         outcome: values.outcome as CallOutcome,
         notes: values.notes,
-        follow_up_date: values.follow_up ? localInputToIso(values.follow_up) : null,
+        follow_up_date: values.follow_up ? parseDateTimeInput(values.follow_up) : null,
       })
     } catch (err) {
       toast.error('Couldn’t log the call', { description: getErrorMessage(err) })
@@ -153,9 +145,8 @@ export function LogCallDialog({ influencer, open, onOpenChange, intent }: LogCal
                 {outcome === 'call_back' ? '(required)' : '(optional)'} · IST
               </span>
             </Label>
-            <Input
+            <DateTimeInput
               id="call-follow-up"
-              type="datetime-local"
               aria-invalid={!!formState.errors.follow_up}
               {...register('follow_up')}
             />
@@ -166,7 +157,7 @@ export function LogCallDialog({ influencer, open, onOpenChange, intent }: LogCal
                   type="button"
                   variant="ghost"
                   size="xs"
-                  onClick={() => setValue('follow_up', quickPick(p.days, p.hour), { shouldValidate: true })}
+                  onClick={() => setValue('follow_up', dateTimeInputFromNow(p.days, p.hour), { shouldValidate: true })}
                 >
                   {p.label}
                 </Button>

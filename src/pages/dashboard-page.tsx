@@ -17,8 +17,10 @@ import { useMe } from '@/hooks/use-me'
 import { useTeamMap } from '@/hooks/use-team'
 import { describeActivity } from '@/lib/activity-text'
 import { CALL_OUTCOME_META } from '@/lib/constants'
-import { dayKey, formatDate, formatDateTime, formatNumber, formatRelative, todayKey } from '@/lib/format'
+import { RelativeTime } from '@/components/common/relative-time'
+import { dayKey, formatDateTime, formatNumber, formatTime, todayKey } from '@/lib/format'
 import { queryKeys } from '@/lib/query'
+import { ONBOARDED_OR_LATER } from '@/lib/stages'
 import { cn } from '@/lib/utils'
 import { dashboardApi, getErrorMessage } from '@/services'
 import type { DashboardSummary } from '@/types'
@@ -75,9 +77,13 @@ function MyFollowUps({ items }: { items: DashboardSummary['my_follow_ups'] }) {
                 </Link>
                 <p className="truncate text-xs text-muted-foreground">
                   {CALL_OUTCOME_META[call.outcome].label} ·{' '}
-                  <span className={cn(overdue && 'font-medium text-destructive')} title={formatDateTime(call.follow_up_date)}>
-                    {overdue ? `Overdue ${formatRelative(call.follow_up_date)}` : `Today ${formatDate(call.follow_up_date, 'h:mm a')}`}
-                  </span>
+                  {overdue ? (
+                    <span className="font-medium text-destructive">
+                      Overdue <RelativeTime iso={call.follow_up_date} />
+                    </span>
+                  ) : (
+                    <span title={formatDateTime(call.follow_up_date)}>Today {formatTime(call.follow_up_date)}</span>
+                  )}
                 </p>
               </div>
               <Button
@@ -130,9 +136,7 @@ function RecentActivity({ items }: { items: DashboardSummary['recent_activity'] 
             {detail && <span className="text-muted-foreground"> — “{detail}”</span>}
             <p className="text-xs text-muted-foreground">
               {a.actor ? (team.get(a.actor)?.name ?? 'Someone') : 'System'} ·{' '}
-              <time dateTime={a.created_at} title={formatDateTime(a.created_at)}>
-                {formatRelative(a.created_at)}
-              </time>
+              <RelativeTime iso={a.created_at} />
             </p>
           </li>
         )
@@ -144,8 +148,8 @@ function RecentActivity({ items }: { items: DashboardSummary['recent_activity'] 
 function DashboardSkeleton() {
   return (
     <div className="space-y-4" aria-busy="true" aria-label="Loading dashboard">
-      <div className="grid grid-cols-3 gap-3 xl:grid-cols-6">
-        {Array.from({ length: 6 }, (_, i) => (
+      <div className="grid grid-cols-3 gap-3 xl:grid-cols-7">
+        {Array.from({ length: 7 }, (_, i) => (
           <Skeleton key={i} className="h-24" />
         ))}
       </div>
@@ -170,7 +174,7 @@ export default function DashboardPage() {
         <ErrorState title="Couldn’t load the dashboard" error={summary.error} onRetry={() => summary.refetch()} />
       ) : (
         <>
-          <section aria-label="Key numbers" className="grid grid-cols-3 gap-3 xl:grid-cols-6">
+          <section aria-label="Key numbers" className="grid grid-cols-3 gap-3 xl:grid-cols-7">
             <Kpi label={me?.role === 'executive' ? 'My influencers' : 'Total influencers'} value={summary.data.kpis.total} to="/influencers" />
             <Kpi
               label="Unassigned Pool"
@@ -182,6 +186,12 @@ export default function DashboardPage() {
             <Kpi label="Onboarded this month" value={summary.data.kpis.onboarded_this_month} />
             <Kpi label="Packages in transit" value={summary.data.kpis.packages_in_transit} to="/packages?status=sent&status=in_transit" />
             <Kpi label="Follow-ups today" value={summary.data.kpis.follow_ups_today} to="/calls" />
+            <Kpi
+              label="Onboarded without agreement"
+              value={summary.data.kpis.onboarded_without_agreement}
+              to={`/influencers?${ONBOARDED_OR_LATER.map((s) => `stage=${s}`).join('&')}&agreement=missing`}
+              hint="Onboarded or later, no agreement on file"
+            />
           </section>
 
           <div className="grid gap-4 lg:grid-cols-2">

@@ -35,12 +35,17 @@ export function StageControl({ influencer, previousStage, hasInterestedCall, has
   const standard = getStandardTransitions(from, me.role, previousStage)
   const overrides = me.role === 'admin' ? ALL_STAGES.filter((s) => s !== from && !standard.includes(s)) : []
 
+  // Entering Onboarded from Contacted needs a current agreement (resuming from hold doesn't).
+  const needsAgreement = (to: Stage) => to === 'onboarded' && from === 'contacted'
+  const hasAgreement = !!influencer.documents?.has_agreement
+
   const requirementMet = (to: Stage) =>
-    to === 'contacted' ? hasInterestedCall : to === 'package_sent' ? hasTrackedPackage : undefined
+    to === 'contacted' ? hasInterestedCall : to === 'package_sent' ? hasTrackedPackage : needsAgreement(to) ? hasAgreement : undefined
 
   const hint = (to: Stage) => {
     if (to === 'contacted' && !hasInterestedCall) return 'Log call…'
     if (to === 'package_sent' && !hasTrackedPackage) return 'Create package…'
+    if (needsAgreement(to) && !hasAgreement) return 'Upload agreement…'
     if (to === previousStage && from === 'on_hold') return 'Resume'
     if (to === 'on_hold' || to === 'rejected') return '…'
     return null

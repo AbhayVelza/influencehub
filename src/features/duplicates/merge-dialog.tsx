@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useTeamMap } from '@/hooks/use-team'
 import { PIPELINE_STAGES } from '@/lib/constants'
-import { formatLocation } from '@/lib/format'
+import { formatDate, formatLocation } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { getErrorMessage } from '@/services'
 import type { Address, DuplicatePair, Influencer, MergeField, MergeRequest } from '@/types'
@@ -111,7 +111,7 @@ export function MergeDialog({ pair, open, onOpenChange }: { pair: DuplicatePair;
               >
                 <span className="block font-medium">{inf.name}</span>
                 <span className="block text-xs text-muted-foreground">
-                  {inf.accounts.length} account{inf.accounts.length === 1 ? '' : 's'} · added {new Date(inf.created_at).toLocaleDateString('en-IN')}
+                  {inf.accounts.length} account{inf.accounts.length === 1 ? '' : 's'} · added {formatDate(inf.created_at)}
                 </span>
               </Choice>
             ))}

@@ -3,7 +3,7 @@ import { api, expect, signInAs, test, USERS, viewAs } from './fixtures.ts'
 
 type Role = 'admin' | 'manager' | 'exec1'
 
-/** What each role sees and may do (CLAUDE.md "Permissions"). */
+/** What each role sees and may do (docs/data-model.md "Permissions"). */
 const MATRIX: Record<Role, {
   nav: { settings: boolean; duplicates: boolean }
   importExport: boolean
