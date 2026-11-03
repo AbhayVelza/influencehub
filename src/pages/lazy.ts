@@ -4,6 +4,8 @@ import { lazy } from 'react'
 export const DashboardPage = lazy(() => import('@/pages/dashboard-page'))
 export const InfluencersPage = lazy(() => import('@/pages/influencers-page'))
 export const InfluencerDetailPage = lazy(() => import('@/pages/influencer-detail-page'))
+export const OnboardedPage = lazy(() => import('@/pages/onboarded-page'))
+export const OnboardedPlatformPage = lazy(() => import('@/pages/onboarded-platform-page'))
 export const PoolPage = lazy(() => import('@/pages/pool-page'))
 export const DuplicatesPage = lazy(() => import('@/pages/duplicates-page'))
 export const PipelinePage = lazy(() => import('@/pages/pipeline-page'))

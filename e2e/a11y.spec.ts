@@ -7,6 +7,8 @@ const PAGES = [
   ['Influencer detail', '/influencers/inf_001'],
   ['Unassigned Pool', '/pool'],
   ['Possible duplicates', '/duplicates'],
+  ['Onboarded', '/onboarded'],
+  ['Onboarded on Instagram', '/onboarded/instagram'],
   ['Pipeline', '/pipeline'],
   ['Calls & Follow-ups', '/calls'],
   ['Packages', '/packages'],

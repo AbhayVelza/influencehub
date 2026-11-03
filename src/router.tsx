@@ -9,6 +9,8 @@ import {
   InfluencerDetailPage,
   InfluencersPage,
   NotFoundPage,
+  OnboardedPage,
+  OnboardedPlatformPage,
   PackagesPage,
   PipelinePage,
   PoolPage,
@@ -30,6 +32,27 @@ export const router = createBrowserRouter([
             <DuplicatesPage />
           </RequirePermission>
         ),
+      },
+      {
+        path: 'onboarded',
+        children: [
+          {
+            index: true,
+            element: (
+              <RequirePermission permission="influencer:view">
+                <OnboardedPage />
+              </RequirePermission>
+            ),
+          },
+          {
+            path: ':platform',
+            element: (
+              <RequirePermission permission="influencer:view">
+                <OnboardedPlatformPage />
+              </RequirePermission>
+            ),
+          },
+        ],
       },
       { path: 'pipeline', element: <PipelinePage /> },
       { path: 'calls', element: <CallsPage /> },

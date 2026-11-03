@@ -36,6 +36,8 @@ Admins can override any stage move, with a required reason.
 - **Documents**: insights summaries (many) and agreements (a new upload becomes current, older versions stay as
   history) per influencer, with a sidebar page for all of them. PDF / JPG / PNG / DOCX / XLSX up to 20 MB, upload
   progress, PDF and image preview, soft delete (manager/admin). Uploading ticks the onboarding checklist.
+- **Onboarded**: a sidebar group with one tab per platform listing the creators who are onboarded there (Onboarded
+  stage + an account on that platform + a signed agreement + an insights summary), searchable and filterable.
 - **Pipeline** kanban, **Calls & Follow-ups**, **Packages**.
 - **Settings** (admin): Instagram integration, team and roles, categories, pool guards.
 - Light / dark theme, usable at 1024px, skeleton / empty / error states. Dates are `dd/MM/yyyy` and date-times
@@ -144,10 +146,10 @@ saved views, imports / exports, settings.
 
 ## Tests
 
-`npm run test:e2e` runs 36 Playwright tests against the mock API: cascading filters and URL restore, sorting,
+`npm run test:e2e` runs 41 Playwright tests against the mock API: cascading filters and URL restore, sorting,
 bulk stage changes, stage modals, admin override, package return, the role permissions matrix, pool claim /
 release, duplicates, platforms, the dd/MM/yyyy date format (list, detail, forms, CSV), documents (upload, preview,
-download, delete rights, scoping, checklist) and an axe accessibility check on every main page. Each test starts with fresh mock
+download, delete rights, scoping, checklist), the Onboarded tabs (per-platform rule, search, executive scoping) and an axe accessibility check on every main page. Each test starts with fresh mock
 data and fails on any console error.
 
 Before calling a change done, run `npm run lint`, `npm run typecheck`, `npm run build` and `npm run test:e2e`.
