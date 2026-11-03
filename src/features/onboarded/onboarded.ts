@@ -2,15 +2,16 @@ import { audienceOf, PLATFORMS } from '@/lib/platforms'
 import type { Influencer, InfluencerFilters, Platform, SocialAccount } from '@/types'
 
 /**
- * Who appears under a platform's Onboarded tab: in the Onboarded stage, with an account on that platform, a current
- * agreement and at least one insights summary. Plain GET /influencers filters, so the API's scoping applies as is.
+ * Who appears under a platform's Onboarded tab: everyone in the Onboarded stage with an account on that platform.
+ * Missing documents show in the table's Documents column and can be filtered. Plain GET /influencers filters, so the
+ * API's scoping applies as is.
  */
 export function onboardedFilters(platform: Platform): InfluencerFilters {
-  return { stage: ['onboarded'], platform: [platform], agreement: 'signed', insights: 'received' }
+  return { stage: ['onboarded'], platform: [platform] }
 }
 
 /** The filters the Onboarded tabs set themselves; the URL can't change them. */
-export const LOCKED_KEYS = ['stage', 'platform', 'agreement', 'insights'] as const
+export const LOCKED_KEYS = ['stage', 'platform'] as const
 
 export function withoutLocked(filters: InfluencerFilters): InfluencerFilters {
   const rest = { ...filters }

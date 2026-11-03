@@ -69,7 +69,7 @@ function OnboardedPlatformList({ platform }: { platform: Platform }) {
     <EmptyState
       icon={BadgeCheck}
       title={`No onboarded creators on ${meta.label} yet`}
-      description={`Creators show here once they’re in the Onboarded stage with a ${meta.label} account, a signed agreement and an insights summary.`}
+      description={`Creators show here once they’re in the Onboarded stage and have a ${meta.label} account.`}
     />
   )
 
@@ -95,7 +95,7 @@ function OnboardedPlatformList({ platform }: { platform: Platform }) {
               </span>
             </span>
           }
-          description={`In the Onboarded stage, with a ${meta.label} account, a signed agreement and an insights summary.`}
+          description={`In the Onboarded stage, with a ${meta.label} account. The Documents column shows what’s still missing.`}
         />
 
         <ListSearch value={filters.q} onChange={(q) => list.setFilters({ q }, { replace: true })} />
@@ -106,7 +106,6 @@ function OnboardedPlatformList({ platform }: { platform: Platform }) {
           showFollowers
           hideStage
           hidePlatform
-          hideDocuments
           hideAssigned={!canReassign}
         />
         <ActiveFilters filters={filters} onChange={list.setFilters} onClear={list.clearFilters} />
