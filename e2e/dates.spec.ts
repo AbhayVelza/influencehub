@@ -1,5 +1,5 @@
 import type { Influencer, Paginated } from '../src/types/index.ts'
-import { api, expect, signInAs, test, toast } from './fixtures.ts'
+import { api, expect, openFilters, signInAs, test, toast } from './fixtures.ts'
 
 const DATE = /^\d{2}\/\d{2}\/\d{4}$/
 const DATE_TIME = /^\d{2}\/\d{2}\/\d{4}, \d{2}:\d{2} (AM|PM)$/
@@ -59,6 +59,7 @@ test('date inputs show and accept dd/MM/yyyy: follow-up date-time and the date-r
 
   // Date range filter (Packages → Sent).
   await page.goto('/packages')
+  await openFilters(page)
   await page.getByRole('button', { name: /^Sent/ }).click()
   const from = page.getByRole('textbox', { name: 'From' })
   const to = page.getByRole('textbox', { name: 'To', exact: true })

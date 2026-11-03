@@ -4,7 +4,7 @@ The MSW mocks implement this. Behaviour the backend must match is in `contract-d
 
 Base `VITE_API_URL` + `/api/v1`. Lists → `{ items, total, page, page_size }`. Errors → `{ error: { code, message } }`.
 - GET /influencers (q, category[], platform[], country[], state[], city[], stage[], assigned_to[], reach_min,
-  reach_max, agreement=signed|missing, insights=received|missing, sort, page, page_size) · GET /influencers/filter-options?country=&state= (cascading, with counts)
+  reach_max, followers_min, followers_max, agreement=signed|missing, insights=received|missing, sort, page, page_size) · GET /influencers/filter-options (same filters as the list, no sort / paging → options with faceted counts; `contract-decisions.md`, Filter options)
 - POST /influencers · GET/PATCH/DELETE /influencers/{id} · GET /influencers/check-handle?platform=&handle=
 - POST /influencers/{id}/stage {to, reason} · POST /influencers/bulk {ids, action, value}
 - GET /influencers/{id}/activity · POST /influencers/{id}/accounts · POST /influencers/merge
@@ -22,5 +22,5 @@ Base `VITE_API_URL` + `/api/v1`. Lists → `{ items, total, page, page_size }`. 
 - GET /me · GET/POST/PATCH /team · GET/POST/PATCH /categories · GET/POST/DELETE /saved-views
 - GET /pool (same filters, sort and pagination as /influencers) · GET /pool/filter-options · GET /pool/{id} ·
   GET /pool/expiring · POST /influencers/{id}/claim · POST /influencers/{id}/release {reason} ·
-  POST /influencers/bulk action `claim` · GET/PATCH /settings/pool {claim_limit, auto_release_days}
+  POST /influencers/bulk actions `claim`, `pool_assign` · GET/PATCH /settings/pool {claim_limit, auto_release_days}
 Async actions return job_id; UI polls GET /jobs/{id} every 2 s.

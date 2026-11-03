@@ -48,7 +48,7 @@ numbers 12.4K / 1.2M; dates dd/MM/yyyy; relative times; toasts; "/" focuses sear
 - Pool: `features/pool` (`usePoolActions` for claim / bulk claim / assign with the right toasts, `PoolPreview`,
   `ReleaseDialog`). Handle conflicts: `features/add-influencer/already-in-crm.tsx` + `conflict.ts`; account rows:
   `account-row.tsx` + `account-input.ts`. Duplicates: `features/duplicates` (`DuplicateWarning`, `MergeDialog`).
-- Shared UI: Log Call dialog (`features/calls`), Package drawer + status confirm (`features/packages`),
+- Shared UI: filters sit behind `CollapsibleFilters` (a "Filters" button; collapsed by default, e2e `openFilters`); Log Call dialog (`features/calls`), Package drawer + status confirm (`features/packages`),
   influencer filter bar / search / chips (`features/influencers`), jobs via `useJob` or `waitForJob`.
 - Dates: every displayed date goes through `src/lib/format.ts` (`formatDate`, `formatDateTime`, `formatTime`,
   `formatChartDate`, `formatDay`; never `date-fns` `format` or `toLocale…String` in components). Relative times use

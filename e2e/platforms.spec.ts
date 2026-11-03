@@ -1,5 +1,5 @@
 import type { Influencer } from '../src/types/index.ts'
-import { api, expect, signInAs, test } from './fixtures.ts'
+import { api, expect, openFilters, signInAs, test } from './fixtures.ts'
 
 test('Facebook Page stats have their own labels, and the platform filter includes Facebook', async ({ page }) => {
   await signInAs(page, 'admin')
@@ -10,6 +10,7 @@ test('Facebook Page stats have their own labels, and the platform filter include
   await expect(panel.getByText('Public lookup')).toBeVisible()
 
   await page.goto('/influencers')
+  await openFilters(page)
   await page.getByRole('button', { name: /^Platform/ }).click()
   await page.getByRole('option', { name: /Facebook/ }).click()
   await page.keyboard.press('Escape')

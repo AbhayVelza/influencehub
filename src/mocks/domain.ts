@@ -39,12 +39,27 @@ export { normalizeHandle, normalizePhone }
 // ---------------------------------------------------------------------------
 // Filtering & sorting (shared by list, pipeline and export)
 
-/** `limitedSearch`: match only fields an executive may see in the pool (no probing by phone or email). */
-export function filterInfluencers(
-  params: URLSearchParams,
-  source: Influencer[] = db.influencers,
-  { limitedSearch = false } = {},
-): Influencer[] {
+/** Every filter the list understands; `FilterKey`s that have options with counts are the facets. */
+export type FilterKey =
+  | 'q'
+  | 'category'
+  | 'country'
+  | 'state'
+  | 'city'
+  | 'stage'
+  | 'assigned_to'
+  | 'platform'
+  | 'reach'
+  | 'followers'
+  | 'agreement'
+  | 'insights'
+
+/**
+ * Compiles the filter params into one function that returns the filters a row fails (none = it matches).
+ * The list keeps rows that fail nothing; filter options keep rows that fail nothing but the facet being counted.
+ * `limitedSearch`: match only fields an executive may see in the pool (no probing by phone or email).
+ */
+export function compileFilters(params: URLSearchParams, { limitedSearch = false } = {}): (inf: Influencer) => FilterKey[] {
   const q = params.get('q')?.trim().toLowerCase().replace(/^@/, '')
   const sets = {
     category: params.getAll('category'),
@@ -57,40 +72,64 @@ export function filterInfluencers(
   const platforms = params.getAll('platform')
   const min = params.get('reach_min')
   const max = params.get('reach_max')
+  const followersMin = params.get('followers_min')
+  const followersMax = params.get('followers_max')
   const agreement = params.get('agreement')
   const insights = params.get('insights')
 
-  return source.filter((inf) => {
+  return (inf) => {
+    const failed: FilterKey[] = []
     if (q) {
       const handles = inf.accounts.map((a) => a.handle)
       const fields = limitedSearch ? [inf.name, ...handles, inf.city] : [inf.name, ...handles, inf.email, inf.phone, inf.city]
-      if (!fields.join(' ').toLowerCase().includes(q)) return false
+      if (!fields.join(' ').toLowerCase().includes(q)) failed.push('q')
     }
     for (const [key, values] of Object.entries(sets)) {
-      if (values.length && !values.includes(String(inf[key as keyof typeof sets] ?? ''))) return false
+      if (values.length && !values.includes(String(inf[key as keyof typeof sets] ?? ''))) failed.push(key as FilterKey)
     }
-    if (platforms.length && !inf.accounts.some((a) => platforms.includes(a.platform))) return false
-    if (min && (inf.total_reach == null || inf.total_reach < Number(min))) return false
-    if (max && (inf.total_reach == null || inf.total_reach > Number(max))) return false
+    if (platforms.length && !inf.accounts.some((a) => platforms.includes(a.platform))) failed.push('platform')
+    if (min && (inf.total_reach == null || inf.total_reach < Number(min))) failed.push('reach')
+    else if (max && (inf.total_reach == null || inf.total_reach > Number(max))) failed.push('reach')
+    if (followersMin || followersMax) {
+      // One account has to satisfy the whole range: on a selected platform, or on any when none is selected.
+      const inRange = inf.accounts.some((a) => {
+        if (platforms.length && !platforms.includes(a.platform)) return false
+        const audience = audienceOf(a)
+        return audience !== null && (!followersMin || audience >= Number(followersMin)) && (!followersMax || audience <= Number(followersMax))
+      })
+      if (!inRange) failed.push('followers')
+    }
     if (agreement || insights) {
       // Unassigned influencers have no documents to judge: they match neither "signed" nor "missing".
       const docs = documentSummary(inf)
-      if (!docs) return false
-      if (agreement && docs.has_agreement !== (agreement === 'signed')) return false
-      if (insights && docs.insights_count > 0 !== (insights === 'received')) return false
+      if (agreement && (!docs || docs.has_agreement !== (agreement === 'signed'))) failed.push('agreement')
+      if (insights && (!docs || docs.insights_count > 0 !== (insights === 'received'))) failed.push('insights')
     }
-    return true
-  })
+    return failed
+  }
+}
+
+export function filterInfluencers(
+  params: URLSearchParams,
+  source: Influencer[] = db.influencers,
+  options: { limitedSearch?: boolean } = {},
+): Influencer[] {
+  const failures = compileFilters(params, options)
+  return source.filter((inf) => failures(inf).length === 0)
 }
 
 const STAGE_ORDER: Stage[] = ['data_gathered', 'contacted', 'onboarded', 'package_sent', 'delivered', 'on_hold', 'rejected']
 
-export function sortInfluencers(list: Influencer[], sort: string | null): Influencer[] {
+export function sortInfluencers(list: Influencer[], sort: string | null, platforms: string[] = []): Influencer[] {
   const raw = sort || '-created_at'
   const desc = raw.startsWith('-')
   const key = raw.replace(/^-/, '')
   const value = (inf: Influencer): string | number | null => {
     if (key === 'stage') return STAGE_ORDER.indexOf(inf.stage)
+    if (key === 'followers') {
+      const known = inf.accounts.filter((a) => !platforms.length || platforms.includes(a.platform)).map(audienceOf).filter((n): n is number => n !== null)
+      return known.length ? Math.max(...known) : null
+    }
     if (key === 'primary_followers') {
       const primary = primaryAccount(inf)
       return primary && audienceOf(primary)

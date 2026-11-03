@@ -12,14 +12,16 @@ export const poolHandlers = [
     const user = currentUser()
     const params = new URL(request.url).searchParams
     const limitedSearch = user.role === 'executive'
-    const list = sortInfluencers(filterInfluencers(params, poolInfluencers(), { limitedSearch }), params.get('sort'))
+    const list = sortInfluencers(filterInfluencers(params, poolInfluencers(), { limitedSearch }), params.get('sort'), params.getAll('platform'))
     const page = paginate(list, params)
     return HttpResponse.json({ ...page, items: page.items.map((inf) => toPoolItem(inf, user)) })
   }),
 
   http.get(api('/pool/filter-options'), async ({ request }) => {
     await latency()
-    return HttpResponse.json(filterOptionsFor(poolInfluencers(), new URL(request.url).searchParams))
+    return HttpResponse.json(
+      filterOptionsFor(poolInfluencers(), new URL(request.url).searchParams, { limitedSearch: currentUser().role === 'executive' }),
+    )
   }),
 
   http.get(api('/pool/expiring'), async () => {

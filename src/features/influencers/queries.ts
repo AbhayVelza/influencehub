@@ -1,7 +1,7 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/query'
 import { influencersApi, poolApi, savedViewsApi } from '@/services'
-import type { BulkRequest, InfluencerListParams, SavedViewCreate } from '@/types'
+import type { BulkRequest, InfluencerFilters, InfluencerListParams, SavedViewCreate } from '@/types'
 
 export function useInfluencerList(params: InfluencerListParams) {
   return useQuery({
@@ -13,14 +13,17 @@ export function useInfluencerList(params: InfluencerListParams) {
 
 export type FilterSource = 'influencers' | 'pool'
 
-/** Cascading options: states narrow by country, cities by country + state. */
-export function useFilterOptions(country: string[] = [], state: string[] = [], source: FilterSource = 'influencers') {
+/**
+ * Options with faceted counts for the active filters: each count reflects every other filter, so they follow
+ * every change. Cascading too: states narrow by country, cities by country + state.
+ */
+export function useFilterOptions(filters: InfluencerFilters, source: FilterSource = 'influencers') {
   return useQuery({
-    queryKey: source === 'pool' ? queryKeys.poolFilterOptions(country, state) : queryKeys.filterOptions(country, state),
-    queryFn: ({ signal }) =>
-      source === 'pool' ? poolApi.filterOptions({ country, state }, signal) : influencersApi.filterOptions({ country, state }, signal),
+    queryKey: source === 'pool' ? queryKeys.poolFilterOptions(filters) : queryKeys.filterOptions(filters),
+    queryFn: ({ signal }) => (source === 'pool' ? poolApi.filterOptions(filters, signal) : influencersApi.filterOptions(filters, signal)),
+    // Keep showing the previous counts (marked as updating) instead of a skeleton while the new ones load.
     placeholderData: keepPreviousData,
-    staleTime: 60_000,
+    staleTime: 30_000,
   })
 }
 

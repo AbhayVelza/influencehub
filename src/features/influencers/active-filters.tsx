@@ -62,6 +62,14 @@ export function ActiveFilters({ filters, onChange, onClear }: ActiveFiltersProps
     })
   }
 
+  if (filters.followers_min != null || filters.followers_max != null) {
+    chips.push({
+      key: 'followers',
+      label: `Followers ${formatFollowerRange({ min: filters.followers_min, max: filters.followers_max })}`,
+      remove: () => onChange({ followers_min: undefined, followers_max: undefined }),
+    })
+  }
+
   if (filters.reach_min != null || filters.reach_max != null) {
     chips.push({
       key: 'reach',

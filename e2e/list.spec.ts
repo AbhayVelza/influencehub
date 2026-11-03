@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test'
-import type { Influencer, Paginated, Platform } from '../src/types/index.ts'
-import { api, expect, signInAs, test, toast } from './fixtures.ts'
+import type { FilterOption, Influencer, Paginated, Platform } from '../src/types/index.ts'
+import { api, expect, openFilters, signInAs, test, toast } from './fixtures.ts'
 
 const rows = (page: Page) => page.locator('tbody tr')
 
@@ -19,6 +19,9 @@ async function pick(page: Page, filter: string, option: string, absent?: RegExp)
 test('cascading Country → State → City filters live in the URL and restore from it', async ({ page }) => {
   await signInAs(page, 'admin')
   await page.goto('/influencers')
+  // The filters start collapsed behind a "Filters" button; its badge counts the active ones.
+  await expect(page.getByRole('group', { name: 'Filters' })).toHaveCount(0)
+  await openFilters(page)
   await pick(page, 'Country', 'India')
   await pick(page, 'State', 'Maharashtra', /Texas|England|Ontario|Dubai/)
   await pick(page, 'City', 'Pune', /Kochi|Bengaluru|Toronto/)
@@ -28,6 +31,7 @@ test('cascading Country → State → City filters live in the URL and restore f
   await page.keyboard.press('Escape')
 
   await expect(page).toHaveURL(/\/influencers\?country=India&state=Maharashtra&city=Pune$/)
+  await expect(page.getByRole('button', { name: /^Filters/ })).toContainText('3')
   await expect(rows(page)).toHaveCount(3)
   await expect(rows(page).filter({ hasText: 'Pune' })).toHaveCount(3)
 
@@ -94,4 +98,99 @@ test('bulk change stage: server and client skips are reported per row and stay s
   await expect(page.getByText('4 selected')).toBeVisible()
   const onHold = await api<Paginated<Influencer>>(page, '/influencers?stage=on_hold&page_size=100')
   expect(onHold.body.total).toBe(20)
+})
+
+// ---------------------------------------------------------------------------
+// Dynamic filter refinement: counts follow every other active filter (logical AND across filters).
+
+type Options = Record<'categories' | 'countries' | 'states' | 'cities' | 'stages' | 'assigned_to' | 'platforms' | 'agreement' | 'insights', FilterOption[]>
+
+const optionsFor = async (page: Page, query: string) => (await api<Options>(page, `/influencers/filter-options?${query}`)).body
+const totalFor = async (page: Page, query: string) => (await api<Paginated<Influencer>>(page, `/influencers?page_size=1&${query}`)).body.total
+
+test('filter-options counts equal the list total you would get by ticking that option', async ({ page }) => {
+  await signInAs(page, 'admin')
+  await page.goto('/influencers')
+  // Each facet's counts apply every other filter, but not its own: ticking one more value widens that facet.
+  const scenarios: { active: string; facet: keyof Options; param: string }[] = [
+    { active: 'stage=data_gathered', facet: 'categories', param: 'category' },
+    { active: 'stage=data_gathered', facet: 'countries', param: 'country' },
+    { active: 'stage=data_gathered&category=Fashion', facet: 'stages', param: 'stage' },
+    { active: 'country=India&platform=instagram', facet: 'states', param: 'state' },
+    { active: 'country=India&state=Maharashtra&q=a', facet: 'cities', param: 'city' },
+    { active: 'country=India&reach_min=50000', facet: 'platforms', param: 'platform' },
+    { active: 'stage=onboarded&country=India', facet: 'agreement', param: 'agreement' },
+    { active: 'stage=onboarded&agreement=signed', facet: 'insights', param: 'insights' },
+  ]
+  for (const { active, facet, param } of scenarios) {
+    const options = (await optionsFor(page, active))[facet]
+    expect(options.length, `${facet} for ${active}`).toBeGreaterThan(0)
+    // Everything but the facet's own filter stays; its own selection is replaced by the one option.
+    const others = active
+      .split('&')
+      .filter((kv) => !kv.startsWith(`${param}=`))
+      .join('&')
+    for (const option of options) {
+      const expected = await totalFor(page, `${others}&${param}=${encodeURIComponent(option.value)}`)
+      expect(option.count, `${facet} ${option.value} with ${active}`).toBe(expected)
+    }
+  }
+})
+
+test('options stay listed while counts change; states and cities follow the hierarchy only', async ({ page }) => {
+  await signInAs(page, 'admin')
+  await page.goto('/influencers')
+  const plain = await optionsFor(page, 'country=India')
+  const narrowed = await optionsFor(page, 'country=India&stage=on_hold')
+  const values = (list: FilterOption[]) => list.map((o) => o.value).sort()
+  // Other filters change the counts, never which states / cities / categories are offered.
+  expect(values(narrowed.states)).toEqual(values(plain.states))
+  expect(values(narrowed.categories)).toEqual(values(plain.categories))
+  expect(narrowed.states.every((o) => !['Texas', 'England', 'Ontario'].includes(o.value))).toBe(true)
+  expect(narrowed.states.reduce((n, o) => n + o.count, 0)).toBeLessThan(plain.states.reduce((n, o) => n + o.count, 0))
+  expect(narrowed.stages).toHaveLength(7)
+})
+
+test('filter bar counts update as filters are ticked and cleared', async ({ page }) => {
+  await signInAs(page, 'admin')
+  await page.goto('/influencers?stage=data_gathered')
+  await expect(rows(page).first()).toBeVisible()
+  await openFilters(page)
+
+  const optionRow = (name: string | RegExp) => page.getByRole('option', { name })
+  // An option's accessible name is its label followed by its count.
+  const counted = (label: string, count: number) => new RegExp(`^${label}\\s*${count}$`)
+  const filters = page.getByRole('group', { name: 'Filters' })
+  const open = (filter: string) => filters.getByRole('button', { name: new RegExp(`^${filter}`) }).click()
+
+  // With Stage = Data gathered, a category's count is its data-gathered total.
+  const categories = (await optionsFor(page, 'stage=data_gathered')).categories
+  const first = categories[0]!
+  await open('Category')
+  await expect(optionRow(counted(first.label, first.count))).toBeVisible()
+  await optionRow(counted(first.label, first.count)).click()
+  await page.keyboard.press('Escape')
+  await expect(rows(page)).toHaveCount(Math.min(first.count, 25))
+
+  // The Stage counts now apply the category: each stage shows what ticking it would give.
+  const stages = (await optionsFor(page, `category=${encodeURIComponent(first.value)}&stage=data_gathered`)).stages
+  const contacted = stages.find((s) => s.value === 'contacted')!
+  expect(contacted.count).toBe(await totalFor(page, `category=${encodeURIComponent(first.value)}&stage=contacted`))
+  await open('Stage')
+  await expect(optionRow(counted('Contacted', contacted.count))).toBeVisible()
+  await page.keyboard.press('Escape')
+
+  // Clear one filter: the Category counts widen back to the full data-gathered counts.
+  await page.getByRole('button', { name: `Remove filter ${first.value}` }).click()
+  await expect(page.getByRole('button', { name: `Remove filter ${first.value}` })).toHaveCount(0)
+  await open('Category')
+  await expect(optionRow(counted(first.label, first.count))).toBeVisible()
+  await page.keyboard.press('Escape')
+
+  // Clear all filters: the counts are the unfiltered ones.
+  await page.getByRole('button', { name: 'Clear all' }).click()
+  await expect(page).toHaveURL(/\/influencers$/)
+  const all = (await optionsFor(page, '')).categories.find((c) => c.value === first.value)!
+  await open('Category')
+  await expect(optionRow(counted(first.label, all.count))).toBeVisible()
 })

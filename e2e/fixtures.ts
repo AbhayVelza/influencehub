@@ -20,6 +20,14 @@ export async function viewAs(page: Page, name: string) {
   await expect(toast(page, `Viewing as ${name}`)).toBeVisible()
 }
 
+/** Every list's filters sit behind a "Filters" button: opens them (once) so the controls can be used. */
+export async function openFilters(page: Page) {
+  const toggle = page.getByRole('button', { name: /^Filters/ })
+  await expect(toggle).toBeVisible()
+  if ((await toggle.getAttribute('aria-expanded')) === 'false') await toggle.click()
+  await expect(page.getByRole('group', { name: 'Filters' })).toBeVisible()
+}
+
 export const toast = (page: Page, text: string | RegExp) => page.locator('[data-sonner-toast]', { hasText: text }).first()
 
 /** Calls the API from the page, so it goes through the mock with the page's identity and data. */

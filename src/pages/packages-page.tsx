@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { DateRangeFilter } from '@/components/common/date-range-filter'
+import { CollapsibleFilters } from '@/components/common/collapsible-filters'
 import { MultiSelectFilter } from '@/components/common/multi-select-filter'
 import { PageHeader } from '@/components/common/page-header'
 import { Pagination } from '@/components/common/pagination'
@@ -129,32 +130,34 @@ export default function PackagesPage() {
           label="Search packages"
           className="max-w-72"
         />
-        <MultiSelectFilter
-          label="Status"
-          options={PACKAGE_STATUSES.map((s) => ({ value: s, label: PACKAGE_STATUS_META[s].label }))}
-          selected={params.status ?? []}
-          onChange={(status) => update({ status })}
-        />
-        <MultiSelectFilter
-          label="Courier"
-          options={COURIERS.map((c) => ({ value: c, label: c }))}
-          selected={params.courier ?? []}
-          onChange={(courier) => update({ courier })}
-        />
-        <DateRangeFilter
-          label="Sent"
-          value={{ from: params.sent_from, to: params.sent_to }}
-          onChange={({ from, to }) => update({ sent_from: from, sent_to: to })}
-        />
-        {filtered && (
-          <Button
-            variant="link"
-            size="sm"
-            onClick={() => setSearchParams(new URLSearchParams())}
-          >
-            Clear all
-          </Button>
-        )}
+        <CollapsibleFilters
+          activeCount={(params.status?.length ? 1 : 0) + (params.courier?.length ? 1 : 0) + (params.sent_from || params.sent_to ? 1 : 0)}
+          actions={
+            filtered && (
+              <Button variant="link" size="sm" onClick={() => setSearchParams(new URLSearchParams())}>
+                Clear all
+              </Button>
+            )
+          }
+        >
+          <MultiSelectFilter
+            label="Status"
+            options={PACKAGE_STATUSES.map((s) => ({ value: s, label: PACKAGE_STATUS_META[s].label }))}
+            selected={params.status ?? []}
+            onChange={(status) => update({ status })}
+          />
+          <MultiSelectFilter
+            label="Courier"
+            options={COURIERS.map((c) => ({ value: c, label: c }))}
+            selected={params.courier ?? []}
+            onChange={(courier) => update({ courier })}
+          />
+          <DateRangeFilter
+            label="Sent"
+            value={{ from: params.sent_from, to: params.sent_to }}
+            onChange={({ from, to }) => update({ sent_from: from, sent_to: to })}
+          />
+        </CollapsibleFilters>
       </div>
 
       <div className="overflow-hidden rounded-lg border bg-card">

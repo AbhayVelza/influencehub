@@ -4,13 +4,13 @@ The backend must match these. Source of truth for types: `src/types/index.ts`.
 Record any new API decision here. Dates and documents: `dates-and-documents.md`.
 
 - Multi-value query params are repeated keys: `?stage=a&stage=b`.
-- Sorting: `sort=field` ascending, `sort=-field` descending (nulls last). Sort keys: name, total_reach,
+- Sorting: `sort=field` ascending, `sort=-field` descending (nulls last). Sort keys: name, total_reach, followers (largest audience among the accounts on `platform[]`, any account when none; the Onboarded tabs' audience column),
   primary_followers (the primary account's audience metric: followers / subscribers / page_followers), city, stage,
   created_at, updated_at.
 - Job statuses: `queued | running | succeeded | failed`; `progress` 0–100; `error {code, message}` when failed.
 - **Accounts**: `total_reach` = sum of each account's audience metric (followers / subscribers / page_followers),
   null when none is known; `platform[]` filters influencers with an account on any of those platforms;
-  `reach_min/max` filter on total_reach; `filter-options` adds `platforms` with counts; `q` also matches every
+  `reach_min/max` filter on total_reach; `followers_min/max` filter on one account's audience: some account on a selected `platform[]` (any account when none is selected) within the range, unknown audiences never match (the Onboarded tabs' Followers filter, which is that platform's followers / subscribers / page followers). Combinable (AND) with everything else, and part of `filter-options`' filters like `reach_min/max`; `filter-options` adds `platforms` with counts (faceted, see Filter options); `q` also matches every
   account handle. Handles are normalised everywhere (forms, lookup, CSV, API): the platform's profile URL and a
   leading `@` are stripped, then lowercased; format `[a-z0-9._-]{1,60}`. `(platform, handle)` is unique across the CRM.
   Influencer PATCH can't change accounts or derived fields (`accounts`, `total_reach`, `is_verified`, `profile_pic_url`).
@@ -60,7 +60,9 @@ Record any new API decision here. Dates and documents: `dates-and-documents.md`.
   `reason`; without one → `422 reason_required`. Activity payload: `{from, to, reason, override: true}`.
   Bulk `change_stage` has no reason field, so it can't override.
 - `POST /influencers/bulk` actions: `change_stage` (value = stage), `assign` (value = user id or null; manager/admin),
-  `claim` (no value; per-row `already_claimed` / `claim_limit_reached`), `sync` (every syncable account; returns
+  `pool_assign` (value = an active user's id, else 422; manager/admin, else 403; assigns only rows that are still
+  unassigned, checked per row like a claim, so a teammate's claim is never overwritten: per-row `not_in_pool` "No
+  longer in the pool"; writes `assigned {from: null, to}`, never auto-released), `claim` (no value; per-row `already_claimed` / `claim_limit_reached`), `sync` (every syncable account; returns
   `job_id`; job result `{synced (accounts), failed[{id (influencer), message}]}`), `delete` (manager/admin).
   Response: `{succeeded[ids], failed[{id, code, message}], job_id|null}`; per-row failures don't fail the request.
   Per-row messages don't include the influencer's name (the UI adds it).
@@ -68,12 +70,21 @@ Record any new API decision here. Dates and documents: `dates-and-documents.md`.
   `/accounts…` endpoint, `/pipeline`, `/packages`, `/calls/follow-ups`, `/calls/{id}/done`, `/dashboard/summary`
   and bulk rows treat anything else as missing (404 / left out). Unassigned influencers reach executives only
   through `/pool`.
+- **Onboarded tabs** (no new endpoint, no stored `onboarded` flag): a platform's tab is `GET /influencers` with
+  `stage=onboarded&platform=<p>&agreement=signed&insights=received` plus the user's own filters; the counts on
+  `/onboarded` are the same request with `page_size=1` (read `total`), one per platform. "Onboarded" is the stage
+  alone (package_sent / delivered drop out); "required documents" = a current agreement and at least one insights
+  summary (any platform). Executive scoping above applies unchanged. The backend must keep these four filters
+  combinable (AND) and accept `page_size=1`.
 - **Unassigned Pool**: `GET /pool` = influencers with `assigned_to = null`, same params as `/influencers`
   (`assigned_to` ignored). Managers/admins get full `Influencer` rows; executives get `PoolInfluencerPreview`
   (id, name, category, profile_pic_url, is_verified, primary_account {platform, handle, profile_url}, platforms[],
   total_reach, city, state, country, stage, created_at) — never phone, email, address, notes, tags, checklist,
   account details or calls — and their `q` matches name / handles / city only. `GET /pool/{id}` is the same shape,
   404 unless unassigned. `GET /pool/filter-options` = filter-options over the pool.
+- **Bulk assign from the pool** (manager/admin): one or more people. Several share the selected influencers out
+  round-robin in list order (one owner each, the shares differ by at most one). The UI sends one bulk `pool_assign`
+  per person, so a failed request fails only that person's share. No multi-owner influencers.
 - **Owner changes**: managers/admins set any `assigned_to` (PATCH, bulk `assign`). Executives can't PATCH or bulk
   `assign` owners (403); on `POST /influencers` they may set themselves or null (null = straight into the pool).
 - **Claim** `POST /influencers/{id}/claim` (any role): atomic — succeeds only while unassigned (or already mine,
@@ -130,6 +141,33 @@ Record any new API decision here. Dates and documents: `dates-and-documents.md`.
 - Categories carry `influencer_count`. `DELETE /categories/{id}` (admin) → 409 `in_use` while any influencer
   uses it (deactivate instead); 204 otherwise. Renaming a category renames it on its influencers. Inactive
   categories stay on existing influencers but aren't offered for new ones.
+
+- **Filter options (dynamic refinement)** `GET /influencers/filter-options` and `GET /pool/filter-options` take the
+  list's filters (`q`, `category[]`, `country[]`, `state[]`, `city[]`, `stage[]`, `assigned_to[]`, `platform[]`,
+  `reach_min/max`, `followers_min/max`, `agreement`, `insights`; not sort / paging) and return `{categories, countries, states, cities,
+  stages, assigned_to, platforms, agreement, insights}`, each `[{value, label, count}]`. Rules (reference:
+  `filterOptionsFor` / `compileFilters` in `src/mocks`):
+  - Filters across facets are ANDed; values inside one facet are ORed.
+  - **Faceted count**: `count` = influencers matching every active filter *except that facet's own*, so it is what
+    ticking that option would show: the list `total` for `{other filters} + {this facet = option}`. `q` and reach
+    narrow every facet. Executive scoping applies; executives' `q` in the pool matches name / handles / city only.
+  - **Lists don't shrink**: option lists depend on the hierarchy only (`states` = states of the selected countries,
+    `cities` = cities of the selected countries + states; all when none). An option that matches nothing stays in
+    with `count: 0` (the UI dims it), so a selection can always be unticked. `stages`, `platforms`, `agreement`,
+    `insights` always list every value. Sort: count desc then label; stages / platforms keep their fixed order.
+  - Influencers without documents (the pool) count in neither `agreement` nor `insights` option.
+  - The Onboarded tabs send their fixed rule (`stage`, `platform`, `agreement`, `insights`) with the user's filters, so
+    their counts are within that tab.
+  - The UI refetches on every filter change and keeps showing the last counts, dimmed, until the new ones arrive.
+  - **Performance (large datasets)**: compute all nine facets in one scan, not nine queries: for each row note which
+    filters it fails; no failure → counts in every facet, exactly one failure → counts in that facet only, more →
+    nowhere (`filterOptionsFor`). In a database: one aggregation with facet sub-pipelines (Mongo `$facet`, SQL
+    `GROUPING SETS` / `FILTER (WHERE …)`), or per-facet queries run in parallel. Keep denormalised, indexed columns
+    on the influencer row (`platforms[]`, `country`, `state`, `city`, `category`, `stage`, `assigned_to`,
+    `total_reach`, `has_agreement`, `insights_count`, a lowercase search blob), so no counting joins accounts or
+    documents. Cache by (user scope, normalised filters) with a short TTL (~30 s, the UI's `staleTime`) and drop
+    the entries on any influencer / account / document / stage write; unfiltered counts can be pre-aggregated and
+    kept up to date by those writes. Expect a response in the low hundreds of ms at ~100k influencers.
 
 ## Backend notes (jobs the frontend relies on)
 - **Auto-release job** (scheduled, e.g. hourly): when `auto_release_days` = N is set, an influencer whose current

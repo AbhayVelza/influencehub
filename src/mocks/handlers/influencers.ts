@@ -15,14 +15,16 @@ import type {
   InfluencerUpdate,
   Platform,
   ReleaseRequest,
+  Stage,
   StageChangeRequest,
 } from '@/types'
-import { currentUser, db, findInfluencer, logActivity, nextId, nowIso } from '../db'
+import { currentUser, db, documentSummary, findInfluencer, logActivity, nextId, nowIso } from '../db'
 import {
   assignedToOtherMessage,
   canSetOwnerOnCreate,
   changeStage,
   claimInfluencer,
+  compileFilters,
   createInfluencer,
   deleteInfluencer,
   filterInfluencers,
@@ -40,40 +42,73 @@ import { createJob } from '../jobs'
 import { syncAccount } from '../social'
 import { api, apiError, forbidden, latency, notFound, paginate, readJson } from '../utils'
 
-function countBy(list: Influencer[], key: (i: Influencer) => string | null, label = (v: string) => v): FilterOption[] {
-  const counts = new Map<string, number>()
-  for (const inf of list) {
-    const value = key(inf)
-    if (value) counts.set(value, (counts.get(value) ?? 0) + 1)
-  }
-  return [...counts.entries()]
-    .map(([value, count]) => ({ value, label: label(value), count }))
-    .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label))
-}
+type Facet = 'category' | 'country' | 'state' | 'city' | 'stage' | 'assigned_to' | 'platform' | 'agreement' | 'insights'
 
-/** Cascading options with counts over `source`: states narrow by country, cities by country + state. */
-export function filterOptionsFor(source: Influencer[], params: URLSearchParams): FilterOptions {
-  const countries = params.getAll('country')
-  const states = params.getAll('state')
-  const inCountries = countries.length ? source.filter((i) => countries.includes(i.country ?? '')) : source
-  const inStates = states.length ? inCountries.filter((i) => states.includes(i.state ?? '')) : inCountries
+/**
+ * Filter options with counts over `source`, in one pass over the rows.
+ *
+ * Counts are faceted: an option's count is the number of influencers that match every active filter except the
+ * options' own facet (ticking more options of one facet widens it, other facets narrow it), so it is what ticking
+ * that option would show. The option lists themselves stay put: states are those of the selected countries, cities
+ * those of the selected states (a selected value with no matches stays listed with count 0), so choices are never
+ * pulled out from under the user. A row that fails two or more filters counts nowhere.
+ */
+export function filterOptionsFor(source: Influencer[], params: URLSearchParams, options: { limitedSearch?: boolean } = {}): FilterOptions {
+  const failures = compileFilters(params, options)
   const team = new Map(db.team.map((u) => [u.id, u.name]))
+  const counts: Record<Facet, Map<string, number>> = {
+    category: new Map(),
+    country: new Map(),
+    state: new Map(),
+    city: new Map(),
+    stage: new Map(ALL_STAGES.map((s) => [s, 0])),
+    assigned_to: new Map(),
+    platform: new Map(PLATFORMS.map((p) => [p, 0])),
+    agreement: new Map([['signed', 0], ['missing', 0]]),
+    insights: new Map([['received', 0], ['missing', 0]]),
+  }
+  const add = (facet: Facet, value: string | null | undefined, counted: boolean) => {
+    if (!value) return
+    const map = counts[facet]
+    map.set(value, (map.get(value) ?? 0) + (counted ? 1 : 0))
+  }
+
+  for (const inf of source) {
+    const failed = failures(inf)
+    // The row counts for a facet when nothing but that facet's own filter rules it out.
+    const counted = (facet: Facet) => failed.every((f) => f === facet)
+    // Hierarchy: a state is listed once its country is selected (or none is), a city once its state is too.
+    const inCountries = !failed.includes('country')
+    const inStates = inCountries && !failed.includes('state')
+
+    add('category', inf.category, counted('category'))
+    add('country', inf.country, counted('country'))
+    if (inCountries) add('state', inf.state, counted('state'))
+    if (inStates) add('city', inf.city, counted('city'))
+    add('stage', inf.stage, counted('stage'))
+    add('assigned_to', inf.assigned_to, counted('assigned_to'))
+    for (const platform of new Set(inf.accounts.map((a) => a.platform))) add('platform', platform, counted('platform'))
+    const docs = documentSummary(inf)
+    if (docs) {
+      add('agreement', docs.has_agreement ? 'signed' : 'missing', counted('agreement'))
+      add('insights', docs.insights_count > 0 ? 'received' : 'missing', counted('insights'))
+    }
+  }
+
+  const list = (facet: Facet, label = (v: string) => v, keepOrder = false): FilterOption[] => {
+    const options = [...counts[facet].entries()].map(([value, count]) => ({ value, label: label(value), count }))
+    return keepOrder ? options : options.sort((a, b) => b.count - a.count || a.label.localeCompare(b.label))
+  }
   return {
-    categories: countBy(source, (i) => i.category),
-    countries: countBy(source, (i) => i.country),
-    states: countBy(inCountries, (i) => i.state),
-    cities: countBy(inStates, (i) => i.city),
-    stages: ALL_STAGES.map((stage) => ({
-      value: stage,
-      label: STAGE_META[stage].label,
-      count: source.filter((i) => i.stage === stage).length,
-    })),
-    assigned_to: countBy(source, (i) => i.assigned_to, (id) => team.get(id) ?? id),
-    platforms: PLATFORMS.map((p) => ({
-      value: p,
-      label: PLATFORM_META[p].label,
-      count: source.filter((i) => i.accounts.some((a) => a.platform === p)).length,
-    })),
+    categories: list('category'),
+    countries: list('country'),
+    states: list('state'),
+    cities: list('city'),
+    stages: list('stage', (v) => STAGE_META[v as Stage].label, true),
+    assigned_to: list('assigned_to', (id) => team.get(id) ?? id),
+    platforms: list('platform', (v) => PLATFORM_META[v as Platform].label, true),
+    agreement: list('agreement', (v) => (v === 'signed' ? 'Signed' : 'Missing'), true),
+    insights: list('insights', (v) => (v === 'received' ? 'Received' : 'Missing'), true),
   }
 }
 
@@ -102,7 +137,7 @@ export const influencerHandlers = [
   http.get(api('/influencers'), async ({ request }) => {
     await latency()
     const params = new URL(request.url).searchParams
-    const list = sortInfluencers(filterInfluencers(params, visibleInfluencers()), params.get('sort'))
+    const list = sortInfluencers(filterInfluencers(params, visibleInfluencers()), params.get('sort'), params.getAll('platform'))
     return HttpResponse.json(paginate(list, params))
   }),
 
@@ -153,6 +188,26 @@ export const influencerHandlers = [
         inf.assigned_to = to
         inf.updated_at = nowIso()
         logActivity(id, 'assigned', { from, to })
+        result.succeeded.push(id)
+      }
+    } else if (body.action === 'pool_assign') {
+      // Like a claim on someone's behalf: a row a teammate took meanwhile is left alone, never reassigned.
+      const to = body.value
+      if (!can(user.role, 'influencer:reassign')) return forbidden(OWNER_CHANGE_MESSAGE)
+      if (!to || !db.team.some((u) => u.id === to && u.is_active)) return apiError(422, 'validation_error', 'Choose an active team member')
+      for (const id of ids) {
+        const inf = findInfluencer(id)
+        if (!inf) {
+          notFoundRow(id)
+          continue
+        }
+        if (inf.assigned_to) {
+          result.failed.push({ id, code: 'not_in_pool', message: 'No longer in the pool' })
+          continue
+        }
+        inf.assigned_to = to
+        inf.updated_at = nowIso()
+        logActivity(id, 'assigned', { from: null, to })
         result.succeeded.push(id)
       }
     } else if (body.action === 'claim') {

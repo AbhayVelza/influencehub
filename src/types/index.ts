@@ -381,8 +381,11 @@ export interface ActivityWithInfluencer extends Activity {
 // ---------------------------------------------------------------------------
 // Request params / bodies
 
-/** `primary_followers` = the primary account's audience (followers / subscribers / page followers). */
-export type InfluencerSortKey = 'name' | 'total_reach' | 'primary_followers' | 'city' | 'stage' | 'created_at' | 'updated_at'
+/**
+ * `primary_followers` = the primary account's audience (followers / subscribers / page followers).
+ * `followers` = the largest audience among the accounts on the `platform[]` filter (any account when none is set).
+ */
+export type InfluencerSortKey = 'name' | 'total_reach' | 'primary_followers' | 'followers' | 'city' | 'stage' | 'created_at' | 'updated_at'
 
 /** `total_reach` ascending, `-total_reach` descending. */
 export type InfluencerSort = InfluencerSortKey | `-${InfluencerSortKey}`
@@ -400,6 +403,12 @@ export interface InfluencerFilters {
   /** Total reach range. */
   reach_min?: number
   reach_max?: number
+  /**
+   * Followers range of one account: an account on any selected `platform` (any account when none is selected)
+   * whose audience (followers / subscribers / page followers) is within it. Unknown audiences never match.
+   */
+  followers_min?: number
+  followers_max?: number
   /** Has / lacks a current agreement. Influencers in the pool (no documents shown) match neither. */
   agreement?: 'signed' | 'missing'
   /** Has / lacks an insights summary. */
@@ -418,16 +427,25 @@ export interface FilterOption {
   count: number
 }
 
+/**
+ * Options for the filter bar. Request: the same filters as `GET /influencers` (no sort / paging). Each `count` is
+ * faceted: influencers matching every active filter except the option's own facet, so it is what ticking that option
+ * would show (a facet's selected values never hide its other options). Option lists only depend on the hierarchy.
+ */
 export interface FilterOptions {
   categories: FilterOption[]
   countries: FilterOption[]
-  /** Narrowed by the `country` param. */
+  /** Those of the selected `country` values (all when none). Zero-count states stay listed. */
   states: FilterOption[]
-  /** Narrowed by the `country` and `state` params. */
+  /** Those of the selected `country` + `state` values. Zero-count cities stay listed. */
   cities: FilterOption[]
   stages: FilterOption[]
   assigned_to: FilterOption[]
   platforms: FilterOption[]
+  /** `signed` / `missing`. Influencers without documents (the pool) count in neither. */
+  agreement: FilterOption[]
+  /** `received` / `missing`. */
+  insights: FilterOption[]
 }
 
 /** A new account. Lookup data (from POST /lookup) can be passed through so it's saved as synced. */
@@ -494,7 +512,8 @@ export interface StageChangeRequest {
 }
 
 /** `delete` requires manager or admin. `claim` takes no value (owner = me). `sync` syncs every syncable account. */
-export type BulkAction = 'change_stage' | 'assign' | 'sync' | 'delete' | 'claim'
+/** `pool_assign`: assign to `value` only while unassigned (per-row `not_in_pool`), for bulk assigning from the pool. */
+export type BulkAction = 'change_stage' | 'assign' | 'pool_assign' | 'sync' | 'delete' | 'claim'
 
 export interface BulkRequest {
   ids: string[]

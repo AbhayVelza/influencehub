@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test'
 import type { DocumentSummary, DashboardSummary, Influencer, InfluencerDocument, Paginated } from '../src/types/index.ts'
-import { api, expect, signInAs, test, toast, USERS, viewAs } from './fixtures.ts'
+import { api, expect, openFilters, signInAs, test, toast, USERS, viewAs } from './fixtures.ts'
 
 // Fixtures: inf_043 (Sneha's, onboarded) has no documents; inf_006 (Sneha's) has two agreement versions and an
 // insights summary; inf_016 (Sneha's) has an image insights summary; inf_001 (Arjun's) has agreements and insights;
@@ -208,6 +208,9 @@ test('Documents page: list, filters, and upload for a creator you pick', async (
   const all = await api<Paginated<InfluencerDocument>>(page, '/documents?page_size=100')
 
   // Type filter, creator search, uploaded-by filter and the date range all narrow the list (and live in the URL).
+  // Filters are collapsed until opened; the search box is always there.
+  await expect(page.getByRole('button', { name: /^Type/ })).toHaveCount(0)
+  await openFilters(page)
   await page.getByRole('button', { name: /^Type/ }).click()
   await page.getByRole('option', { name: /^Agreement/ }).click()
   await page.keyboard.press('Escape')
@@ -222,7 +225,7 @@ test('Documents page: list, filters, and upload for a creator you pick', async (
   await expect(rows.first()).toContainText('Agreement')
   await expect(rows.first()).toContainText(/Signed \d{2}\/\d{2}\/\d{4}/)
   await page.goto('/documents')
-
+  await openFilters(page)
   await page.getByRole('button', { name: /^Uploaded$/ }).click()
   await page.getByRole('textbox', { name: 'From' }).fill('01/01/2099')
   await page.getByRole('textbox', { name: 'To', exact: true }).fill('31/12/2099')
@@ -286,6 +289,7 @@ test('Docs column, agreement / insights filters and the “Onboarded without agr
 
   // The filter bar drives the same URL params.
   await page.goto('/influencers')
+  await openFilters(page)
   const filters = page.getByRole('group', { name: 'Filters' })
   await filters.getByRole('button', { name: /^Agreement/ }).click()
   await page.getByRole('option', { name: /^Signed/ }).click()
