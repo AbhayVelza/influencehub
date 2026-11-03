@@ -18,7 +18,7 @@ export const INSIGHTS_OPTIONS = [
   { value: 'missing', label: 'Missing' },
 ]
 
-const SORT_KEYS: InfluencerSortKey[] = ['name', 'total_reach', 'primary_followers', 'followers', 'city', 'stage', 'created_at', 'updated_at']
+const SORT_KEYS: InfluencerSortKey[] = ['name', 'total_reach', 'instagram_followers', 'followers', 'city', 'stage', 'created_at', 'updated_at']
 
 const ARRAY_KEYS = ['category', 'country', 'state', 'city', 'assigned_to'] as const
 

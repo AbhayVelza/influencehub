@@ -1,7 +1,7 @@
 import { formatCompact, formatNumber, formatPercent } from '@/lib/format'
 import type { AccountRef, Influencer, Platform, SocialAccount, SyncMethod } from '@/types'
 
-// Platform rules shared by the UI and the mock API: labels, default sync method, metrics, URLs.
+// Platform rules shared by the UI and the data layer (src/backend): labels, default sync method, metrics, URLs.
 
 export type MetricFormat = 'count' | 'percent' | 'text' | 'country' | 'account_type'
 
@@ -165,6 +165,13 @@ export function audienceOf(account: Pick<SocialAccount, 'platform' | 'metrics'>)
 export function totalReach(accounts: Pick<SocialAccount, 'platform' | 'metrics'>[]): number | null {
   const known = accounts.map(audienceOf).filter((n): n is number => n !== null)
   return known.length ? known.reduce((a, b) => a + b, 0) : null
+}
+
+/** The creator's Instagram follower count: the primary account if it's on Instagram, else their largest Instagram account. */
+export function instagramFollowers(influencer: Pick<Influencer, 'accounts'>): number | null {
+  const instagram = influencer.accounts.filter((a) => a.platform === 'instagram')
+  const account = instagram.find((a) => a.is_primary) ?? [...instagram].sort((a, b) => (audienceOf(b) ?? -1) - (audienceOf(a) ?? -1))[0]
+  return account ? audienceOf(account) : null
 }
 
 export function primaryAccount(influencer: Pick<Influencer, 'accounts'>): SocialAccount | null {

@@ -9,7 +9,7 @@ import { SyncStatusBadge } from '@/components/common/sync-status-badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { RelativeTime } from '@/components/common/relative-time'
 import { formatCompact, formatNumber } from '@/lib/format'
-import { audienceOf, PLATFORM_META, primaryAccount, toRef } from '@/lib/platforms'
+import { instagramFollowers, primaryAccount, toRef } from '@/lib/platforms'
 import type { Influencer, InfluencerSortKey, User } from '@/types'
 
 declare module '@tanstack/react-table' {
@@ -107,14 +107,13 @@ export function buildColumns(team: Map<string, User>): ColumnDef<Influencer>[] {
       },
     },
     {
-      id: 'primary_followers',
-      header: 'Primary followers',
-      meta: { label: 'Primary followers', sortKey: 'primary_followers', sortDescFirst: true, align: 'right' },
+      id: 'instagram_followers',
+      header: 'Instagram followers',
+      meta: { label: 'Instagram followers', sortKey: 'instagram_followers', sortDescFirst: true, align: 'right' },
       cell: ({ row }) => {
-        const primary = primaryAccount(row.original)
-        const n = primary && audienceOf(primary)
-        if (!primary || n == null) return muted
-        return <span title={`${formatNumber(n)} ${PLATFORM_META[primary.platform].audienceLabel.toLowerCase()}`}>{formatCompact(n)}</span>
+        const n = instagramFollowers(row.original)
+        if (n == null) return muted
+        return <span title={`${formatNumber(n)} Instagram followers`}>{formatCompact(n)}</span>
       },
     },
     {

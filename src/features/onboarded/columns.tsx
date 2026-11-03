@@ -10,8 +10,8 @@ import { accountOn } from './onboarded'
 
 const muted = <span className="text-muted-foreground">—</span>
 
-/** Everyone here is onboarded and has the documents, so stage and the primary account give way to this platform's account. */
-const DROPPED = new Set(['select', 'handle', 'platforms', 'primary_followers', 'stage', 'sync', 'last_synced_at'])
+/** Everyone here is onboarded, so stage and the primary account give way to this platform's account. */
+const DROPPED = new Set(['select', 'handle', 'platforms', 'instagram_followers', 'stage', 'sync', 'last_synced_at'])
 
 export function buildOnboardedColumns(team: Map<string, User>, platform: Platform): ColumnDef<Influencer>[] {
   const meta = PLATFORM_META[platform]
