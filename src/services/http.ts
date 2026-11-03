@@ -64,12 +64,17 @@ export async function request<T>(path: string, { method = 'GET', query, body, si
 
   if (response.status === 204) return undefined as T
 
-  const data: unknown = await response.json().catch(() => null)
+  const invalid = Symbol('invalid')
+  const data: unknown = await response.json().catch(() => invalid)
 
   if (!response.ok) {
     if (isApiErrorBody(data)) throw new ApiError(response.status, data.error.code, data.error.message)
     throw new ApiError(response.status, 'http_error', `Request failed (${response.status})`)
   }
+
+  // Every endpoint answers JSON or 204. Anything else (e.g. the dev server's index.html when the mock
+  // worker didn't intercept the request) must fail the query instead of resolving with null.
+  if (data === invalid) throw new ApiError(response.status, 'invalid_response', 'The server sent an unexpected response.')
 
   return data as T
 }

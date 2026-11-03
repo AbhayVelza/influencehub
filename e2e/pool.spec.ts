@@ -1,4 +1,5 @@
-import { api, expect, signInAs, test, toast, USERS } from './fixtures.ts'
+import { api, expect, signInAs, test, toast, USERS, viewAs } from './fixtures.ts'
+import type { BulkResult, Influencer } from '../src/types/index.ts'
 
 test('executive claims from the pool, a teammate can’t claim it too, then releases it with a reason', async ({ page }) => {
   await signInAs(page, 'exec1')
@@ -38,4 +39,83 @@ test('executive claims from the pool, a teammate can’t claim it too, then rele
   await expect(page).toHaveURL(/\/pool$/)
   await expect(page.locator('tbody tr').filter({ hasText: 'Arjun Pillai' })).toHaveCount(1)
   expect((await api(page, '/influencers/inf_010')).status).toBe(404)
+})
+
+const total = async (page: Parameters<typeof api>[0], path: string) =>
+  (await api<{ total: number }>(page, `${path}${path.includes('?') ? '&' : '?'}page_size=1`)).body.total
+
+test('manager bulk assigns from the pool, shared out between two executives', async ({ page }) => {
+  await signInAs(page, 'manager')
+  await page.goto('/pool')
+  const before = {
+    pool: await total(page, '/pool'),
+    sneha: await total(page, `/influencers?assigned_to=${USERS.exec1}`),
+    arjun: await total(page, `/influencers?assigned_to=${USERS.exec2}`),
+  }
+
+  const rows = page.locator('tbody tr')
+  for (const i of [0, 1, 2]) await rows.nth(i).getByRole('checkbox').click()
+  await page.getByRole('button', { name: 'Assign 3…' }).click()
+
+  // Choose: at least one person, and each one's share is shown.
+  const dialog = page.getByRole('dialog', { name: 'Assign 3 influencers' })
+  await expect(dialog.getByRole('button', { name: 'Continue' })).toBeDisabled()
+  const sneha = dialog.locator('label', { hasText: 'Sneha Patil' })
+  await sneha.getByRole('checkbox').click()
+  await expect(sneha).toContainText('3 influencers')
+  await dialog.getByRole('checkbox', { name: /Arjun Rao/ }).click()
+  await expect(sneha).toContainText('2 influencers')
+
+  // Confirm with the counts.
+  await dialog.getByRole('button', { name: 'Continue' }).click()
+  await expect(dialog).toHaveAccessibleName('Assign 3 influencers to Sneha Patil and Arjun Rao?')
+  const split = dialog.getByRole('list', { name: 'How they’re shared out' })
+  await expect(split.getByRole('listitem')).toHaveText([/Sneha Patil\s*2 influencers/, /Arjun Rao\s*1 influencer$/])
+  await dialog.getByRole('button', { name: 'Assign 3' }).click()
+
+  await expect(toast(page, '3 influencers assigned to Sneha Patil and Arjun Rao')).toContainText('Sneha Patil: 2 · Arjun Rao: 1')
+  await expect(dialog).toBeHidden()
+  await expect(page.getByText(/\d+ selected/)).toHaveCount(0)
+  expect(await total(page, '/pool')).toBe(before.pool - 3)
+  expect(await total(page, `/influencers?assigned_to=${USERS.exec1}`)).toBe(before.sneha + 2)
+  expect(await total(page, `/influencers?assigned_to=${USERS.exec2}`)).toBe(before.arjun + 1)
+})
+
+test('bulk assign skips rows a teammate claimed meanwhile; only managers and admins can bulk assign', async ({ page }) => {
+  // Executives get bulk Claim, not Assign, and the API refuses them.
+  await signInAs(page, 'exec1')
+  await page.goto('/pool')
+  await page.locator('tbody tr').first().getByRole('checkbox').click()
+  await expect(page.getByRole('button', { name: 'Claim 1' })).toBeVisible()
+  await expect(page.getByRole('button', { name: /^Assign/ })).toHaveCount(0)
+  const denied = await api(page, '/influencers/bulk', { method: 'POST', body: { ids: ['inf_010'], action: 'pool_assign', value: USERS.exec1 } })
+  expect(denied.status).toBe(403)
+
+  await viewAs(page, 'Rahul Menon')
+  // Only influencers still in the pool, and only to an active team member.
+  const owned = await api<BulkResult>(page, '/influencers/bulk', { method: 'POST', body: { ids: ['inf_001'], action: 'pool_assign', value: USERS.exec1 } })
+  expect(owned.body).toMatchObject({ succeeded: [], failed: [{ id: 'inf_001', code: 'not_in_pool' }] })
+  expect((await api<Influencer>(page, '/influencers/inf_001')).body.assigned_to).toBe(USERS.exec2)
+  const unknown = await api(page, '/influencers/bulk', { method: 'POST', body: { ids: ['inf_010'], action: 'pool_assign', value: 'usr_nope' } })
+  expect(unknown.status).toBe(422)
+
+  const rows = page.locator('tbody tr')
+  await rows.filter({ hasText: 'Arjun Pillai' }).getByRole('checkbox').click()
+  await rows.filter({ hasNotText: 'Arjun Pillai' }).first().getByRole('checkbox').click()
+  await page.getByRole('button', { name: 'Assign 2…' }).click()
+  const dialog = page.getByRole('dialog', { name: 'Assign 2 influencers' })
+  await dialog.getByRole('checkbox', { name: /Sneha Patil/ }).click()
+  await dialog.getByRole('button', { name: 'Continue' }).click()
+
+  // A teammate claims one before the manager confirms.
+  await page.evaluate((id) => localStorage.setItem('influencehub-mock-user', id), USERS.exec2)
+  const claimed = await api(page, '/influencers/inf_010/claim', { method: 'POST' })
+  await page.evaluate((id) => localStorage.setItem('influencehub-mock-user', id), USERS.manager)
+  expect(claimed.status).toBe(200)
+
+  await dialog.getByRole('button', { name: 'Assign 2' }).click()
+  await expect(toast(page, '1 assigned, 1 not')).toContainText('Arjun Pillai: No longer in the pool')
+  // The claimed row has left the pool, so it isn't kept selected.
+  await expect(page.getByText(/\d+ selected/)).toHaveCount(0)
+  expect((await api<Influencer>(page, '/influencers/inf_010')).body.assigned_to).toBe(USERS.exec2)
 })
