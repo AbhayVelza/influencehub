@@ -1,19 +1,7 @@
-import { rm } from 'node:fs/promises'
 import path from 'node:path'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
-import { defineConfig, loadEnv, type Plugin } from 'vite'
-
-/** public/ is copied as-is; without mocks the MSW worker script has no business in the build. */
-function dropMockWorker(useMocks: boolean): Plugin {
-  return {
-    name: 'drop-mock-worker',
-    apply: 'build',
-    async writeBundle(options) {
-      if (!useMocks && options.dir) await rm(path.join(options.dir, 'mockServiceWorker.js'), { force: true })
-    },
-  }
-}
+import { defineConfig } from 'vite'
 
 // Vendor groups keep every production chunk under 500 kB and let lazy screens (charts, kanban) fetch
 // their libraries only when opened.
@@ -24,48 +12,48 @@ const vendor = (name: string, packages: string[], priority: number) => ({
 })
 
 // https://vite.dev/config/
-export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), 'VITE_')
-  const useMocks = env.VITE_USE_MOCKS ? env.VITE_USE_MOCKS === 'true' : true
-
-  return {
-    server: {
-      host: '0.0.0.0',
-      port: 3000,
-      allowedHosts: true,
+export default defineConfig({
+  server: {
+    host: '0.0.0.0',
+    port: 3000,
+    allowedHosts: true,
+  },
+  preview: {
+    host: '0.0.0.0',
+    port: 3000,
+    allowedHosts: true,
+  },
+  plugins: [react(), tailwindcss()],
+  resolve: {
+    alias: {
+      '@': path.resolve(import.meta.dirname, './src'),
     },
-    preview: {
-      host: '0.0.0.0',
-      port: 3000,
-      allowedHosts: true,
-    },
-    plugins: [react(), tailwindcss(), dropMockWorker(useMocks)],
-    resolve: {
-      alias: {
-        '@': path.resolve(import.meta.dirname, './src'),
-      },
-    },
-    define: {
-      // A literal (not a runtime lookup) so `if (!USE_MOCKS)` folds and MSW + fixtures are tree-shaken out.
-      'import.meta.env.VITE_USE_MOCKS': JSON.stringify(useMocks ? 'true' : 'false'),
-    },
-    build: {
-      rolldownOptions: {
-        output: {
-          codeSplitting: {
-            groups: [
-              vendor('react', ['react', 'react-dom', 'scheduler', 'react-router', 'react-router-dom'], 50),
-              vendor('radix', ['radix-ui', '@radix-ui', '@floating-ui', 'cmdk', 'react-remove-scroll.*', 'aria-hidden'], 40),
-              vendor('tanstack', ['@tanstack'], 40),
-              vendor('forms', ['zod', 'react-hook-form', '@hookform'], 40),
-              vendor('dates', ['date-fns', '@date-fns'], 40),
-              vendor('charts', ['recharts', 'd3-.*', 'victory-vendor', 'internmap', 'decimal\\.js-light', 'es-toolkit', 'immer', 'redux', '@reduxjs', 'reselect', 'react-redux', 'use-sync-external-store', 'eventemitter3', 'tiny-invariant'], 30),
-              vendor('dnd', ['@dnd-kit'], 30),
-              vendor('msw', ['msw', '@mswjs', '@open-draft', 'outvariant', 'strict-event-emitter', 'is-node-process', 'headers-polyfill', 'graphql', 'path-to-regexp', 'statuses', 'tough-cookie', 'rettime', 'until-async', 'cookie', 'type-fest'], 30),
-            ],
-          },
+  },
+  build: {
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          groups: [
+            vendor('react', ['react', 'react-dom', 'scheduler', 'react-router', 'react-router-dom'], 50),
+            vendor('radix', ['radix-ui', '@radix-ui', '@floating-ui', 'cmdk', 'react-remove-scroll.*', 'aria-hidden'], 40),
+            vendor('tanstack', ['@tanstack'], 40),
+            vendor('forms', ['zod', 'react-hook-form', '@hookform'], 40),
+            vendor('dates', ['date-fns', '@date-fns'], 40),
+            // Class-name helpers every component uses. Without their own group they land in the charts chunk, which
+            // then loads on every page (sign-in included).
+            vendor('ui-utils', ['clsx', 'tailwind-merge', 'class-variance-authority'], 45),
+            vendor('charts', ['recharts', 'd3-.*', 'victory-vendor', 'internmap', 'decimal\\.js-light', 'es-toolkit', 'immer', 'redux', '@reduxjs', 'reselect', 'react-redux', 'use-sync-external-store', 'eventemitter3', 'tiny-invariant'], 30),
+            vendor('dnd', ['@dnd-kit'], 30),
+            // tslib stays out of the Firebase groups: radix and dnd-kit share it.
+            // Firestore and Storage load with the data layer; the rest (app, auth) is all the sign-in page needs.
+          vendor('firestore', ['@firebase/firestore', '@firebase/webchannel-wrapper', 'firebase/firestore'], 35),
+          vendor('firebase-storage', ['@firebase/storage', 'firebase/storage'], 35),
+          vendor('firebase', ['firebase', '@firebase', 'idb'], 30),
+            // MSW's request routing (no service worker) maps the in-app API calls to src/backend's handlers.
+            vendor('msw', ['msw', '@mswjs', '@open-draft', 'outvariant', 'strict-event-emitter', 'is-node-process', 'headers-polyfill', 'graphql', 'path-to-regexp', 'statuses', 'tough-cookie', 'rettime', 'until-async', 'cookie', 'type-fest'], 30),
+          ],
         },
       },
     },
-  }
+  },
 })

@@ -382,10 +382,10 @@ export interface ActivityWithInfluencer extends Activity {
 // Request params / bodies
 
 /**
- * `primary_followers` = the primary account's audience (followers / subscribers / page followers).
+ * `instagram_followers` = the Instagram account's followers (the primary one if it's on Instagram, else the largest).
  * `followers` = the largest audience among the accounts on the `platform[]` filter (any account when none is set).
  */
-export type InfluencerSortKey = 'name' | 'total_reach' | 'primary_followers' | 'followers' | 'city' | 'stage' | 'created_at' | 'updated_at'
+export type InfluencerSortKey = 'name' | 'total_reach' | 'instagram_followers' | 'followers' | 'city' | 'stage' | 'created_at' | 'updated_at'
 
 /** `total_reach` ascending, `-total_reach` descending. */
 export type InfluencerSort = InfluencerSortKey | `-${InfluencerSortKey}`
@@ -670,6 +670,8 @@ export type CsvImportField =
   | 'notes'
   /** Optional "added on" date: dd/MM/yyyy or ISO 8601. New creators only. */
   | 'created_at'
+  /** The row's Instagram account's follower count (12400, 12,400 or 12.4K). Needs an Instagram handle in the row. */
+  | 'instagram_followers'
   | Platform
 
 /** Maps field → CSV column header. */
@@ -847,11 +849,16 @@ export interface ExpiringClaim {
 // ---------------------------------------------------------------------------
 // Team, categories, saved views
 
+/**
+ * An admin adds a member (no public sign-up). The server creates their sign-in account (Firebase Authentication)
+ * with this initial password; they can change it later from their account menu.
+ */
 export interface TeamMemberCreate {
   email: string
   role: Role
-  /** Optional; defaults to a name derived from the email. */
-  name?: string
+  name: string
+  /** At least 8 characters; never stored or returned by the API. */
+  password: string
 }
 
 export type TeamMemberUpdate = Partial<Pick<User, 'name' | 'role' | 'is_active'>>

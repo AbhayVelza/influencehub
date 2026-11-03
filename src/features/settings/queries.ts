@@ -34,7 +34,7 @@ export function useUpdatePoolSettings() {
   })
 }
 
-export function useInviteMember() {
+export function useAddMember() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (body: TeamMemberCreate) => teamApi.create(body),

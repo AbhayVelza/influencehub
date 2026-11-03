@@ -1,3 +1,4 @@
+import { PROTOTYPE } from '@/lib/mode'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { UserPlus } from 'lucide-react'
 import { useState } from 'react'
@@ -16,54 +17,104 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useMe } from '@/hooks/use-me'
 import { useTeam } from '@/hooks/use-team'
 import { ROLE_LABEL } from '@/lib/constants'
-import { inviteSchema, type InviteInput } from '@/lib/schemas'
+import { MIN_PASSWORD_LENGTH } from '@/lib/auth'
+import { teamMemberCreateSchema, type TeamMemberCreateInput } from '@/lib/schemas'
 import { cn } from '@/lib/utils'
-import { getErrorMessage } from '@/services'
+import { ApiError, getErrorMessage } from '@/services'
 import type { Role, User } from '@/types'
-import { useInviteMember, useUpdateMember } from './queries'
+import { useAddMember, useUpdateMember } from './queries'
 
 const ROLES = Object.keys(ROLE_LABEL) as Role[]
 
-function InviteDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
-  const invite = useInviteMember()
-  const form = useForm<InviteInput, unknown, ReturnType<typeof inviteSchema.parse>>({
-    resolver: zodResolver(inviteSchema),
-    defaultValues: { email: '', role: 'executive', name: '' },
+/** Prototype mode has no sign-in, so no password is asked for; the form still validates this stand-in. */
+const NO_SIGN_IN_PASSWORD = 'prototype-no-sign-in'
+
+function AddMemberDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+  const add = useAddMember()
+  const [formError, setFormError] = useState<string | null>(null)
+  const form = useForm<TeamMemberCreateInput, unknown, ReturnType<typeof teamMemberCreateSchema.parse>>({
+    resolver: zodResolver(teamMemberCreateSchema),
+    defaultValues: { name: '', email: '', role: 'executive', password: PROTOTYPE ? NO_SIGN_IN_PASSWORD : '' },
   })
   const { register, control, handleSubmit, reset, setError, formState } = form
+  const { errors } = formState
+
+  const close = (next: boolean) => {
+    if (add.isPending) return
+    if (!next) {
+      reset()
+      setFormError(null)
+    }
+    onOpenChange(next)
+  }
 
   const onSubmit = handleSubmit(async (values) => {
+    setFormError(null)
     try {
-      const user = await invite.mutateAsync({ email: values.email, role: values.role, name: values.name ?? undefined })
-      toast.success(`Invited ${user.name} as ${ROLE_LABEL[user.role]}`)
+      const user = await add.mutateAsync(values)
+      toast.success(`Added ${user.name} as ${ROLE_LABEL[user.role]}`)
       reset()
       onOpenChange(false)
     } catch (err) {
-      setError('email', { message: getErrorMessage(err) })
+      const code = err instanceof ApiError ? err.code : null
+      if (code === 'email_taken') setError('email', { message: getErrorMessage(err) }, { shouldFocus: true })
+      else if (code === 'weak_password') setError('password', { message: getErrorMessage(err) }, { shouldFocus: true })
+      else setFormError(getErrorMessage(err))
     }
   })
 
   return (
-    <Dialog open={open} onOpenChange={(next) => !invite.isPending && onOpenChange(next)}>
+    <Dialog open={open} onOpenChange={close}>
       <DialogContent className="sm:max-w-md">
         <form onSubmit={onSubmit} className="space-y-4" noValidate>
           <DialogHeader>
-            <DialogTitle>Invite a team member</DialogTitle>
-            <DialogDescription>They’ll get access with the role you choose.</DialogDescription>
+            <DialogTitle>Add a team member</DialogTitle>
+            <DialogDescription>
+              {PROTOTYPE
+                ? 'Prototype mode: no sign-in. Switch to them from the account menu (Acting as) to try their role.'
+                : 'They sign in with this email and the password you set, and can change it from their account menu.'}
+            </DialogDescription>
           </DialogHeader>
           <div className="grid gap-1.5">
-            <Label htmlFor="invite-email">Email</Label>
-            <Input id="invite-email" type="email" autoFocus aria-invalid={!!formState.errors.email} {...register('email')} />
-            {formState.errors.email && <p className="text-xs text-destructive">{formState.errors.email.message}</p>}
+            <Label htmlFor="member-name">Name</Label>
+            <Input
+              id="member-name"
+              autoFocus
+              autoComplete="off"
+              aria-invalid={!!errors.name}
+              aria-describedby={errors.name ? 'member-name-error' : undefined}
+              {...register('name')}
+            />
+            {errors.name && (
+              <p id="member-name-error" className="text-xs text-destructive">
+                {errors.name.message}
+              </p>
+            )}
           </div>
           <div className="grid gap-1.5">
-            <Label htmlFor="invite-role">Role</Label>
+            <Label htmlFor="member-email">Email</Label>
+            <Input
+              id="member-email"
+              type="email"
+              autoComplete="off"
+              aria-invalid={!!errors.email}
+              aria-describedby={errors.email ? 'member-email-error' : undefined}
+              {...register('email')}
+            />
+            {errors.email && (
+              <p id="member-email-error" className="text-xs text-destructive">
+                {errors.email.message}
+              </p>
+            )}
+          </div>
+          <div className="grid gap-1.5">
+            <Label htmlFor="member-role">Role</Label>
             <Controller
               control={control}
               name="role"
               render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger id="invite-role" className="w-full">
+                  <SelectTrigger id="member-role" className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -77,18 +128,39 @@ function InviteDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (op
               )}
             />
           </div>
-          <div className="grid gap-1.5">
-            <Label htmlFor="invite-name">
-              Name <span className="font-normal text-muted-foreground">(optional)</span>
-            </Label>
-            <Input id="invite-name" {...register('name')} />
+          {!PROTOTYPE && (
+            <div className="grid gap-1.5">
+              <Label htmlFor="member-password">Initial password</Label>
+              <Input
+                id="member-password"
+                type="password"
+                autoComplete="new-password"
+                minLength={MIN_PASSWORD_LENGTH}
+                aria-invalid={!!errors.password}
+                aria-describedby={errors.password ? 'member-password-error member-password-hint' : 'member-password-hint'}
+                {...register('password')}
+              />
+              {errors.password && (
+                <p id="member-password-error" className="text-xs text-destructive">
+                  {errors.password.message}
+                </p>
+            )}
+            <p id="member-password-hint" className="text-xs text-muted-foreground">
+              At least {MIN_PASSWORD_LENGTH} characters. Share it with them securely.
+            </p>
           </div>
+          )}
+          {formError && (
+            <p role="alert" className="text-sm text-destructive">
+              {formError}
+            </p>
+          )}
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={invite.isPending}>
+            <Button type="button" variant="outline" onClick={() => close(false)} disabled={add.isPending}>
               Cancel
             </Button>
-            <Button type="submit" disabled={invite.isPending}>
-              Send invite
+            <Button type="submit" disabled={add.isPending}>
+              Add member
             </Button>
           </DialogFooter>
         </form>
@@ -101,7 +173,7 @@ export function TeamSettings() {
   const team = useTeam()
   const { data: me } = useMe()
   const update = useUpdateMember()
-  const [inviteOpen, setInviteOpen] = useState(false)
+  const [addOpen, setAddOpen] = useState(false)
 
   const change = (user: User, body: Partial<Pick<User, 'role' | 'is_active'>>, success: string) =>
     update.mutate(
@@ -117,11 +189,16 @@ export function TeamSettings() {
       <CardHeader className="flex flex-row items-start justify-between gap-4">
         <div className="space-y-1.5">
           <CardTitle className="text-base">Team & roles</CardTitle>
-          <CardDescription>You can’t change your own role or deactivate yourself, and there’s always at least one admin.</CardDescription>
+          <CardDescription>
+            {PROTOTYPE
+              ? 'Add people to try each role (switch from the account menu). '
+              : 'Add people with an initial password; deactivating someone stops their sign-in. '}
+            You can’t change your own role or deactivate yourself, and there’s always at least one admin.
+          </CardDescription>
         </div>
-        <Button onClick={() => setInviteOpen(true)}>
+        <Button onClick={() => setAddOpen(true)}>
           <UserPlus />
-          Invite member
+          Add member
         </Button>
       </CardHeader>
       <CardContent>
@@ -210,7 +287,7 @@ export function TeamSettings() {
           </Table>
         )}
       </CardContent>
-      <InviteDialog open={inviteOpen} onOpenChange={setInviteOpen} />
+      <AddMemberDialog open={addOpen} onOpenChange={setAddOpen} />
     </Card>
   )
 }

@@ -16,6 +16,12 @@ Source of truth: `src/types/index.ts`. Update both together.
 - **PackageStatus**: preparing, sent, in_transit, delivered, returned
 - **AccountType**: business, creator, personal, unknown · **SyncStatus**: synced, pending, not_synced, error
 - **Role**: admin, manager, executive
+- **User** (team member): id, name, email, role, is_active, created_at. **TeamMemberCreate** (POST /team):
+  email, name, role, password (≥ 8 characters; never stored or returned by the API). **TeamMemberUpdate**: name?,
+  role?, is_active?.
+  **Auth identity vs team record**: the Firebase Auth user (uid, email, password) only proves who someone is; the
+  team record (`team/{uid}`, `User.id` = uid) holds name, role and is_active and decides access. A Firebase user
+  without a team record gets 403 `not_a_member`. See `auth.md`.
 - **Categories**: Fashion, Beauty, Food, Tech, Travel, Fitness, Lifestyle, Gaming, Finance, Parenting, Other
 - **Platform**: instagram, youtube, tiktok, facebook, threads, pinterest, linkedin, snapchat
 - **SyncMethod** (default per platform): `lookup` = instagram, youtube, threads, facebook (public Pages);

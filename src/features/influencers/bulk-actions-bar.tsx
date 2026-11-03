@@ -27,7 +27,7 @@ import {
 import { useMe } from '@/hooks/use-me'
 import { useTeam } from '@/hooks/use-team'
 import { ALL_STAGES, STAGE_META } from '@/lib/constants'
-import { waitForJob } from '@/lib/jobs'
+import { isSessionChanged, waitForJob } from '@/lib/jobs'
 import { can } from '@/lib/permissions'
 import { queryKeys } from '@/lib/query'
 import { getStandardTransitions } from '@/lib/stages'
@@ -145,7 +145,8 @@ export function BulkActionsBar({ rows, onClear, onSettled }: BulkActionsBarProps
       })
       onSettled(failed.map((f) => f.id))
     } catch (err) {
-      toast.error('Sync failed', { id: toastId, description: getErrorMessage(err) })
+      if (isSessionChanged(err)) toast.dismiss(toastId)
+      else toast.error('Sync failed', { id: toastId, description: getErrorMessage(err) })
     } finally {
       setIsSyncing(false)
       // Sync status flips to "pending" immediately and to "synced" when the job ends.
