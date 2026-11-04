@@ -2,7 +2,7 @@ import { csvCell } from '@/lib/csv'
 import { dayKey, formatDate, todayKey } from '@/lib/format'
 import { can } from '@/lib/permissions'
 import { audienceOf, instagramFollowers, normalizeHandle, PLATFORM_META, PLATFORMS, primaryAccount, toRef } from '@/lib/platforms'
-import { normalizePhone } from '@/lib/schemas'
+import { normalizeEmailField, normalizePhone } from '@/lib/schemas'
 import { getAllowedTransitions, isOverride } from '@/lib/stages'
 import type {
   AccountCreate,
@@ -189,7 +189,7 @@ export function createInfluencer(body: InfluencerCreate, source: 'lookup' | 'man
     name,
     category: body.category,
     phone: normalizePhone(body.phone),
-    email: body.email?.trim().toLowerCase() || null,
+    email: normalizeEmailField(body.email),
     address,
     city: body.city ?? address?.city ?? null,
     state: body.state ?? address?.state ?? null,

@@ -218,3 +218,10 @@ Firebase user. Setup, the data layer, the Firestore layout and the rules: `auth.
   connected.
 - **Duplicate detection** runs over the whole workspace (`src/backend/duplicates.ts`); dismissed pair ids are stored
   (`dismissed_duplicates`) so a pair never reappears.
+
+## Email field holds an address or a contact note
+
+`Influencer.email` accepts free text (max 200), so a CSV or form can carry notes like "managed by @iplixmedia"
+when a creator has no public address. `normalizeEmailField` (`src/lib/schemas.ts`) lowercases real addresses and keeps
+anything else as typed. `EmailValue` shows a mailto link only for a real address. Duplicate detection matches on
+"Same email" only when both values are real addresses (`isEmailAddress`), so a shared agency note is not a match.

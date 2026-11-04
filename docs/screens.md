@@ -23,7 +23,7 @@ active filters stay visible. `CollapsibleFilters` in `components/common/collapsi
    pipeline funnel (click → filtered list), by-category + top-cities bars, my follow-ups, activity feed.
 3. **Influencers list**: header w/ count + Import CSV / Export / + Add; search; Saved views; filters
    Category/Platform/Country/State/City/Stage/Assigned/Agreement (signed, missing)/Insights (received, missing)/Total reach; chips; table; bulk bar; pagination. Columns:
-   name+avatar+verified, category, primary account, platforms, total reach, Instagram followers, phone, email, city,
+   name+avatar+verified, category, primary account, platforms, Instagram followers, phone, email (shown by default), city,
    state, country, stage, assigned to, docs (Insights ✓/✗, Agreement ✓/✗; — in the pool), sync (primary), last synced
    (primary). Filters in URL. Every option shows a count that follows the other active filters (ticking Stage updates the
    Category / Country / … counts, and the reverse); options with nothing left stay listed, dimmed at 0. Clear one filter

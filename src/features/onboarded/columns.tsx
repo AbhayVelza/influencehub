@@ -2,7 +2,7 @@ import type { ColumnDef } from '@tanstack/react-table'
 import { AccountLabel } from '@/components/common/platform-badge'
 import { RelativeTime } from '@/components/common/relative-time'
 import { SyncStatusBadge } from '@/components/common/sync-status-badge'
-import { buildColumns } from '@/features/influencers/columns'
+import { buildColumns, totalReachColumn } from '@/features/influencers/columns'
 import { formatCompact, formatNumber } from '@/lib/format'
 import { audienceOf, PLATFORM_META, toRef } from '@/lib/platforms'
 import type { Influencer, Platform, User } from '@/types'
@@ -38,6 +38,7 @@ export function buildOnboardedColumns(team: Map<string, User>, platform: Platfor
         return <span title={`${formatNumber(n)} ${meta.audienceLabel.toLowerCase()}`}>{formatCompact(n)}</span>
       },
     },
+    totalReachColumn,
   ]
   const syncColumns: ColumnDef<Influencer>[] = [
     {

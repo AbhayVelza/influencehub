@@ -1,6 +1,7 @@
 import type { ColumnDef, RowData } from '@tanstack/react-table'
 import { BadgeCheck } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { EmailValue } from '@/components/common/email-value'
 import { PersonAvatar } from '@/components/common/person-avatar'
 import { DocFlags } from '@/features/documents/doc-flags'
 import { AccountLabel, PlatformMarks } from '@/components/common/platform-badge'
@@ -27,6 +28,17 @@ declare module '@tanstack/react-table' {
 }
 
 const muted = <span className="text-muted-foreground">—</span>
+
+/** Sum across all accounts; shown on the Onboarded tabs only (not the main Influencers list). */
+export const totalReachColumn: ColumnDef<Influencer> = {
+  id: 'total_reach',
+  header: 'Total reach',
+  meta: { label: 'Total reach', sortKey: 'total_reach', sortDescFirst: true, align: 'right' },
+  cell: ({ row }) => {
+    const n = row.original.total_reach
+    return n == null ? muted : <span title={`${formatNumber(n)} across ${row.original.accounts.length} account(s)`}>{formatCompact(n)}</span>
+  },
+}
 
 /** Row checkboxes; shared with the pool table. */
 export function selectColumn<T extends { name: string }>(): ColumnDef<T> {
@@ -98,15 +110,6 @@ export function buildColumns(team: Map<string, User>): ColumnDef<Influencer>[] {
       cell: ({ row }) => <PlatformMarks platforms={row.original.accounts.map((a) => a.platform)} />,
     },
     {
-      id: 'total_reach',
-      header: 'Total reach',
-      meta: { label: 'Total reach', sortKey: 'total_reach', sortDescFirst: true, align: 'right' },
-      cell: ({ row }) => {
-        const n = row.original.total_reach
-        return n == null ? muted : <span title={`${formatNumber(n)} across ${row.original.accounts.length} account(s)`}>{formatCompact(n)}</span>
-      },
-    },
-    {
       id: 'instagram_followers',
       header: 'Instagram followers',
       meta: { label: 'Instagram followers', sortKey: 'instagram_followers', sortDescFirst: true, align: 'right' },
@@ -132,12 +135,10 @@ export function buildColumns(team: Map<string, User>): ColumnDef<Influencer>[] {
     {
       id: 'email',
       header: 'Email',
-      meta: { label: 'Email', hiddenByDefault: true },
+      meta: { label: 'Email' },
       cell: ({ row }) =>
         row.original.email ? (
-          <a href={`mailto:${row.original.email}`} className="block max-w-52 truncate hover:underline">
-            {row.original.email}
-          </a>
+          <EmailValue value={row.original.email} className="block max-w-52 truncate" />
         ) : (
           muted
         ),

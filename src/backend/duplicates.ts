@@ -1,6 +1,6 @@
 import { PIPELINE_STAGES } from '@/lib/constants'
 import { findLinkedAccounts, PLATFORM_META, primaryAccount, toRef } from '@/lib/platforms'
-import { normalizePhone } from '@/lib/schemas'
+import { isEmailAddress, normalizePhone } from '@/lib/schemas'
 import type { DuplicateCheckRequest, DuplicateMatch, DuplicatePair, Influencer, MatchConfidence, MergeField, MergeRequest, User } from '@/types'
 import { currentUser, db, logActivity, nowIso, refreshDerived } from './db'
 import { canSee } from './domain'
@@ -53,7 +53,8 @@ function compare(c: Candidate, inf: Influencer): { confidence: MatchConfidence; 
   }
   const label = (p: keyof typeof PLATFORM_META) => PLATFORM_META[p].label
 
-  if (c.email && inf.email && c.email.trim().toLowerCase() === inf.email) add('high', 'Same email')
+  // Only real addresses: many creators share a note like "managed by @agency", which isn't a match.
+  if (isEmailAddress(c.email) && isEmailAddress(inf.email) && c.email.trim().toLowerCase() === inf.email) add('high', 'Same email')
   const phone = normalizePhone(c.phone)
   if (phone && inf.phone && phone === inf.phone) add('high', 'Same phone number')
 
