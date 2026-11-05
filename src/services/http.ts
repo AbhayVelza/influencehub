@@ -45,31 +45,45 @@ function isApiErrorBody(value: unknown): value is ApiErrorBody {
   )
 }
 
+/**
+ * Every API call goes through here. There is no API server: the request is answered in this browser by the data
+ * layer (src/backend), which applies the business rules over Firestore. It's loaded on first use, so the sign-in
+ * page doesn't download it.
+ */
 export async function request<T>(path: string, { method = 'GET', query, body, signal }: RequestOptions = {}): Promise<T> {
   const qs = toSearchParams(query).toString()
-  const url = `${API_BASE}${path}${qs ? `?${qs}` : ''}`
+  const url = new URL(`${API_BASE}${path}${qs ? `?${qs}` : ''}`, window.location.origin)
 
   let response: Response
   try {
-    response = await fetch(url, {
-      method,
-      signal,
-      headers: body !== undefined ? { 'Content-Type': 'application/json' } : undefined,
-      body: body !== undefined ? JSON.stringify(body) : undefined,
-    })
+    const { handleApiRequest } = await import('@/backend')
+    signal?.throwIfAborted()
+    response = await handleApiRequest(
+      new Request(url, {
+        method,
+        headers: body !== undefined ? { 'Content-Type': 'application/json' } : undefined,
+        body: body !== undefined ? JSON.stringify(body) : undefined,
+      }),
+    )
   } catch (err) {
     if (err instanceof DOMException && err.name === 'AbortError') throw err
-    throw new ApiError(0, 'network_error', 'Could not reach the server. Check your connection.')
+    console.error('Request failed', err)
+    throw new ApiError(0, 'network_error', 'Something went wrong. Check your connection and try again.')
   }
+  signal?.throwIfAborted()
 
   if (response.status === 204) return undefined as T
 
-  const data: unknown = await response.json().catch(() => null)
+  const invalid = Symbol('invalid')
+  const data: unknown = await response.json().catch(() => invalid)
 
   if (!response.ok) {
     if (isApiErrorBody(data)) throw new ApiError(response.status, data.error.code, data.error.message)
     throw new ApiError(response.status, 'http_error', `Request failed (${response.status})`)
   }
+
+  // Every endpoint answers JSON or 204; anything else must fail the query instead of resolving with null.
+  if (data === invalid) throw new ApiError(response.status, 'invalid_response', 'The server sent an unexpected response.')
 
   return data as T
 }

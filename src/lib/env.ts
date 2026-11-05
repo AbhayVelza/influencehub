@@ -1,4 +1,2 @@
-/** Base for every API request, e.g. "https://api.example.com/api/v1" or "/api/v1". */
-export const API_BASE = `${(import.meta.env.VITE_API_URL ?? '').replace(/\/+$/, '')}/api/v1`
-
-export const USE_MOCKS = import.meta.env.VITE_USE_MOCKS === 'true'
+/** Path prefix of the in-app API (answered in the browser by src/backend; there is no API server). */
+export const API_BASE = '/api/v1'

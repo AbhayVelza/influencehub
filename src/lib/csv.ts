@@ -1,4 +1,4 @@
-// CSV helpers shared by the import UI (preview), error reports and the mock API.
+// CSV helpers shared by the import UI (preview), error reports and the data layer (src/backend).
 
 /** RFC 4180-style parser: quoted fields, escaped quotes, CRLF/LF. Blank lines are dropped. */
 export function parseCsv(text: string): string[][] {

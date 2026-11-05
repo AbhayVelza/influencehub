@@ -1,6 +1,7 @@
 import { BadgeCheck, ChevronDown, Lock, UserRound } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
+import { EmailValue } from '@/components/common/email-value'
 import { PersonAvatar } from '@/components/common/person-avatar'
 import { AccountLabel, PlatformMarks } from '@/components/common/platform-badge'
 import { StageBadge } from '@/components/common/stage-badge'
@@ -69,7 +70,7 @@ export function PoolPreview({ item }: { item: PoolItem }) {
           <>
             <Row label="Phone">{full.phone ? <a href={`tel:${full.phone}`} className="hover:underline">{full.phone}</a> : none}</Row>
             <Row label="Email">
-              {full.email ? <a href={`mailto:${full.email}`} className="hover:underline">{full.email}</a> : none}
+              {full.email ? <EmailValue value={full.email} /> : none}
             </Row>
             <Row label="Address">
               {address

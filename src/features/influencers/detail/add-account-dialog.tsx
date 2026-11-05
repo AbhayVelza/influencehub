@@ -11,7 +11,7 @@ import { AlreadyInCrm } from '@/features/add-influencer/already-in-crm'
 import { conflictFromError, type ConflictState } from '@/features/add-influencer/conflict'
 import { findDuplicates, toAccountCreate } from '@/features/add-influencer/queries'
 import { DuplicateWarning } from '@/features/duplicates/duplicate-warning'
-import { waitForJob } from '@/lib/jobs'
+import { isSessionChanged, waitForJob } from '@/lib/jobs'
 import { PLATFORM_META } from '@/lib/platforms'
 import { accountInputSchema, type AccountInput } from '@/lib/schemas'
 import { accountsApi, getErrorMessage, influencersApi } from '@/services'
@@ -79,6 +79,7 @@ export function AddAccountDialog({
       onAdded(account.id)
       onOpenChange(false)
     } catch (err) {
+      if (isSessionChanged(err)) return
       const found = await conflictFromError(err, body.platform, body.handle)
       if (found) setConflict(found)
       else toast.error('Couldn’t add the account', { description: getErrorMessage(err) })

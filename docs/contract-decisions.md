@@ -4,13 +4,13 @@ The backend must match these. Source of truth for types: `src/types/index.ts`.
 Record any new API decision here. Dates and documents: `dates-and-documents.md`.
 
 - Multi-value query params are repeated keys: `?stage=a&stage=b`.
-- Sorting: `sort=field` ascending, `sort=-field` descending (nulls last). Sort keys: name, total_reach,
-  primary_followers (the primary account's audience metric: followers / subscribers / page_followers), city, stage,
+- Sorting: `sort=field` ascending, `sort=-field` descending (nulls last). Sort keys: name, total_reach, followers (largest audience among the accounts on `platform[]`, any account when none; the Onboarded tabs' audience column),
+  instagram_followers (the Instagram account's followers: the primary one if it's on Instagram, else the largest), city, stage,
   created_at, updated_at.
 - Job statuses: `queued | running | succeeded | failed`; `progress` 0–100; `error {code, message}` when failed.
 - **Accounts**: `total_reach` = sum of each account's audience metric (followers / subscribers / page_followers),
   null when none is known; `platform[]` filters influencers with an account on any of those platforms;
-  `reach_min/max` filter on total_reach; `filter-options` adds `platforms` with counts; `q` also matches every
+  `reach_min/max` filter on total_reach; `followers_min/max` filter on one account's audience: some account on a selected `platform[]` (any account when none is selected) within the range, unknown audiences never match (the Onboarded tabs' Followers filter, which is that platform's followers / subscribers / page followers). Combinable (AND) with everything else, and part of `filter-options`' filters like `reach_min/max`; `filter-options` adds `platforms` with counts (faceted, see Filter options); `q` also matches every
   account handle. Handles are normalised everywhere (forms, lookup, CSV, API): the platform's profile URL and a
   leading `@` are stripped, then lowercased; format `[a-z0-9._-]{1,60}`. `(platform, handle)` is unique across the CRM.
   Influencer PATCH can't change accounts or derived fields (`accounts`, `total_reach`, `is_verified`, `profile_pic_url`).
@@ -39,7 +39,7 @@ Record any new API decision here. Dates and documents: `dates-and-documents.md`.
   Signals: same email or phone → high; an account's handle / URL found in another account's bio or links (either
   direction) → high; the same platform + handle → high; the same handle on a different platform → medium; similar
   name + same city (both trimmed, lowercased) → low. **Similar name** (exact rule, `similarNames` in
-  `src/mocks/duplicates.ts`): trim and lowercase both names; empty never matches; `n` = length in characters of the
+  `src/backend/duplicates.ts`): trim and lowercase both names; empty never matches; `n` = length in characters of the
   shorter one; match when Levenshtein distance (insert / delete / substitute, each cost 1) ≤ 1 if `n` ≤ 6, else ≤ 2.
   A match's confidence = its strongest signal.
   `access`: `full` (you can see it), `pool` (unassigned), `restricted` (an executive's teammate owns it:
@@ -60,7 +60,9 @@ Record any new API decision here. Dates and documents: `dates-and-documents.md`.
   `reason`; without one → `422 reason_required`. Activity payload: `{from, to, reason, override: true}`.
   Bulk `change_stage` has no reason field, so it can't override.
 - `POST /influencers/bulk` actions: `change_stage` (value = stage), `assign` (value = user id or null; manager/admin),
-  `claim` (no value; per-row `already_claimed` / `claim_limit_reached`), `sync` (every syncable account; returns
+  `pool_assign` (value = an active user's id, else 422; manager/admin, else 403; assigns only rows that are still
+  unassigned, checked per row like a claim, so a teammate's claim is never overwritten: per-row `not_in_pool` "No
+  longer in the pool"; writes `assigned {from: null, to}`, never auto-released), `claim` (no value; per-row `already_claimed` / `claim_limit_reached`), `sync` (every syncable account; returns
   `job_id`; job result `{synced (accounts), failed[{id (influencer), message}]}`), `delete` (manager/admin).
   Response: `{succeeded[ids], failed[{id, code, message}], job_id|null}`; per-row failures don't fail the request.
   Per-row messages don't include the influencer's name (the UI adds it).
@@ -68,12 +70,22 @@ Record any new API decision here. Dates and documents: `dates-and-documents.md`.
   `/accounts…` endpoint, `/pipeline`, `/packages`, `/calls/follow-ups`, `/calls/{id}/done`, `/dashboard/summary`
   and bulk rows treat anything else as missing (404 / left out). Unassigned influencers reach executives only
   through `/pool`.
+- **Onboarded tabs** (no new endpoint, no stored `onboarded` flag): a platform's tab is `GET /influencers` with
+  `stage=onboarded&platform=<p>` plus the user's own filters (including `agreement` / `insights`); the counts on
+  `/onboarded` are the same request with `page_size=1` (read `total`), one per platform. "Onboarded" is the stage
+  alone (package_sent / delivered drop out); documents aren't required (changed 03/11/2026: creators moved to
+  Onboarded without them were missing from the tabs), the docs column shows what's missing. Executive scoping above
+  applies unchanged. The backend must keep these filters
+  combinable (AND) and accept `page_size=1`.
 - **Unassigned Pool**: `GET /pool` = influencers with `assigned_to = null`, same params as `/influencers`
   (`assigned_to` ignored). Managers/admins get full `Influencer` rows; executives get `PoolInfluencerPreview`
   (id, name, category, profile_pic_url, is_verified, primary_account {platform, handle, profile_url}, platforms[],
   total_reach, city, state, country, stage, created_at) — never phone, email, address, notes, tags, checklist,
   account details or calls — and their `q` matches name / handles / city only. `GET /pool/{id}` is the same shape,
   404 unless unassigned. `GET /pool/filter-options` = filter-options over the pool.
+- **Bulk assign from the pool** (manager/admin): one or more people. Several share the selected influencers out
+  round-robin in list order (one owner each, the shares differ by at most one). The UI sends one bulk `pool_assign`
+  per person, so a failed request fails only that person's share. No multi-owner influencers.
 - **Owner changes**: managers/admins set any `assigned_to` (PATCH, bulk `assign`). Executives can't PATCH or bulk
   `assign` owners (403); on `POST /influencers` they may set themselves or null (null = straight into the pool).
 - **Claim** `POST /influencers/{id}/claim` (any role): atomic — succeeds only while unassigned (or already mine,
@@ -124,21 +136,92 @@ Record any new API decision here. Dates and documents: `dates-and-documents.md`.
   synced, failed} }`. PATCH accepts `{ sync_interval_hours }` and returns the full object.
 - `GET /dashboard/summary`: `top_cities` = top 10 by influencer count; `recent_activity` = latest 20;
   `my_follow_ups` = today + overdue, scoped like `mine=true`; "contacted this week" counts moves since Monday 00:00 IST.
-- Team: `POST /team {email, role, name?}` (name derived from the email when omitted; 409 `email_taken`).
-  `PATCH /team/{id}` → 422 `self_change` when you change your own role / deactivate yourself, 422 `last_admin`
-  when it would leave no active admin.
+- Team: see **Authentication & team** below.
 - Categories carry `influencer_count`. `DELETE /categories/{id}` (admin) → 409 `in_use` while any influencer
   uses it (deactivate instead); 204 otherwise. Renaming a category renames it on its influencers. Inactive
   categories stay on existing influencers but aren't offered for new ones.
 
-## Backend notes (jobs the frontend relies on)
-- **Auto-release job** (scheduled, e.g. hourly): when `auto_release_days` = N is set, an influencer whose current
-  ownership came from a claim (its latest claimed/assigned/released activity is a `claimed` by the current owner)
-  and has no call logged since `claimed_at` is released at `claimed_at + N days`: `assigned_to = null`, activity
-  `released {from, reason: "No call logged within N days of claiming", auto: true}` with actor null. Assignments by a
-  manager never auto-release. Notify the owner the day before (IST): the UI shows `GET /pool/expiring` in the bell;
-  add email/push if wanted. The mock runs this job before every request (`runAutoRelease` in `src/mocks/domain.ts`).
+- **Filter options (dynamic refinement)** `GET /influencers/filter-options` and `GET /pool/filter-options` take the
+  list's filters (`q`, `category[]`, `country[]`, `state[]`, `city[]`, `stage[]`, `assigned_to[]`, `platform[]`,
+  `reach_min/max`, `followers_min/max`, `agreement`, `insights`; not sort / paging) and return `{categories, countries, states, cities,
+  stages, assigned_to, platforms, agreement, insights}`, each `[{value, label, count}]`. Rules (reference:
+  `filterOptionsFor` / `compileFilters` in `src/backend`):
+  - Filters across facets are ANDed; values inside one facet are ORed.
+  - **Faceted count**: `count` = influencers matching every active filter *except that facet's own*, so it is what
+    ticking that option would show: the list `total` for `{other filters} + {this facet = option}`. `q` and reach
+    narrow every facet. Executive scoping applies; executives' `q` in the pool matches name / handles / city only.
+  - **Lists don't shrink**: option lists depend on the hierarchy only (`states` = states of the selected countries,
+    `cities` = cities of the selected countries + states; all when none). An option that matches nothing stays in
+    with `count: 0` (the UI dims it), so a selection can always be unticked. `stages`, `platforms`, `agreement`,
+    `insights` always list every value. Sort: count desc then label; stages / platforms keep their fixed order.
+  - Influencers without documents (the pool) count in neither `agreement` nor `insights` option.
+  - The Onboarded tabs send their fixed rule (`stage`, `platform`) with the user's filters, so
+    their counts are within that tab.
+  - The UI refetches on every filter change and keeps showing the last counts, dimmed, until the new ones arrive.
+  - **Performance (large datasets)**: compute all nine facets in one scan, not nine queries: for each row note which
+    filters it fails; no failure → counts in every facet, exactly one failure → counts in that facet only, more →
+    nowhere (`filterOptionsFor`). In a database: one aggregation with facet sub-pipelines (Mongo `$facet`, SQL
+    `GROUPING SETS` / `FILTER (WHERE …)`), or per-facet queries run in parallel. Keep denormalised, indexed columns
+    on the influencer row (`platforms[]`, `country`, `state`, `city`, `category`, `stage`, `assigned_to`,
+    `total_reach`, `has_agreement`, `insights_count`, a lowercase search blob), so no counting joins accounts or
+    documents. Cache by (user scope, normalised filters) with a short TTL (~30 s, the UI's `staleTime`) and drop
+    the entries on any influencer / account / document / stage write; unfiltered counts can be pre-aggregated and
+    kept up to date by those writes. Expect a response in the low hundreds of ms at ~100k influencers.
+
+## Authentication & team
+
+There is no API server: `handleApiRequest` (`src/backend/index.ts`) answers every in-app API call for the signed-in
+Firebase user. Setup, the data layer, the Firestore layout and the rules: `auth.md`.
+
+- **Every request** is checked first, in this order:
+  - not signed in → `401 {error: {code: 'unauthenticated', message: 'Sign in to continue.'}}`
+  - signed in with no `team/{uid}` record → `403 not_a_member` "You don't have access to InfluenceHub. Ask an admin to
+    add you."
+  - team member with `is_active: false` → `403 inactive` "Your account has been deactivated. Ask an admin if this is a
+    mistake."
+
+  A 403 from `GET /me` shows the access-denied screen with the message as sent. A write that `firestore.rules`
+  refuses is undone locally and answered `403 forbidden` "You don't have permission to do this."; a database outage
+  is `503 unavailable`.
+- **Roles** come from the team record (`team/{uid}.role`), never from the request.
+- `GET /me` → the caller's `User`. `GET /team` is readable by every active member (names for owners, activity and
+  pickers); only `POST` / `PATCH` are admin-only (else 403).
+- **`POST /team`** (admin) `TeamMemberCreate {email, name, role, password}`. No public sign-up page: this and the seed
+  script are the only ways in. Email is trimmed and lowercased. Errors, in this order:
+  - `422 validation_error` for a bad email ("Enter a valid email"), a bad role ("Choose a role") or a missing name
+    ("Enter a name")
+  - `422 weak_password` "Use at least 8 characters" when `password` is shorter than `MIN_PASSWORD_LENGTH` (8)
+  - `409 email_taken` when a member has this email, or the email already has a Firebase account
+  - `422 sign_up_disabled` when Firebase doesn't allow creating accounts (Email/Password or sign-up turned off)
+  - success → `201 User` (never the password). The member's Firebase account is created in a throwaway Firebase app
+    (`src/backend/sign-in-accounts.ts`) so the admin stays signed in; `User.id` is the Firebase uid. The password goes
+    to Firebase only.
+- **`PATCH /team/{id}`** `{name?, role?, is_active?}` → 422 `self_change` when you change your own role / deactivate
+  yourself, 422 `last_admin` when it would leave no active admin. `is_active: false` cuts off access at once (the
+  rules refuse everything; their next request gets `403 inactive`). Their Firebase account stays; reactivating
+  restores access.
+- Passwords are changed through Firebase (re-authenticate, then `updatePassword`); there is no reset email.
+- **Uploads**: `POST /documents/presign` returns `upload_url: "firebase-storage:<key>"`; `documentsApi.upload` puts the
+  file in Storage at `<key>` and `POST /influencers/{id}/documents` saves the metadata (`storage_key`). `GET
+  /documents/{id}/download` returns a Storage download URL. `POST /imports/csv/presign` returns
+  `"local-upload:<key>"`: the CSV is read in the browser and never stored (`src/lib/upload-targets.ts`).
+
+## Scheduled rules (no scheduler without a server)
+- **Auto-release**: when `auto_release_days` = N is set, an influencer whose current ownership came from a claim (its
+  latest claimed/assigned/released activity is a `claimed` by the current owner) and has no call logged since
+  `claimed_at` is released at `claimed_at + N days`: `assigned_to = null`, activity `released {from, reason: "No call
+  logged within N days of claiming", auto: true}` with actor null. Assignments by a manager never auto-release.
+  Owners see claims expiring by tomorrow (IST) in the bell (`GET /pool/expiring`). Runs at the start of every request,
+  in whoever's browser makes it (`runAutoRelease` in `src/backend/domain.ts`).
 - **Connect-link expiry**: a `link_sent` account whose `connect_link_expires_at` has passed becomes `expired`
-  (`expireConnectLinks` in `src/mocks/social.ts`, also run before every mock request).
-- **Duplicate detection** runs server-side over the whole CRM (`src/mocks/duplicates.ts` is the reference);
-  dismissed pair ids are stored so a pair never reappears.
+  (`expireConnectLinks` in `src/backend/social.ts`, same timing). Connect links aren't issued until a platform API is
+  connected.
+- **Duplicate detection** runs over the whole workspace (`src/backend/duplicates.ts`); dismissed pair ids are stored
+  (`dismissed_duplicates`) so a pair never reappears.
+
+## Email field holds an address or a contact note
+
+`Influencer.email` accepts free text (max 200), so a CSV or form can carry notes like "managed by @iplixmedia"
+when a creator has no public address. `normalizeEmailField` (`src/lib/schemas.ts`) lowercases real addresses and keeps
+anything else as typed. `EmailValue` shows a mailto link only for a real address. Duplicate detection matches on
+"Same email" only when both values are real addresses (`isEmailAddress`), so a shared agency note is not a match.

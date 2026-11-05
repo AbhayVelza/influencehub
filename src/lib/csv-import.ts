@@ -1,10 +1,10 @@
 import { toCsvText } from '@/lib/csv'
-import { parseImportDate } from '@/lib/format'
+import { parseCompactNumber, parseImportDate } from '@/lib/format'
 import { PLATFORM_META, PLATFORMS } from '@/lib/platforms'
 import { fieldSchemas, handleSchema, MAX_TAGS, validateField } from '@/lib/schemas'
 import type { AccountCreate, CsvColumnMapping, CsvImportField, InfluencerCreate, Platform } from '@/types'
 
-// CSV import rules shared by the preview (UI) and the mock API, so the preview predicts what the import does.
+// CSV import rules shared by the preview (UI) and the data layer (src/backend), so the preview predicts what the import does.
 
 export type ImportField = CsvImportField
 
@@ -28,6 +28,11 @@ export const IMPORT_FIELDS: { key: ImportField; label: string; required?: boolea
   { key: 'state', label: 'State', aliases: ['state', 'province', 'region'] },
   { key: 'country', label: 'Country', aliases: ['country', 'nation'] },
   ...PLATFORMS.map((p) => ({ key: p, label: PLATFORM_META[p].label, handle: true, aliases: PLATFORM_ALIASES[p] })),
+  {
+    key: 'instagram_followers',
+    label: 'Instagram followers',
+    aliases: ['instagram followers', 'ig followers', 'followers', 'follower count', 'instagram follower count', 'insta followers'],
+  },
   { key: 'tags', label: 'Tags', aliases: ['tags', 'labels', 'keywords'] },
   { key: 'notes', label: 'Notes', aliases: ['notes', 'note', 'comments', 'remarks'] },
   { key: 'created_at', label: 'Added on', aliases: ['created at', 'created', 'added on', 'date added', 'added', 'date'] },
@@ -116,6 +121,18 @@ export function validateImportRow(raw: RawImportRow, categoryNames: string[]): V
     if (!result.ok) errors[platform] = result.error
     else accounts.push({ platform, handle: result.value })
   }
+
+  // Instagram followers: typed-in stats for the row's Instagram account (kept as entered, not synced).
+  if (raw.instagram_followers) {
+    const followers = parseCompactNumber(raw.instagram_followers)
+    const instagram = accounts.find((a) => a.platform === 'instagram')
+    if (followers === undefined) errors.instagram_followers = 'Use a number like 12400, 12,400 or 12.4K'
+    else if (!instagram) warnings.instagram_followers = 'No Instagram handle in this row: followers are skipped'
+    else {
+      instagram.metrics = { followers }
+      instagram.sync_method = 'manual'
+    }
+  }
   if (accounts.length === 0 && !PLATFORMS.some((p) => errors[p])) errors.accounts = 'Add at least one social handle'
 
   if (raw.category) {
@@ -144,10 +161,10 @@ export function validateImportRow(raw: RawImportRow, categoryNames: string[]): V
 
 export function templateCsv(): string {
   return toCsvText(
-    ['name', 'category', 'phone', 'email', 'city', 'state', 'country', 'instagram', 'youtube', 'tiktok', 'facebook', 'tags', 'notes'],
+    ['name', 'category', 'phone', 'email', 'city', 'state', 'country', 'instagram', 'instagram followers', 'youtube', 'tiktok', 'facebook', 'tags', 'notes'],
     [
-      ['Riya Shah', 'Fashion', '+91 98765 43210', 'riya@example.com', 'Pune', 'Maharashtra', 'India', 'riyastyle', '', '', 'riyastyle.page', 'micro; reels', 'Prefers WhatsApp'],
-      ['Kabir Malhotra', 'Fitness', '98111 22233', '', 'New Delhi', 'Delhi', 'India', 'https://www.instagram.com/kabirfitlife/', 'youtube.com/@kabirtrains', '@kabirfit', '', '', ''],
+      ['Riya Shah', 'Fashion', '+91 98765 43210', 'riya@example.com', 'Pune', 'Maharashtra', 'India', 'riyastyle', '48200', '', '', 'riyastyle.page', 'micro; reels', 'Prefers WhatsApp'],
+      ['Kabir Malhotra', 'Fitness', '98111 22233', '', 'New Delhi', 'Delhi', 'India', 'https://www.instagram.com/kabirfitlife/', '12.4K', 'youtube.com/@kabirtrains', '@kabirfit', '', '', ''],
     ],
   )
 }

@@ -1,5 +1,5 @@
 import { ChevronDown } from 'lucide-react'
-import { useState, type FormEvent } from 'react'
+import { useId, useState, type FormEvent } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -24,6 +24,7 @@ interface FollowersFilterProps {
 }
 
 export function FollowersFilter({ label = 'Followers', min, max, onChange }: FollowersFilterProps) {
+  const id = useId()
   const [open, setOpen] = useState(false)
   const [minText, setMinText] = useState('')
   const [maxText, setMaxText] = useState('')
@@ -89,16 +90,16 @@ export function FollowersFilter({ label = 'Followers', min, max, onChange }: Fol
         <form onSubmit={onSubmit} className="space-y-2 border-t pt-3" noValidate>
           <div className="grid grid-cols-2 gap-2">
             <div className="grid gap-1">
-              <Label htmlFor="followers-min" className="text-xs">
+              <Label htmlFor={`${id}-min`} className="text-xs">
                 Min
               </Label>
-              <Input id="followers-min" inputMode="decimal" placeholder="e.g. 10k" value={minText} onChange={(e) => setMinText(e.target.value)} />
+              <Input id={`${id}-min`} inputMode="decimal" placeholder="e.g. 10k" value={minText} onChange={(e) => setMinText(e.target.value)} />
             </div>
             <div className="grid gap-1">
-              <Label htmlFor="followers-max" className="text-xs">
+              <Label htmlFor={`${id}-max`} className="text-xs">
                 Max
               </Label>
-              <Input id="followers-max" inputMode="decimal" placeholder="e.g. 500k" value={maxText} onChange={(e) => setMaxText(e.target.value)} />
+              <Input id={`${id}-max`} inputMode="decimal" placeholder="e.g. 500k" value={maxText} onChange={(e) => setMaxText(e.target.value)} />
             </div>
           </div>
           {error && <p className="text-xs text-destructive">{error}</p>}

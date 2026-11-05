@@ -2,7 +2,7 @@ import { useSyncExternalStore } from 'react'
 import { queryClient } from '@/lib/query'
 
 // Signing in as someone else must never show the previous person's data (the same reason a release drops the
-// cached record instead of keeping it). The dev "View as" switch calls resetSession; signing out must too.
+// cached record instead of keeping it). The auth module (src/lib/auth) calls resetSession on every sign-in and sign-out.
 
 let session = 0
 const listeners = new Set<() => void>()
@@ -19,6 +19,9 @@ const subscribe = (listener: () => void) => {
   listeners.add(listener)
   return () => listeners.delete(listener)
 }
+
+/** Changes on every resetSession. Work running outside React (e.g. job polling) compares it to stop for a new user. */
+export const getSessionEpoch = () => session
 
 /** Changes on every resetSession; used as the routed tree's key. */
 export function useSessionKey() {

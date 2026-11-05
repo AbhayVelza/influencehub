@@ -1,0 +1,23 @@
+rules_version = '2';
+
+// Document files (agreements, insights summaries) live under documents/{influencerId}/. Only active team members
+// can read or upload them; files are never deleted from the app (deleting a document hides it, keeping history).
+// Deploy with: firebase deploy --only storage
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isMember() {
+      return request.auth != null
+        && firestore.exists(/databases/(default)/documents/team/$(request.auth.uid))
+        && firestore.get(/databases/(default)/documents/team/$(request.auth.uid)).data.is_active == true;
+    }
+
+    match /documents/{influencerId}/{fileName} {
+      allow read: if isMember();
+      // Same limits as the app: 20 MB, PDF / JPG / PNG / DOCX / XLSX.
+      allow create: if isMember()
+        && request.resource.size <= 20 * 1024 * 1024
+        && request.resource.contentType.matches('application/pdf|image/jpeg|image/png|application/vnd.openxmlformats-officedocument.(wordprocessingml.document|spreadsheetml.sheet)');
+      allow update, delete: if false;
+    }
+  }
+}

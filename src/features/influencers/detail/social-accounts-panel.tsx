@@ -18,7 +18,7 @@ import { useCan } from '@/hooks/use-me'
 import { copyToClipboard } from '@/lib/clipboard'
 import { RelativeTime } from '@/components/common/relative-time'
 import { formatCompact, formatDate, formatDateTime, formatRelative } from '@/lib/format'
-import { waitForJob } from '@/lib/jobs'
+import { isSessionChanged, waitForJob } from '@/lib/jobs'
 import { audienceOf, exactMetric, formatMetric, metricValue, PLATFORM_META, SYNC_METHOD_LABEL } from '@/lib/platforms'
 import { cn } from '@/lib/utils'
 import { accountsApi, getErrorMessage } from '@/services'
@@ -210,6 +210,7 @@ function AccountView({ influencer, account }: { influencer: Influencer; account:
         toast.error(`${meta.label} sync failed`, { description: message })
       }
     } catch (err) {
+      if (isSessionChanged(err)) return
       toast.error(`Couldn’t sync from ${meta.label}`, { description: getErrorMessage(err) })
     } finally {
       setSyncing(false)

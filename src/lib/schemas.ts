@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { MIN_PASSWORD_LENGTH } from '@/lib/auth/types'
 import { ALL_STAGES, CALL_OUTCOMES, DEFAULT_COUNTRY_CODE, PACKAGE_STATUSES } from '@/lib/constants'
 import { parseCompactNumber, parseDateInput, parseDateTimeInput } from '@/lib/format'
 import { normalizeHandle, PLATFORMS } from '@/lib/platforms'
@@ -9,6 +10,18 @@ import type { Platform } from '@/types'
 const E164 = /^\+[1-9]\d{7,14}$/
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const HANDLE = /^[a-z0-9._-]{1,60}$/
+
+/** True when the value is a real email address (the Email field may also hold a note like "managed by @agency"). */
+export function isEmailAddress(value: string | null | undefined): value is string {
+  return !!value && EMAIL.test(value.trim())
+}
+
+/** Email field: real addresses are trimmed + lowercased; anything else (e.g. "managed by @iplixmedia") is kept as typed. Empty → null. */
+export function normalizeEmailField(value: string | null | undefined): string | null {
+  const v = value?.trim() ?? ''
+  if (!v) return null
+  return EMAIL.test(v) ? v.toLowerCase() : v
+}
 
 /** "98765 43210" → "+919876543210"; keeps an explicit country code. Empty → null. */
 export function normalizePhone(value: string | null | undefined): string | null {
@@ -53,12 +66,12 @@ export const fieldSchemas = {
     .string()
     .transform(normalizePhone)
     .refine((v) => v === null || E164.test(v), 'Enter a valid phone number, e.g. +91 98765 43210'),
+  // An address or a contact note ("managed by @iplixmedia"); see normalizeEmailField.
   email: z
     .string()
     .trim()
-    .toLowerCase()
-    .refine((v) => v === '' || EMAIL.test(v), 'Enter a valid email address')
-    .transform((v) => v || null),
+    .max(200, 'Email must be 200 characters or fewer')
+    .transform(normalizeEmailField),
   city: optionalText(80, 'City'),
   state: optionalText(80, 'State'),
   country: optionalText(80, 'Country'),
@@ -256,19 +269,52 @@ export type AgreementFormInput = z.input<typeof agreementFormSchema>
 // ---------------------------------------------------------------------------
 // Settings
 
-export const inviteSchema = z.object({
-  email: z
-    .string()
-    .trim()
-    .toLowerCase()
-    .min(1, 'Email is required')
-    .refine((v) => EMAIL.test(v), 'Enter a valid email address'),
+const emailField = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .min(1, 'Email is required')
+  .refine((v) => EMAIL.test(v), 'Enter a valid email address')
+
+/** Settings > Team "Add a team member". The admin sets the initial password; the API never stores it. */
+export const teamMemberCreateSchema = z.object({
+  name: requiredText(100, 'Name'),
+  email: emailField,
   role: z.enum(['admin', 'manager', 'executive']),
-  /** Optional; the server derives one from the email. */
-  name: optionalText(100, 'Name'),
+  password: z
+    .string()
+    .min(1, 'Set an initial password')
+    .min(MIN_PASSWORD_LENGTH, `Use at least ${MIN_PASSWORD_LENGTH} characters`),
 })
 
-export type InviteInput = z.input<typeof inviteSchema>
+export type TeamMemberCreateInput = z.input<typeof teamMemberCreateSchema>
+
+// ---------------------------------------------------------------------------
+// Sign-in and password
+
+export const loginSchema = z.object({
+  email: emailField,
+  password: z.string().min(1, 'Password is required'),
+})
+
+export type LoginInput = z.input<typeof loginSchema>
+
+export const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, 'Current password is required'),
+    newPassword: z
+      .string()
+      .min(1, 'New password is required')
+      .min(MIN_PASSWORD_LENGTH, `Use at least ${MIN_PASSWORD_LENGTH} characters`),
+    confirmPassword: z.string().min(1, 'Confirm the new password'),
+  })
+  .refine((v) => v.confirmPassword === v.newPassword, { path: ['confirmPassword'], message: 'Passwords don’t match' })
+  .refine((v) => !v.newPassword || v.newPassword !== v.currentPassword, {
+    path: ['newPassword'],
+    message: 'Choose a password different from the current one',
+  })
+
+export type ChangePasswordInput = z.input<typeof changePasswordSchema>
 
 // ---------------------------------------------------------------------------
 // Stage override

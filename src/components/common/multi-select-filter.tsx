@@ -17,6 +17,8 @@ interface MultiSelectFilterProps {
   onChange: (values: string[]) => void
   /** Shows skeleton rows instead of options (initial load, or options that are being narrowed). */
   loading?: boolean
+  /** The counts are from the previous selection and are being replaced: shown dimmed. */
+  refreshing?: boolean
   searchPlaceholder?: string
   /** Shown instead of options when they can't be chosen yet. */
   hint?: string
@@ -30,6 +32,7 @@ export function MultiSelectFilter({
   selected,
   onChange,
   loading,
+  refreshing,
   searchPlaceholder,
   hint,
   renderOption,
@@ -85,6 +88,8 @@ export function MultiSelectFilter({
                 <CommandGroup>
                   {(options ?? []).map((option) => {
                     const isSelected = selectedSet.has(option.value)
+                    // Nothing matches the other filters: still listed (so it can be unticked), but dimmed.
+                    const empty = option.count === 0 && !isSelected
                     return (
                       <CommandItem
                         key={option.value}
@@ -92,7 +97,7 @@ export function MultiSelectFilter({
                         keywords={[option.label]}
                         onSelect={() => toggle(option.value)}
                         aria-checked={isSelected}
-                        className="[&>svg:last-child]:hidden"
+                        className={cn('[&>svg:last-child]:hidden', empty && 'text-muted-foreground')}
                       >
                         <span
                           className={cn(
@@ -106,7 +111,11 @@ export function MultiSelectFilter({
                           {renderOption ? renderOption(option) : option.label}
                         </span>
                         {option.count !== undefined && (
-                          <span className="text-xs text-muted-foreground tabular-nums">{option.count}</span>
+                          <span
+                            className={cn('text-xs text-muted-foreground tabular-nums transition-opacity', refreshing && 'opacity-50')}
+                          >
+                            {option.count}
+                          </span>
                         )}
                       </CommandItem>
                     )

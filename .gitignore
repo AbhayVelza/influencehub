@@ -24,3 +24,7 @@ playwright-report
 *.njsproj
 *.sln
 *.sw?
+
+# Firebase service account keys (used by npm run seed:admin); never commit them
+service-account*.json
+*firebase-adminsdk*.json

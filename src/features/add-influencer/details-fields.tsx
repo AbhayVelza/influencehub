@@ -111,7 +111,7 @@ export function DetailsFields({ idPrefix, showName = true }: { idPrefix: string;
         <Input id={id('phone')} type="tel" placeholder="98765 43210" aria-invalid={!!errors.phone} {...register('phone')} />
       </Field>
       <Field id={id('email')} label="Email" error={errors.email}>
-        <Input id={id('email')} type="email" aria-invalid={!!errors.email} {...register('email')} />
+        <Input id={id('email')} type="text" placeholder="name@example.com or managed by @agency" aria-invalid={!!errors.email} {...register('email')} />
       </Field>
       <div className="col-span-2 grid grid-cols-3 gap-3">
         <Field id={id('city')} label="City" error={errors.city}>
