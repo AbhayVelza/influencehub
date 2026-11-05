@@ -22,7 +22,7 @@ Source of truth: `src/types/index.ts`. Update both together.
   **Auth identity vs team record**: the Firebase Auth user (uid, email, password) only proves who someone is; the
   team record (`team/{uid}`, `User.id` = uid) holds name, role and is_active and decides access. A Firebase user
   without a team record gets 403 `not_a_member`. See `auth.md`.
-- **Categories**: Fashion, Beauty, Food, Tech, Travel, Fitness, Lifestyle, Gaming, Finance, Parenting, Other
+- **Categories** (defaults for a new workspace; admins manage them in Settings → Categories): Fashion, Beauty, Food, Tech & Gadgets, Travel, Fitness & Lifestyle, Lifestyle, Gaming & Esports, Finance, Art & Designs, Marketing & Business, Other
 - **Platform**: instagram, youtube, tiktok, facebook, threads, pinterest, linkedin, snapchat
 - **SyncMethod** (default per platform): `lookup` = instagram, youtube, threads, facebook (public Pages);
   `connect` = tiktok, pinterest; `manual` = linkedin, snapchat, and personal Instagram / Facebook profiles.

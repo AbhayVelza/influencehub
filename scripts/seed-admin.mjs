@@ -34,13 +34,14 @@ const DEFAULT_CATEGORIES = [
   'Fashion',
   'Beauty',
   'Food',
-  'Tech',
+  'Tech & Gadgets',
   'Travel',
-  'Fitness',
+  'Fitness & Lifestyle',
   'Lifestyle',
-  'Gaming',
+  'Gaming & Esports',
   'Finance',
-  'Parenting',
+  'Art & Designs',
+  'Marketing & Business',
   'Other',
 ]
 
