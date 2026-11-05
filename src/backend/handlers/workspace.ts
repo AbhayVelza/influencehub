@@ -1,7 +1,7 @@
 import { TZDate } from '@date-fns/tz'
 import { differenceInCalendarDays, startOfMonth, startOfWeek } from 'date-fns'
 import { http, HttpResponse } from 'msw'
-import { ALL_STAGES, APP_TIMEZONE, ROLE_LABEL, SYNC_INTERVAL_OPTIONS } from '@/lib/constants'
+import { ALL_STAGES, APP_TIMEZONE, DEFAULT_CATEGORIES, ROLE_LABEL, SYNC_INTERVAL_OPTIONS } from '@/lib/constants'
 import { can } from '@/lib/permissions'
 import { ONBOARDED_OR_LATER } from '@/lib/stages'
 import type {
@@ -37,6 +37,37 @@ const withCount = (c: StoredCategory): Category => ({
   ...c,
   influencer_count: db.influencers.filter((i) => i.category === c.name).length,
 })
+
+/** Old default names → the agreed names (see DEFAULT_CATEGORIES). */
+const LEGACY_RENAMES: Record<string, string> = { Tech: 'Tech & Gadgets', Fitness: 'Fitness & Lifestyle', Gaming: 'Gaming & Esports' }
+const LEGACY_REMOVED = ['Other', 'Parenting']
+
+/**
+ * One-time move from the old default categories to DEFAULT_CATEGORIES, run when an admin lists categories.
+ * Only acts while an old name is still present, so it stops once done and never undoes later admin edits.
+ * Renames carry their influencers; "Other"/"Parenting" are deleted when unused, else deactivated.
+ */
+function upgradeLegacyCategories() {
+  const has = (name: string) => db.categories.find((c) => c.name.toLowerCase() === name.toLowerCase())
+  const renamePending = Object.entries(LEGACY_RENAMES).some(([from, to]) => db.categories.some((c) => c.name === from) && !has(to))
+  const removalPending = LEGACY_REMOVED.some((n) => db.categories.some((c) => c.name === n && c.is_active))
+  if (!renamePending && !removalPending) return
+  for (const [from, to] of Object.entries(LEGACY_RENAMES)) {
+    const old = db.categories.find((c) => c.name === from)
+    if (!old || has(to)) continue
+    for (const inf of db.influencers) if (inf.category === from) inf.category = to
+    old.name = to
+  }
+  for (const name of DEFAULT_CATEGORIES) {
+    if (!has(name)) db.categories.push({ id: nextId('cat'), name, is_active: true })
+  }
+  for (const name of LEGACY_REMOVED) {
+    const c = db.categories.find((x) => x.name === name)
+    if (!c) continue
+    if (withCount(c).influencer_count === 0) db.categories.splice(db.categories.indexOf(c), 1)
+    else c.is_active = false
+  }
+}
 
 export const workspaceHandlers = [
   http.get(api('/me'), async () => {
@@ -95,6 +126,7 @@ export const workspaceHandlers = [
 
   // ---- Categories ---------------------------------------------------------
   http.get(api('/categories'), async () => {
+    if (can(currentUser().role, 'categories:manage')) upgradeLegacyCategories()
     return HttpResponse.json(all(db.categories.map(withCount)))
   }),
 
