@@ -35,13 +35,14 @@ export type CategoryName =
   | 'Fashion'
   | 'Beauty'
   | 'Food'
-  | 'Tech'
+  | 'Tech & Gadgets'
   | 'Travel'
-  | 'Fitness'
+  | 'Fitness & Lifestyle'
   | 'Lifestyle'
-  | 'Gaming'
+  | 'Gaming & Esports'
   | 'Finance'
-  | 'Parenting'
+  | 'Art & Designs'
+  | 'Marketing & Business'
   | 'Other'
 
 /** ISO-8601 timestamp (UTC). Displayed in Asia/Kolkata. */
