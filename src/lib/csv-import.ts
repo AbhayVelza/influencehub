@@ -88,11 +88,11 @@ export interface ValidatedImportRow {
   warnings: Partial<Record<ImportErrorKey, string>>
 }
 
-/** Validates one row with the same rules as the forms. Unknown or missing categories import as "Other". */
+/** Validates one row with the same rules as the forms. The category must match an active category (any case). */
 export function validateImportRow(raw: RawImportRow, categoryNames: string[]): ValidatedImportRow {
   const errors: ValidatedImportRow['errors'] = {}
   const warnings: ValidatedImportRow['warnings'] = {}
-  const values: ValidatedImportRow['values'] = { category: 'Other' }
+  const values: ValidatedImportRow['values'] = { category: '' }
   const accounts: AccountCreate[] = []
 
   const text = (key: 'name' | 'phone' | 'email' | 'city' | 'state' | 'country' | 'notes') => {
@@ -135,11 +135,10 @@ export function validateImportRow(raw: RawImportRow, categoryNames: string[]): V
   }
   if (accounts.length === 0 && !PLATFORMS.some((p) => errors[p])) errors.accounts = 'Add at least one social handle'
 
-  if (raw.category) {
-    const match = categoryNames.find((c) => c.toLowerCase() === raw.category!.toLowerCase())
-    if (match) values.category = match
-    else warnings.category = `“${raw.category}” isn’t a category, will import as Other`
-  }
+  const match = raw.category ? categoryNames.find((c) => c.toLowerCase() === raw.category!.toLowerCase()) : undefined
+  if (match) values.category = match
+  else if (!raw.category) errors.category = 'Category is required'
+  else errors.category = `“${raw.category}” isn’t a category. Use one of: ${categoryNames.join(', ')}`
 
   if (raw.tags) {
     const tags: string[] = []
