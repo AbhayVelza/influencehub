@@ -225,3 +225,10 @@ Firebase user. Setup, the data layer, the Firestore layout and the rules: `auth.
 when a creator has no public address. `normalizeEmailField` (`src/lib/schemas.ts`) lowercases real addresses and keeps
 anything else as typed. `EmailValue` shows a mailto link only for a real address. Duplicate detection matches on
 "Same email" only when both values are real addresses (`isEmailAddress`), so a shared agency note is not a match.
+
+## Upgrading the old default categories
+
+When an admin lists categories (`GET /categories`), `upgradeLegacyCategories` (`src/backend/handlers/workspace.ts`)
+renames Tech → Tech & Gadgets, Fitness → Fitness & Lifestyle, Gaming → Gaming & Esports (with their influencers),
+adds any missing default, and deletes Other / Parenting when unused (deactivates them otherwise). It only runs while a
+rename or removal is still pending, so it happens once and does not undo later admin edits.
