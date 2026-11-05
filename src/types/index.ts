@@ -43,7 +43,6 @@ export type CategoryName =
   | 'Finance'
   | 'Art & Designs'
   | 'Marketing & Business'
-  | 'Other'
 
 /** ISO-8601 timestamp (UTC). Displayed in Asia/Kolkata. */
 export type ISODateString = string

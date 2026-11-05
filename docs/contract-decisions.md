@@ -114,7 +114,7 @@ Record any new API decision here. Dates and documents: `dates-and-documents.md`.
   category, phone, email, city, state, country, tags, notes, created_at (optional "added on" date, see Dates) and one
   handle column per platform (at least one mapped; each row needs ≥1 handle). Job result `{total_rows, created, updated, duplicates, failed, errors[{row,
   handle, message}], profiles {synced, failed} | null}`. `row` = 1-based file line (header = line 1). Rows are
-  validated with the same rules as the forms (`src/lib/csv-import.ts`); unknown/missing category → "Other"; a row
+  validated with the same rules as the forms (`src/lib/csv-import.ts`); a missing or unknown category is a row error (no fallback category); a row
   repeating an account from earlier in the file is a duplicate; a row with any account already in the CRM is that
   creator: `skip` counts it as a duplicate, `update` overwrites mapped non-empty fields, merges tags and adds its
   new accounts (never its `created_at`). `fetch_profiles` syncs the lookup accounts afterwards. Client limits: 2 MB, 5,000 rows.

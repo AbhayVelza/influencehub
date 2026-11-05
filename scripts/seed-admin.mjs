@@ -42,7 +42,6 @@ const DEFAULT_CATEGORIES = [
   'Finance',
   'Art & Designs',
   'Marketing & Business',
-  'Other',
 ]
 
 /** @param {string} message */

@@ -149,5 +149,4 @@ export const DEFAULT_CATEGORIES: CategoryName[] = [
   'Finance',
   'Art & Designs',
   'Marketing & Business',
-  'Other',
 ]
