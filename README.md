@@ -19,7 +19,7 @@ platforms (Instagram, YouTube, TikTok, Facebook, Threads, Pinterest, LinkedIn, S
 | Stage | Meaning |
 | --- | --- |
 | Data Gathered → Contacted | Needs a call logged with outcome "Interested" |
-| Contacted → Onboarded | Creator agreed; needs a current agreement on file |
+| Contacted → Onboarded | Creator agreed; needs a current agreement and an insights summary on file |
 | Onboarded → Package Sent | Needs a package with courier and tracking number |
 | Package Sent → Delivered | Package arrived (a returned package moves them back to Onboarded) |
 | On Hold / Rejected | Side stages. On Hold resumes to the previous stage; reopening Rejected is manager/admin only |

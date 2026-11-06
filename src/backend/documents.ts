@@ -45,6 +45,10 @@ export function hasCurrentAgreement(influencerId: string): boolean {
   return liveDocuments().some((d) => d.influencer_id === influencerId && d.type === 'agreement' && d.is_current)
 }
 
+export function hasInsightsSummary(influencerId: string): boolean {
+  return liveDocuments().some((d) => d.influencer_id === influencerId && d.type === 'insights_summary')
+}
+
 export function isVisibleTo(user: User, doc: StoredDocument): boolean {
   const inf = db.influencers.find((i) => i.id === doc.influencer_id)
   return !!inf && inf.assigned_to !== null && canSee(user, inf)

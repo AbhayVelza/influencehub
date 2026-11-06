@@ -1,7 +1,7 @@
 import { http, HttpResponse } from 'msw'
 import { PACKAGE_STATUSES } from '@/lib/constants'
 import { dayKey } from '@/lib/format'
-import type { Package, PackageCreate, PackageUpdate, PackageWithInfluencer } from '@/types'
+import type { Influencer, Package, PackageCreate, PackageStatus, PackageUpdate, PackageWithInfluencer } from '@/types'
 import { db, findInfluencer, logActivity, nextId, nowIso, toSummary } from '../db'
 import { changeStage, findVisible } from '../domain'
 import { api, apiError, notFound, paginate, readJson } from '../utils'
@@ -10,6 +10,19 @@ import { api, apiError, notFound, paginate, readJson } from '../utils'
 function withInfluencer(pkg: Package): PackageWithInfluencer | null {
   const inf = findVisible(pkg.influencer_id)
   return inf ? { ...pkg, influencer: toSummary(inf) } : null
+}
+
+/**
+ * Keeps the influencer's stage in step with their package. Delivered moves a creator who is waiting on it (Onboarded
+ * or Package Sent) to Delivered, so they leave the Onboarded tabs; from Onboarded it goes through Package Sent, so the
+ * pipeline history stays complete. Returned moves Package Sent back to Onboarded. Any other stage is left alone.
+ */
+function followPackage(inf: Influencer, status: PackageStatus) {
+  if (status === 'delivered') {
+    if (inf.stage === 'onboarded') changeStage(inf, 'package_sent', 'Package delivered', undefined, { skipRequirements: true })
+    if (inf.stage === 'package_sent') changeStage(inf, 'delivered', 'Package delivered')
+  }
+  if (status === 'returned' && inf.stage === 'package_sent') changeStage(inf, 'onboarded', 'Package returned')
 }
 
 function validateItems(items: unknown): string | null {
@@ -76,6 +89,9 @@ export const packageHandlers = [
     }
     db.packages.push(pkg)
     logActivity(inf.id, 'package_created', { package_id: pkg.id, courier: pkg.courier })
+    // A new package recorded as delivered moves the creator on; a new "returned" one (an old shipment being logged)
+    // doesn't pull them back.
+    if (pkg.status === 'delivered') followPackage(inf, pkg.status)
     return HttpResponse.json(pkg, { status: 201 })
   }),
 
@@ -100,12 +116,8 @@ export const packageHandlers = [
       ...(pkg.status !== previousStatus ? { status: pkg.status } : { fields: Object.keys(body) }),
     })
 
-    // Delivered / returned packages move an influencer who is waiting on them (stage package_sent).
     const inf = findInfluencer(pkg.influencer_id)
-    if (inf && inf.stage === 'package_sent' && pkg.status !== previousStatus) {
-      if (pkg.status === 'delivered') changeStage(inf, 'delivered', 'Package delivered')
-      if (pkg.status === 'returned') changeStage(inf, 'onboarded', 'Package returned')
-    }
+    if (inf && pkg.status !== previousStatus) followPackage(inf, pkg.status)
     return HttpResponse.json(pkg)
   }),
 ]

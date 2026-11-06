@@ -18,12 +18,12 @@ import {
 } from '@/components/ui/sheet'
 import { useChangeStage } from '@/features/influencers/detail-queries'
 import { copyToClipboard } from '@/lib/clipboard'
-import { COURIERS, PACKAGE_STATUS_META, PACKAGE_STATUSES } from '@/lib/constants'
+import { COURIERS, PACKAGE_STATUS_META, PACKAGE_STATUSES, STAGE_META } from '@/lib/constants'
 import { packageSchema, type PackageFormInput } from '@/lib/schemas'
 import { getErrorMessage } from '@/services'
 import type { Address, Influencer, Package, PackageStatus } from '@/types'
 import { PackageStatusConfirm } from './package-status-confirm'
-import { needsStatusConfirm, useCreatePackage, useUpdatePackage, type StageChangingStatus } from './queries'
+import { needsStatusConfirm, stageAfterPackage, useCreatePackage, useUpdatePackage, type StageChangingStatus } from './queries'
 
 /** `stage` is optional; when known, the delivered/returned confirmation says exactly what happens. */
 export type PackageTarget = Pick<Influencer, 'id' | 'name' | 'address'> & { stage?: Influencer['stage'] }
@@ -99,7 +99,8 @@ export function PackageDrawer({ influencer, pkg, open, onOpenChange, intent, onS
 
   const onSubmit = handleSubmit((values) => {
     const status = values.status as PackageStatus
-    if (isEdit && needsStatusConfirm(pkg?.status, status)) return setConfirm({ status, values })
+    // A new package only moves the stage when it's delivered (the server ignores "returned" on create).
+    if (needsStatusConfirm(pkg?.status, status) && (isEdit || status === 'delivered')) return setConfirm({ status, values })
     return save(values)
   })
 
@@ -124,7 +125,16 @@ export function PackageDrawer({ influencer, pkg, open, onOpenChange, intent, onS
     }
     onOpenChange(false)
     onSaved?.(saved)
-    if (intent === 'package_sent') {
+    // The server moves the stage itself when the status change calls for it (e.g. delivered → Delivered).
+    const statusChanged = pkg ? pkg.status !== saved.status : saved.status === 'delivered'
+    const movedTo = statusChanged && influencer.stage ? stageAfterPackage(influencer.stage, saved.status) : null
+    const done = isEdit ? 'Package updated' : 'Package created'
+    if (movedTo) {
+      toast.success(`${done} · ${influencer.name} moved to ${STAGE_META[movedTo].label}`)
+      return
+    }
+    // Only a shipped package moves the creator to Package Sent (not preparing or returned).
+    if (intent === 'package_sent' && (saved.status === 'sent' || saved.status === 'in_transit')) {
       try {
         await changeStage.mutateAsync({ to: 'package_sent' })
         toast.success(`Package created · ${influencer.name} moved to Package Sent`)
@@ -133,7 +143,7 @@ export function PackageDrawer({ influencer, pkg, open, onOpenChange, intent, onS
       }
       return
     }
-    toast.success(isEdit ? 'Package updated' : 'Package created')
+    toast.success(done)
   }
 
   return (

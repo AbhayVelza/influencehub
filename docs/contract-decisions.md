@@ -71,9 +71,10 @@ Record any new API decision here. Dates and documents: `dates-and-documents.md`.
   and bulk rows treat anything else as missing (404 / left out). Unassigned influencers reach executives only
   through `/pool`.
 - **Onboarded tabs** (no new endpoint, no stored `onboarded` flag): a platform's tab is `GET /influencers` with
-  `stage=onboarded&platform=<p>` plus the user's own filters (including `agreement` / `insights`); the counts on
-  `/onboarded` are the same request with `page_size=1` (read `total`), one per platform. "Onboarded" is the stage
-  alone (package_sent / delivered drop out); documents aren't required (changed 03/11/2026: creators moved to
+  `stage=onboarded&stage=package_sent&stage=delivered&platform=<p>` plus the user's own filters (including
+  `agreement` / `insights`); the counts on `/onboarded` are the same request with `page_size=1` (read `total`), one per
+  platform. "Onboarded" means onboarded or later: creators stay on the tabs after moving to Package Sent / Delivered
+  (changed 05/11/2026; before, only the Onboarded stage counted), with a Stage column; documents aren't required (changed 03/11/2026: creators moved to
   Onboarded without them were missing from the tabs), the docs column shows what's missing. Executive scoping above
   applies unchanged. The backend must keep these filters
   combinable (AND) and accept `page_size=1`.
@@ -126,9 +127,12 @@ Record any new API decision here. Dates and documents: `dates-and-documents.md`.
   toggle.
 - `GET /packages` accepts `sent_from` / `sent_to` (yyyy-MM-dd, IST calendar day of `sent_at`; unsent packages
   never match a date range).
-- `PATCH /packages/{id}`: when status changes to `delivered` / `returned` and the influencer is in
-  `package_sent`, the server moves them to `delivered` / `onboarded` (standard transition, activity reason
-  "Package delivered" / "Package returned"). Otherwise the stage is untouched. The UI confirms first.
+- `PATCH /packages/{id}` (when the status changes) and `POST /packages` (only when created as `delivered`) keep the stage in step: `delivered` moves an
+  influencer in `onboarded` or `package_sent` to `delivered` (from `onboarded` via `package_sent`, the delivered package
+  standing in for the courier + tracking requirement); `returned` moves
+  `package_sent` back to `onboarded`. Standard transitions, activity reason "Package delivered" / "Package returned".
+  Any other stage is untouched. The UI confirms first. (Changed 05/11/2026: delivered used to move only
+  `package_sent`, leaving creators whose package was marked delivered stuck in Onboarded.)
 - Notifications have no endpoint of their own: they combine overdue + due-today follow-ups and `GET /pool/expiring`.
 - `GET/PATCH /settings/instagram` (admin only, else 403). GET → `{ connected, business_account {username,
   ig_user_id} | null, token_status (valid|expiring|expired), token_expires_at, sync_interval_hours (3|6|12|24),

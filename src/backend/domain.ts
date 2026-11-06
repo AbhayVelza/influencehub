@@ -28,7 +28,7 @@ import {
   refreshDerived,
   toSummary,
 } from './db'
-import { hasCurrentAgreement, purgeDocuments } from './documents'
+import { hasCurrentAgreement, hasInsightsSummary, purgeDocuments } from './documents'
 import { buildAccount } from './social'
 
 export { parseCsv } from '@/lib/csv'
@@ -376,7 +376,17 @@ export function deleteInfluencer(id: string): boolean {
 
 export type StageResult = { ok: true; influencer: Influencer } | { ok: false; status: number; code: string; message: string }
 
-export function changeStage(inf: Influencer, to: Stage, reason: string | undefined, user: User = currentUser()): StageResult {
+/**
+ * `skipRequirements`: the caller has already proven the target stage's requirement some other way (a delivered
+ * package moving an Onboarded creator through Package Sent). The transition rules still apply.
+ */
+export function changeStage(
+  inf: Influencer,
+  to: Stage,
+  reason: string | undefined,
+  user: User = currentUser(),
+  { skipRequirements = false }: { skipRequirements?: boolean } = {},
+): StageResult {
   if (!STAGE_ORDER.includes(to)) return { ok: false, status: 422, code: 'validation_error', message: 'Unknown stage' }
   if (inf.stage === to) return { ok: false, status: 422, code: 'invalid_transition', message: 'Already in this stage' }
 
@@ -392,7 +402,7 @@ export function changeStage(inf: Influencer, to: Stage, reason: string | undefin
   if (override && !reason) {
     return { ok: false, status: 422, code: 'reason_required', message: 'A reason is required to override the stage rules' }
   }
-  if (!override) {
+  if (!override && !skipRequirements) {
     if (to === 'contacted' && !db.calls.some((c) => c.influencer_id === inf.id && c.outcome === 'interested')) {
       return {
         ok: false,
@@ -412,13 +422,20 @@ export function changeStage(inf: Influencer, to: Stage, reason: string | undefin
         message: 'Create a package with courier and tracking number before moving to Package Sent',
       }
     }
-    // Entering Onboarded from Contacted needs a current agreement (resuming from hold or a returned package doesn't).
-    if (to === 'onboarded' && inf.stage === 'contacted' && !hasCurrentAgreement(inf.id)) {
-      return {
-        ok: false,
-        status: 422,
-        code: 'requirement_missing',
-        message: 'Upload the signed agreement before moving to Onboarded',
+    // Entering Onboarded from Contacted needs a current agreement and an insights summary, collected together
+    // (resuming from hold or a returned package doesn't).
+    if (to === 'onboarded' && inf.stage === 'contacted') {
+      const missing = [
+        !hasCurrentAgreement(inf.id) && 'the signed agreement',
+        !hasInsightsSummary(inf.id) && 'an insights summary',
+      ].filter(Boolean)
+      if (missing.length) {
+        return {
+          ok: false,
+          status: 422,
+          code: 'requirement_missing',
+          message: `Upload ${missing.join(' and ')} before moving to Onboarded`,
+        }
       }
     }
   }
