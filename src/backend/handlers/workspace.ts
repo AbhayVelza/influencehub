@@ -49,14 +49,18 @@ const LEGACY_REMOVED = ['Other', 'Parenting']
  */
 function upgradeLegacyCategories() {
   const has = (name: string) => db.categories.find((c) => c.name.toLowerCase() === name.toLowerCase())
-  const renamePending = Object.entries(LEGACY_RENAMES).some(([from, to]) => db.categories.some((c) => c.name === from) && !has(to))
+  const renamePending = Object.keys(LEGACY_RENAMES).some((from) => db.categories.some((c) => c.name === from))
   const removalPending = LEGACY_REMOVED.some((n) => db.categories.some((c) => c.name === n && c.is_active))
   if (!renamePending && !removalPending) return
   for (const [from, to] of Object.entries(LEGACY_RENAMES)) {
     const old = db.categories.find((c) => c.name === from)
-    if (!old || has(to)) continue
-    for (const inf of db.influencers) if (inf.category === from) inf.category = to
-    old.name = to
+    if (!old) continue
+    const existing = has(to)
+    // Both names exist (e.g. an admin already added the new one): merge the old category's influencers into it.
+    const target = existing ? existing.name : to
+    for (const inf of db.influencers) if (inf.category === from) inf.category = target
+    if (existing) db.categories.splice(db.categories.indexOf(old), 1)
+    else old.name = to
   }
   for (const name of DEFAULT_CATEGORIES) {
     if (!has(name)) db.categories.push({ id: nextId('cat'), name, is_active: true })
