@@ -56,10 +56,10 @@ active filters stay visible. `CollapsibleFilters` in `components/common/collapsi
    **Documents** tab (Insights summaries; Agreement = current one + version history; upload buttons, metadata forms,
    preview dialog for PDF and images, progress bar while uploading).
 13. **Onboarded** (every role; executives see their own): `/onboarded` = one card per platform with its count;
-   `/onboarded/:platform` = creators in the Onboarded stage with an account on that platform (documents not
+   `/onboarded/:platform` = every onboarded creator (stage Onboarded, Package Sent or Delivered) with an account on that platform (documents not
    required; the docs column and the Agreement / Insights filters show what's missing). Same search / filters / chips /
    sort / pagination as the list (no Stage or Platform filter: the rule is fixed) plus a **Followers** range filter on that platform's own account (next to Total
-   reach; `followers_min/max` in the URL, a chip, the other filters' counts follow it); columns: name, that platform's account + audience, category, total reach,
+   reach; `followers_min/max` in the URL, a chip, the other filters' counts follow it); columns: name, that platform's account + audience, category, total reach, stage,
    phone, email, city, state, country, owner, docs, that account's sync status. No bulk actions. "All platforms" link
    back. Rules: `contract-decisions.md` (Onboarded tabs).
 
