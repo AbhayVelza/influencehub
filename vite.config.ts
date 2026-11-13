@@ -17,6 +17,8 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 3000,
     allowedHosts: true,
+    // With Firebase configured the app calls the API server (npm run server); in prototype mode nothing does.
+    proxy: { '/api': `http://localhost:${process.env.PORT || 3001}` },
   },
   preview: {
     host: '0.0.0.0',
@@ -45,8 +47,7 @@ export default defineConfig({
             vendor('charts', ['recharts', 'd3-.*', 'victory-vendor', 'internmap', 'decimal\\.js-light', 'es-toolkit', 'immer', 'redux', '@reduxjs', 'reselect', 'react-redux', 'use-sync-external-store', 'eventemitter3', 'tiny-invariant'], 30),
             vendor('dnd', ['@dnd-kit'], 30),
             // tslib stays out of the Firebase groups: radix and dnd-kit share it.
-            // Firestore and Storage load with the data layer; the rest (app, auth) is all the sign-in page needs.
-          vendor('firestore', ['@firebase/firestore', '@firebase/webchannel-wrapper', 'firebase/firestore'], 35),
+            // Storage loads when a document is uploaded; the rest (app, auth) is all the sign-in page needs.
           vendor('firebase-storage', ['@firebase/storage', 'firebase/storage'], 35),
           vendor('firebase', ['firebase', '@firebase', 'idb'], 30),
             // MSW's request routing (no service worker) maps the in-app API calls to src/backend's handlers.

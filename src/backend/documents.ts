@@ -1,11 +1,10 @@
-import { getDownloadURL, ref } from 'firebase/storage'
-import { firebaseStorage } from '@/lib/firebase-data'
 import { PROTOTYPE } from '@/lib/mode'
 import { dayKey } from '@/lib/format'
 import { PLATFORMS } from '@/lib/platforms'
 import type { DocumentCreate, DocumentWithInfluencer, Influencer, InfluencerDocument, User } from '@/types'
 import { db, logActivity, nextId, nowIso, toSummary, type PendingUpload, type StoredDocument } from './db'
 import { canSee, findVisible } from './domain'
+import { fileObjectUrl } from './local-store'
 
 // Documents. Soft-deleted ones stay in `db.documents` (with `deleted_at`) but are never served.
 
@@ -173,15 +172,23 @@ export function filterDocuments(params: URLSearchParams, user: User): DocumentWi
 }
 
 // ---------------------------------------------------------------------------
-// Files live in Firebase Storage under each document's `storage_key`; storage.rules lets team members read them.
+// Files live in Firebase Storage under each document's `storage_key`. Only the API server hands out their URLs
+// (Firebase Admin SDK; server/firebase-admin.ts registers how at start-up).
 
-/** A URL for this document's file: a short-lived Storage download URL, or a blob URL in prototype mode. */
+type FileUrlProvider = (storageKey: string) => Promise<string>
+let storageFileUrl: FileUrlProvider | null = null
+
+export function setFileUrlProvider(next: FileUrlProvider) {
+  storageFileUrl = next
+}
+
+/** A URL for this document's file: a Storage download URL, or a blob URL in prototype mode. */
 export async function fileUrl(doc: StoredDocument): Promise<string> {
   if (PROTOTYPE) {
-    const { fileObjectUrl } = await import('./local-store')
     const url = await fileObjectUrl(doc.storage_key)
     if (!url) throw new Error('This file isn’t in this browser any more.')
     return url
   }
-  return getDownloadURL(ref(firebaseStorage(), doc.storage_key))
+  if (!storageFileUrl) throw new Error('File storage isn’t set up on this server.')
+  return storageFileUrl(doc.storage_key)
 }

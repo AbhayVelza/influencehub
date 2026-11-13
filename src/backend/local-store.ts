@@ -2,7 +2,6 @@ import { DEFAULT_CATEGORIES } from '@/lib/constants'
 import { PROTOTYPE_OWNER_ID } from '@/lib/mode'
 import type { Influencer, User } from '@/types'
 import { attachDocumentSummary, db, defaultSettings, nowIso, type StoredCategory } from './db'
-import type { Access } from './firestore-store'
 
 // Prototype mode's store: the whole workspace in this browser's IndexedDB, so it survives reloads (not shared with
 // anyone). A new workspace has one admin (the owner) and the default categories, nothing else. Document files are
@@ -50,6 +49,8 @@ interface Snapshot {
   savedViews: typeof db.savedViews
   poolSettings: typeof db.poolSettings
   instagramSettings: typeof db.instagramSettings
+  /** Absent in snapshots saved before migrations were tracked. */
+  migrations?: typeof db.migrations
   dismissed: string[]
 }
 
@@ -83,6 +84,7 @@ function snapshot(): Snapshot {
     savedViews: db.savedViews,
     poolSettings: db.poolSettings,
     instagramSettings: db.instagramSettings,
+    migrations: db.migrations,
     dismissed: [...db.dismissedDuplicates],
   }
 }
@@ -100,6 +102,7 @@ function load(data: Snapshot) {
     savedViews: data.savedViews,
     poolSettings: { ...defaultSettings().poolSettings, ...data.poolSettings },
     instagramSettings: { ...defaultSettings().instagramSettings, ...data.instagramSettings },
+    migrations: { ...defaultSettings().migrations, ...data.migrations },
     dismissedDuplicates: new Set(data.dismissed),
   })
 }
@@ -115,7 +118,7 @@ function warnOnce(err: unknown) {
 }
 
 /** Loads the workspace once (or creates it). Everyone in the team "exists" here; the acting user is resolved by the caller. */
-export async function connect(_uid: string): Promise<Access> {
+export async function connect(): Promise<void> {
   ready ??= (async () => {
     let data: Snapshot | undefined
     try {
@@ -127,11 +130,6 @@ export async function connect(_uid: string): Promise<Access> {
     lastSaved = data ? JSON.stringify(snapshot()) : ''
   })()
   await ready
-  return 'ok'
-}
-
-export function disconnect() {
-  // Nothing to stop: the workspace stays loaded for the next acting user.
 }
 
 /** Saves the workspace if anything changed since the last save. */
@@ -147,9 +145,6 @@ export async function flush(): Promise<void> {
     warnOnce(err)
   }
 }
-
-/** Nothing can refuse a write here. */
-export function revert() {}
 
 /** Keeps an uploaded document file. */
 export async function saveFile(key: string, file: Blob): Promise<void> {

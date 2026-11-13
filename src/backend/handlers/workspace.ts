@@ -43,15 +43,21 @@ const LEGACY_RENAMES: Record<string, string> = { Tech: 'Tech & Gadgets', Fitness
 const LEGACY_REMOVED = ['Other', 'Parenting']
 
 /**
- * One-time move from the old default categories to DEFAULT_CATEGORIES, run when an admin lists categories.
- * Only acts while an old name is still present, so it stops once done and never undoes later admin edits.
- * Renames carry their influencers; "Other"/"Parenting" are deleted when unused, else deactivated.
+ * One-time move from the old default categories to DEFAULT_CATEGORIES, run when an admin lists categories (only
+ * admins may write categories). Runs once per workspace: `settings/migrations` records it, so a category an admin
+ * later names "Tech" or "Other" is left alone. Renames carry their influencers; "Other"/"Parenting" are deleted when
+ * unused, else deactivated.
  */
 function upgradeLegacyCategories() {
+  if (db.migrations.categories_upgraded) return
   const has = (name: string) => db.categories.find((c) => c.name.toLowerCase() === name.toLowerCase())
   const renamePending = Object.keys(LEGACY_RENAMES).some((from) => db.categories.some((c) => c.name === from))
   const removalPending = LEGACY_REMOVED.some((n) => db.categories.some((c) => c.name === n && c.is_active))
-  if (!renamePending && !removalPending) return
+  if (renamePending || removalPending) moveLegacyCategories(has)
+  db.migrations = { ...db.migrations, categories_upgraded: true }
+}
+
+function moveLegacyCategories(has: (name: string) => StoredCategory | undefined) {
   for (const [from, to] of Object.entries(LEGACY_RENAMES)) {
     const old = db.categories.find((c) => c.name === from)
     if (!old) continue
@@ -102,7 +108,7 @@ export const workspaceHandlers = [
     const created = PROTOTYPE ? { ok: true as const, uid: nextId('usr') } : await createSignInAccount(email, password)
     if (!created.ok) return apiError(created.status, created.code, created.message)
     if (taken()) return apiError(409, 'email_taken', 'A team member with this email exists')
-    // The team record is keyed by their Firebase uid: that's how firestore.rules and GET /me find them.
+    // The team record is keyed by their Firebase uid: that's how the server matches a signed-in user to it.
     const user: User = { id: created.uid, name, email, role: body.role, is_active: true, created_at: nowIso() }
     db.team.push(user)
     return HttpResponse.json(user, { status: 201 })

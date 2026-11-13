@@ -23,7 +23,7 @@ import { packageSchema, type PackageFormInput } from '@/lib/schemas'
 import { getErrorMessage } from '@/services'
 import type { Address, Influencer, Package, PackageStatus } from '@/types'
 import { PackageStatusConfirm } from './package-status-confirm'
-import { needsStatusConfirm, stageAfterPackage, useCreatePackage, useUpdatePackage, type StageChangingStatus } from './queries'
+import { movedStage, needsStatusConfirm, useCreatePackage, useUpdatePackage, type StageChangingStatus } from './queries'
 
 /** `stage` is optional; when known, the delivered/returned confirmation says exactly what happens. */
 export type PackageTarget = Pick<Influencer, 'id' | 'name' | 'address'> & { stage?: Influencer['stage'] }
@@ -125,12 +125,11 @@ export function PackageDrawer({ influencer, pkg, open, onOpenChange, intent, onS
     }
     onOpenChange(false)
     onSaved?.(saved)
-    // The server moves the stage itself when the status change calls for it (e.g. delivered → Delivered).
-    const statusChanged = pkg ? pkg.status !== saved.status : saved.status === 'delivered'
-    const movedTo = statusChanged && influencer.stage ? stageAfterPackage(influencer.stage, saved.status) : null
+    // The server may move the stage itself (delivered / returned).
     const done = isEdit ? 'Package updated' : 'Package created'
-    if (movedTo) {
-      toast.success(`${done} · ${influencer.name} moved to ${STAGE_META[movedTo].label}`)
+    if (needsStatusConfirm(pkg?.status, saved.status)) {
+      const stage = await movedStage(influencer.id, influencer.stage, pkg?.status, saved.status)
+      toast.success(stage ? `${done} · ${influencer.name} is now in ${STAGE_META[stage].label}` : done)
       return
     }
     // Only a shipped package moves the creator to Package Sent (not preparing or returned).

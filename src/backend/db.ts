@@ -72,10 +72,16 @@ export function disconnectedInstagramSettings(): InstagramSettings {
 }
 
 /**
- * This browser's working copy of the workspace. src/backend/persistence.ts fills it from Firestore (live, so other
- * people's changes arrive), and writes back whatever a request or job changed. Modules reassign the collections
+ * The working copy of the workspace: the API server's (loaded from PostgreSQL by server/pg-store.ts), or this
+ * browser's in prototype mode. The store writes back whatever a request or job changed. Modules reassign the collections
  * (e.g. db.influencers = …), so keep these as properties.
  */
+/** One-time data upgrades this workspace has finished (settings/migrations), so they never run twice. */
+export interface WorkspaceMigrations {
+  /** The old default categories were moved to DEFAULT_CATEGORIES. */
+  categories_upgraded: boolean
+}
+
 export const db = {
   team: [] as User[],
   categories: [] as StoredCategory[],
@@ -88,6 +94,7 @@ export const db = {
   instagramSettings: disconnectedInstagramSettings(),
   /** Both guards are off until an admin turns them on. */
   poolSettings: { claim_limit: null, auto_release_days: null } as PoolSettings,
+  migrations: { categories_upgraded: false } as WorkspaceMigrations,
   /** Duplicate pair ids a manager dismissed ("not the same creator"). */
   dismissedDuplicates: new Set<string>(),
   /** Document uploads between presign and save, by Storage key (this tab only). */
@@ -101,6 +108,7 @@ export function defaultSettings() {
   return {
     instagramSettings: disconnectedInstagramSettings(),
     poolSettings: { claim_limit: null, auto_release_days: null } as PoolSettings,
+    migrations: { categories_upgraded: false } as WorkspaceMigrations,
   }
 }
 
@@ -108,6 +116,9 @@ export function defaultSettings() {
 export function nextId(prefix: string): string {
   return `${prefix}_${crypto.randomUUID().replace(/-/g, '').slice(0, 20)}`
 }
+
+/** Whether the person making a request may use the app. */
+export type Access = 'ok' | 'not_a_member' | 'inactive'
 
 export const nowIso = () => new Date().toISOString()
 

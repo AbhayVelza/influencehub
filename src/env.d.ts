@@ -2,8 +2,8 @@
 
 /**
  * Firebase web app config (Firebase console > Project settings > Your apps > Web app). Public values: access is
- * controlled by firestore.rules and storage.rules. Without the API key, auth domain and project ID the app shows a
- * setup screen instead of sign-in.
+ * controlled by the API server and storage.rules. Without the API key, auth domain and project ID the app runs in
+ * prototype mode (src/lib/mode.ts).
  */
 interface ImportMetaEnv {
   readonly VITE_FIREBASE_API_KEY?: string
@@ -14,6 +14,8 @@ interface ImportMetaEnv {
   readonly VITE_FIREBASE_STORAGE_BUCKET?: string
   /** Optional. */
   readonly VITE_FIREBASE_APP_ID?: string
+  /** Optional: the API server's origin, when it isn't the one that serves the app. */
+  readonly VITE_API_URL?: string
 }
 
 interface ImportMeta {

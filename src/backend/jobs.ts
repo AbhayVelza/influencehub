@@ -24,6 +24,9 @@ const jobs = new Map<string, LocalJob>()
 
 /** Runs on its first poll (GET /jobs/{id}), inside that request, so whatever it changes is saved with it. */
 export function createJob(run: () => unknown, durationMs = 0): string {
+  // On the API server this map lives as long as the process: forget jobs nobody polled for an hour.
+  const cutoff = Date.now() - 60 * 60 * 1000
+  for (const [key, job] of jobs) if (job.startedAt < cutoff) jobs.delete(key)
   const id = nextId('job')
   jobs.set(id, { id, startedAt: Date.now(), durationMs, run, done: false, result: null, error: null })
   return id
@@ -44,6 +47,8 @@ export function readJob(id: string): Job | null {
           ? { code: err.code, message: err.message }
           : { code: 'internal_error', message: err instanceof Error ? err.message : 'Job failed' }
     }
+    // It runs once: drop the closure so what it captured (e.g. a CSV's text) can be freed.
+    job.run = () => undefined
   }
 
   if (job.done) {

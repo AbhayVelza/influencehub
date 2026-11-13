@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { invalidateInfluencer } from '@/features/influencers/detail-queries'
 import { queryKeys } from '@/lib/query'
-import { packagesApi } from '@/services'
+import { influencersApi, packagesApi } from '@/services'
 import type { Package, PackageCreate, PackageListParams, PackageStatus, PackageUpdate, Stage } from '@/types'
 
 export function usePackages(params: PackageListParams, enabled = true) {
@@ -52,4 +52,14 @@ export function stageAfterPackage(stage: Stage, status: PackageStatus): Stage | 
 /** Changing a package to delivered/returned can move the influencer, so it's confirmed first. */
 export function needsStatusConfirm(from: PackageStatus | undefined, to: PackageStatus): to is StageChangingStatus {
   return (to === 'delivered' || to === 'returned') && to !== from
+}
+
+/**
+ * After a package status change that can move the influencer, the stage the server actually left them in (not a guess
+ * from a possibly stale `before`), or null when it didn't move. Other changes need no extra request.
+ */
+export async function movedStage(influencerId: string, before: Stage | null | undefined, from: PackageStatus | undefined, to: PackageStatus) {
+  if (!needsStatusConfirm(from, to)) return null
+  const stage = await influencersApi.get(influencerId).then((i) => i.stage, () => null)
+  return stage && before && stage !== before ? stage : null
 }

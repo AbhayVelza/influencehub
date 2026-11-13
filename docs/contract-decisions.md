@@ -56,6 +56,11 @@ Record any new API decision here. Dates and documents: `dates-and-documents.md`.
   checklist items are kept if either has them; the more advanced stage wins (main pipeline order; on_hold/rejected
   rank below data_gathered; ties keep the survivor's). The duplicate is deleted; `merged` is logged on the survivor.
 - Logging a call (`POST /influencers/{id}/calls`) marks that influencer's open follow-ups as done.
+- One call per time slot (added 06/11/2026): a `follow_up_date` on the same date and minute as another open
+  follow-up anywhere in the workspace is refused with `409 time_taken` ("Another call is already scheduled for
+  dd/MM/yyyy, hh:mm a. Pick a different time."; it doesn't say whose). Done follow-ups free their slot; the same
+  influencer's own open follow-up doesn't block, since logging the call completes it. The Log Call dialog shows the
+  message on the follow-up field and stays open.
 - Admin override (a move outside the standard transitions) skips the call/package/agreement requirements but needs a
   `reason`; without one → `422 reason_required`. Activity payload: `{from, to, reason, override: true}`.
   Bulk `change_stage` has no reason field, so it can't override.
@@ -174,8 +179,9 @@ Record any new API decision here. Dates and documents: `dates-and-documents.md`.
 
 ## Authentication & team
 
-There is no API server: `handleApiRequest` (`src/backend/index.ts`) answers every in-app API call for the signed-in
-Firebase user. Setup, the data layer, the Firestore layout and the rules: `auth.md`.
+The API server (`server/main.ts`) answers every API call for the signed-in Firebase user, identified by the ID token in
+`Authorization: Bearer …` (prototype mode: `handleApiRequest` in the browser, no sign-in). Setup, the data layer, the
+PostgreSQL layout and what is enforced where: `auth.md`.
 
 - **Every request** is checked first, in this order:
   - not signed in → `401 {error: {code: 'unauthenticated', message: 'Sign in to continue.'}}`
@@ -184,9 +190,8 @@ Firebase user. Setup, the data layer, the Firestore layout and the rules: `auth.
   - team member with `is_active: false` → `403 inactive` "Your account has been deactivated. Ask an admin if this is a
     mistake."
 
-  A 403 from `GET /me` shows the access-denied screen with the message as sent. A write that `firestore.rules`
-  refuses is undone locally and answered `403 forbidden` "You don't have permission to do this."; a database outage
-  is `503 unavailable`.
+  A 403 from `GET /me` shows the access-denied screen with the message as sent. A request whose changes can't be saved
+  is rolled back as a whole and answered `500 server_error`; a request over 30 MB is `413 payload_too_large`.
 - **Roles** come from the team record (`team/{uid}.role`), never from the request.
 - `GET /me` → the caller's `User`. `GET /team` is readable by every active member (names for owners, activity and
   pickers); only `POST` / `PATCH` are admin-only (else 403).
@@ -236,3 +241,21 @@ When an admin lists categories (`GET /categories`), `upgradeLegacyCategories` (`
 renames Tech → Tech & Gadgets, Fitness → Fitness & Lifestyle, Gaming → Gaming & Esports (with their influencers),
 adds any missing default, and deletes Other / Parenting when unused (deactivates them otherwise). It only runs while a
 rename or removal is still pending, so it happens once and does not undo later admin edits.
+
+## API server and PostgreSQL
+
+- With Firebase configured the API is a real server (`server/`): the same handlers as prototype mode, over a working
+  copy of the workspace loaded from PostgreSQL at start-up. After each request only the records that changed are
+  written, in one transaction: a request is saved completely or not at all.
+- Requests are answered one at a time and the server is the only writer, so the checks the handlers make (unique
+  handle per platform, claim limits, one current agreement, follow-up slots) hold across the whole team. Run exactly
+  one instance. Teammates' changes reach other browsers through the app's normal refetching, not a live push.
+- Storage format: one table per collection, one row per record (`id`, `seq`, `data` jsonb, `updated_at`); `seq`
+  keeps creation order, which the activity log relies on. Details: `auth.md`.
+- `POST /imports/csv/upload {key, text}` → 204 (manager / admin). Step 2 of a CSV import: the client posts the file's
+  text under the key from the presign step. It waits in memory until `POST /imports/csv` reads it (at most 5 pending
+  files; a restart drops them, and the import has to be started again). Jobs are in memory too.
+- Document files still go from the browser straight to Firebase Storage; `GET /documents/:id/download` returns a
+  download URL made by the server. `storage.rules` admits users carrying the `ih_member` claim, which the server
+  sets when a member is added and clears (signing them out) when they're deactivated.
+- Auto-release and connect-link expiry still run at the start of every request (no scheduler yet).

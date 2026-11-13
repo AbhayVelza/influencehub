@@ -6,9 +6,9 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
     function isMember() {
-      return request.auth != null
-        && firestore.exists(/databases/(default)/documents/team/$(request.auth.uid))
-        && firestore.get(/databases/(default)/documents/team/$(request.auth.uid)).data.is_active == true;
+      // The API server sets this claim for active team members and clears it when one is deactivated
+      // (server/firebase-admin.ts).
+      return request.auth != null && request.auth.token.ih_member == true;
     }
 
     match /documents/{influencerId}/{fileName} {

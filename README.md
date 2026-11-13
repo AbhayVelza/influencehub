@@ -5,9 +5,10 @@ React 19 + TypeScript + Vite. Two modes, picked by the build env:
 
 - **Prototype mode** (no Firebase config, the default): no sign-in, all data saved in this browser. For demos and
   testing; `npm run dev` and it works.
-- **Firebase mode** (`VITE_FIREBASE_*` set): email + password sign-in, data in Firestore, files in Storage.
+- **Firebase mode** (`VITE_FIREBASE_*` set): email + password sign-in (Firebase Auth), data in PostgreSQL behind the API
+  server in `server/`, files in Firebase Storage. Setup and running the server: [`docs/auth.md`](docs/auth.md).
 
-There is no API server and no sample data: the app starts empty except for an admin.
+No sample data: the app starts empty except for an admin.
 
 ## What it does
 
@@ -54,8 +55,8 @@ Admins can override any stage move, with a required reason.
 ## Tech stack
 
 Vite, React 19, TypeScript, Tailwind, shadcn/ui, lucide-react, React Router, TanStack Query and Table, Recharts,
-dnd-kit, react-hook-form + zod, date-fns, sonner, Firebase (Auth, Firestore, Storage), MSW's request router (in-app
-API, no service worker), oxlint.
+dnd-kit, react-hook-form + zod, date-fns, sonner, Firebase (Auth, Storage), MSW's request router (no service worker),
+oxlint. API server: Node, Hono, PostgreSQL (`postgres`), firebase-admin.
 
 ## Project layout
 
@@ -65,11 +66,12 @@ src/
   features/     account, add-influencer, calls, dashboard, documents, duplicates, influencers, packages, pipeline, pool, settings
   pages/        one component per route
   services/     the only place that calls the in-app API
-  backend/      the data layer: API handlers (business rules) over a live Firestore copy; see docs/auth.md
+  backend/      the data layer: API handlers (business rules) over a working copy of the data; see docs/auth.md
   lib/          firebase, auth, schemas (zod), platforms, stages, permissions, formatting, session
   types/        data types, the source of truth for the contract
-scripts/        seed-admin.mjs (first admin in Firebase)
-firestore.rules, storage.rules, firebase.json   access rules (firebase deploy)
+server/         the API server: runs src/backend's handlers over PostgreSQL (main.ts, pg-store.ts, schema.sql)
+scripts/        seed-admin.mjs (first admin: Firebase sign-in account + team row)
+storage.rules, firebase.json   file access rules (firebase deploy)
 ```
 
 ## Run it
@@ -139,9 +141,8 @@ right) > **Change password**. Someone signed in but not on the team, or deactiva
 | Reassign, delete, reopen rejected, import / export, review & merge duplicates |  | ✓ | ✓ |
 | Stage override (with reason), Settings (incl. team and pool guards) |  |  | ✓ |
 
-The data layer (`src/backend`) applies these and the UI hides what a role can't do; `firestore.rules` additionally
-limits settings, team and categories to admins and influencer deletion to managers and admins (what the rules
-don't cover: [`docs/auth.md`](docs/auth.md)). To try another role, add a member in Settings > Team and sign in as them.
+The data layer (`src/backend`) applies these, on the API server, and the UI hides what a role can't do
+([`docs/auth.md`](docs/auth.md)). To try another role, add a member in Settings > Team and sign in as them.
 
 ## API
 

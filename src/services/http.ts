@@ -1,4 +1,5 @@
-import { API_BASE } from '@/lib/env'
+import { API_BASE, API_ORIGIN } from '@/lib/env'
+import { PROTOTYPE } from '@/lib/mode'
 import type { ApiErrorBody } from '@/types'
 
 export class ApiError extends Error {
@@ -46,25 +47,29 @@ function isApiErrorBody(value: unknown): value is ApiErrorBody {
 }
 
 /**
- * Every API call goes through here. There is no API server: the request is answered in this browser by the data
- * layer (src/backend), which applies the business rules over Firestore. It's loaded on first use, so the sign-in
- * page doesn't download it.
+ * Every API call goes through here. With Firebase configured it goes to the API server (server/main.ts), carrying
+ * the signed-in user's ID token. In prototype mode there is no server: the request is answered in this browser by
+ * the data layer (src/backend), loaded on first use.
  */
 export async function request<T>(path: string, { method = 'GET', query, body, signal }: RequestOptions = {}): Promise<T> {
   const qs = toSearchParams(query).toString()
-  const url = new URL(`${API_BASE}${path}${qs ? `?${qs}` : ''}`, window.location.origin)
+  const url = new URL(`${API_BASE}${path}${qs ? `?${qs}` : ''}`, API_ORIGIN || window.location.origin)
+
+  const headers: Record<string, string> = body !== undefined ? { 'Content-Type': 'application/json' } : {}
+  const init = { method, headers, body: body !== undefined ? JSON.stringify(body) : undefined }
 
   let response: Response
   try {
-    const { handleApiRequest } = await import('@/backend')
-    signal?.throwIfAborted()
-    response = await handleApiRequest(
-      new Request(url, {
-        method,
-        headers: body !== undefined ? { 'Content-Type': 'application/json' } : undefined,
-        body: body !== undefined ? JSON.stringify(body) : undefined,
-      }),
-    )
+    if (PROTOTYPE) {
+      const { handleApiRequest } = await import('@/backend')
+      signal?.throwIfAborted()
+      response = await handleApiRequest(new Request(url, init))
+    } else {
+      const token = await (await import('@/lib/auth')).getIdToken()
+      if (token) headers.Authorization = `Bearer ${token}`
+      signal?.throwIfAborted()
+      response = await fetch(url, { ...init, signal })
+    }
   } catch (err) {
     if (err instanceof DOMException && err.name === 'AbortError') throw err
     console.error('Request failed', err)
