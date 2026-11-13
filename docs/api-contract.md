@@ -1,8 +1,8 @@
 # API contract
 
-The in-app API: `src/backend/handlers` implement it in the browser over Firestore (no server). Detailed behaviour is in `contract-decisions.md`.
+The API: `src/backend/handlers` implement it, on the API server over PostgreSQL (in the browser in prototype mode). Detailed behaviour is in `contract-decisions.md`.
 
-Paths under `/api/v1`, answered in the browser for the signed-in Firebase user. Lists → `{ items, total, page,
+Paths under `/api/v1`, answered for the signed-in Firebase user (`Authorization: Bearer <ID token>`). Lists → `{ items, total, page,
 page_size }`. Errors → `{ error: { code, message } }`. 401 `unauthenticated`; 403 `not_a_member` / `inactive` /
 `forbidden` (`contract-decisions.md`, Authentication & team). Document files go to Firebase Storage.
 - GET /influencers (q, category[], platform[], country[], state[], city[], stage[], assigned_to[], reach_min,
@@ -19,7 +19,7 @@ page_size }`. Errors → `{ error: { code, message } }`. 401 `unauthenticated`; 
   GET /documents (type[], q, uploaded_by[], uploaded_from, uploaded_to, page, page_size) ·
   POST /documents/presign {influencer_id, type, file_name, content_type, size} → {upload_url, key} ·
   GET /documents/{id}/download → {url} · DELETE /documents/{id}
-- POST /lookup {platform, username} → {job_id} · POST /imports/csv/presign · POST /imports/csv → {job_id}
+- POST /lookup {platform, username} → {job_id} · POST /imports/csv/presign · POST /imports/csv/upload {key, text} · POST /imports/csv → {job_id}
 - POST /exports/influencers → {job_id} · GET /jobs/{id} → {status, progress, result, error}
 - GET /me · GET /team · POST /team {email, name, role, password} (admin) → User · PATCH /team/{id} {name?, role?,
   is_active?} · GET/POST/PATCH/DELETE /categories · GET/POST/DELETE /saved-views

@@ -49,6 +49,13 @@ export const changePassword = (currentPassword: string, newPassword: string) =>
 /** Prototype mode: act as another team member; cached data is dropped like on a sign-in. */
 export const switchUser = (uid: string) => requireClient().switchUser?.(uid)
 
+/** The signed-in user's Firebase ID token for real API calls. */
+export async function getIdToken(): Promise<string | null> {
+  if (PROTOTYPE) return null
+  const { firebaseAuth } = await import('@/lib/firebase')
+  return (await firebaseAuth().currentUser?.getIdToken()) ?? null
+}
+
 /** The signed-in (or, in prototype mode, acting) user's id, for the data layer. */
 export const currentAuthUid = () => user?.uid ?? null
 

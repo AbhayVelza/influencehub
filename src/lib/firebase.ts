@@ -2,8 +2,9 @@ import { initializeApp, type FirebaseApp, type FirebaseOptions } from 'firebase/
 import { browserLocalPersistence, indexedDBLocalPersistence, initializeAuth, type Auth } from 'firebase/auth'
 import { AuthError } from '@/lib/auth/types'
 
-// One Firebase app for the whole client: Authentication (sign-in), Firestore (all data) and Storage (document
-// files). The web config is public by design; access is controlled by firestore.rules and storage.rules.
+// One Firebase app for the whole client: Authentication (sign-in) and Storage (document files). The data is in
+// PostgreSQL behind the API server. The web config is public by design; access is controlled by the server and
+// storage.rules.
 
 const NOT_CONFIGURED =
   'Firebase isn’t configured: set VITE_FIREBASE_API_KEY, VITE_FIREBASE_AUTH_DOMAIN and VITE_FIREBASE_PROJECT_ID (and VITE_FIREBASE_STORAGE_BUCKET for document files) for this build.'

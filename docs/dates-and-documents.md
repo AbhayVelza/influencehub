@@ -31,6 +31,9 @@ Contract decisions for the dd/MM/yyyy date format and for Documents.
   newest agreement stays current).
   `Influencer.documents = {insights_count, has_agreement}` drives the list's Docs column and the filters
   `agreement=signed|missing`, `insights=received|missing` (single value each); PATCH can't change it.
-  **Onboarded rule**: a standard move contacted → onboarded needs a current agreement, else
-  `422 requirement_missing` (the UI then opens the agreement upload and finishes the move). Resuming from hold and a
+  **Onboarded rule**: a standard move contacted → onboarded needs a current agreement **and** at least one insights
+  summary, collected together, else `422 requirement_missing` naming what's missing (the UI then asks for the missing
+  upload(s) in one flow, agreement first then insights summary, "Step 1 of 2", and finishes the move after the last;
+  cancelling midway keeps what was uploaded and leaves the stage as it was). Changed 05/11/2026: before, only the
+  agreement was required. Resuming from hold and a
   returned package keep what's on file; an admin override (e.g. data_gathered → onboarded, with a reason) skips it.

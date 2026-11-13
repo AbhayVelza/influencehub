@@ -1,130 +1,175 @@
-# Sign-in, data and Firebase setup
+# Sign-in, data and server setup
 
-With Firebase configured, InfluenceHub runs on Firebase: **Authentication** for sign-in, **Firestore** for all data,
-**Storage** for document files. There is no API server and no sample data: the app starts empty except for the admin
-you create. Without the Firebase config it runs in **prototype mode** (no sign-in, data in the browser; see README).
+With Firebase configured, InfluenceHub has three parts: **PostgreSQL** for all data, the **API server** (`server/`)
+in front of it, and Firebase for two jobs only: **Authentication** (sign-in) and **Storage** (document files). There
+is no sample data: the app starts empty except for the admin you create. Without the Firebase config it runs in
+**prototype mode** (no sign-in, no server, data in the browser; see README).
 
 ## How it works
 
 - **Sign-in:** email + password (Firebase Authentication). No public sign-up page: an admin adds each person in
   **Settings > Team > Add member** with name, email, role and an initial password, and shares the password with
   them securely. Anyone can change their own password from the account menu (**Change password**).
-- **Who gets in:** a Firebase user whose `team/{uid}` record exists and is active. Anyone else signed in sees
+- **Who gets in:** a Firebase user whose team record exists and is active. Anyone else signed in sees
   "No access to InfluenceHub". A deactivated member sees the same screen ("deactivated").
-- **Data layer (`src/backend`):** the services (`src/services`) call an in-app API (`/api/v1/...`). There is no
-  server: `http.ts` hands each request to `handleApiRequest` (`src/backend/index.ts`), which runs the business rules in
-  `src/backend/handlers` (stages, claims, pool, scoping, permissions, duplicates, imports) over a working copy of the
-  data. `src/backend/persistence.ts` keeps that copy in step with Firestore through live listeners (teammates' changes
-  show up without reloading) and, after every request, writes back only the records that changed.
-- **Access control:** `firestore.rules` and `storage.rules` (below). A write the rules refuse is undone locally and
-  the user sees "You don't have permission to do this."
+- **API server (`server/main.ts`):** the services (`src/services`) call `/api/v1/...` with the user's Firebase ID
+  token. The server verifies the token, checks the team record, then runs the business rules in
+  `src/backend/handlers` (stages, claims, pool, scoping, permissions, duplicates, imports) over a working copy of
+  the data. Prototype mode runs the same handlers in the browser.
+- **Data (`server/pg-store.ts`):** the server loads every record from PostgreSQL at start-up and, after each
+  request, writes back only the records that changed, in one transaction. A request that fails part-way saves
+  nothing.
+- **One request at a time, one server:** requests are answered in turn and the server is the only writer, so the
+  rules hold for the whole team (two people can't claim the same influencer or add the same handle). Run exactly
+  one instance of the server.
 - **Not connected yet:** public profile lookup, **Sync now**, connect links and growth history need the social
   platforms' APIs. Until then they say so ("isn't connected yet") and accounts keep the stats people type in.
 
 | Piece | Where |
 |---|---|
 | Firebase app, Auth instance | `src/lib/firebase.ts` |
-| Firestore / Storage instances | `src/lib/firebase-data.ts` |
-| Sign-in state, sign-out, change password | `src/lib/auth/` (`initAuth`, `useAuthUser`, `signIn`, `signOut`) |
+| Storage instance (document uploads) | `src/lib/firebase-data.ts` |
+| Sign-in state, sign-out, change password, ID token | `src/lib/auth/` (`initAuth`, `useAuthUser`, `signIn`, `signOut`, `getIdToken`) |
 | Login page, route guard, "No access" screen | `src/pages/login-page.tsx`, `src/components/layout/require-auth.tsx`, `app-shell.tsx` |
-| Data layer and sync | `src/backend/` (`index.ts`, `persistence.ts`, `handlers/`) |
-| Adding a member's sign-in account | `src/backend/sign-in-accounts.ts` |
-| Access rules | `firestore.rules`, `storage.rules`, `firebase.json` |
+| Business rules (shared by server and prototype) | `src/backend/` (`handlers/`, `domain.ts`, `db.ts`) |
+| API server | `server/main.ts` (HTTP, token check, one request at a time), `vite.server.config.ts` (build) |
+| PostgreSQL store and tables | `server/pg-store.ts`, `server/schema.sql` |
+| Token check, member accounts, file URLs | `server/firebase-admin.ts` |
+| Prototype store (browser) | `src/backend/index.ts`, `src/backend/local-store.ts` |
+| File access rules | `storage.rules`, `firebase.json` |
 | First admin | `scripts/seed-admin.mjs` (`npm run seed:admin`) |
 
-## Set up a Firebase project (once)
+## Set up (once)
 
-1. Create a project at <https://console.firebase.google.com>.
-2. **Authentication > Sign-in method:** enable **Email/Password**.
-3. **Authentication > Settings > User actions:** keep **Enable create (sign-up)** on. Admins add members from the app,
-   which creates their account in the browser (there is no server to do it). People who sign up on their own get no
-   access: the rules only admit members with an active team record.
-4. **Firestore Database:** create it (production mode).
-5. **Storage:** create the default bucket (needed for document uploads; new buckets need the Blaze plan).
-6. **Project settings > Your apps:** add a **Web app** and copy its config into `.env.local`:
+1. **PostgreSQL:** create an empty database and a user that owns it. The server creates its tables on first start.
+2. **Firebase project** at <https://console.firebase.google.com>:
+   - **Authentication > Sign-in method:** enable **Email/Password**. Under **Settings > User actions** you can turn
+     **Enable create (sign-up)** off: member accounts are created by the server.
+   - **Storage:** create the default bucket (needed for document uploads; new buckets need the Blaze plan).
+   - **Project settings > Your apps:** add a **Web app** and copy its config (below).
+   - **Project settings > Service accounts > Generate new private key.** Keep the JSON outside the repo (or name it
+     `service-account*.json`, which is gitignored).
+3. **`.env.local`** (never the committed `.env`):
    ```
+   # The app (public values: they are in the browser bundle)
    VITE_FIREBASE_API_KEY=...
    VITE_FIREBASE_AUTH_DOMAIN=<project>.firebaseapp.com
    VITE_FIREBASE_PROJECT_ID=<project>
    VITE_FIREBASE_STORAGE_BUCKET=<project>.firebasestorage.app
    VITE_FIREBASE_APP_ID=...
+
+   # The server and the seed script (secrets)
+   DATABASE_URL=postgres://<user>:<password>@localhost:5432/<database>
+   GOOGLE_APPLICATION_CREDENTIALS=C:/path/to/service-account.json
+   FIREBASE_STORAGE_BUCKET=<project>.firebasestorage.app
+   FIREBASE_PROJECT_ID=<project>             # optional when the key names it
+
+   # The first admin (seed script only)
+   ADMIN_EMAIL=you@yourcompany.com
+   ADMIN_PASSWORD=at-least-8-characters
+   ADMIN_NAME=Your Name                      # optional
    ```
-   These values are public (they are in the browser bundle); the rules are what protect the data.
-7. **Deploy the rules** (Firebase CLI: `npm i -g firebase-tools`, `firebase login`, `firebase use <project>`):
+4. **Deploy the storage rules** (Firebase CLI: `npm i -g firebase-tools`, `firebase login`, `firebase use <project>`):
    ```
-   firebase deploy --only firestore:rules,storage
+   firebase deploy --only storage
    ```
-8. **Create the first admin** (below), then `npm run dev` and sign in.
+5. **Create the first admin:** `npm run seed:admin`.
+6. **Run it** (below) and sign in.
+
+## Run it
+
+| Command | What it does |
+|---|---|
+| `npm run server` | Builds the server (`dist-server/`) and starts it on port 3001 (`PORT` to change). |
+| `npm run dev` | The app on port 3000; it forwards `/api` to the server. |
+| `npm run build` then `npm run server` | Production: the server also serves the built app from `dist/`, so one process on one port is the whole deployment. |
+| `npm start` | Starts an already-built server. |
+
+Server environment, besides the three secrets above: `PORT` (default 3001), `STATIC_DIR` (default `dist`),
+`CORS_ORIGIN` (comma-separated origins; only when the app is served from somewhere else, together with
+`VITE_API_URL` in the app's build). `GET /health` answers 200 when PostgreSQL is reachable.
+
+Put the server behind HTTPS (a reverse proxy or your host's TLS) before anyone outside your machine uses it: ID
+tokens travel in a request header.
 
 ## The first admin: `npm run seed:admin`
 
-Needs a service account key: **Project settings > Service accounts > Generate new private key**. Keep the JSON
-outside the repo (or name it `service-account*.json`, which is gitignored). In `.env.local` or the shell:
-
-```
-ADMIN_EMAIL=you@yourcompany.com
-ADMIN_PASSWORD=at-least-8-characters
-ADMIN_NAME=Your Name                      # optional
-GOOGLE_APPLICATION_CREDENTIALS=C:/path/to/service-account.json
-FIREBASE_PROJECT_ID=<project>             # optional when the key names it
-```
-
 The script (idempotent; never prints the password):
+- creates the tables if they're missing;
 - creates the Firebase user, or updates the password if the email exists;
-- sets the custom claim `role: 'admin'`;
-- writes `team/{uid}` = `{ email, name, role: 'admin', is_active: true, created_at, updated_at }`;
-- adds the default categories if the `categories` collection is empty (configuration, not sample data).
+- sets the custom claim `ih_member: true` (what `storage.rules` checks);
+- writes the team row = `{ email, name, role: 'admin', is_active: true, created_at }`;
+- adds the default categories if there are none (configuration, not sample data).
 
-Add everyone else from **Settings > Team**.
+The server reads the data at start-up, so run the script before starting it, or restart it afterwards. Add everyone
+else from **Settings > Team**.
 
-## Firestore layout
+## PostgreSQL layout
 
-Every record is stored as the app's TypeScript type (`src/types/index.ts`), with the document id as its `id`.
+One table per collection, one row per record (`server/schema.sql`):
 
-| Collection | Contents |
+| Column | Contents |
 |---|---|
-| `team/{uid}` | `User` (keyed by Firebase uid): name, email, role, is_active, created_at |
+| `id` | The app's id (`inf_…`, `call_…`; the Firebase uid for team members) |
+| `seq` | Creation order (the activity log is read in this order) |
+| `data` | The record as the app's TypeScript type (`src/types/index.ts`), as JSON, without the id |
+| `updated_at` | When the row was last written |
+
+| Table | Contents |
+|---|---|
+| `team` | `User`: name, email, role, is_active, created_at |
 | `categories` | name, is_active |
 | `influencers` | `Influencer` (accounts embedded; the documents summary is derived, not stored) |
 | `calls`, `packages`, `activities`, `saved_views` | `CallLog`, `Package`, `Activity`, `SavedView` |
 | `documents` | `InfluencerDocument` + `deleted_at` (soft delete) + `storage_key` (file path in Storage) |
-| `settings/pool`, `settings/instagram` | pool guards; Instagram integration settings |
-| `dismissed_duplicates/{pairId}` | duplicate pairs a manager marked "not the same creator" |
+| `settings` | rows `pool` (pool guards), `instagram` (integration settings), `migrations` (one-time data upgrades already done) |
+| `dismissed_duplicates` | duplicate pairs a manager marked "not the same creator" (`id` = the pair id) |
 
-Document files: Storage `documents/{influencerId}/{uploadId}-{fileName}`.
+To read it in SQL: `select id, data->>'name' as name, data->>'stage' as stage from influencers;`
 
-## What the rules do and don't enforce
+Document files: Firebase Storage `documents/{influencerId}/{uploadId}-{fileName}`.
 
-`firestore.rules`: signed-in users read their own team record; everything else needs an active team record.
-Admins change team, categories and settings; managers and admins delete influencers; members read and write the rest.
-`storage.rules`: members read document files and upload PDF / JPG / PNG / DOCX / XLSX up to 20 MB; files are never
-changed or deleted.
+Back it up like any PostgreSQL database (`pg_dump`). Don't edit rows while the server is running: it holds its own
+copy and would overwrite or ignore your change. Stop it, edit, start it.
 
-Finer rules run in the data layer, in the user's browser: an executive seeing only their own influencers and the
-pool, stage rules, claim limits, who may reassign. A team member who bypasses the app with their own Firebase
-credentials could read all workspace data and make changes the app wouldn't. For an internal team that's usually
-acceptable; to close it, move the handlers behind a server (e.g. Cloud Functions) or add per-field rules.
+## What is enforced where
 
-Scheduled rules (auto-release of stale claims, connect-link expiry) have no scheduler: they run at the start of every
-request, in whoever's browser makes it.
+- **The server** enforces everything: sign-in (ID token), membership, roles, an executive seeing only their own
+  influencers and the pool, stage rules, claim limits, who may reassign. Nobody reaches the database except through it.
+- **`storage.rules`:** only users carrying the `ih_member` claim read document files or upload PDF / JPG / PNG /
+  DOCX / XLSX up to 20 MB; files are never changed or deleted. The server sets the claim when a member is added and
+  clears it, and signs them out everywhere, when they're deactivated.
+
+Scheduled rules (auto-release of stale claims, connect-link expiry) have no scheduler yet: they run at the start of
+every request.
 
 ## Limits to know
 
-- Each signed-in browser keeps a live copy of the workspace (all collections). Fine for an internal team with
-  thousands of records; for much more, move the handlers to a server or query per screen.
-- Two people editing the same record at once: the last save wins.
-- CSV imports are read in the browser and never stored; exports are generated in the browser.
+- The server keeps the whole workspace in memory and compares it with the database after every request. Fine for an
+  internal team with thousands of records; for much more, move the handlers to SQL queries.
+- One server instance only. A second one would overwrite the first one's changes.
+- Background jobs (CSV import, export) and a CSV waiting to be imported live in memory: a restart mid-import loses
+  the job, and the import has to be started again. Finished imports are saved.
+- A deactivated member's file access can last until their ID token expires (up to an hour); API access stops at once.
+- Other people's changes appear when the app next refetches (it does so regularly and after your own actions), not
+  instantly.
+- CSV exports are generated on the server and downloaded; nothing is stored.
 
 ## Troubleshooting
 
 - **"Sign-in isn't available" / "Firebase isn't configured":** the `VITE_FIREBASE_*` values are missing from
   `.env.local` (dev) or the build environment. Restart `npm run dev` after editing env files.
-- **"No access to InfluenceHub" for the admin:** `team/{uid}` is missing or inactive. Re-run `npm run seed:admin`.
-- **"You don't have permission to do this" everywhere:** the rules aren't deployed (`firebase deploy --only
-  firestore:rules,storage`), or the team record isn't active.
-- **Adding a member fails with "Firebase doesn't allow creating accounts":** turn on Email/Password and "Enable
-  create (sign-up)" (setup steps 2–3).
-- **Document upload fails:** Storage isn't set up, `VITE_FIREBASE_STORAGE_BUCKET` is missing, or storage rules aren't
-  deployed. Previewing files in the app may also need CORS on the bucket (`gsutil cors set`) if the browser blocks it.
+- **Every screen says "Something went wrong. Check your connection":** the API server isn't running or isn't
+  reachable (`npm run server`; `GET /health`).
+- **The server won't start:** it says why. `DATABASE_URL` is missing or wrong, PostgreSQL isn't running, or
+  `GOOGLE_APPLICATION_CREDENTIALS` isn't set.
+- **"Sign in to continue" although you are signed in:** the server can't verify tokens (its log says so). The service
+  account key belongs to another Firebase project than the app's `VITE_FIREBASE_PROJECT_ID`.
+- **"No access to InfluenceHub" for the admin:** the team row is missing or inactive, or the server was started
+  before the seed script ran. Re-run `npm run seed:admin` and restart the server.
+- **Document upload fails with "You don't have permission":** the storage rules aren't deployed, or the member
+  signed in before they were added: sign out and in again to pick up the claim.
+- **Document download fails:** `FIREBASE_STORAGE_BUCKET` is missing on the server. Previewing files in the app may
+  also need CORS on the bucket (`gsutil cors set`) if the browser blocks it.
 - **Requests still answered by an old mock:** an earlier version registered `mockServiceWorker.js` on this origin.
   DevTools > Application > Service workers > Unregister, then reload.

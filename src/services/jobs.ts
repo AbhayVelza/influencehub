@@ -9,11 +9,10 @@ export const jobsApi = {
 export const importsApi = {
   presignCsv: (filename: string) => http.post<CsvPresignResponse>('/imports/csv/presign', { filename }),
 
-  /** Step 2: hand the CSV to the data layer in this tab (it's read for the import, never stored). */
+  /** Step 2: hand the CSV's text to the data layer (it's read for the import, never stored). */
   uploadToPresignedUrl: async (uploadUrl: string, file: File) => {
     if (!uploadUrl.startsWith(LOCAL_UPLOAD_PREFIX)) throw new Error('Upload failed: unknown upload target.')
-    const { storeLocalUpload } = await import('@/backend')
-    storeLocalUpload(uploadUrl.slice(LOCAL_UPLOAD_PREFIX.length), await file.text())
+    await http.post('/imports/csv/upload', { key: uploadUrl.slice(LOCAL_UPLOAD_PREFIX.length), text: await file.text() })
   },
 
   startCsvImport: (body: CsvImportRequest) => http.post<JobRef>('/imports/csv', body),

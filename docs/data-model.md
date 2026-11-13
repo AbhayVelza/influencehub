@@ -10,7 +10,7 @@ Source of truth: `src/types/index.ts`. Update both together.
   onboarded → package_sent/on_hold/rejected; package_sent → delivered/onboarded (returned);
   on_hold → previous stage/rejected; rejected → data_gathered (manager/admin only). Admin can override.
   → contacted requires a call log with outcome "interested"; → onboarded (from contacted) requires a current
-  agreement; → package_sent requires a package with courier + tracking number.
+  agreement and at least one insights summary; → package_sent requires a package with courier + tracking number.
 - **CallOutcome**: interested, not_interested, call_back, no_answer, wrong_number
 - **DocumentType**: insights_summary, agreement
 - **PackageStatus**: preparing, sent, in_transit, delivered, returned

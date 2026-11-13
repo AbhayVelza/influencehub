@@ -1,13 +1,15 @@
 import { audienceOf, PLATFORMS } from '@/lib/platforms'
+import { ONBOARDED_OR_LATER } from '@/lib/stages'
 import type { Influencer, InfluencerFilters, Platform, SocialAccount } from '@/types'
 
 /**
- * Who appears under a platform's Onboarded tab: everyone in the Onboarded stage with an account on that platform.
- * Missing documents show in the table's Documents column and can be filtered. Plain GET /influencers filters, so the
- * API's scoping applies as is.
+ * Who appears under a platform's Onboarded tab: every creator who has been onboarded, i.e. in Onboarded, Package Sent
+ * or Delivered (shipping a package doesn't make them any less onboarded), with an account on that platform. The Stage
+ * column shows where each one is now; missing documents show in the Documents column and can be filtered. Plain
+ * GET /influencers filters, so the API's scoping applies as is.
  */
 export function onboardedFilters(platform: Platform): InfluencerFilters {
-  return { stage: ['onboarded'], platform: [platform] }
+  return { stage: [...ONBOARDED_OR_LATER], platform: [platform] }
 }
 
 /** The filters the Onboarded tabs set themselves; the URL can't change them. */

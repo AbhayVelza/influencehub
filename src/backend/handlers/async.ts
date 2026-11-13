@@ -51,8 +51,21 @@ export const asyncHandlers = [
     if (!can(currentUser().role, 'data:import')) return forbidden('Only managers and admins can import')
     const filename = (await readJson<{ filename?: string }>(request)).filename ?? 'import.csv'
     const key = `imports/${Date.now()}-${filename.replace(/[^\w.-]/g, '_')}`
-    // The CSV is read in this tab: importsApi.uploadToPresignedUrl hands it to storeLocalUpload under this key.
+    // The CSV is read for the import and never stored: importsApi.uploadToPresignedUrl posts its text under this key.
     return HttpResponse.json({ upload_url: `${LOCAL_UPLOAD_PREFIX}${key}`, key })
+  }),
+
+  // Step 2: the CSV text itself. It waits in memory until the import job reads it.
+  http.post(api('/imports/csv/upload'), async ({ request }) => {
+    if (!can(currentUser().role, 'data:import')) return forbidden('Only managers and admins can import')
+    const body = await readJson<{ key?: string; text?: string }>(request)
+    if (!body.key?.startsWith('imports/') || typeof body.text !== 'string') {
+      return apiError(422, 'validation_error', 'Upload not found. Upload the file again.')
+    }
+    // Files that were uploaded but never imported don't pile up: only the latest few wait.
+    while (db.uploads.size >= 5) db.uploads.delete(db.uploads.keys().next().value!)
+    db.uploads.set(body.key, body.text)
+    return new HttpResponse(null, { status: 204 })
   }),
 
 

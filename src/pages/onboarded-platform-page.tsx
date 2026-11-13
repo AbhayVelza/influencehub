@@ -69,7 +69,7 @@ function OnboardedPlatformList({ platform }: { platform: Platform }) {
     <EmptyState
       icon={BadgeCheck}
       title={`No onboarded creators on ${meta.label} yet`}
-      description={`Creators show here once they’re in the Onboarded stage and have a ${meta.label} account.`}
+      description={`Creators show here once they’re onboarded (and stay through Package Sent and Delivered) and have a ${meta.label} account.`}
     />
   )
 
@@ -95,7 +95,7 @@ function OnboardedPlatformList({ platform }: { platform: Platform }) {
               </span>
             </span>
           }
-          description={`In the Onboarded stage, with a ${meta.label} account. The Documents column shows what’s still missing.`}
+          description={`Every onboarded creator with a ${meta.label} account, including those in Package Sent and Delivered. The Documents column shows what’s still missing.`}
         />
 
         <ListSearch value={filters.q} onChange={(q) => list.setFilters({ q }, { replace: true })} />

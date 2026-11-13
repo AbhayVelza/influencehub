@@ -26,9 +26,9 @@ import { ListSearch } from '@/features/influencers/list-search'
 import { InfluencerPicker } from '@/features/packages/influencer-picker'
 import { PackageDrawer, type PackageTarget } from '@/features/packages/package-drawer'
 import { PackageStatusConfirm } from '@/features/packages/package-status-confirm'
-import { needsStatusConfirm, useUpdatePackage, type StageChangingStatus } from '@/features/packages/queries'
+import { movedStage, needsStatusConfirm, useUpdatePackage, type StageChangingStatus } from '@/features/packages/queries'
 import { copyToClipboard } from '@/lib/clipboard'
-import { COURIERS, PACKAGE_STATUS_META, PACKAGE_STATUSES } from '@/lib/constants'
+import { COURIERS, PACKAGE_STATUS_META, PACKAGE_STATUSES, STAGE_META } from '@/lib/constants'
 import { formatDate, formatNumber } from '@/lib/format'
 import { queryKeys } from '@/lib/query'
 import { cn } from '@/lib/utils'
@@ -99,7 +99,10 @@ export default function PackagesPage() {
   const saveStatus = async (pkg: PackageWithInfluencer, status: PackageStatus) => {
     try {
       await updatePackage.mutateAsync({ id: pkg.id, body: { status } })
-      toast.success(`Package marked ${PACKAGE_STATUS_META[status].label.toLowerCase()}`)
+      const stage = await movedStage(pkg.influencer_id, pkg.influencer.stage, pkg.status, status)
+      toast.success(`Package marked ${PACKAGE_STATUS_META[status].label.toLowerCase()}`, {
+        description: stage ? `${pkg.influencer.name} is now in ${STAGE_META[stage].label}` : undefined,
+      })
     } catch (err) {
       toast.error('Couldn’t update the package', { description: getErrorMessage(err) })
     }

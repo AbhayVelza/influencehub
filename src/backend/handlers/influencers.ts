@@ -18,6 +18,7 @@ import type {
   Stage,
   StageChangeRequest,
 } from '@/types'
+import { formatDateTime } from '@/lib/format'
 import { currentUser, db, documentSummary, findInfluencer, logActivity, nextId, nowIso } from '../db'
 import {
   assignedToOtherMessage,
@@ -41,6 +42,15 @@ import {
 import { createJob } from '../jobs'
 import { syncAccount } from '../social'
 import { api, apiError, forbidden, notFound, paginate, readJson } from '../utils'
+
+/** The minute a date-time falls in, so two follow-ups at 05:00 PM clash whatever their seconds. */
+const minuteOf = (iso: string) => Math.floor(Date.parse(iso) / 60_000)
+
+/** A full ISO timestamp with a time and a zone (what the Log Call dialog sends); a bare date like 2026-11-07 isn't. */
+const isTimestamp = (value: unknown): value is string =>
+  typeof value === 'string' &&
+  /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:\d{2})$/.test(value) &&
+  !Number.isNaN(Date.parse(value))
 
 type Facet = 'category' | 'country' | 'state' | 'city' | 'stage' | 'assigned_to' | 'platform' | 'agreement' | 'insights'
 
@@ -341,6 +351,24 @@ export const influencerHandlers = [
     if (!inf) return notFound('Influencer')
     const body = await readJson<CallLogCreate>(request)
     if (!CALL_OUTCOMES.includes(body.outcome)) return apiError(422, 'validation_error', 'Choose a call outcome')
+
+    // One call per time slot across the workspace: no other open follow-up at the same date and minute. This
+    // influencer's own open follow-ups don't count (logging this call completes them, just below).
+    // null / undefined = no follow-up; anything else (an empty string included) must be a full timestamp.
+    if (body.follow_up_date != null) {
+      if (!isTimestamp(body.follow_up_date)) return apiError(422, 'validation_error', 'Enter a valid follow-up date and time')
+      const slot = minuteOf(body.follow_up_date)
+      const taken = db.calls.some(
+        (c) => c.influencer_id !== inf.id && c.follow_up_date && !c.follow_up_done && minuteOf(c.follow_up_date) === slot,
+      )
+      if (taken) {
+        return apiError(
+          409,
+          'time_taken',
+          `Another call is already scheduled for ${formatDateTime(body.follow_up_date)}. Pick a different time.`,
+        )
+      }
+    }
 
     // A new call completes any follow-ups still open for this influencer.
     for (const c of db.calls) {
