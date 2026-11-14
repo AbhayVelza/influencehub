@@ -1,8 +1,8 @@
 # InfluenceHub — Frontend (React)
 
 Internal CRM for managing influencers. All six frontend phases, the Unassigned Pool, multi-platform accounts
-(with duplicate detection), Documents (insights summaries, agreements), the dd/MM/yyyy date format and Firebase
-email + password sign-in (no public sign-up; admins add members) are built. Data lives in PostgreSQL behind the API
+(with duplicate detection), Documents (insights summaries, agreements), the dd/MM/yyyy date format and team
+management (admins add members) are built. There is no sign-in yet ("Acting as" in the account menu; Firebase removed). Data lives in PostgreSQL behind the API
 server in `server/` (prototype mode: in the browser); no sample data. Before calling any change done, run
 `npm run lint`, `npm run typecheck`, `npm run build`, `npm run server:build`.
 Docs: this file, README.md and `docs/`. Never add features beyond this spec without asking; record any API decision
@@ -20,12 +20,12 @@ call back → follow-up; not interested → rejected; interested → contacted. 
 - `docs/contract-decisions.md`: API behaviour the handlers implement (accounts, duplicates, pool, CSV, jobs)
 - `docs/dates-and-documents.md`: dd/MM/yyyy rules; documents upload, scoping, the Onboarded rule
 - `docs/screens.md`: what each screen contains, and the build phases
-- `docs/auth.md`: Firebase and PostgreSQL setup, sign-in, the API server, table layout, what is enforced where, seed script
+- `docs/server.md`: PostgreSQL setup, the API server, acting member, table layout, files, limits
 
 ## Tech stack
 Vite + React 19 + TypeScript, Tailwind, shadcn/ui, lucide-react, React Router, TanStack Query,
 TanStack Table, Recharts, dnd-kit, react-hook-form + zod, date-fns (display in Asia/Kolkata), sonner,
-Firebase (Auth, Storage; firebase-admin on the server and in `scripts/seed-admin.mjs`), PostgreSQL (`postgres`), Hono
+PostgreSQL (`postgres`; data and document files), Hono
 (API server), MSW's `getResponse` router (routes API calls to the handlers, in the browser and on the server; no
 service worker).
 
@@ -39,15 +39,15 @@ numbers 12.4K / 1.2M; dates dd/MM/yyyy; relative times; toasts; "/" focuses sear
   changed, after each request). Never query the database from components. New collections need `server/pg-store.ts`,
   `server/schema.sql` and `src/backend/local-store.ts`. No sample or invented data anywhere.
 - The server answers one request at a time and is the only writer to PostgreSQL: run a single instance. `src/backend`
-  and what it imports must run in both the browser and Node (no `window`, no Firebase client SDK).
-- Sign-in: everything goes through `src/lib/auth` (`signIn`, `signOut`, `changePassword`, `useAuthUser`). Sign out only
-  via its `signOut`: the auth change calls `resetSession` (`src/lib/session.ts`: cancels requests, clears the query +
-  mutation cache, remounts the routes). Team records are keyed by Firebase uid. Never commit secrets: .env is
-  committed (empty placeholders); Firebase config, DATABASE_URL, ADMIN_* and service-account keys go in .env.local.
-- Modes (`src/lib/mode.ts`): no Firebase config = PROTOTYPE (no sign-in, `src/lib/auth/local.ts` "Acting as";
-  `db` saved to IndexedDB by `src/backend/local-store.ts`, files too); Firebase config = the API server over PostgreSQL
-  (`server/pg-store.ts`), files in Firebase Storage. `src/backend/index.ts` uses the local store; `server/main.ts` the PostgreSQL one. Keep both working.
-- Every production chunk stays under 500 kB (vendor groups in vite.config); the sign-in page loads no data layer.
+  and what it imports must run in both the browser and Node (no `window`).
+- No sign-in yet: the acting member lives in `src/lib/auth` (`currentAuthUid`, `switchUser`, which calls
+  `resetSession` in `src/lib/session.ts`: cancels requests, clears the query + mutation cache, remounts the routes).
+  Requests send it as `X-Acting-As`; `resolveActingUid` (`src/backend/db.ts`) falls back to an active admin. Never
+  commit secrets: .env is committed (empty placeholders); DATABASE_URL goes in .env.local.
+- Modes (`src/lib/mode.ts`): `VITE_API_SERVER=true` = the API server over PostgreSQL (`server/pg-store.ts`; files in
+  the `files` table); otherwise PROTOTYPE (`db` and files saved to IndexedDB by `src/backend/local-store.ts`).
+  `src/backend/index.ts` uses the local store; `server/main.ts` the PostgreSQL one. Keep both working.
+- Every production chunk stays under 500 kB (vendor groups in vite.config).
 
 ## Conventions (reuse, don't duplicate)
 - Validation: `src/lib/schemas.ts` (forms, inline edits, CSV rows via `src/lib/csv-import.ts`, the data layer).

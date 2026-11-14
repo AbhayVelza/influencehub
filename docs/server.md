@@ -1,0 +1,105 @@
+# API server and PostgreSQL
+
+With `VITE_API_SERVER=true`, InfluenceHub has two parts: **PostgreSQL** for all data and document files, and the
+**API server** (`server/`) in front of it. There is **no sign-in yet**: the account menu's **Acting as** picks which team
+member you are. Without `VITE_API_SERVER` the app runs in **prototype mode** (no server, data in the browser; see README).
+
+## How it works
+
+- **API server (`server/main.ts`):** the services (`src/services`) call `/api/v1/...` with the acting member's id in
+  the `X-Acting-As` header. The server resolves the member (an active admin if that member is gone or deactivated),
+  then runs the business rules in `src/backend/handlers` (stages, claims, pool, scoping, permissions, duplicates,
+  imports) over a working copy of the data. Prototype mode runs the same handlers in the browser.
+- **Data (`server/pg-store.ts`):** the server loads every record from PostgreSQL at start-up and, after each request,
+  writes back only the records that changed, in one transaction. A request that fails part-way saves nothing.
+- **Document files:** `PUT /api/v1/files/<key>` (only for a key handed out by `POST /documents/presign`) stores the
+  file in the `files` table; `GET /api/v1/files/<key>` serves it.
+- **One request at a time, one server:** the server is the only writer, so the rules hold for the whole team (two
+  people can't claim the same influencer or add the same handle). Run exactly one instance.
+- **New workspace:** on first start the server adds the owner admin (`usr_owner`) and the default categories.
+- **Not connected yet:** public profile lookup, **Sync now**, connect links and growth history need the social
+  platforms' APIs. Accounts keep the stats people type in.
+
+| Piece | Where |
+|---|---|
+| Acting member (no sign-in) | `src/lib/auth/index.ts` (`currentAuthUid`, `switchUser`), `resolveActingUid` in `src/backend/db.ts` |
+| Business rules (shared by server and prototype) | `src/backend/` (`handlers/`, `domain.ts`, `db.ts`) |
+| API server | `server/main.ts` (HTTP, request queue, files, static app), `vite.server.config.ts` (build) |
+| PostgreSQL store and tables | `server/pg-store.ts`, `server/schema.sql` |
+| Prototype store (browser) | `src/backend/index.ts`, `src/backend/local-store.ts` |
+
+## Set up (once)
+
+1. Install PostgreSQL and create a database and a user that owns it, e.g. in `psql` as `postgres`:
+   ```sql
+   CREATE USER influencehub WITH PASSWORD '<choose-one>';
+   CREATE DATABASE influencehub OWNER influencehub;
+   ```
+   The server creates its tables on first start.
+2. **`.env.local`** (gitignored; never the committed `.env`):
+   ```
+   DATABASE_URL=postgres://influencehub:<password>@localhost:5432/influencehub
+   VITE_API_SERVER=true
+   ```
+
+## Run it
+
+| Command | What it does |
+|---|---|
+| `npm run server` | Builds the server (`dist-server/`) and starts it on port 3001 (`PORT` to change). |
+| `npm run dev` | The app on port 3000; it forwards `/api` to the server. |
+| `npm run build` then `npm run server` | Production: the server also serves the built app from `dist/`, one process on one port. |
+| `npm start` | Starts an already-built server. |
+
+Server environment: `DATABASE_URL` (required), `PORT` (default 3001), `STATIC_DIR` (default `dist`), `CORS_ORIGIN`
+(comma-separated origins; only when the app is served from elsewhere, together with `VITE_API_URL` in the app's
+build). `GET /health` answers 200 when PostgreSQL is reachable.
+
+**Security:** with no sign-in, anyone who can reach the server can use the app as any member. Keep it on your own
+machine or a private network until sign-in is added.
+
+## PostgreSQL layout
+
+One table per collection, one row per record (`server/schema.sql`):
+
+| Column | Contents |
+|---|---|
+| `id` | The app's id (`inf_…`, `call_…`, `usr_…`) |
+| `seq` | Creation order (the activity log is read in this order) |
+| `data` | The record as the app's TypeScript type (`src/types/index.ts`), as JSON, without the id |
+| `updated_at` | When the row was last written |
+
+| Table | Contents |
+|---|---|
+| `team` | `User`: name, email, role, is_active, created_at |
+| `categories` | name, is_active |
+| `influencers` | `Influencer` (accounts embedded; the documents summary is derived, not stored) |
+| `calls`, `packages`, `activities`, `saved_views` | `CallLog`, `Package`, `Activity`, `SavedView` |
+| `documents` | `InfluencerDocument` + `deleted_at` (soft delete) + `storage_key` (the file's key) |
+| `settings` | rows `pool` (pool guards), `instagram` (integration settings), `migrations` (one-time upgrades done) |
+| `dismissed_duplicates` | duplicate pairs a manager marked "not the same creator" |
+| `files` | document files: `key`, `content_type`, `data` (bytea), `created_at` — never loaded into memory |
+
+To read it in SQL: `select id, data->>'name' as name, data->>'stage' as stage from influencers;`
+
+Back it up with `pg_dump` (files included). Don't edit rows while the server is running: it holds its own copy and
+would overwrite or ignore your change. Stop it, edit, start it.
+
+## Limits to know
+
+- The whole workspace (not the files) is in server memory and compared with the database after every request. Fine
+  for an internal team with thousands of records; for much more, move the handlers to SQL queries.
+- One server instance only. A second one would overwrite the first one's changes.
+- Background jobs (CSV import, export) and a CSV waiting to be imported live in memory: a restart mid-import loses
+  the job. Finished imports are saved. Unpolled jobs are dropped after an hour.
+- Other people's changes appear when the app next refetches, not instantly.
+- Auto-release of stale claims and connect-link expiry run at the start of every request (no scheduler).
+
+## Troubleshooting
+
+- **Every screen says "Something went wrong. Check your connection":** the API server isn't running (`npm run server`;
+  `GET /health`), or `VITE_API_SERVER=true` is set but the server is elsewhere (`VITE_API_URL`).
+- **The server won't start:** `DATABASE_URL` is missing or wrong, or PostgreSQL isn't running (Windows: the
+  `postgresql-x64-17` service).
+- **Data you entered isn't on the server:** `VITE_API_SERVER` isn't `true`, so the app is in prototype mode (data in
+  the browser). Restart `npm run dev` after editing env files.

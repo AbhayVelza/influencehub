@@ -1,3 +1,5 @@
+import { DEFAULT_CATEGORIES } from '@/lib/constants'
+import { OWNER_ID } from '@/lib/mode'
 import { primaryAccount, toRef, totalReach } from '@/lib/platforms'
 import type {
   Activity,
@@ -22,7 +24,7 @@ export type StoredCategory = Omit<Category, 'influencer_count'>
 /** A document as stored: soft-deleted ones stay in the list with `deleted_at` set and are never served. */
 export type StoredDocument = InfluencerDocument & {
   deleted_at: string | null
-  /** Where the file is in Firebase Storage; never sent to the UI. */
+  /** The file's key (PostgreSQL `files` table, or this browser in prototype mode); never sent to the UI. */
   storage_key: string
 }
 
@@ -112,27 +114,38 @@ export function defaultSettings() {
   }
 }
 
-/** Unique across every signed-in browser writing to the same database. */
+/** A new workspace's only data: the owner admin and the default categories (configuration, not sample data). */
+export function newWorkspace(): { team: User[]; categories: StoredCategory[] } {
+  return {
+    team: [{ id: OWNER_ID, name: 'Admin', email: 'admin@influencehub.local', role: 'admin', is_active: true, created_at: nowIso() }],
+    categories: DEFAULT_CATEGORIES.map((name, i) => ({ id: `cat_${String(i + 1).padStart(2, '0')}`, name, is_active: true })),
+  }
+}
+
+/** Random, so ids never clash. */
 export function nextId(prefix: string): string {
   return `${prefix}_${crypto.randomUUID().replace(/-/g, '').slice(0, 20)}`
 }
-
-/** Whether the person making a request may use the app. */
-export type Access = 'ok' | 'not_a_member' | 'inactive'
 
 export const nowIso = () => new Date().toISOString()
 
 let actingUid: string | null = null
 
-/** Set by handleApiRequest for each request once it has checked the caller. */
+/**
+ * There is no sign-in: requests act as the member the account menu picked, or as an active admin when that member is
+ * gone or deactivated. Null only when the workspace has no active admin.
+ */
+export function resolveActingUid(uid: string | null): string | null {
+  const active = db.team.filter((u) => u.is_active)
+  return (active.find((u) => u.id === uid) ?? active.find((u) => u.role === 'admin'))?.id ?? null
+}
+
+/** Set for each request (resolveActingUid). */
 export function setActingUid(uid: string | null) {
   actingUid = uid
 }
 
-/**
- * The team member making this request (team records are keyed by Firebase uid, or by member id in prototype mode).
- * Requests only reach a handler after handleApiRequest has checked that this record exists and is active.
- */
+/** The team member this request acts as. */
 export function currentUser(): User {
   const user = actingUid ? db.team.find((u) => u.id === actingUid) : undefined
   if (!user) throw new Error('No team member for this request')

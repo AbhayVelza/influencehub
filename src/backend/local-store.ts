@@ -1,7 +1,5 @@
-import { DEFAULT_CATEGORIES } from '@/lib/constants'
-import { PROTOTYPE_OWNER_ID } from '@/lib/mode'
 import type { Influencer, User } from '@/types'
-import { attachDocumentSummary, db, defaultSettings, nowIso, type StoredCategory } from './db'
+import { attachDocumentSummary, db, defaultSettings, newWorkspace, type StoredCategory } from './db'
 
 // Prototype mode's store: the whole workspace in this browser's IndexedDB, so it survives reloads (not shared with
 // anyone). A new workspace has one admin (the owner) and the default categories, nothing else. Document files are
@@ -54,12 +52,10 @@ interface Snapshot {
   dismissed: string[]
 }
 
-function newWorkspace(): Snapshot {
-  const now = nowIso()
+function emptyWorkspace(): Snapshot {
   return {
     version: 1,
-    team: [{ id: PROTOTYPE_OWNER_ID, name: 'Admin', email: 'admin@prototype.local', role: 'admin', is_active: true, created_at: now }],
-    categories: DEFAULT_CATEGORIES.map((name, i) => ({ id: `cat_${String(i + 1).padStart(2, '0')}`, name, is_active: true })),
+    ...newWorkspace(),
     influencers: [],
     documents: [],
     calls: [],
@@ -126,7 +122,7 @@ export async function connect(): Promise<void> {
     } catch (err) {
       warnOnce(err)
     }
-    load(data ?? newWorkspace())
+    load(data ?? emptyWorkspace())
     lastSaved = data ? JSON.stringify(snapshot()) : ''
   })()
   await ready

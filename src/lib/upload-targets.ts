@@ -1,8 +1,5 @@
-// Where a presign step tells the client to put a file. The "URL" names the target: document files go to Firebase
-// Storage under the key (or stay in this browser in prototype mode), CSV text is posted to the API.
-
-/** `firebase-storage:<key>`: upload the file to Firebase Storage at <key> (documentsApi.upload). */
-export const STORAGE_UPLOAD_PREFIX = 'firebase-storage:'
+// Where a presign step tells the client to put a file: document files are PUT to the API server (stored in
+// PostgreSQL) or, in prototype mode, kept in this browser; CSV text is posted to the API.
 
 /** `local-file:<key>`: prototype mode keeps the document file in this browser (IndexedDB) under <key>. */
 export const LOCAL_FILE_PREFIX = 'local-file:'

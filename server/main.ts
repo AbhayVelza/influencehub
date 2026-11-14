@@ -6,21 +6,16 @@ import { Hono } from 'hono'
 import { bodyLimit } from 'hono/body-limit'
 import { cors } from 'hono/cors'
 import { getResponse } from 'msw'
-import { db, setActingUid } from '@/backend/db'
-import { setFileUrlProvider } from '@/backend/documents'
+import { db, resolveActingUid, setActingUid } from '@/backend/db'
 import { handlers } from '@/backend/handlers'
-import { setSignInAccountCreator } from '@/backend/sign-in-accounts'
 import { apiError } from '@/backend/utils'
-import { API_BASE } from '@/lib/env'
-import { createSignInAccount, fileUrl, syncMemberAccess, verifyToken } from './firebase-admin'
+import { MAX_DOCUMENT_BYTES } from '@/lib/documents'
+import { ACTING_AS_HEADER, API_BASE } from '@/lib/env'
 import * as pgStore from './pg-store'
 
 // The API server. It runs the same handlers the prototype runs in the browser (src/backend/handlers: stages, claims,
 // scoping, permissions) over a working copy of the workspace that pg-store.ts loads from and saves to PostgreSQL.
-// Sign-in is Firebase Auth: every request carries the user's ID token, and the team record decides access.
-
-setSignInAccountCreator(createSignInAccount)
-setFileUrlProvider(fileUrl)
+// There is no sign-in yet: each request names the team member it acts as (ACTING_AS_HEADER).
 
 /** Requests are answered one at a time: the handlers share one working copy and one "current user". */
 let queue: Promise<unknown> = Promise.resolve()
@@ -30,18 +25,14 @@ function inTurn<T>(task: () => Promise<T>): Promise<T> {
   return run
 }
 
-async function handleApiRequest(request: Request): Promise<Response> {
-  const uid = await verifyToken(request.headers.get('Authorization'))
-  if (!uid) return apiError(401, 'unauthenticated', 'Sign in to continue.')
+const failed = (what: string, err: unknown) => {
+  console.error(`${what} failed`, err)
+  return apiError(500, 'server_error', 'Something went wrong saving your data. Try again.')
+}
 
+function handleApiRequest(request: Request): Promise<Response> {
   return inTurn(async () => {
-    const access = await pgStore.connect(uid)
-    if (access === 'not_a_member') {
-      return apiError(403, 'not_a_member', 'You don’t have access to InfluenceHub. Ask an admin to add you.')
-    }
-    if (access === 'inactive') return apiError(403, 'inactive', 'Your account has been deactivated. Ask an admin if this is a mistake.')
-
-    setActingUid(uid)
+    setActingUid(resolveActingUid(request.headers.get(ACTING_AS_HEADER)))
     try {
       const response = (await getResponse(handlers, request)) ?? apiError(404, 'not_found', 'Unknown endpoint')
       await pgStore.flush()
@@ -49,14 +40,9 @@ async function handleApiRequest(request: Request): Promise<Response> {
     } catch (err) {
       // The handler threw or the save failed: nothing was written, so drop the half-made change.
       pgStore.revert()
-      console.error(`${request.method} ${new URL(request.url).pathname} failed`, err)
-      return apiError(500, 'server_error', 'Something went wrong saving your data. Try again.')
+      return failed(`${request.method} ${new URL(request.url).pathname}`, err)
     } finally {
       setActingUid(null)
-      for (const id of pgStore.takeTeamChanges()) {
-        const member = db.team.find((u) => u.id === id)
-        if (member) void syncMemberAccess(member.id, member.is_active)
-      }
     }
   })
 }
@@ -71,17 +57,42 @@ app.get('/health', async (c) => {
 // Only needed when the app is served from another origin than this server (CORS_ORIGIN, comma-separated).
 const origins = (process.env.CORS_ORIGIN ?? '').split(',').map((o) => o.trim()).filter(Boolean)
 if (origins.length) {
-  app.use(`${API_BASE}/*`, cors({ origin: origins, allowHeaders: ['Content-Type', 'Authorization'], allowMethods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'] }))
+  app.use(`${API_BASE}/*`, cors({ origin: origins, allowHeaders: ['Content-Type', ACTING_AS_HEADER], allowMethods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'] }))
 }
 
 app.use(
   `${API_BASE}/*`,
   bodyLimit({
-    // Room for a CSV import; document files go straight to Firebase Storage, never through here.
+    // Room for a CSV import or a 20 MB document file.
     maxSize: 30 * 1024 * 1024,
     onError: (c) => c.json({ error: { code: 'payload_too_large', message: 'That’s too much data for one request.' } }, 413),
   }),
 )
+
+// Document files: PUT once to the key the presign step handed out (src/backend/handlers/documents.ts), then served.
+const FILES = `${API_BASE}/files/`
+const fileKey = (pathname: string) => decodeURIComponent(pathname.slice(FILES.length))
+
+app.put(`${FILES}*`, async (c) => {
+  const key = fileKey(c.req.path)
+  const data = new Uint8Array(await c.req.arrayBuffer())
+  const upload = await inTurn(async () => db.documentUploads.get(key))
+  if (!upload) return apiError(404, 'upload_missing', 'The file wasn’t expected. Choose it again.')
+  if (!data.length || data.length > MAX_DOCUMENT_BYTES) return apiError(422, 'file_too_large', 'Files can be at most 20 MB')
+  try {
+    await pgStore.saveFile(key, upload.content_type, data)
+  } catch (err) {
+    return failed('File upload', err)
+  }
+  return c.body(null, 204)
+})
+
+app.get(`${FILES}*`, async (c) => {
+  const file = await pgStore.readFile(fileKey(c.req.path))
+  if (!file) return apiError(404, 'not_found', 'File not found')
+  return new Response(Buffer.from(file.data), { headers: { 'Content-Type': file.content_type, 'Cache-Control': 'private, max-age=3600' } })
+})
+
 app.all(`${API_BASE}/*`, (c) => handleApiRequest(c.req.raw))
 
 // Serves the built app too (`npm run build` → dist/), so one process is the whole deployment.
@@ -92,24 +103,14 @@ if (existsSync(path.join(dist, 'index.html'))) {
   app.get('*', (c) => c.html(index))
 }
 
-const port = Number(process.env.PORT) || 3001
-
-if (!process.env.GOOGLE_APPLICATION_CREDENTIALS?.trim() && !process.env.FIREBASE_PROJECT_ID?.trim()) {
-  console.error(
-    'Could not start: sign-in can’t be checked without Firebase. Set GOOGLE_APPLICATION_CREDENTIALS (path to a service ' +
-      'account key) in .env.local; see docs/auth.md.',
-  )
-  process.exit(1)
-}
-
 try {
   await pgStore.start()
 } catch (err) {
   console.error('Could not start: PostgreSQL is not reachable or DATABASE_URL is wrong.', err)
   process.exit(1)
 }
-if (!db.team.length) console.warn('No team members yet. Run `npm run seed:admin` to create the first admin, then restart the server.')
 
+const port = Number(process.env.PORT) || 3001
 const server = serve({ fetch: app.fetch, port }, () => console.log(`InfluenceHub API listening on http://localhost:${port}`))
 
 for (const signal of ['SIGINT', 'SIGTERM'] as const) {

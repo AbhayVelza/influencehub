@@ -22,9 +22,6 @@ import type {
 } from '@/types'
 import { currentUser, db, findInfluencer, nextId, nowIso, stageEnteredAt, toSummary, type StoredCategory } from '../db'
 import { primaryAccount, toRef } from '@/lib/platforms'
-import { MIN_PASSWORD_LENGTH } from '@/lib/auth/types'
-import { createSignInAccount } from '../sign-in-accounts'
-import { PROTOTYPE } from '@/lib/mode'
 import { hasCurrentAgreement } from '../documents'
 import { canSee, filterInfluencers, poolInfluencers, visibleInfluencers } from '../domain'
 import { all, api, apiError, forbidden, notFound, readJson } from '../utils'
@@ -97,19 +94,8 @@ export const workspaceHandlers = [
     if (!ROLES.includes(body.role)) return apiError(422, 'validation_error', 'Choose a role')
     const name = typeof body.name === 'string' ? body.name.trim() : ''
     if (!name) return apiError(422, 'validation_error', 'Enter a name')
-    const password = typeof body.password === 'string' ? body.password : ''
-    // Prototype mode has no sign-in, so there's no password to check or account to create.
-    if (!PROTOTYPE && password.length < MIN_PASSWORD_LENGTH) {
-      return apiError(422, 'weak_password', `Use at least ${MIN_PASSWORD_LENGTH} characters`)
-    }
-    const taken = () => db.team.some((u) => u.email.toLowerCase() === email)
-    if (taken()) return apiError(409, 'email_taken', 'A team member with this email exists')
-    // Creates their Firebase sign-in account; the password goes to Firebase only and is never stored here.
-    const created = PROTOTYPE ? { ok: true as const, uid: nextId('usr') } : await createSignInAccount(email, password)
-    if (!created.ok) return apiError(created.status, created.code, created.message)
-    if (taken()) return apiError(409, 'email_taken', 'A team member with this email exists')
-    // The team record is keyed by their Firebase uid: that's how the server matches a signed-in user to it.
-    const user: User = { id: created.uid, name, email, role: body.role, is_active: true, created_at: nowIso() }
+    if (db.team.some((u) => u.email.toLowerCase() === email)) return apiError(409, 'email_taken', 'A team member with this email exists')
+    const user: User = { id: nextId('usr'), name, email, role: body.role, is_active: true, created_at: nowIso() }
     db.team.push(user)
     return HttpResponse.json(user, { status: 201 })
   }),

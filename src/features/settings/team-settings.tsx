@@ -1,4 +1,3 @@
-import { PROTOTYPE } from '@/lib/mode'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { UserPlus } from 'lucide-react'
 import { useState } from 'react'
@@ -17,7 +16,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useMe } from '@/hooks/use-me'
 import { useTeam } from '@/hooks/use-team'
 import { ROLE_LABEL } from '@/lib/constants'
-import { MIN_PASSWORD_LENGTH } from '@/lib/auth'
 import { teamMemberCreateSchema, type TeamMemberCreateInput } from '@/lib/schemas'
 import { cn } from '@/lib/utils'
 import { ApiError, getErrorMessage } from '@/services'
@@ -26,15 +24,12 @@ import { useAddMember, useUpdateMember } from './queries'
 
 const ROLES = Object.keys(ROLE_LABEL) as Role[]
 
-/** Prototype mode has no sign-in, so no password is asked for; the form still validates this stand-in. */
-const NO_SIGN_IN_PASSWORD = 'prototype-no-sign-in'
-
 function AddMemberDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const add = useAddMember()
   const [formError, setFormError] = useState<string | null>(null)
   const form = useForm<TeamMemberCreateInput, unknown, ReturnType<typeof teamMemberCreateSchema.parse>>({
     resolver: zodResolver(teamMemberCreateSchema),
-    defaultValues: { name: '', email: '', role: 'executive', password: PROTOTYPE ? NO_SIGN_IN_PASSWORD : '' },
+    defaultValues: { name: '', email: '', role: 'executive' },
   })
   const { register, control, handleSubmit, reset, setError, formState } = form
   const { errors } = formState
@@ -58,7 +53,6 @@ function AddMemberDialog({ open, onOpenChange }: { open: boolean; onOpenChange: 
     } catch (err) {
       const code = err instanceof ApiError ? err.code : null
       if (code === 'email_taken') setError('email', { message: getErrorMessage(err) }, { shouldFocus: true })
-      else if (code === 'weak_password') setError('password', { message: getErrorMessage(err) }, { shouldFocus: true })
       else setFormError(getErrorMessage(err))
     }
   })
@@ -70,9 +64,7 @@ function AddMemberDialog({ open, onOpenChange }: { open: boolean; onOpenChange: 
           <DialogHeader>
             <DialogTitle>Add a team member</DialogTitle>
             <DialogDescription>
-              {PROTOTYPE
-                ? 'Prototype mode: no sign-in. Switch to them from the account menu (Acting as) to try their role.'
-                : 'They sign in with this email and the password you set, and can change it from their account menu.'}
+              There’s no sign-in: switch to them from the account menu (Acting as) to use their role.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-1.5">
@@ -128,28 +120,6 @@ function AddMemberDialog({ open, onOpenChange }: { open: boolean; onOpenChange: 
               )}
             />
           </div>
-          {!PROTOTYPE && (
-            <div className="grid gap-1.5">
-              <Label htmlFor="member-password">Initial password</Label>
-              <Input
-                id="member-password"
-                type="password"
-                autoComplete="new-password"
-                minLength={MIN_PASSWORD_LENGTH}
-                aria-invalid={!!errors.password}
-                aria-describedby={errors.password ? 'member-password-error member-password-hint' : 'member-password-hint'}
-                {...register('password')}
-              />
-              {errors.password && (
-                <p id="member-password-error" className="text-xs text-destructive">
-                  {errors.password.message}
-                </p>
-            )}
-            <p id="member-password-hint" className="text-xs text-muted-foreground">
-              At least {MIN_PASSWORD_LENGTH} characters. Share it with them securely.
-            </p>
-          </div>
-          )}
           {formError && (
             <p role="alert" className="text-sm text-destructive">
               {formError}
@@ -190,9 +160,7 @@ export function TeamSettings() {
         <div className="space-y-1.5">
           <CardTitle className="text-base">Team & roles</CardTitle>
           <CardDescription>
-            {PROTOTYPE
-              ? 'Add people to try each role (switch from the account menu). '
-              : 'Add people with an initial password; deactivating someone stops their sign-in. '}
+            Add people and switch to them from the account menu (Acting as). 
             You can’t change your own role or deactivate yourself, and there’s always at least one admin.
           </CardDescription>
         </div>

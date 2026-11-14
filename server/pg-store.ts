@@ -1,5 +1,5 @@
 import postgres from 'postgres'
-import { attachDocumentSummary, db, defaultSettings, type Access } from '@/backend/db'
+import { attachDocumentSummary, db, defaultSettings, newWorkspace } from '@/backend/db'
 import type { Influencer } from '@/types'
 import schema from './schema.sql?raw'
 
@@ -92,6 +92,9 @@ async function load() {
     for (const row of rows) map.set(row.id, canonical(row.data))
   }
   revert()
+  // A new workspace starts with the owner admin and the default categories; the first flush saves them.
+  if (!db.team.length) Object.assign(db, newWorkspace())
+  await flush()
 }
 
 /** Connects and loads the workspace once. Throws if PostgreSQL can't be reached. */
@@ -101,14 +104,6 @@ export function start(): Promise<void> {
     throw err
   })
   return ready
-}
-
-/** Whether this team member may use the app (their record is the source of truth, checked on every request). */
-export async function connect(uid: string): Promise<Access> {
-  await start()
-  const me = db.team.find((u) => u.id === uid)
-  if (!me) return 'not_a_member'
-  return me.is_active ? 'ok' : 'inactive'
 }
 
 interface Op {
@@ -148,15 +143,6 @@ function pendingOps(): Op[] {
   return ops
 }
 
-/** Team members whose record changed since `takeTeamChanges` was last called (their sign-in access may need updating). */
-const teamChanges = new Set<string>()
-
-export function takeTeamChanges(): string[] {
-  const ids = [...teamChanges]
-  teamChanges.clear()
-  return ids
-}
-
 /** Writes everything that changed since PostgreSQL's last known state, all or nothing. */
 export async function flush(): Promise<void> {
   const ops = pendingOps()
@@ -174,7 +160,6 @@ export async function flush(): Promise<void> {
   for (const op of ops) {
     if (op.json === null) known(op.table).delete(op.id)
     else known(op.table).set(op.id, op.json)
-    if (op.table === LISTS.team) teamChanges.add(op.id)
   }
 }
 
@@ -192,4 +177,15 @@ export async function stop() {
   await sql?.end({ timeout: 5 })
   sql = null
   ready = null
+}
+
+/** Document files (the `files` table; never loaded into the working copy). */
+export async function saveFile(key: string, contentType: string, data: Uint8Array) {
+  await client()`insert into files (key, content_type, data) values (${key}, ${contentType}, ${data})
+    on conflict (key) do update set content_type = excluded.content_type, data = excluded.data`
+}
+
+export async function readFile(key: string): Promise<{ content_type: string; data: Uint8Array } | undefined> {
+  const [row] = await client()<{ content_type: string; data: Uint8Array }[]>`select content_type, data from files where key = ${key}`
+  return row
 }
