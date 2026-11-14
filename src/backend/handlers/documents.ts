@@ -1,6 +1,6 @@
 import { http, HttpResponse } from 'msw'
 import { PROTOTYPE } from '@/lib/mode'
-import { LOCAL_FILE_PREFIX, STORAGE_UPLOAD_PREFIX } from '@/lib/upload-targets'
+import { LOCAL_FILE_PREFIX } from '@/lib/upload-targets'
 import { ALLOWED_CONTENT_TYPES, MAX_DOCUMENT_BYTES } from '@/lib/documents'
 import { can } from '@/lib/permissions'
 import type { DocumentCreate, DocumentPresignRequest } from '@/types'
@@ -9,6 +9,7 @@ import { findVisible } from '../domain'
 import {
   addDocument,
   documentOwner,
+  fileApiPath,
   fileUrl,
   filterDocuments,
   findDocument,
@@ -56,8 +57,8 @@ export const documentHandlers = [
       content_type: body.content_type,
       size: body.size,
     })
-    // The client uploads the file to Firebase Storage (or this browser, in prototype mode) under this key (documentsApi.upload), then saves the metadata.
-    return HttpResponse.json({ upload_url: `${PROTOTYPE ? LOCAL_FILE_PREFIX : STORAGE_UPLOAD_PREFIX}${key}`, key })
+    // The client uploads the file there (documentsApi.upload), then saves the metadata.
+    return HttpResponse.json({ upload_url: PROTOTYPE ? `${LOCAL_FILE_PREFIX}${key}` : fileApiPath(key), key })
   }),
 
   http.get(api('/influencers/:id/documents'), async ({ params, request }) => {

@@ -2,7 +2,7 @@ import { useSyncExternalStore } from 'react'
 import { queryClient } from '@/lib/query'
 
 // Signing in as someone else must never show the previous person's data (the same reason a release drops the
-// cached record instead of keeping it). The auth module (src/lib/auth) calls resetSession on every sign-in and sign-out.
+// cached record instead of keeping it). The auth module (src/lib/auth) calls resetSession when the acting member changes.
 
 let session = 0
 const listeners = new Set<() => void>()

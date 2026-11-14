@@ -15,4 +15,3 @@ export const DocumentsPage = lazy(() => import('@/pages/documents-page'))
 export const SettingsPage = lazy(() => import('@/pages/settings-page'))
 export const NotFoundPage = lazy(() => import('@/pages/not-found-page'))
 /** Outside the app shell, so the router gives it its own Suspense fallback. */
-export const LoginPage = lazy(() => import('@/pages/login-page'))

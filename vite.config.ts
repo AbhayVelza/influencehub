@@ -17,7 +17,7 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 3000,
     allowedHosts: true,
-    // With Firebase configured the app calls the API server (npm run server); in prototype mode nothing does.
+    // With VITE_API_SERVER=true the app calls the API server (npm run server); in prototype mode nothing does.
     proxy: { '/api': `http://localhost:${process.env.PORT || 3001}` },
   },
   preview: {
@@ -42,14 +42,10 @@ export default defineConfig({
             vendor('forms', ['zod', 'react-hook-form', '@hookform'], 40),
             vendor('dates', ['date-fns', '@date-fns'], 40),
             // Class-name helpers every component uses. Without their own group they land in the charts chunk, which
-            // then loads on every page (sign-in included).
+            // then loads on every page.
             vendor('ui-utils', ['clsx', 'tailwind-merge', 'class-variance-authority'], 45),
             vendor('charts', ['recharts', 'd3-.*', 'victory-vendor', 'internmap', 'decimal\\.js-light', 'es-toolkit', 'immer', 'redux', '@reduxjs', 'reselect', 'react-redux', 'use-sync-external-store', 'eventemitter3', 'tiny-invariant'], 30),
             vendor('dnd', ['@dnd-kit'], 30),
-            // tslib stays out of the Firebase groups: radix and dnd-kit share it.
-            // Storage loads when a document is uploaded; the rest (app, auth) is all the sign-in page needs.
-          vendor('firebase-storage', ['@firebase/storage', 'firebase/storage'], 35),
-          vendor('firebase', ['firebase', '@firebase', 'idb'], 30),
             // MSW's request routing (no service worker) maps the in-app API calls to src/backend's handlers.
             vendor('msw', ['msw', '@mswjs', '@open-draft', 'outvariant', 'strict-event-emitter', 'is-node-process', 'headers-polyfill', 'graphql', 'path-to-regexp', 'statuses', 'tough-cookie', 'rettime', 'until-async', 'cookie', 'type-fest'], 30),
           ],

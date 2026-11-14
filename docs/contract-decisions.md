@@ -177,51 +177,34 @@ Record any new API decision here. Dates and documents: `dates-and-documents.md`.
     the entries on any influencer / account / document / stage write; unfiltered counts can be pre-aggregated and
     kept up to date by those writes. Expect a response in the low hundreds of ms at ~100k influencers.
 
-## Authentication & team
+## Acting member & team (no sign-in yet)
 
-The API server (`server/main.ts`) answers every API call for the signed-in Firebase user, identified by the ID token in
-`Authorization: Bearer …` (prototype mode: `handleApiRequest` in the browser, no sign-in). Setup, the data layer, the
-PostgreSQL layout and what is enforced where: `auth.md`.
+There is no sign-in. Every request acts as the team member picked in the account menu ("Acting as", `src/lib/auth`),
+sent to the API server in the `X-Acting-As` header (prototype mode: `handleApiRequest` in the browser). Setup, the data
+layer and the PostgreSQL layout: `server.md`.
 
-- **Every request** is checked first, in this order:
-  - not signed in → `401 {error: {code: 'unauthenticated', message: 'Sign in to continue.'}}`
-  - signed in with no `team/{uid}` record → `403 not_a_member` "You don't have access to InfluenceHub. Ask an admin to
-    add you."
-  - team member with `is_active: false` → `403 inactive` "Your account has been deactivated. Ask an admin if this is a
-    mistake."
-
-  A 403 from `GET /me` shows the access-denied screen with the message as sent. A request whose changes can't be saved
-  is rolled back as a whole and answered `500 server_error`; a request over 30 MB is `413 payload_too_large`.
-- **Roles** come from the team record (`team/{uid}.role`), never from the request.
-- `GET /me` → the caller's `User`. `GET /team` is readable by every active member (names for owners, activity and
-  pickers); only `POST` / `PATCH` are admin-only (else 403).
-- **`POST /team`** (admin) `TeamMemberCreate {email, name, role, password}`. No public sign-up page: this and the seed
-  script are the only ways in. Email is trimmed and lowercased. Errors, in this order:
-  - `422 validation_error` for a bad email ("Enter a valid email"), a bad role ("Choose a role") or a missing name
-    ("Enter a name")
-  - `422 weak_password` "Use at least 8 characters" when `password` is shorter than `MIN_PASSWORD_LENGTH` (8)
-  - `409 email_taken` when a member has this email, or the email already has a Firebase account
-  - `422 sign_up_disabled` when Firebase doesn't allow creating accounts (Email/Password or sign-up turned off)
-  - success → `201 User` (never the password). The member's Firebase account is created in a throwaway Firebase app
-    (`src/backend/sign-in-accounts.ts`) so the admin stays signed in; `User.id` is the Firebase uid. The password goes
-    to Firebase only.
-- **`PATCH /team/{id}`** `{name?, role?, is_active?}` → 422 `self_change` when you change your own role / deactivate
-  yourself, 422 `last_admin` when it would leave no active admin. `is_active: false` cuts off access at once (the
-  rules refuse everything; their next request gets `403 inactive`). Their Firebase account stays; reactivating
-  restores access.
-- Passwords are changed through Firebase (re-authenticate, then `updatePassword`); there is no reset email.
-- **Uploads**: `POST /documents/presign` returns `upload_url: "firebase-storage:<key>"`; `documentsApi.upload` puts the
-  file in Storage at `<key>` and `POST /influencers/{id}/documents` saves the metadata (`storage_key`). `GET
-  /documents/{id}/download` returns a Storage download URL. `POST /imports/csv/presign` returns
-  `"local-upload:<key>"`: the CSV is read in the browser and never stored (`src/lib/upload-targets.ts`).
+- **The acting member** is resolved per request (`resolveActingUid`, `src/backend/db.ts`): the named member if they
+  exist and are active, else the first active admin. A new workspace starts with one admin, `usr_owner`.
+- **Roles** come from the team record, never from the request. A request whose changes can't be saved is rolled back
+  as a whole and answered `500 server_error`; a request over 30 MB is `413 payload_too_large`.
+- `GET /me` → the acting `User`. `GET /team` is readable by every active member; only `POST` / `PATCH` are admin-only.
+- **`POST /team`** (admin) `TeamMemberCreate {email, name, role, location?}`. Email is trimmed and lowercased. Errors, in order:
+  `422 validation_error` (bad email, bad role, missing name, location over 80 characters), `409 email_taken`. Success → `201 User` (`id` = `usr_…`).
+- **`PATCH /team/{id}`** `{name?, role?, location?, is_active?}` (no other field changes) → 422 `self_change` when you change your own role / deactivate
+  yourself, 422 `last_admin` when it would leave no active admin. A deactivated member can no longer be acted as.
+- **Uploads**: `POST /documents/presign` returns `upload_url` = `/api/v1/files/<key>` (prototype: `"local-file:<key>"`);
+  `documentsApi.upload` PUTs the file there (the server checks the key came from a presign, stores it in the `files`
+  table) and `POST /influencers/{id}/documents` saves the metadata (`storage_key`). `GET /documents/{id}/download`
+  returns `{url}` = the same `/api/v1/files/<key>`, which serves the file. `POST /imports/csv/presign` returns
+  `"local-upload:<key>"` (`src/lib/upload-targets.ts`).
 
 ## Scheduled rules (no scheduler without a server)
 - **Auto-release**: when `auto_release_days` = N is set, an influencer whose current ownership came from a claim (its
   latest claimed/assigned/released activity is a `claimed` by the current owner) and has no call logged since
   `claimed_at` is released at `claimed_at + N days`: `assigned_to = null`, activity `released {from, reason: "No call
   logged within N days of claiming", auto: true}` with actor null. Assignments by a manager never auto-release.
-  Owners see claims expiring by tomorrow (IST) in the bell (`GET /pool/expiring`). Runs at the start of every request,
-  in whoever's browser makes it (`runAutoRelease` in `src/backend/domain.ts`).
+  Owners see claims expiring by tomorrow (IST) in the bell (`GET /pool/expiring`). Runs at the start of every request
+  (`runAutoRelease` in `src/backend/domain.ts`).
 - **Connect-link expiry**: a `link_sent` account whose `connect_link_expires_at` has passed becomes `expired`
   (`expireConnectLinks` in `src/backend/social.ts`, same timing). Connect links aren't issued until a platform API is
   connected.
@@ -239,23 +222,20 @@ anything else as typed. `EmailValue` shows a mailto link only for a real address
 
 When an admin lists categories (`GET /categories`), `upgradeLegacyCategories` (`src/backend/handlers/workspace.ts`)
 renames Tech → Tech & Gadgets, Fitness → Fitness & Lifestyle, Gaming → Gaming & Esports (with their influencers),
-adds any missing default, and deletes Other / Parenting when unused (deactivates them otherwise). It only runs while a
-rename or removal is still pending, so it happens once and does not undo later admin edits.
+adds any missing default, and deletes Other / Parenting when unused (deactivates them otherwise). It runs once per
+workspace (settings row `migrations`), so it never undoes later admin edits.
 
 ## API server and PostgreSQL
 
-- With Firebase configured the API is a real server (`server/`): the same handlers as prototype mode, over a working
+- With `VITE_API_SERVER=true` the API is a real server (`server/`): the same handlers as prototype mode, over a working
   copy of the workspace loaded from PostgreSQL at start-up. After each request only the records that changed are
   written, in one transaction: a request is saved completely or not at all.
 - Requests are answered one at a time and the server is the only writer, so the checks the handlers make (unique
   handle per platform, claim limits, one current agreement, follow-up slots) hold across the whole team. Run exactly
   one instance. Teammates' changes reach other browsers through the app's normal refetching, not a live push.
 - Storage format: one table per collection, one row per record (`id`, `seq`, `data` jsonb, `updated_at`); `seq`
-  keeps creation order, which the activity log relies on. Details: `auth.md`.
+  keeps creation order, which the activity log relies on. Document files: the `files` table. Details: `server.md`.
 - `POST /imports/csv/upload {key, text}` → 204 (manager / admin). Step 2 of a CSV import: the client posts the file's
   text under the key from the presign step. It waits in memory until `POST /imports/csv` reads it (at most 5 pending
   files; a restart drops them, and the import has to be started again). Jobs are in memory too.
-- Document files still go from the browser straight to Firebase Storage; `GET /documents/:id/download` returns a
-  download URL made by the server. `storage.rules` admits users carrying the `ih_member` claim, which the server
-  sets when a member is added and clears (signing them out) when they're deactivated.
 - Auto-release and connect-link expiry still run at the start of every request (no scheduler yet).

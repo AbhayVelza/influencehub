@@ -3,19 +3,20 @@
 Internal CRM for finding, calling, onboarding and shipping packages to influencers.
 React 19 + TypeScript + Vite. Two modes, picked by the build env:
 
-- **Prototype mode** (no Firebase config, the default): no sign-in, all data saved in this browser. For demos and
-  testing; `npm run dev` and it works.
-- **Firebase mode** (`VITE_FIREBASE_*` set): email + password sign-in (Firebase Auth), data in PostgreSQL behind the API
-  server in `server/`, files in Firebase Storage. Setup and running the server: [`docs/auth.md`](docs/auth.md).
+- **Server mode** (`VITE_API_SERVER=true`): data and document files in PostgreSQL behind the API server in `server/`.
+  Setup: [`docs/server.md`](docs/server.md).
+- **Prototype mode** (the default): no server, all data saved in this browser. For demos and testing.
 
-No sample data: the app starts empty except for an admin.
+There is **no sign-in yet**: the account menu's **Acting as** picks which team member you are. No sample data: the
+app starts empty except for an admin. One-page overview of the whole project: [`docs/project-overview.md`](docs/project-overview.md).
 
 ## What it does
 
 **Business flow:** gather data → call → onboard → send package.
 
-Influencers are added manually or by CSV (public profile lookup and syncing need a platform API, not connected yet). One creator can have accounts on several
-platforms (Instagram, YouTube, TikTok, Facebook, Threads, Pinterest, LinkedIn, Snapchat), each with its own stats.
+Influencers are added manually or by CSV (public profile lookup and syncing need a platform API, not connected yet).
+One creator can have accounts on several platforms (Instagram, YouTube, TikTok, Facebook, Threads, Pinterest,
+LinkedIn, Snapchat), each with its own stats.
 
 | Stage | Meaning |
 | --- | --- |
@@ -31,103 +32,83 @@ Admins can override any stage move, with a required reason.
 ## Features
 
 - **Dashboard**: KPIs, pipeline funnel, by-category and top-cities charts, my follow-ups, activity feed.
-- **Influencers**: filterable (category, platform, country → state → city, stage, owner, agreement, insights, reach), sortable table,
-  saved views, bulk actions, CSV import / export. Filters live in the URL.
-- **Influencer detail**: stage stepper, social accounts with per-platform stats (typed in for now; sync, connect
-  links, growth history and recent posts need a platform API), calls, packages, activity log.
-- **Add / Import**: manual entry and CSV with a preview (profile lookup is not connected yet).
+- **Influencers**: filterable (category, platform, country → state → city, stage, owner, agreement, insights, reach),
+  sortable table, saved views, bulk actions, CSV import / export. Filters live in the URL.
+- **Influencer detail**: stage stepper, social accounts with per-platform stats, calls, packages, documents, activity.
+- **Add / Import**: manual entry and CSV with a preview.
 - **Unassigned Pool**: influencers with no owner. Executives see a preview and claim; managers assign.
   Optional guards: claim limit and auto-release.
 - **Possible duplicates** (manager/admin): side-by-side pairs with confidence and reasons; merge or dismiss.
-  Duplicate warnings also appear before every add.
-- **Documents**: insights summaries (many) and agreements (a new upload becomes current, older versions stay as
-  history) per influencer, with a sidebar page for all of them. PDF / JPG / PNG / DOCX / XLSX up to 20 MB, upload
-  progress, PDF and image preview, soft delete (manager/admin). Uploading ticks the onboarding checklist.
-- **Onboarded**: a sidebar group with one tab per platform listing the creators who are onboarded there (Onboarded
-  stage + an account on that platform; a docs column shows any missing agreement or insights), searchable and filterable.
+- **Documents**: insights summaries and agreements (current + version history). PDF / JPG / PNG / DOCX / XLSX up to
+  20 MB, upload progress, preview, soft delete (manager/admin).
+- **Onboarded**: one tab per platform listing the creators onboarded there.
 - **Pipeline** kanban, **Calls & Follow-ups**, **Packages**.
-- **Settings** (admin): Instagram integration, team (add members with an initial password, roles, deactivate),
-  categories, pool guards.
-- **Sign-in**: email + password, no public sign-up; everyone can change their password from the account menu.
+- **Settings** (admin): Instagram integration, team (add members, roles, deactivate), categories, pool guards.
 - Light / dark theme, usable at 1024px, skeleton / empty / error states. Dates are `dd/MM/yyyy` and date-times
   `dd/MM/yyyy, hh:mm a` in Asia/Kolkata (the API stays ISO 8601).
 
 ## Tech stack
 
 Vite, React 19, TypeScript, Tailwind, shadcn/ui, lucide-react, React Router, TanStack Query and Table, Recharts,
-dnd-kit, react-hook-form + zod, date-fns, sonner, Firebase (Auth, Storage), MSW's request router (no service worker),
-oxlint. API server: Node, Hono, PostgreSQL (`postgres`), firebase-admin.
+dnd-kit, react-hook-form + zod, date-fns, sonner, MSW's request router (no service worker), oxlint.
+API server: Node, Hono, PostgreSQL (`postgres`).
 
 ## Project layout
 
 ```
 src/
-  components/   layout shell, route guard, shared UI, shadcn/ui
-  features/     account, add-influencer, calls, dashboard, documents, duplicates, influencers, packages, pipeline, pool, settings
+  components/   layout shell, shared UI, shadcn/ui
+  features/     add-influencer, calls, dashboard, documents, duplicates, influencers, onboarded, packages,
+                pipeline, pool, settings
   pages/        one component per route
-  services/     the only place that calls the in-app API
-  backend/      the data layer: API handlers (business rules) over a working copy of the data; see docs/auth.md
-  lib/          firebase, auth, schemas (zod), platforms, stages, permissions, formatting, session
+  services/     the only place that calls the API
+  backend/      the business rules (API handlers) over a working copy of the data
+  lib/          acting member (auth), schemas (zod), platforms, stages, permissions, formatting, session, mode
   types/        data types, the source of truth for the contract
 server/         the API server: runs src/backend's handlers over PostgreSQL (main.ts, pg-store.ts, schema.sql)
-scripts/        seed-admin.mjs (first admin: Firebase sign-in account + team row)
-storage.rules, firebase.json   file access rules (firebase deploy)
 ```
 
 ## Run it
 
-### Prototype mode (demo / testing, no setup)
+### Prototype mode (no setup)
 
 ```bash
 npm install
-npm run dev          # http://localhost:3000, you're the Admin, no sign-in
+npm run dev          # http://localhost:3000, you're the Admin
 ```
 
-- Everything you enter is saved in this browser (IndexedDB) and survives reloads; it isn't shared with other people
-  or browsers. Document files are kept in the browser too.
-- To try other roles: **Settings > Team & roles > Add member** (no password needed), then the account menu (top
-  right) > **Acting as** to switch to them.
-- Account menu > **Reset prototype data** wipes this browser's workspace and starts again.
-- For a hosted demo, `npm run build` and serve `dist/` from any static host (set it to serve `index.html` for every
-  path). Each visitor gets their own empty workspace.
+Everything is saved in this browser (IndexedDB). Account menu > **Reset prototype data** starts again.
 
-### Firebase mode (real sign-in and shared data)
+### Server mode (PostgreSQL)
 
-First set up a Firebase project, deploy the rules and create the first admin: [`docs/auth.md`](docs/auth.md).
+Create the database and fill `.env.local` ([`docs/server.md`](docs/server.md)), then:
 
 ```bash
 npm install
-# .env.local (gitignored): your Firebase web config, see .env.example
-npm run seed:admin   # once: creates the first admin (needs ADMIN_* and a service account key, see docs/auth.md)
-npm run dev          # http://localhost:3000, sign in as that admin
+npm run server       # API on http://localhost:3001 (creates tables, adds the owner admin on first start)
+npm run dev          # app on http://localhost:3000
 ```
+
+To try other roles: **Settings > Team & roles > Add member**, then account menu > **Acting as**.
 
 | Script | What it does |
 | --- | --- |
-| `npm run dev` | Dev server on port 3000 |
-| `npm run build` | Type-check and build to `dist/` |
+| `npm run dev` | App dev server on port 3000 |
+| `npm run build` | Type-check and build the app to `dist/` |
 | `npm run preview` | Serve the production build on port 3000 |
+| `npm run server:build` / `npm run server` / `npm start` | Build / build and start / start the API server (port 3001) |
 | `npm run lint` / `npm run typecheck` | oxlint / TypeScript |
-| `npm run seed:admin` | Create or update the first admin in Firebase (run again to reset their password) |
 
 ## Environment variables
 
 | Variable | Meaning |
 | --- | --- |
-| `VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_AUTH_DOMAIN`, `VITE_FIREBASE_PROJECT_ID` | Firebase web app config (public values). All three set = Firebase mode; otherwise prototype mode. |
-| `VITE_FIREBASE_STORAGE_BUCKET` | Storage bucket, needed for document uploads. |
-| `VITE_FIREBASE_APP_ID` | Optional. |
-| `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME` (optional) | The first admin, for `npm run seed:admin` only. Secrets: `.env.local` or the shell. |
-| `GOOGLE_APPLICATION_CREDENTIALS`, `FIREBASE_PROJECT_ID` (optional) | Service account key for `npm run seed:admin`. |
+| `VITE_API_SERVER` | `true` = server mode; otherwise prototype mode |
+| `VITE_API_URL` | Only when the API server is on another origin than the app |
+| `DATABASE_URL` | PostgreSQL connection string for the server (secret) |
+| `PORT`, `STATIC_DIR`, `CORS_ORIGIN` | Server port (3001), built app folder (`dist`), allowed origins |
 
-The committed `.env` holds empty placeholders only, so it must never hold a secret. Copy `.env.example` to
-`.env.local` (gitignored) for your values; the shell overrides both.
-
-## Sign in
-
-Email and password; there is no public sign-up page and no reset email. An admin adds people in **Settings > Team >
-Add member** with name, email, role and an initial password; each user can change it from the account menu (top
-right) > **Change password**. Someone signed in but not on the team, or deactivated, sees "No access to InfluenceHub".
+The committed `.env` holds empty placeholders only. Put your values in `.env.local` (gitignored).
 
 ## Roles
 
@@ -141,22 +122,20 @@ right) > **Change password**. Someone signed in but not on the team, or deactiva
 | Reassign, delete, reopen rejected, import / export, review & merge duplicates |  | ✓ | ✓ |
 | Stage override (with reason), Settings (incl. team and pool guards) |  |  | ✓ |
 
-The data layer (`src/backend`) applies these, on the API server, and the UI hides what a role can't do
-([`docs/auth.md`](docs/auth.md)). To try another role, add a member in Settings > Team and sign in as them.
+The data layer (`src/backend`) applies these and the UI hides what a role can't do.
 
 ## API
 
-The services call an in-app API (`/api/v1/...`) that the data layer answers in the browser (`src/backend`); the
-shapes are in `docs/api-contract.md`. Lists return `{ items, total, page, page_size }` and errors return
-`{ error: { code, message } }`. Imports and exports return a `job_id` that the UI polls (`GET /jobs/{id}`).
+The services call `/api/v1/...`: the API server, or the data layer in the browser in prototype mode. Shapes are in
+`docs/api-contract.md`. Lists return `{ items, total, page, page_size }`, errors `{ error: { code, message } }`.
+Imports and exports return a `job_id` that the UI polls (`GET /jobs/{id}`).
 
 ## Checks
 
-Before calling a change done, run `npm run lint`, `npm run typecheck` and `npm run build`. There is no automated
-end-to-end suite yet (the earlier one ran against sample data, which is gone).
+Before calling a change done, run `npm run lint`, `npm run typecheck`, `npm run build` and `npm run server:build`.
+There is no automated end-to-end suite yet.
 
 ## More
 
-`CLAUDE.md` holds the rules and conventions. `docs/` holds the data model, the API contract, every contract
-decision the backend must match (including the exact name-similarity rule for duplicate detection) and
-`docs/auth.md` (Firebase setup, sign-in, the data layer, rules, the seed script).
+`CLAUDE.md` holds the rules and conventions. `docs/` holds the project overview, data model, API contract, contract
+decisions, dates and documents, screens and `docs/server.md` (PostgreSQL and the API server).

@@ -1,5 +1,4 @@
 import { z } from 'zod'
-import { MIN_PASSWORD_LENGTH } from '@/lib/auth/types'
 import { ALL_STAGES, CALL_OUTCOMES, DEFAULT_COUNTRY_CODE, PACKAGE_STATUSES } from '@/lib/constants'
 import { parseCompactNumber, parseDateInput, parseDateTimeInput } from '@/lib/format'
 import { normalizeHandle, PLATFORMS } from '@/lib/platforms'
@@ -276,45 +275,17 @@ const emailField = z
   .min(1, 'Email is required')
   .refine((v) => EMAIL.test(v), 'Enter a valid email address')
 
-/** Settings > Team "Add a team member". The admin sets the initial password; the API never stores it. */
+export const memberLocationSchema = optionalText(80, 'Location')
+
+/** Settings > Team "Add a team member". */
 export const teamMemberCreateSchema = z.object({
   name: requiredText(100, 'Name'),
   email: emailField,
   role: z.enum(['admin', 'manager', 'executive']),
-  password: z
-    .string()
-    .min(1, 'Set an initial password')
-    .min(MIN_PASSWORD_LENGTH, `Use at least ${MIN_PASSWORD_LENGTH} characters`),
+  location: memberLocationSchema,
 })
 
 export type TeamMemberCreateInput = z.input<typeof teamMemberCreateSchema>
-
-// ---------------------------------------------------------------------------
-// Sign-in and password
-
-export const loginSchema = z.object({
-  email: emailField,
-  password: z.string().min(1, 'Password is required'),
-})
-
-export type LoginInput = z.input<typeof loginSchema>
-
-export const changePasswordSchema = z
-  .object({
-    currentPassword: z.string().min(1, 'Current password is required'),
-    newPassword: z
-      .string()
-      .min(1, 'New password is required')
-      .min(MIN_PASSWORD_LENGTH, `Use at least ${MIN_PASSWORD_LENGTH} characters`),
-    confirmPassword: z.string().min(1, 'Confirm the new password'),
-  })
-  .refine((v) => v.confirmPassword === v.newPassword, { path: ['confirmPassword'], message: 'Passwords don’t match' })
-  .refine((v) => !v.newPassword || v.newPassword !== v.currentPassword, {
-    path: ['newPassword'],
-    message: 'Choose a password different from the current one',
-  })
-
-export type ChangePasswordInput = z.input<typeof changePasswordSchema>
 
 // ---------------------------------------------------------------------------
 // Stage override

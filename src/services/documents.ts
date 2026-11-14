@@ -1,4 +1,6 @@
-import { LOCAL_FILE_PREFIX, STORAGE_UPLOAD_PREFIX } from '@/lib/upload-targets'
+import { currentAuthUid } from '@/lib/auth'
+import { ACTING_AS_HEADER, API_ORIGIN } from '@/lib/env'
+import { LOCAL_FILE_PREFIX } from '@/lib/upload-targets'
 import { http } from '@/services/http'
 import type {
   DocumentCreate,
@@ -19,7 +21,7 @@ export const documentsApi = {
   list: (params: DocumentListParams = {}, signal?: AbortSignal) =>
     http.get<Paginated<DocumentWithInfluencer>>('/documents', { ...params }, signal),
 
-  /** Step 1: validate the file and get its Firebase Storage target. */
+  /** Step 1: validate the file and get its upload target. */
   presign: (body: DocumentPresignRequest) => http.post<DocumentPresignResponse>('/documents/presign', body),
 
   /** Step 3: record the uploaded file with its metadata. */
@@ -31,35 +33,25 @@ export const documentsApi = {
   /** Soft delete (manager / admin). */
   remove: (id: string) => http.delete(`/documents/${id}`),
 
-  /** Step 2: upload the file to Firebase Storage at the key from step 1, reporting progress (0–100). */
+  /** Step 2: upload the file to the target from step 1, reporting progress (0–100). */
   upload: async (uploadUrl: string, file: File, contentType: string, onProgress?: (percent: number) => void) => {
     if (uploadUrl.startsWith(LOCAL_FILE_PREFIX)) {
       // Prototype mode: the file stays in this browser.
       const { saveDocumentFile } = await import('@/backend')
       await saveDocumentFile(uploadUrl.slice(LOCAL_FILE_PREFIX.length), file)
-      onProgress?.(100)
-      return
+    } else {
+      // XMLHttpRequest, not fetch: it reports upload progress.
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest()
+        xhr.open('PUT', `${API_ORIGIN}${uploadUrl}`)
+        xhr.setRequestHeader('Content-Type', contentType)
+        xhr.setRequestHeader(ACTING_AS_HEADER, currentAuthUid())
+        xhr.upload.onprogress = (e) => e.lengthComputable && onProgress?.(Math.round((e.loaded / e.total) * 100))
+        xhr.onload = () => (xhr.status < 300 ? resolve() : reject(new Error('Upload failed. Choose the file again.')))
+        xhr.onerror = () => reject(new Error('Upload failed. Check your connection and try again.'))
+        xhr.send(file)
+      })
     }
-    if (!uploadUrl.startsWith(STORAGE_UPLOAD_PREFIX)) throw new Error('Upload failed: unknown upload target.')
-    const [{ ref, uploadBytesResumable }, { firebaseStorage }] = await Promise.all([
-      import('firebase/storage'),
-      import('@/lib/firebase-data'),
-    ])
-    const task = uploadBytesResumable(ref(firebaseStorage(), uploadUrl.slice(STORAGE_UPLOAD_PREFIX.length)), file, { contentType })
-    await new Promise<void>((resolve, reject) => {
-      task.on(
-        'state_changed',
-        (snap) => snap.totalBytes && onProgress?.(Math.round((snap.bytesTransferred / snap.totalBytes) * 100)),
-        (err) => {
-          if (err.code === 'storage/canceled') reject(new DOMException('Upload cancelled', 'AbortError'))
-          else if (err.code === 'storage/unauthorized') reject(new Error('You don’t have permission to upload this file.'))
-          else reject(new Error('Upload failed. Check your connection and try again.'))
-        },
-        () => {
-          onProgress?.(100)
-          resolve()
-        },
-      )
-    })
+    onProgress?.(100)
   },
 }

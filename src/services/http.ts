@@ -1,4 +1,5 @@
-import { API_BASE, API_ORIGIN } from '@/lib/env'
+import { currentAuthUid } from '@/lib/auth'
+import { ACTING_AS_HEADER, API_BASE, API_ORIGIN } from '@/lib/env'
 import { PROTOTYPE } from '@/lib/mode'
 import type { ApiErrorBody } from '@/types'
 
@@ -47,9 +48,8 @@ function isApiErrorBody(value: unknown): value is ApiErrorBody {
 }
 
 /**
- * Every API call goes through here. With Firebase configured it goes to the API server (server/main.ts), carrying
- * the signed-in user's ID token. In prototype mode there is no server: the request is answered in this browser by
- * the data layer (src/backend), loaded on first use.
+ * Every API call goes through here: to the API server (server/main.ts), saying which member it acts as, or in
+ * prototype mode to the data layer in this browser (src/backend), loaded on first use.
  */
 export async function request<T>(path: string, { method = 'GET', query, body, signal }: RequestOptions = {}): Promise<T> {
   const qs = toSearchParams(query).toString()
@@ -65,8 +65,7 @@ export async function request<T>(path: string, { method = 'GET', query, body, si
       signal?.throwIfAborted()
       response = await handleApiRequest(new Request(url, init))
     } else {
-      const token = await (await import('@/lib/auth')).getIdToken()
-      if (token) headers.Authorization = `Bearer ${token}`
+      headers[ACTING_AS_HEADER] = currentAuthUid()
       signal?.throwIfAborted()
       response = await fetch(url, { ...init, signal })
     }

@@ -1,9 +1,9 @@
-import { PROTOTYPE } from '@/lib/mode'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { UserPlus } from 'lucide-react'
-import { useState } from 'react'
+import { useState, type ComponentProps } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
+import { InlineTextField } from '@/components/common/inline-field'
 import { PersonAvatar } from '@/components/common/person-avatar'
 import { ErrorState } from '@/components/common/states'
 import { Button } from '@/components/ui/button'
@@ -17,24 +17,35 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useMe } from '@/hooks/use-me'
 import { useTeam } from '@/hooks/use-team'
 import { ROLE_LABEL } from '@/lib/constants'
-import { MIN_PASSWORD_LENGTH } from '@/lib/auth'
-import { teamMemberCreateSchema, type TeamMemberCreateInput } from '@/lib/schemas'
+import { memberLocationSchema, teamMemberCreateSchema, type TeamMemberCreateInput } from '@/lib/schemas'
 import { cn } from '@/lib/utils'
 import { ApiError, getErrorMessage } from '@/services'
-import type { Role, User } from '@/types'
+import type { Role, TeamMemberUpdate, User } from '@/types'
 import { useAddMember, useUpdateMember } from './queries'
 
 const ROLES = Object.keys(ROLE_LABEL) as Role[]
 
-/** Prototype mode has no sign-in, so no password is asked for; the form still validates this stand-in. */
-const NO_SIGN_IN_PASSWORD = 'prototype-no-sign-in'
+/** A labelled text input with its error message. */
+function TextInput({ id, label, error, ...props }: ComponentProps<typeof Input> & { id: string; label: string; error?: string }) {
+  return (
+    <div className="grid gap-1.5">
+      <Label htmlFor={id}>{label}</Label>
+      <Input id={id} aria-invalid={!!error} aria-describedby={error ? `${id}-error` : undefined} {...props} />
+      {error && (
+        <p id={`${id}-error`} className="text-xs text-destructive">
+          {error}
+        </p>
+      )}
+    </div>
+  )
+}
 
 function AddMemberDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const add = useAddMember()
   const [formError, setFormError] = useState<string | null>(null)
   const form = useForm<TeamMemberCreateInput, unknown, ReturnType<typeof teamMemberCreateSchema.parse>>({
     resolver: zodResolver(teamMemberCreateSchema),
-    defaultValues: { name: '', email: '', role: 'executive', password: PROTOTYPE ? NO_SIGN_IN_PASSWORD : '' },
+    defaultValues: { name: '', email: '', role: 'executive', location: '' },
   })
   const { register, control, handleSubmit, reset, setError, formState } = form
   const { errors } = formState
@@ -58,7 +69,6 @@ function AddMemberDialog({ open, onOpenChange }: { open: boolean; onOpenChange: 
     } catch (err) {
       const code = err instanceof ApiError ? err.code : null
       if (code === 'email_taken') setError('email', { message: getErrorMessage(err) }, { shouldFocus: true })
-      else if (code === 'weak_password') setError('password', { message: getErrorMessage(err) }, { shouldFocus: true })
       else setFormError(getErrorMessage(err))
     }
   })
@@ -70,43 +80,11 @@ function AddMemberDialog({ open, onOpenChange }: { open: boolean; onOpenChange: 
           <DialogHeader>
             <DialogTitle>Add a team member</DialogTitle>
             <DialogDescription>
-              {PROTOTYPE
-                ? 'Prototype mode: no sign-in. Switch to them from the account menu (Acting as) to try their role.'
-                : 'They sign in with this email and the password you set, and can change it from their account menu.'}
+              There’s no sign-in: switch to them from the account menu (Acting as) to use their role.
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-1.5">
-            <Label htmlFor="member-name">Name</Label>
-            <Input
-              id="member-name"
-              autoFocus
-              autoComplete="off"
-              aria-invalid={!!errors.name}
-              aria-describedby={errors.name ? 'member-name-error' : undefined}
-              {...register('name')}
-            />
-            {errors.name && (
-              <p id="member-name-error" className="text-xs text-destructive">
-                {errors.name.message}
-              </p>
-            )}
-          </div>
-          <div className="grid gap-1.5">
-            <Label htmlFor="member-email">Email</Label>
-            <Input
-              id="member-email"
-              type="email"
-              autoComplete="off"
-              aria-invalid={!!errors.email}
-              aria-describedby={errors.email ? 'member-email-error' : undefined}
-              {...register('email')}
-            />
-            {errors.email && (
-              <p id="member-email-error" className="text-xs text-destructive">
-                {errors.email.message}
-              </p>
-            )}
-          </div>
+          <TextInput id="member-name" label="Name" autoFocus autoComplete="off" error={errors.name?.message} {...register('name')} />
+          <TextInput id="member-email" label="Email" type="email" autoComplete="off" error={errors.email?.message} {...register('email')} />
           <div className="grid gap-1.5">
             <Label htmlFor="member-role">Role</Label>
             <Controller
@@ -128,28 +106,13 @@ function AddMemberDialog({ open, onOpenChange }: { open: boolean; onOpenChange: 
               )}
             />
           </div>
-          {!PROTOTYPE && (
-            <div className="grid gap-1.5">
-              <Label htmlFor="member-password">Initial password</Label>
-              <Input
-                id="member-password"
-                type="password"
-                autoComplete="new-password"
-                minLength={MIN_PASSWORD_LENGTH}
-                aria-invalid={!!errors.password}
-                aria-describedby={errors.password ? 'member-password-error member-password-hint' : 'member-password-hint'}
-                {...register('password')}
-              />
-              {errors.password && (
-                <p id="member-password-error" className="text-xs text-destructive">
-                  {errors.password.message}
-                </p>
-            )}
-            <p id="member-password-hint" className="text-xs text-muted-foreground">
-              At least {MIN_PASSWORD_LENGTH} characters. Share it with them securely.
-            </p>
-          </div>
-          )}
+          <TextInput
+            id="member-location"
+            label="Location (optional)"
+            placeholder="e.g. Mumbai office"
+            error={errors.location?.message}
+            {...register('location')}
+          />
           {formError && (
             <p role="alert" className="text-sm text-destructive">
               {formError}
@@ -175,7 +138,7 @@ export function TeamSettings() {
   const update = useUpdateMember()
   const [addOpen, setAddOpen] = useState(false)
 
-  const change = (user: User, body: Partial<Pick<User, 'role' | 'is_active'>>, success: string) =>
+  const change = (user: User, body: TeamMemberUpdate, success: string) =>
     update.mutate(
       { id: user.id, body },
       {
@@ -190,10 +153,7 @@ export function TeamSettings() {
         <div className="space-y-1.5">
           <CardTitle className="text-base">Team & roles</CardTitle>
           <CardDescription>
-            {PROTOTYPE
-              ? 'Add people to try each role (switch from the account menu). '
-              : 'Add people with an initial password; deactivating someone stops their sign-in. '}
-            You can’t change your own role or deactivate yourself, and there’s always at least one admin.
+            Add people and switch to them from the account menu (Acting as).             You can’t change your own role or deactivate yourself, and there’s always at least one admin.
           </CardDescription>
         </div>
         <Button onClick={() => setAddOpen(true)}>
@@ -216,6 +176,7 @@ export function TeamSettings() {
               <TableRow>
                 <TableHead>Member</TableHead>
                 <TableHead>Role</TableHead>
+                <TableHead>Location</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">
                   <span className="sr-only">Actions</span>
@@ -257,6 +218,15 @@ export function TeamSettings() {
                       </Select>
                     </TableCell>
                     <TableCell>
+                      <InlineTextField
+                        label={`Location for ${user.name}`}
+                        value={user.location ?? ''}
+                        placeholder="Add location"
+                        schema={memberLocationSchema}
+                        onSave={(location) => update.mutateAsync({ id: user.id, body: { location } })}
+                      />
+                    </TableCell>
+                    <TableCell>
                       <span
                         className={cn(
                           'rounded-full px-2 py-0.5 text-xs font-medium',
@@ -266,7 +236,7 @@ export function TeamSettings() {
                         {user.is_active ? 'Active' : 'Deactivated'}
                       </span>
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="space-x-1 text-right">
                       {!self && (
                         <Button
                           variant={user.is_active ? 'ghost' : 'outline'}

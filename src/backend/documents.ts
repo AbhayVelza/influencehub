@@ -1,3 +1,4 @@
+import { API_BASE } from '@/lib/env'
 import { PROTOTYPE } from '@/lib/mode'
 import { dayKey } from '@/lib/format'
 import { PLATFORMS } from '@/lib/platforms'
@@ -172,23 +173,18 @@ export function filterDocuments(params: URLSearchParams, user: User): DocumentWi
 }
 
 // ---------------------------------------------------------------------------
-// Files live in Firebase Storage under each document's `storage_key`. Only the API server hands out their URLs
-// (Firebase Admin SDK; server/firebase-admin.ts registers how at start-up).
+// Files are kept under each document's `storage_key`: in PostgreSQL's `files` table, served by the API server at
+// fileApiPath(key) (server/main.ts), or in this browser in prototype mode.
 
-type FileUrlProvider = (storageKey: string) => Promise<string>
-let storageFileUrl: FileUrlProvider | null = null
+/** Where the API server takes and serves a document file. */
+export const fileApiPath = (key: string) => `${API_BASE}/files/${encodeURIComponent(key)}`
 
-export function setFileUrlProvider(next: FileUrlProvider) {
-  storageFileUrl = next
-}
-
-/** A URL for this document's file: a Storage download URL, or a blob URL in prototype mode. */
+/** A URL for this document's file: the API server's, or a blob URL in prototype mode. */
 export async function fileUrl(doc: StoredDocument): Promise<string> {
   if (PROTOTYPE) {
     const url = await fileObjectUrl(doc.storage_key)
     if (!url) throw new Error('This file isn’t in this browser any more.')
     return url
   }
-  if (!storageFileUrl) throw new Error('File storage isn’t set up on this server.')
-  return storageFileUrl(doc.storage_key)
+  return fileApiPath(doc.storage_key)
 }

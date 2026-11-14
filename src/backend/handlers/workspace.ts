@@ -22,9 +22,6 @@ import type {
 } from '@/types'
 import { currentUser, db, findInfluencer, nextId, nowIso, stageEnteredAt, toSummary, type StoredCategory } from '../db'
 import { primaryAccount, toRef } from '@/lib/platforms'
-import { MIN_PASSWORD_LENGTH } from '@/lib/auth/types'
-import { createSignInAccount } from '../sign-in-accounts'
-import { PROTOTYPE } from '@/lib/mode'
 import { hasCurrentAgreement } from '../documents'
 import { canSee, filterInfluencers, poolInfluencers, visibleInfluencers } from '../domain'
 import { all, api, apiError, forbidden, notFound, readJson } from '../utils'
@@ -79,6 +76,13 @@ function moveLegacyCategories(has: (name: string) => StoredCategory | undefined)
   }
 }
 
+/** A member's location: trimmed text or null; false when it's too long or not text. */
+function cleanLocation(value: unknown): string | null | false {
+  if (value == null) return null
+  if (typeof value !== 'string' || value.trim().length > 80) return false
+  return value.trim() || null
+}
+
 export const workspaceHandlers = [
   http.get(api('/me'), async () => {
     return HttpResponse.json(currentUser())
@@ -97,19 +101,10 @@ export const workspaceHandlers = [
     if (!ROLES.includes(body.role)) return apiError(422, 'validation_error', 'Choose a role')
     const name = typeof body.name === 'string' ? body.name.trim() : ''
     if (!name) return apiError(422, 'validation_error', 'Enter a name')
-    const password = typeof body.password === 'string' ? body.password : ''
-    // Prototype mode has no sign-in, so there's no password to check or account to create.
-    if (!PROTOTYPE && password.length < MIN_PASSWORD_LENGTH) {
-      return apiError(422, 'weak_password', `Use at least ${MIN_PASSWORD_LENGTH} characters`)
-    }
-    const taken = () => db.team.some((u) => u.email.toLowerCase() === email)
-    if (taken()) return apiError(409, 'email_taken', 'A team member with this email exists')
-    // Creates their Firebase sign-in account; the password goes to Firebase only and is never stored here.
-    const created = PROTOTYPE ? { ok: true as const, uid: nextId('usr') } : await createSignInAccount(email, password)
-    if (!created.ok) return apiError(created.status, created.code, created.message)
-    if (taken()) return apiError(409, 'email_taken', 'A team member with this email exists')
-    // The team record is keyed by their Firebase uid: that's how the server matches a signed-in user to it.
-    const user: User = { id: created.uid, name, email, role: body.role, is_active: true, created_at: nowIso() }
+    if (db.team.some((u) => u.email.toLowerCase() === email)) return apiError(409, 'email_taken', 'A team member with this email exists')
+    const location = cleanLocation(body.location)
+    if (location === false) return apiError(422, 'validation_error', 'Location must be at most 80 characters')
+    const user: User = { id: nextId('usr'), name, email, role: body.role, location, is_active: true, created_at: nowIso() }
     db.team.push(user)
     return HttpResponse.json(user, { status: 201 })
   }),
@@ -120,6 +115,9 @@ export const workspaceHandlers = [
     if (!user) return notFound('Team member')
     const body = await readJson<TeamMemberUpdate>(request)
     if (body.role !== undefined && !ROLES.includes(body.role)) return apiError(422, 'validation_error', 'Choose a role')
+    if (body.name !== undefined && !(typeof body.name === 'string' && body.name.trim())) return apiError(422, 'validation_error', 'Enter a name')
+    const location = body.location === undefined ? undefined : cleanLocation(body.location)
+    if (location === false) return apiError(422, 'validation_error', 'Location must be at most 80 characters')
     const demoting = body.role !== undefined && body.role !== user.role
     const deactivating = body.is_active === false && user.is_active
     if (user.id === currentUser().id && (demoting || deactivating)) {
@@ -130,7 +128,11 @@ export const workspaceHandlers = [
       const otherAdmins = db.team.filter((u) => u.id !== user.id && u.role === 'admin' && u.is_active).length
       if (otherAdmins === 0) return apiError(422, 'last_admin', 'There must be at least one active admin')
     }
-    Object.assign(user, body)
+    // Only these fields can change.
+    if (body.name !== undefined) user.name = body.name.trim()
+    if (body.role !== undefined) user.role = body.role
+    if (location !== undefined) user.location = location
+    if (typeof body.is_active === 'boolean') user.is_active = body.is_active
     return HttpResponse.json(user)
   }),
 

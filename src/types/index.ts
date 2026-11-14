@@ -329,6 +329,8 @@ export interface User {
   name: string
   email: string
   role: Role
+  /** Where they work (city / office), free text. */
+  location: string | null
   is_active: boolean
   created_at: ISODateString
 }
@@ -849,19 +851,15 @@ export interface ExpiringClaim {
 // ---------------------------------------------------------------------------
 // Team, categories, saved views
 
-/**
- * An admin adds a member (no public sign-up). The server creates their sign-in account (Firebase Authentication)
- * with this initial password; they can change it later from their account menu.
- */
+/** An admin adds a member (there is no sign-in yet: people act as a member from the account menu). */
 export interface TeamMemberCreate {
   email: string
   role: Role
   name: string
-  /** At least 8 characters; never stored or returned by the API. */
-  password: string
+  location?: string | null
 }
 
-export type TeamMemberUpdate = Partial<Pick<User, 'name' | 'role' | 'is_active'>>
+export type TeamMemberUpdate = Partial<Pick<User, 'name' | 'role' | 'location' | 'is_active'>>
 
 export interface CategoryCreate {
   name: string
