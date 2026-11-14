@@ -230,18 +230,18 @@ export const influencerHandlers = [
       }
     } else if (body.action === 'sync') {
       const found = ids.map((id) => findVisible(id, user)).filter((i): i is Influencer => !!i)
-      const accounts = found.flatMap((inf) => syncableAccounts(inf).map((a) => ({ inf, a })))
+      const accounts = found.flatMap((inf) => syncableAccounts(inf).map((a) => ({ influencerId: inf.id, accountId: a.id, platform: a.platform })))
       result.succeeded = found.map((i) => i.id)
       ids.filter((id) => !result.succeeded.includes(id)).forEach(notFoundRow)
       result.job_id = createJob((): BulkSyncResult => {
         const sync: BulkSyncResult = { synced: 0, failed: [] }
-        for (const { inf, a } of accounts) {
+        for (const target of accounts) {
           try {
-            syncAccount(a.id)
+            syncAccount(target.accountId)
             sync.synced++
           } catch (err) {
             const message = err instanceof Error ? err.message : 'Sync failed'
-            sync.failed.push({ id: inf.id, message: `${PLATFORM_META[a.platform].label}: ${message}` })
+            sync.failed.push({ id: target.influencerId, message: `${PLATFORM_META[target.platform].label}: ${message}` })
           }
         }
         return sync

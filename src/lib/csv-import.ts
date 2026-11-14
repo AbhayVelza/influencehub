@@ -161,9 +161,6 @@ export function validateImportRow(raw: RawImportRow, categoryNames: string[]): V
 export function templateCsv(): string {
   return toCsvText(
     ['name', 'category', 'phone', 'email', 'city', 'state', 'country', 'instagram', 'instagram followers', 'youtube', 'tiktok', 'facebook', 'tags', 'notes'],
-    [
-      ['Riya Shah', 'Fashion', '+91 98765 43210', 'riya@example.com', 'Pune', 'Maharashtra', 'India', 'riyastyle', '48200', '', '', 'riyastyle.page', 'micro; reels', 'Prefers WhatsApp'],
-      ['Kabir Malhotra', 'Fitness & Lifestyle', '98111 22233', '', 'New Delhi', 'Delhi', 'India', 'https://www.instagram.com/kabirfitlife/', '12.4K', 'youtube.com/@kabirtrains', '@kabirfit', '', '', ''],
-    ],
+    [],
   )
 }

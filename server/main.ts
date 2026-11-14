@@ -8,6 +8,7 @@ import { cors } from 'hono/cors'
 import { getResponse } from 'msw'
 import { db, resolveActingUid, setActingUid } from '@/backend/db'
 import { handlers } from '@/backend/handlers'
+import { commitJobs, executeJob, revertJobs } from '@/backend/jobs'
 import { apiError } from '@/backend/utils'
 import { MAX_DOCUMENT_BYTES } from '@/lib/documents'
 import { ACTING_AS_HEADER, API_BASE } from '@/lib/env'
@@ -35,9 +36,17 @@ function handleApiRequest(request: Request): Promise<Response> {
     setActingUid(resolveActingUid(request.headers.get(ACTING_AS_HEADER)))
     try {
       const response = (await getResponse(handlers, request)) ?? apiError(404, 'not_found', 'Unknown endpoint')
+      if (response.status === 202) {
+        const data = await response.clone().json().catch(() => null)
+        if (data && typeof data === 'object' && 'job_id' in data && typeof data.job_id === 'string') {
+          executeJob(data.job_id)
+        }
+      }
       await pgStore.flush()
+      commitJobs()
       return response
     } catch (err) {
+      revertJobs()
       // The handler threw or the save failed: nothing was written, so drop the half-made change.
       pgStore.revert()
       return failed(`${request.method} ${new URL(request.url).pathname}`, err)
@@ -73,24 +82,72 @@ app.use(
 const FILES = `${API_BASE}/files/`
 const fileKey = (pathname: string) => decodeURIComponent(pathname.slice(FILES.length))
 
-app.put(`${FILES}*`, async (c) => {
-  const key = fileKey(c.req.path)
-  const data = new Uint8Array(await c.req.arrayBuffer())
-  const upload = await inTurn(async () => db.documentUploads.get(key))
-  if (!upload) return apiError(404, 'upload_missing', 'The file wasn’t expected. Choose it again.')
-  if (!data.length || data.length > MAX_DOCUMENT_BYTES) return apiError(422, 'file_too_large', 'Files can be at most 20 MB')
-  try {
-    await pgStore.saveFile(key, upload.content_type, data)
-  } catch (err) {
-    return failed('File upload', err)
+let activeFileTransfers = 0
+let onFileTransfersIdle: (() => void) | null = null
+
+function fileTransferStarted() {
+  activeFileTransfers++
+}
+
+function fileTransferEnded() {
+  activeFileTransfers--
+  if (activeFileTransfers === 0 && onFileTransfersIdle) {
+    onFileTransfersIdle()
   }
-  return c.body(null, 204)
+}
+
+function waitForFileTransfers(): Promise<void> {
+  if (activeFileTransfers === 0) return Promise.resolve()
+  return new Promise((resolve) => {
+    const prev = onFileTransfersIdle
+    onFileTransfersIdle = () => {
+      prev?.()
+      resolve()
+    }
+  })
+}
+
+app.put(`${FILES}*`, async (c) => {
+  fileTransferStarted()
+  try {
+    const key = fileKey(c.req.path)
+    const data = new Uint8Array(await c.req.arrayBuffer())
+    const upload = await inTurn(async () => {
+      const entry = db.documentUploads.get(key)
+      if (!entry || entry.uploading) return null
+      entry.uploading = true
+      return entry
+    })
+    if (!upload) return apiError(404, 'upload_missing', 'The file wasn’t expected. Choose it again.')
+    if (!data.length || data.length > MAX_DOCUMENT_BYTES) {
+      await inTurn(async () => {
+        upload.uploading = false
+      })
+      return apiError(422, 'file_too_large', 'Files can be at most 20 MB')
+    }
+    try {
+      await pgStore.saveFile(key, upload.content_type, data)
+    } catch (err) {
+      await inTurn(async () => {
+        upload.uploading = false
+      })
+      return failed('File upload', err)
+    }
+    return c.body(null, 204)
+  } finally {
+    fileTransferEnded()
+  }
 })
 
 app.get(`${FILES}*`, async (c) => {
-  const file = await pgStore.readFile(fileKey(c.req.path))
-  if (!file) return apiError(404, 'not_found', 'File not found')
-  return new Response(Buffer.from(file.data), { headers: { 'Content-Type': file.content_type, 'Cache-Control': 'private, max-age=3600' } })
+  fileTransferStarted()
+  try {
+    const file = await pgStore.readFile(fileKey(c.req.path))
+    if (!file) return apiError(404, 'not_found', 'File not found')
+    return new Response(Buffer.from(file.data), { headers: { 'Content-Type': file.content_type, 'Cache-Control': 'private, max-age=3600' } })
+  } finally {
+    fileTransferEnded()
+  }
 })
 
 app.all(`${API_BASE}/*`, (c) => handleApiRequest(c.req.raw))
@@ -115,8 +172,14 @@ const server = serve({ fetch: app.fetch, port }, () => console.log(`InfluenceHub
 
 for (const signal of ['SIGINT', 'SIGTERM'] as const) {
   process.on(signal, () => {
-    server.close()
-    // Let the request in progress finish and save before the connection closes.
-    void queue.then(() => pgStore.stop()).finally(() => process.exit(0))
+    void (async () => {
+      await Promise.all([
+        new Promise<void>((resolve) => server.close(() => resolve())),
+        queue,
+        waitForFileTransfers(),
+      ])
+      await pgStore.stop()
+      process.exit(0)
+    })()
   })
 }

@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import type { z } from 'zod'
 import { Copy, Plus, Trash2 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Controller, useFieldArray, useForm, useWatch, type FieldError } from 'react-hook-form'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -88,7 +88,9 @@ export function PackageDrawer({ influencer, pkg, open, onOpenChange, intent, onS
   const items = useFieldArray({ control, name: 'items' })
   const errors = formState.errors
   const isEdit = !!pkg
-  const busy = createPackage.isPending || updatePackage.isPending || changeStage.isPending
+  const [saving, setSaving] = useState(false)
+  const savingRef = useRef(false)
+  const busy = saving || createPackage.isPending || updatePackage.isPending || changeStage.isPending
 
   useEffect(() => {
     if (open) reset(defaults(influencer, pkg, intent))
@@ -97,14 +99,21 @@ export function PackageDrawer({ influencer, pkg, open, onOpenChange, intent, onS
   const tracking = useWatch({ control, name: 'tracking_number' })
   const [confirm, setConfirm] = useState<{ status: StageChangingStatus; values: SubmitValues } | null>(null)
 
-  const onSubmit = handleSubmit((values) => {
-    const status = values.status as PackageStatus
-    // A new package only moves the stage when it's delivered (the server ignores "returned" on create).
-    if (needsStatusConfirm(pkg?.status, status) && (isEdit || status === 'delivered')) return setConfirm({ status, values })
-    return save(values)
-  })
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (busy || savingRef.current) return
+    void handleSubmit((values) => {
+      const status = values.status as PackageStatus
+      // A new package only moves the stage when it's delivered (the server ignores "returned" on create).
+      if (needsStatusConfirm(pkg?.status, status) && (isEdit || status === 'delivered')) return setConfirm({ status, values })
+      return save(values)
+    })(e)
+  }
 
   const save = async (values: SubmitValues) => {
+    if (savingRef.current) return
+    savingRef.current = true
+    setSaving(true)
     const body = {
       items: values.items,
       address: values.address,
@@ -121,28 +130,44 @@ export function PackageDrawer({ influencer, pkg, open, onOpenChange, intent, onS
       toast.error(isEdit ? 'Couldn’t update the package' : 'Couldn’t create the package', {
         description: getErrorMessage(err),
       })
+      savingRef.current = false
+      setSaving(false)
       return
     }
-    onOpenChange(false)
-    onSaved?.(saved)
-    // The server may move the stage itself (delivered / returned).
-    const done = isEdit ? 'Package updated' : 'Package created'
-    if (needsStatusConfirm(pkg?.status, saved.status)) {
-      const stage = await movedStage(influencer.id, influencer.stage, pkg?.status, saved.status)
-      toast.success(stage ? `${done} · ${influencer.name} is now in ${STAGE_META[stage].label}` : done)
-      return
-    }
-    // Only a shipped package moves the creator to Package Sent (not preparing or returned).
-    if (intent === 'package_sent' && (saved.status === 'sent' || saved.status === 'in_transit')) {
+
+    try {
+      onOpenChange(false)
       try {
-        await changeStage.mutateAsync({ to: 'package_sent' })
-        toast.success(`Package created · ${influencer.name} moved to Package Sent`)
+        onSaved?.(saved)
       } catch (err) {
-        toast.warning('Package created, but the stage didn’t change', { description: getErrorMessage(err) })
+        toast.warning('Package saved, but a follow-up action failed', { description: getErrorMessage(err) })
       }
-      return
+      // The server may move the stage itself (delivered / returned).
+      const done = isEdit ? 'Package updated' : 'Package created'
+      if (needsStatusConfirm(pkg?.status, saved.status)) {
+        try {
+          const stage = await movedStage(influencer.id, influencer.stage, pkg?.status, saved.status)
+          toast.success(stage ? `${done} · ${influencer.name} is now in ${STAGE_META[stage].label}` : done)
+        } catch (err) {
+          toast.warning('Package saved, but couldn’t verify the stage update', { description: getErrorMessage(err) })
+        }
+        return
+      }
+      // Only a shipped package moves the creator to Package Sent (not preparing or returned).
+      if (intent === 'package_sent' && (saved.status === 'sent' || saved.status === 'in_transit')) {
+        try {
+          await changeStage.mutateAsync({ to: 'package_sent' })
+          toast.success(`Package created · ${influencer.name} moved to Package Sent`)
+        } catch (err) {
+          toast.warning('Package created, but the stage didn’t change', { description: getErrorMessage(err) })
+        }
+        return
+      }
+      toast.success(done)
+    } finally {
+      savingRef.current = false
+      setSaving(false)
     }
-    toast.success(done)
   }
 
   return (
@@ -311,9 +336,10 @@ export function PackageDrawer({ influencer, pkg, open, onOpenChange, intent, onS
         pending={busy}
         onCancel={() => setConfirm(null)}
         onConfirm={async () => {
-          if (!confirm) return
-          await save(confirm.values)
+          if (!confirm || busy) return
+          const values = confirm.values
           setConfirm(null)
+          await save(values)
         }}
       />
     </Sheet>

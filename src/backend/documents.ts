@@ -1,4 +1,4 @@
-import { API_BASE } from '@/lib/env'
+import { API_BASE, API_ORIGIN } from '@/lib/env'
 import { PROTOTYPE } from '@/lib/mode'
 import { dayKey } from '@/lib/format'
 import { PLATFORMS } from '@/lib/platforms'
@@ -177,7 +177,7 @@ export function filterDocuments(params: URLSearchParams, user: User): DocumentWi
 // fileApiPath(key) (server/main.ts), or in this browser in prototype mode.
 
 /** Where the API server takes and serves a document file. */
-export const fileApiPath = (key: string) => `${API_BASE}/files/${encodeURIComponent(key)}`
+export const fileApiPath = (key: string) => `${API_ORIGIN}${API_BASE}/files/${encodeURIComponent(key)}`
 
 /** A URL for this document's file: the API server's, or a blob URL in prototype mode. */
 export async function fileUrl(doc: StoredDocument): Promise<string> {

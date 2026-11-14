@@ -1,6 +1,7 @@
 import { currentAuthUid } from '@/lib/auth'
 import { ACTING_AS_HEADER, API_BASE, API_ORIGIN } from '@/lib/env'
 import { PROTOTYPE } from '@/lib/mode'
+import { subscribeSession } from '@/lib/session'
 import type { ApiErrorBody } from '@/types'
 
 export class ApiError extends Error {
@@ -56,6 +57,7 @@ export async function request<T>(path: string, { method = 'GET', query, body, si
   const url = new URL(`${API_BASE}${path}${qs ? `?${qs}` : ''}`, API_ORIGIN || window.location.origin)
 
   const headers: Record<string, string> = body !== undefined ? { 'Content-Type': 'application/json' } : {}
+  headers[ACTING_AS_HEADER] = currentAuthUid()
   const init = { method, headers, body: body !== undefined ? JSON.stringify(body) : undefined }
 
   let response: Response
@@ -65,7 +67,6 @@ export async function request<T>(path: string, { method = 'GET', query, body, si
       signal?.throwIfAborted()
       response = await handleApiRequest(new Request(url, init))
     } else {
-      headers[ACTING_AS_HEADER] = currentAuthUid()
       signal?.throwIfAborted()
       response = await fetch(url, { ...init, signal })
     }
@@ -97,6 +98,64 @@ export const http = {
   post: <T>(path: string, body?: unknown) => request<T>(path, { method: 'POST', body }),
   patch: <T>(path: string, body: unknown) => request<T>(path, { method: 'PATCH', body }),
   delete: <T = void>(path: string) => request<T>(path, { method: 'DELETE' }),
+}
+
+export function uploadBinary(
+  url: string,
+  file: Blob | File,
+  contentType: string,
+  onProgress?: (percent: number) => void,
+): Promise<void> {
+  const targetUrl = url.startsWith('http://') || url.startsWith('https://') ? url : `${API_ORIGIN}${url}`
+  return new Promise<void>((resolve, reject) => {
+    const xhr = new XMLHttpRequest()
+    let settled = false
+
+    const unsubscribe = subscribeSession(() => {
+      if (settled) return
+      unsubscribe()
+      settled = true
+      xhr.abort()
+      reject(new ApiError(0, 'session_changed', 'Stopped because you signed out.'))
+    })
+
+    xhr.open('PUT', targetUrl)
+    xhr.setRequestHeader('Content-Type', contentType)
+    xhr.setRequestHeader(ACTING_AS_HEADER, currentAuthUid())
+
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable && onProgress) {
+        onProgress(Math.round((e.loaded / e.total) * 100))
+      }
+    }
+
+    xhr.onload = () => {
+      if (settled) return
+      settled = true
+      unsubscribe()
+      if (xhr.status < 300) {
+        resolve()
+      } else {
+        reject(new ApiError(xhr.status, 'upload_failed', 'Upload failed. Choose the file again.'))
+      }
+    }
+
+    xhr.onerror = () => {
+      if (settled) return
+      settled = true
+      unsubscribe()
+      reject(new ApiError(0, 'network_error', 'Upload failed. Check your connection and try again.'))
+    }
+
+    xhr.onabort = () => {
+      if (settled) return
+      settled = true
+      unsubscribe()
+      reject(new ApiError(0, 'upload_aborted', 'Upload was aborted.'))
+    }
+
+    xhr.send(file)
+  })
 }
 
 export function getErrorMessage(error: unknown): string {

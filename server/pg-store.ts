@@ -1,6 +1,5 @@
 import postgres from 'postgres'
 import { attachDocumentSummary, db, defaultSettings, newWorkspace } from '@/backend/db'
-import type { Influencer } from '@/types'
 import schema from './schema.sql?raw'
 
 // Keeps `db` (the server's working copy of the workspace) in step with PostgreSQL:
@@ -65,15 +64,18 @@ function stored(key: ListKey, item: object): Data {
   return data
 }
 
-function fromRow(key: ListKey, id: string, data: Data): Item {
-  const item = { ...data, id } as Item
-  return key === 'influencers' ? (attachDocumentSummary(item as unknown as Influencer) as unknown as Item) : item
+function fromRow(id: string, data: Data): Item {
+  return { ...data, id } as Item
 }
 
 /** Puts the working copy back to PostgreSQL's last known state (start-up, and after a request that failed). */
 export function revert() {
   for (const key of Object.keys(LISTS) as ListKey[]) {
-    ;(db[key] as unknown as Item[]) = [...known(LISTS[key]).entries()].map(([id, json]) => fromRow(key, id, JSON.parse(json) as Data))
+    ;(db[key] as unknown as Item[]) = [...known(LISTS[key]).entries()].map(([id, json]) => fromRow(id, JSON.parse(json) as Data))
+  }
+  // Attach document summaries only after all collections (including documents) are restored.
+  for (const inf of db.influencers) {
+    attachDocumentSummary(inf)
   }
   for (const [prop, id] of Object.entries(SETTINGS) as [keyof typeof SETTINGS, string][]) {
     const json = known('settings').get(id)
@@ -181,8 +183,7 @@ export async function stop() {
 
 /** Document files (the `files` table; never loaded into the working copy). */
 export async function saveFile(key: string, contentType: string, data: Uint8Array) {
-  await client()`insert into files (key, content_type, data) values (${key}, ${contentType}, ${data})
-    on conflict (key) do update set content_type = excluded.content_type, data = excluded.data`
+  await client()`insert into files (key, content_type, data) values (${key}, ${contentType}, ${data})`
 }
 
 export async function readFile(key: string): Promise<{ content_type: string; data: Uint8Array } | undefined> {

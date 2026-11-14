@@ -35,6 +35,7 @@ export interface PendingUpload {
   file_name: string
   content_type: string
   size: number
+  uploading?: boolean
 }
 
 /**
