@@ -1,5 +1,5 @@
-import { sessionEnded } from '@/lib/auth'
-import { API_BASE, API_ORIGIN } from '@/lib/env'
+import { currentAuthUid } from '@/lib/auth'
+import { ACTING_AS_HEADER, API_BASE, API_ORIGIN } from '@/lib/env'
 import { PROTOTYPE } from '@/lib/mode'
 import type { ApiErrorBody } from '@/types'
 
@@ -48,8 +48,8 @@ function isApiErrorBody(value: unknown): value is ApiErrorBody {
 }
 
 /**
- * Every API call goes through here: to the API server (server/main.ts) with the session cookie, or in prototype
- * mode to the data layer in this browser (src/backend), loaded on first use.
+ * Every API call goes through here: to the API server (server/main.ts), saying which member it acts as, or in
+ * prototype mode to the data layer in this browser (src/backend), loaded on first use.
  */
 export async function request<T>(path: string, { method = 'GET', query, body, signal }: RequestOptions = {}): Promise<T> {
   const qs = toSearchParams(query).toString()
@@ -65,8 +65,9 @@ export async function request<T>(path: string, { method = 'GET', query, body, si
       signal?.throwIfAborted()
       response = await handleApiRequest(new Request(url, init))
     } else {
+      headers[ACTING_AS_HEADER] = currentAuthUid()
       signal?.throwIfAborted()
-      response = await fetch(url, { ...init, signal, credentials: API_ORIGIN ? 'include' : 'same-origin' })
+      response = await fetch(url, { ...init, signal })
     }
   } catch (err) {
     if (err instanceof DOMException && err.name === 'AbortError') throw err
@@ -74,8 +75,6 @@ export async function request<T>(path: string, { method = 'GET', query, body, si
     throw new ApiError(0, 'network_error', 'Something went wrong. Check your connection and try again.')
   }
   signal?.throwIfAborted()
-  // The session expired or was ended elsewhere: back to sign-in.
-  if (!PROTOTYPE && response.status === 401) sessionEnded()
 
   if (response.status === 204) return undefined as T
 

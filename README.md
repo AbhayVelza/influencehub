@@ -7,8 +7,8 @@ React 19 + TypeScript + Vite. Two modes, picked by the build env:
   Setup: [`docs/server.md`](docs/server.md).
 - **Prototype mode** (the default): no server, all data saved in this browser. For demos and testing.
 
-**Sign-in** (server mode): email + password; admins add members with an initial password. Prototype mode has no
-sign-in: the account menu's **Acting as** picks who you are. No sample data: the app starts empty except for an admin. One-page overview of the whole project: [`docs/project-overview.md`](docs/project-overview.md).
+There is **no sign-in yet**: the account menu's **Acting as** picks which team member you are. No sample data: the
+app starts empty except for an admin. One-page overview of the whole project: [`docs/project-overview.md`](docs/project-overview.md).
 
 ## What it does
 
@@ -63,7 +63,7 @@ src/
   pages/        one component per route
   services/     the only place that calls the API
   backend/      the business rules (API handlers) over a working copy of the data
-  lib/          auth (sign-in / acting member), schemas (zod), platforms, stages, permissions, formatting, session, mode
+  lib/          acting member (auth), schemas (zod), platforms, stages, permissions, formatting, session, mode
   types/        data types, the source of truth for the contract
 server/         the API server: runs src/backend's handlers over PostgreSQL (main.ts, pg-store.ts, schema.sql)
 ```
@@ -85,12 +85,11 @@ Create the database and fill `.env.local` ([`docs/server.md`](docs/server.md)), 
 
 ```bash
 npm install
-npm run server       # API on http://localhost:3001 (creates tables and the first admin from ADMIN_EMAIL / ADMIN_PASSWORD)
-npm run dev          # app on http://localhost:3000, sign in as that admin
+npm run server       # API on http://localhost:3001 (creates tables, adds the owner admin on first start)
+npm run dev          # app on http://localhost:3000
 ```
 
-Add everyone else in **Settings > Team & roles > Add member** (with an initial password). Everyone can change their
-password from the account menu; an admin can set a new one (**Set password**).
+To try other roles: **Settings > Team & roles > Add member**, then account menu > **Acting as**.
 
 | Script | What it does |
 | --- | --- |
@@ -107,7 +106,6 @@ password from the account menu; an admin can set a new one (**Set password**).
 | `VITE_API_SERVER` | `true` = server mode; otherwise prototype mode |
 | `VITE_API_URL` | Only when the API server is on another origin than the app |
 | `DATABASE_URL` | PostgreSQL connection string for the server (secret) |
-| `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME` | The first admin, created on server start when they have no password yet (secret) |
 | `PORT`, `STATIC_DIR`, `CORS_ORIGIN` | Server port (3001), built app folder (`dist`), allowed origins |
 
 The committed `.env` holds empty placeholders only. Put your values in `.env.local` (gitignored).

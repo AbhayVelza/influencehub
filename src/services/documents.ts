@@ -1,4 +1,5 @@
-import { API_ORIGIN } from '@/lib/env'
+import { currentAuthUid } from '@/lib/auth'
+import { ACTING_AS_HEADER, API_ORIGIN } from '@/lib/env'
 import { LOCAL_FILE_PREFIX } from '@/lib/upload-targets'
 import { http } from '@/services/http'
 import type {
@@ -44,7 +45,7 @@ export const documentsApi = {
         const xhr = new XMLHttpRequest()
         xhr.open('PUT', `${API_ORIGIN}${uploadUrl}`)
         xhr.setRequestHeader('Content-Type', contentType)
-        xhr.withCredentials = !!API_ORIGIN
+        xhr.setRequestHeader(ACTING_AS_HEADER, currentAuthUid())
         xhr.upload.onprogress = (e) => e.lengthComputable && onProgress?.(Math.round((e.loaded / e.total) * 100))
         xhr.onload = () => (xhr.status < 300 ? resolve() : reject(new Error('Upload failed. Choose the file again.')))
         xhr.onerror = () => reject(new Error('Upload failed. Check your connection and try again.'))

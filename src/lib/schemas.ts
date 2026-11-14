@@ -1,6 +1,5 @@
 import { z } from 'zod'
-import { PROTOTYPE } from '@/lib/mode'
-import { ALL_STAGES, CALL_OUTCOMES, DEFAULT_COUNTRY_CODE, PACKAGE_STATUSES, MIN_PASSWORD_LENGTH } from '@/lib/constants'
+import { ALL_STAGES, CALL_OUTCOMES, DEFAULT_COUNTRY_CODE, PACKAGE_STATUSES } from '@/lib/constants'
 import { parseCompactNumber, parseDateInput, parseDateTimeInput } from '@/lib/format'
 import { normalizeHandle, PLATFORMS } from '@/lib/platforms'
 import type { Platform } from '@/types'
@@ -276,48 +275,17 @@ const emailField = z
   .min(1, 'Email is required')
   .refine((v) => EMAIL.test(v), 'Enter a valid email address')
 
-const newPassword = (label: string) =>
-  z.string().min(1, `${label} is required`).min(MIN_PASSWORD_LENGTH, `Use at least ${MIN_PASSWORD_LENGTH} characters`)
-
 export const memberLocationSchema = optionalText(80, 'Location')
 
-/** Settings > Team "Add a team member". Server mode: the admin sets an initial password (prototype has no sign-in). */
+/** Settings > Team "Add a team member". */
 export const teamMemberCreateSchema = z.object({
   name: requiredText(100, 'Name'),
   email: emailField,
   role: z.enum(['admin', 'manager', 'executive']),
   location: memberLocationSchema,
-  password: PROTOTYPE ? z.string().optional() : newPassword('Initial password'),
 })
 
 export type TeamMemberCreateInput = z.input<typeof teamMemberCreateSchema>
-
-// ---------------------------------------------------------------------------
-// Sign-in and passwords (server mode)
-
-export const loginSchema = z.object({
-  email: emailField,
-  password: z.string().min(1, 'Password is required'),
-})
-
-export type LoginInput = z.input<typeof loginSchema>
-
-export const changePasswordSchema = z
-  .object({
-    currentPassword: z.string().min(1, 'Current password is required'),
-    newPassword: newPassword('New password'),
-    confirmPassword: z.string().min(1, 'Confirm the new password'),
-  })
-  .refine((v) => v.confirmPassword === v.newPassword, { path: ['confirmPassword'], message: 'Passwords don’t match' })
-  .refine((v) => !v.newPassword || v.newPassword !== v.currentPassword, {
-    path: ['newPassword'],
-    message: 'Choose a password different from the current one',
-  })
-
-export type ChangePasswordInput = z.input<typeof changePasswordSchema>
-
-/** An admin sets a member's password (Settings > Team). */
-export const setPasswordSchema = z.object({ password: newPassword('New password') })
 
 // ---------------------------------------------------------------------------
 // Stage override

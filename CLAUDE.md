@@ -2,8 +2,7 @@
 
 Internal CRM for managing influencers. All six frontend phases, the Unassigned Pool, multi-platform accounts
 (with duplicate detection), Documents (insights summaries, agreements), the dd/MM/yyyy date format and team
-management are built, with custom email + password sign-in in server mode (admins add members; prototype mode
-uses "Acting as"). Firebase was removed. Data lives in PostgreSQL behind the API
+management (admins add members) are built. There is no sign-in yet ("Acting as" in the account menu; Firebase removed). Data lives in PostgreSQL behind the API
 server in `server/` (prototype mode: in the browser); no sample data. Before calling any change done, run
 `npm run lint`, `npm run typecheck`, `npm run build`, `npm run server:build`.
 Docs: this file, README.md and `docs/`. Never add features beyond this spec without asking; record any API decision
@@ -21,7 +20,7 @@ call back → follow-up; not interested → rejected; interested → contacted. 
 - `docs/contract-decisions.md`: API behaviour the handlers implement (accounts, duplicates, pool, CSV, jobs)
 - `docs/dates-and-documents.md`: dd/MM/yyyy rules; documents upload, scoping, the Onboarded rule
 - `docs/screens.md`: what each screen contains, and the build phases
-- `docs/server.md`: PostgreSQL setup, the API server, sign-in and sessions, first admin, table layout, files, limits
+- `docs/server.md`: PostgreSQL setup, the API server, acting member, table layout, files, limits
 
 ## Tech stack
 Vite + React 19 + TypeScript, Tailwind, shadcn/ui, lucide-react, React Router, TanStack Query,
@@ -41,11 +40,10 @@ numbers 12.4K / 1.2M; dates dd/MM/yyyy; relative times; toasts; "/" focuses sear
   `server/schema.sql` and `src/backend/local-store.ts`. No sample or invented data anywhere.
 - The server answers one request at a time and is the only writer to PostgreSQL: run a single instance. `src/backend`
   and what it imports must run in both the browser and Node (no `window`).
-- Identity: everything goes through `src/lib/auth` (`initAuth`, `signIn`, `signOut`, `changePassword`,
-  `setMemberPassword`, `useAuthUser`; prototype: `switchUser`). Every identity change calls `resetSession`
-  (`src/lib/session.ts`: cancels requests, clears the query + mutation cache, remounts the routes). Server side:
-  `server/auth.ts` (scrypt hashes in `credentials`, sessions in `sessions`, never in the team records). Never commit
-  secrets: .env is committed (empty placeholders); DATABASE_URL and ADMIN_* go in .env.local.
+- No sign-in yet: the acting member lives in `src/lib/auth` (`currentAuthUid`, `switchUser`, which calls
+  `resetSession` in `src/lib/session.ts`: cancels requests, clears the query + mutation cache, remounts the routes).
+  Requests send it as `X-Acting-As`; `resolveActingUid` (`src/backend/db.ts`) falls back to an active admin. Never
+  commit secrets: .env is committed (empty placeholders); DATABASE_URL goes in .env.local.
 - Modes (`src/lib/mode.ts`): `VITE_API_SERVER=true` = the API server over PostgreSQL (`server/pg-store.ts`; files in
   the `files` table); otherwise PROTOTYPE (`db` and files saved to IndexedDB by `src/backend/local-store.ts`).
   `src/backend/index.ts` uses the local store; `server/main.ts` the PostgreSQL one. Keep both working.

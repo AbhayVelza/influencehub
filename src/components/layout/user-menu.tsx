@@ -1,5 +1,4 @@
-import { KeyRound, LogOut, Monitor, Moon, RotateCcw, Sun } from 'lucide-react'
-import { useState } from 'react'
+import { Monitor, Moon, RotateCcw, Sun } from 'lucide-react'
 import { toast } from 'sonner'
 import { PersonAvatar } from '@/components/common/person-avatar'
 import { Button } from '@/components/ui/button'
@@ -13,11 +12,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { ChangePasswordDialog } from '@/features/account/change-password-dialog'
 import { useMe } from '@/hooks/use-me'
 import { useTheme } from '@/hooks/use-theme'
 import { useTeam } from '@/hooks/use-team'
-import { signOut, switchUser } from '@/lib/auth'
+import { switchUser } from '@/lib/auth'
 import { PROTOTYPE } from '@/lib/mode'
 import { ROLE_LABEL } from '@/lib/constants'
 import type { Theme } from '@/providers/theme-context'
@@ -36,7 +34,7 @@ async function resetPrototype() {
   window.location.assign('/')
 }
 
-/** Prototype mode has no sign-in: pick which team member you act as, to try each role. */
+/** There is no sign-in: pick which team member you act as. */
 function ActingAs({ meId }: { meId: string }) {
   const team = useTeam()
   const active = (team.data?.items ?? []).filter((u) => u.is_active)
@@ -59,11 +57,15 @@ function ActingAs({ meId }: { meId: string }) {
           </DropdownMenuRadioItem>
         ))}
       </DropdownMenuRadioGroup>
-      <DropdownMenuSeparator />
-      <DropdownMenuItem onSelect={() => void resetPrototype()}>
-        <RotateCcw />
-        Reset prototype data
-      </DropdownMenuItem>
+      {PROTOTYPE && (
+        <>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onSelect={() => void resetPrototype()}>
+            <RotateCcw />
+            Reset prototype data
+          </DropdownMenuItem>
+        </>
+      )}
     </>
   )
 }
@@ -71,7 +73,6 @@ function ActingAs({ meId }: { meId: string }) {
 export function UserMenu() {
   const { data: me } = useMe()
   const { theme, setTheme } = useTheme()
-  const [changingPassword, setChangingPassword] = useState(false)
   if (!me) return null
 
   return (
@@ -101,23 +102,9 @@ export function UserMenu() {
             ))}
           </DropdownMenuRadioGroup>
           <DropdownMenuSeparator />
-          {PROTOTYPE ? (
-            <ActingAs meId={me.id} />
-          ) : (
-            <>
-              <DropdownMenuItem onSelect={() => setChangingPassword(true)}>
-                <KeyRound />
-                Change password
-              </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => void signOut()}>
-                <LogOut />
-                Sign out
-              </DropdownMenuItem>
-            </>
-          )}
+          <ActingAs meId={me.id} />
         </DropdownMenuContent>
       </DropdownMenu>
-      {!PROTOTYPE && <ChangePasswordDialog open={changingPassword} onOpenChange={setChangingPassword} />}
     </>
   )
 }

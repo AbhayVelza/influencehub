@@ -16,10 +16,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useMe } from '@/hooks/use-me'
 import { useTeam } from '@/hooks/use-team'
-import { setMemberPassword } from '@/lib/auth'
-import { MIN_PASSWORD_LENGTH, ROLE_LABEL } from '@/lib/constants'
-import { PROTOTYPE } from '@/lib/mode'
-import { memberLocationSchema, setPasswordSchema, teamMemberCreateSchema, type TeamMemberCreateInput } from '@/lib/schemas'
+import { ROLE_LABEL } from '@/lib/constants'
+import { memberLocationSchema, teamMemberCreateSchema, type TeamMemberCreateInput } from '@/lib/schemas'
 import { cn } from '@/lib/utils'
 import { ApiError, getErrorMessage } from '@/services'
 import type { Role, TeamMemberUpdate, User } from '@/types'
@@ -28,7 +26,7 @@ import { useAddMember, useUpdateMember } from './queries'
 const ROLES = Object.keys(ROLE_LABEL) as Role[]
 
 /** A labelled text input with its error message. */
-function TextInput({ id, label, error, hint, ...props }: ComponentProps<typeof Input> & { id: string; label: string; error?: string; hint?: string }) {
+function TextInput({ id, label, error, ...props }: ComponentProps<typeof Input> & { id: string; label: string; error?: string }) {
   return (
     <div className="grid gap-1.5">
       <Label htmlFor={id}>{label}</Label>
@@ -38,19 +36,16 @@ function TextInput({ id, label, error, hint, ...props }: ComponentProps<typeof I
           {error}
         </p>
       )}
-      {hint && !error && <p className="text-xs text-muted-foreground">{hint}</p>}
     </div>
   )
 }
-
-const PASSWORD_HINT = `At least ${MIN_PASSWORD_LENGTH} characters. Share it with them securely.`
 
 function AddMemberDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const add = useAddMember()
   const [formError, setFormError] = useState<string | null>(null)
   const form = useForm<TeamMemberCreateInput, unknown, ReturnType<typeof teamMemberCreateSchema.parse>>({
     resolver: zodResolver(teamMemberCreateSchema),
-    defaultValues: { name: '', email: '', role: 'executive', location: '', password: '' },
+    defaultValues: { name: '', email: '', role: 'executive', location: '' },
   })
   const { register, control, handleSubmit, reset, setError, formState } = form
   const { errors } = formState
@@ -74,7 +69,6 @@ function AddMemberDialog({ open, onOpenChange }: { open: boolean; onOpenChange: 
     } catch (err) {
       const code = err instanceof ApiError ? err.code : null
       if (code === 'email_taken') setError('email', { message: getErrorMessage(err) }, { shouldFocus: true })
-      else if (code === 'weak_password') setError('password', { message: getErrorMessage(err) }, { shouldFocus: true })
       else setFormError(getErrorMessage(err))
     }
   })
@@ -86,9 +80,7 @@ function AddMemberDialog({ open, onOpenChange }: { open: boolean; onOpenChange: 
           <DialogHeader>
             <DialogTitle>Add a team member</DialogTitle>
             <DialogDescription>
-              {PROTOTYPE
-                ? 'Prototype mode: no sign-in. Switch to them from the account menu (Acting as) to try their role.'
-                : 'They sign in with this email and the password you set, and can change it from their account menu.'}
+              There’s no sign-in: switch to them from the account menu (Acting as) to use their role.
             </DialogDescription>
           </DialogHeader>
           <TextInput id="member-name" label="Name" autoFocus autoComplete="off" error={errors.name?.message} {...register('name')} />
@@ -121,17 +113,6 @@ function AddMemberDialog({ open, onOpenChange }: { open: boolean; onOpenChange: 
             error={errors.location?.message}
             {...register('location')}
           />
-          {!PROTOTYPE && (
-            <TextInput
-              id="member-password"
-              label="Initial password"
-              type="password"
-              autoComplete="new-password"
-              hint={PASSWORD_HINT}
-              error={errors.password?.message}
-              {...register('password')}
-            />
-          )}
           {formError && (
             <p role="alert" className="text-sm text-destructive">
               {formError}
@@ -151,63 +132,11 @@ function AddMemberDialog({ open, onOpenChange }: { open: boolean; onOpenChange: 
   )
 }
 
-/** Server mode: an admin sets a new password for someone (e.g. they forgot theirs); it signs them out everywhere. */
-function SetPasswordDialog({ user, onClose }: { user: User | null; onClose: () => void }) {
-  const form = useForm<{ password: string }>({ resolver: zodResolver(setPasswordSchema), defaultValues: { password: '' } })
-  const { register, handleSubmit, reset, setError, formState } = form
-  const close = () => {
-    if (formState.isSubmitting) return
-    reset()
-    onClose()
-  }
-  const onSubmit = handleSubmit(async ({ password }) => {
-    if (!user) return
-    try {
-      await setMemberPassword(user.id, password)
-      toast.success(`New password set for ${user.name}`)
-      close()
-    } catch (err) {
-      setError('password', { message: getErrorMessage(err) }, { shouldFocus: true })
-    }
-  })
-  return (
-    <Dialog open={!!user} onOpenChange={(next) => !next && close()}>
-      <DialogContent className="sm:max-w-md">
-        <form onSubmit={onSubmit} className="space-y-4" noValidate>
-          <DialogHeader>
-            <DialogTitle>Set a password for {user?.name}</DialogTitle>
-            <DialogDescription>They’re signed out everywhere and sign in again with this password.</DialogDescription>
-          </DialogHeader>
-          <TextInput
-            id="set-password"
-            label="New password"
-            type="password"
-            autoFocus
-            autoComplete="new-password"
-            hint={PASSWORD_HINT}
-            error={formState.errors.password?.message}
-            {...register('password')}
-          />
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={close} disabled={formState.isSubmitting}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={formState.isSubmitting}>
-              Set password
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  )
-}
-
 export function TeamSettings() {
   const team = useTeam()
   const { data: me } = useMe()
   const update = useUpdateMember()
   const [addOpen, setAddOpen] = useState(false)
-  const [passwordFor, setPasswordFor] = useState<User | null>(null)
 
   const change = (user: User, body: TeamMemberUpdate, success: string) =>
     update.mutate(
@@ -224,10 +153,7 @@ export function TeamSettings() {
         <div className="space-y-1.5">
           <CardTitle className="text-base">Team & roles</CardTitle>
           <CardDescription>
-            {PROTOTYPE
-              ? 'Add people to try each role (switch from the account menu). '
-              : 'Add people with an initial password; deactivating someone signs them out. '}
-            You can’t change your own role or deactivate yourself, and there’s always at least one admin.
+            Add people and switch to them from the account menu (Acting as).             You can’t change your own role or deactivate yourself, and there’s always at least one admin.
           </CardDescription>
         </div>
         <Button onClick={() => setAddOpen(true)}>
@@ -311,11 +237,6 @@ export function TeamSettings() {
                       </span>
                     </TableCell>
                     <TableCell className="space-x-1 text-right">
-                      {!PROTOTYPE && user.is_active && (
-                        <Button variant="ghost" size="sm" onClick={() => setPasswordFor(user)}>
-                          Set password
-                        </Button>
-                      )}
                       {!self && (
                         <Button
                           variant={user.is_active ? 'ghost' : 'outline'}
@@ -337,7 +258,6 @@ export function TeamSettings() {
         )}
       </CardContent>
       <AddMemberDialog open={addOpen} onOpenChange={setAddOpen} />
-      <SetPasswordDialog user={passwordFor} onClose={() => setPasswordFor(null)} />
     </Card>
   )
 }

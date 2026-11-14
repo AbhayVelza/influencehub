@@ -150,6 +150,3 @@ export const DEFAULT_CATEGORIES: CategoryName[] = [
   'Art & Designs',
   'Marketing & Business',
 ]
-
-/** Minimum length for passwords (initial, changed and admin-set). */
-export const MIN_PASSWORD_LENGTH = 8

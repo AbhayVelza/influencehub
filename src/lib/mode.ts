@@ -1,6 +1,6 @@
 // Two ways to run the app, chosen by the build env. Neither has sign-in (for now): an "Acting as" switch in the
 // account menu picks which team member you are.
-// - VITE_API_SERVER=true: data and document files in PostgreSQL behind the API server (server/). See docs/auth.md.
+// - VITE_API_SERVER=true: data and document files in PostgreSQL behind the API server (server/). See docs/server.md.
 // - Otherwise: PROTOTYPE mode for demos and testing. No server; everything is saved in this browser (IndexedDB), so it
 //   survives reloads but isn't shared.
 
