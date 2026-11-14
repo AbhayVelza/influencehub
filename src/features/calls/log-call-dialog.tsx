@@ -93,6 +93,18 @@ export function LogCallDialog({ influencer, open, onOpenChange, intent }: LogCal
       }
       return
     }
+    if (values.outcome === 'not_interested') {
+      toast.success(`Call logged · ${influencer.name} moved to Rejected`)
+      return
+    }
+    if (values.outcome === 'no_answer' || values.outcome === 'wrong_number') {
+      toast.success(`Call logged · ${influencer.name} moved to On Hold`)
+      return
+    }
+    if (values.outcome === 'call_back') {
+      toast.success('Call logged · Follow-up scheduled')
+      return
+    }
     toast.success('Call logged')
   })
 
@@ -135,6 +147,15 @@ export function LogCallDialog({ influencer, open, onOpenChange, intent }: LogCal
                 </>
               )}
             />
+            {outcome === 'not_interested' && (
+              <p className="text-xs text-muted-foreground">Will automatically move to <strong>Rejected</strong>.</p>
+            )}
+            {(outcome === 'no_answer' || outcome === 'wrong_number') && (
+              <p className="text-xs text-muted-foreground">Will automatically move to <strong>On Hold</strong>.</p>
+            )}
+            {outcome === 'call_back' && (
+              <p className="text-xs text-muted-foreground">Will be scheduled and tracked in <strong>Follow-ups</strong>.</p>
+            )}
           </fieldset>
 
           <div className="grid gap-1.5">

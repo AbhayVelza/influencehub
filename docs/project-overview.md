@@ -26,8 +26,8 @@ and no sample data: a new workspace starts with one admin and the default catego
 | On Hold | gray | Side stage; resumes to the previous stage |
 | Rejected | red | Side stage; only managers/admins can reopen (→ Data Gathered) |
 
-- **Call outcomes:** no answer / call back → follow-up · not interested → Rejected · interested → Contacted.
-- Two follow-ups can't be booked for the same minute across the workspace.
+- **Call outcomes:** call back → follow-up · no answer / wrong number → On Hold · not interested → Rejected · interested → Contacted.
+- Two follow-ups can't be booked for the same minute for the same executive (different executives can schedule calls at the same time for different influencers).
 - **Admins** can override any move, with a required reason.
 - Stage rules: `src/lib/stages.ts`. UI stage moves go through `useStageMover`. Colours: `STAGE_META`.
 
