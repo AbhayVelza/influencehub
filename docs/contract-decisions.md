@@ -177,21 +177,32 @@ Record any new API decision here. Dates and documents: `dates-and-documents.md`.
     the entries on any influencer / account / document / stage write; unfiltered counts can be pre-aggregated and
     kept up to date by those writes. Expect a response in the low hundreds of ms at ~100k influencers.
 
-## Acting member & team (no sign-in yet)
+## Sign-in & team
 
-There is no sign-in. Every request acts as the team member picked in the account menu ("Acting as", `src/lib/auth`),
-sent to the API server in the `X-Acting-As` header (prototype mode: `handleApiRequest` in the browser). Setup, the data
-layer and the PostgreSQL layout: `server.md`.
+Server mode (`server/auth.ts`): email + password sign-in, then an HttpOnly session cookie (`ih_session`, 30 days,
+SameSite=Lax, Secure over HTTPS). Passwords are hashed with scrypt in `credentials`; sessions are stored hashed in
+`sessions`; neither is ever in a team record or an API response. Prototype mode has no sign-in: requests act as the
+member picked in "Acting as" (`resolveActingUid`, `src/backend/db.ts`, falls back to an active admin).
 
-- **The acting member** is resolved per request (`resolveActingUid`, `src/backend/db.ts`): the named member if they
-  exist and are active, else the first active admin. A new workspace starts with one admin, `usr_owner`.
+- `POST /auth/sign-in {email, password}` → 200 `User` + cookie · 401 `invalid_credentials` "Wrong email or password."
+  (same reply for an unknown email) · 403 `inactive` · 429 `too_many_requests` after 5 wrong passwords for an email
+  (15 minutes, in memory).
+- `GET /auth/session` → the signed-in `User`, or 401. `POST /auth/sign-out` → 204 (deletes the session and cookie).
+- `POST /auth/password {current_password, new_password}` → 204, signs you out everywhere else · 422 `wrong_password`
+  · 422 `weak_password` (fewer than `MIN_PASSWORD_LENGTH` = 8 characters).
+- `POST /auth/set-password {user_id, password}` (admin) → 204, signs that member out everywhere · 403 / 404 / 422.
+- **Every other request** needs a session: none → 401 `unauthenticated`; a deactivated member → 403 `inactive`
+  (the app shows "No access"; a 401 sends it back to /login).
+- **First admin:** `ADMIN_EMAIL` / `ADMIN_PASSWORD` (/ `ADMIN_NAME`) at server start; a new workspace's owner takes
+  that email. The password is only set when that admin has none.
 - **Roles** come from the team record, never from the request. A request whose changes can't be saved is rolled back
   as a whole and answered `500 server_error`; a request over 30 MB is `413 payload_too_large`.
 - `GET /me` → the acting `User`. `GET /team` is readable by every active member; only `POST` / `PATCH` are admin-only.
-- **`POST /team`** (admin) `TeamMemberCreate {email, name, role}`. Email is trimmed and lowercased. Errors, in order:
-  `422 validation_error` (bad email, bad role, missing name), `409 email_taken`. Success → `201 User` (`id` = `usr_…`).
-- **`PATCH /team/{id}`** `{name?, role?, is_active?}` → 422 `self_change` when you change your own role / deactivate
-  yourself, 422 `last_admin` when it would leave no active admin. A deactivated member can no longer be acted as.
+- **`POST /team`** (admin) `TeamMemberCreate {email, name, role, location?, password}` (password: server mode only).
+  Email is trimmed and lowercased. Errors, in order: `422 weak_password` (server), `422 validation_error` (bad email,
+  bad role, missing name, location over 80 characters), `409 email_taken`. Success → `201 User` (`id` = `usr_…`).
+- **`PATCH /team/{id}`** `{name?, role?, location?, is_active?}` (no other field changes) → 422 `self_change` when you change your own role / deactivate
+  yourself, 422 `last_admin` when it would leave no active admin. A deactivated member is refused on their next request.
 - **Uploads**: `POST /documents/presign` returns `upload_url` = `/api/v1/files/<key>` (prototype: `"local-file:<key>"`);
   `documentsApi.upload` PUTs the file there (the server checks the key came from a presign, stores it in the `files`
   table) and `POST /influencers/{id}/documents` saves the metadata (`storage_key`). `GET /documents/{id}/download`

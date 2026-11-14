@@ -189,3 +189,40 @@ export async function readFile(key: string): Promise<{ content_type: string; dat
   const [row] = await client()<{ content_type: string; data: Uint8Array }[]>`select content_type, data from files where key = ${key}`
   return row
 }
+
+// ---- Sign-in: password hashes and sessions (never loaded into the working copy) ----
+
+export async function passwordHash(userId: string): Promise<string | undefined> {
+  const [row] = await client()<{ password_hash: string }[]>`select password_hash from credentials where user_id = ${userId}`
+  return row?.password_hash
+}
+
+export async function setPasswordHash(userId: string, hash: string) {
+  await client()`insert into credentials (user_id, password_hash) values (${userId}, ${hash})
+    on conflict (user_id) do update set password_hash = excluded.password_hash, updated_at = now()`
+}
+
+export async function hasAnyPassword(): Promise<boolean> {
+  const [row] = await client()`select 1 from credentials limit 1`
+  return !!row
+}
+
+export async function createSession(tokenHash: string, userId: string, expiresAt: Date) {
+  await client()`delete from sessions where expires_at < now()`
+  await client()`insert into sessions (token_hash, user_id, expires_at) values (${tokenHash}, ${userId}, ${expiresAt})`
+}
+
+/** The user behind a session, or undefined when it doesn't exist or has expired. */
+export async function sessionUser(tokenHash: string): Promise<string | undefined> {
+  const [row] = await client()<{ user_id: string }[]>`select user_id from sessions where token_hash = ${tokenHash} and expires_at > now()`
+  return row?.user_id
+}
+
+export async function deleteSession(tokenHash: string) {
+  await client()`delete from sessions where token_hash = ${tokenHash}`
+}
+
+/** Signs a user out everywhere (or everywhere but one session). */
+export async function deleteSessions(userId: string, keepTokenHash = '') {
+  await client()`delete from sessions where user_id = ${userId} and token_hash <> ${keepTokenHash}`
+}

@@ -9,8 +9,12 @@ active filters stay visible. `CollapsibleFilters` in `components/common/collapsi
 1. **App shell**: sidebar (Dashboard, Influencers, Unassigned Pool w/ count, Possible duplicates w/ count
    (manager/admin), Pipeline, Calls & Follow-ups w/ due-today badge, Packages, Documents, Onboarded (expands to a grid of platform logo links, 4 per row),
    Settings admin-only); top bar: global
-   search, "+ Add Influencer", notifications, account menu ("Account menu"): theme, **Acting as** (pick a team member; there is no
-   sign-in yet) and, in prototype mode, **Reset prototype data**.
+   search, "+ Add Influencer", notifications, account menu ("Account menu"): theme, then **Change password** (dialog: current, new,
+   confirm → toast "Password changed") and **Sign out** in server mode, or **Acting as** and **Reset prototype data**
+   in prototype mode.
+   **Sign-in** (server mode, `/login`, outside the shell): "Sign in to InfluenceHub", Email + Password, errors in an
+   alert, "No account? Ask an admin to add you."; returns to `?next=`. Signed-out visits go to `/login?next=…`; a
+   deactivated member sees "No access to InfluenceHub" with Sign out.
 2. **Dashboard**: KPIs (total, pool, contacted this week, onboarded this month, packages in transit, follow-ups today, onboarded without agreement → filtered list),
    pipeline funnel (click → filtered list), by-category + top-cities bars, my follow-ups, activity feed.
 3. **Influencers list**: header w/ count + Import CSV / Export / + Add; search; Saved views; filters
@@ -32,8 +36,9 @@ active filters stay visible. `CollapsibleFilters` in `components/common/collapsi
    "Possible same creator" warning: Add account to existing / Create anyway; teammates' matches stay anonymous.
 6. **Pipeline kanban** · 7. **Calls & Follow-ups** · 8. **Packages** (as before; handles show as primary account).
 9. **Settings (admin)**: Instagram integration status + sync frequency, team & roles, categories, pool guards.
-   **Team**: "Add member" → "Add a team member" dialog (Name, Email, Role) → toast "Added <name> as <Role>";
-   change role, deactivate / reactivate.
+   **Team**: "Add member" → "Add a team member" dialog (Name, Email, Role, Location, Initial password in server mode) →
+   toast "Added <name> as <Role>"; change role, edit location inline, **Set password** (server mode), deactivate /
+   reactivate.
 10. **Unassigned Pool**: list filters (no owner filter) in the URL; row → preview drawer (not the profile).
    Executives: preview fields + Claim / bulk Claim. Managers/admins: full details + Assign to… / bulk "Assign N…"
    dialog (tick one or more people with each one's share shown → confirm with the counts → "Assigning…" → toast;
@@ -58,4 +63,4 @@ active filters stay visible. `CollapsibleFilters` in `components/common/collapsi
 1. Scaffold, theme, app shell, routing, types, API client, data layer. 2. Influencers list.
 3. Influencer detail. 4. Add / Import modal. 5. Pipeline, Calls, Packages. 6. Dashboard, Settings, polish.
 Then: Unassigned Pool; multi-platform accounts, Facebook, connect links, duplicate detection and merge; Documents;
-Onboarded tabs; PostgreSQL behind the API server (Firebase removed; no sign-in yet).
+Onboarded tabs; PostgreSQL behind the API server (Firebase removed); custom email + password sign-in.

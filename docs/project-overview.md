@@ -53,7 +53,7 @@ The server enforces all of this; the UI only hides what a role can't do. Code: `
 
 | Screen | What it does |
 |---|---|
-| **Acting as** | No sign-in yet: pick which team member you are from the account menu |
+| **Sign-in** | Server mode: email + password; admins add members with an initial password; everyone can change theirs. Prototype: "Acting as" |
 | **Dashboard** | KPIs, pipeline funnel, by-category and top-cities charts, my follow-ups, activity feed |
 | **Influencers** | Filterable, sortable table; saved views; bulk actions; CSV import/export; filters in the URL with live counts |
 | **Influencer detail** | Stage stepper, social accounts with per-platform stats, calls, packages, documents, activity |
@@ -92,19 +92,19 @@ Screen-by-screen detail: `docs/screens.md`.
 | Files | This browser | PostgreSQL (`files` table) |
 | Use | Demos and testing (`npm run dev`, no setup) | The real, shared workspace |
 
-Neither mode has sign-in yet: the account menu's **Acting as** picks which team member you are (Firebase was removed
-in Nov 2026; a sign-in provider is still to be chosen).
+Server mode has custom sign-in (email + password, scrypt hashes, HttpOnly session cookie; `server/auth.ts`).
+Prototype mode has none: the account menu's **Acting as** picks which team member you are.
 
 ### How a request flows (server mode)
 
 ```
 Browser (React app)
   component → feature hook (TanStack Query) → src/services/* → src/services/http.ts
-      │  fetch /api/v1/... with "X-Acting-As: <team member id>"
+      │  fetch /api/v1/... with the session cookie
       ▼
 API server (server/main.ts, Hono, Node)
   1. queue: one request at a time
-  2. resolve the acting member (an active admin if they're gone or deactivated)
+  2. check the session (401) and that the member is active (403)
   3. run the business rules: src/backend/handlers (via MSW's getResponse router)
   4. save only what changed, in one transaction (server/pg-store.ts)
       ▼
@@ -151,10 +151,11 @@ src/
   pages/        one component per route
   services/     the only place that calls the API (http.ts + one file per area)
   backend/      business rules: handlers/, domain.ts, db.ts (working copy), jobs.ts, local-store.ts (prototype)
-  lib/          auth (acting member), schemas (zod), platforms, stages, permissions, format (dates), session, mode
+  lib/          auth (sign-in / acting member), schemas (zod), platforms, stages, permissions, format (dates), session, mode
   types/        data types (index.ts) — the source of truth for the API contract
 server/
-  main.ts           HTTP server: acting member, request queue, files, static app, /health
+  main.ts           HTTP server: request queue, files, static app, /health
+  auth.ts           sign-in, sessions, passwords, first admin
   pg-store.ts       loads/saves the working copy to PostgreSQL
   schema.sql        tables (created automatically on start)
 docs/                    detailed docs (see section 14)
@@ -231,10 +232,10 @@ Account menu > **Reset prototype data** wipes the browser workspace.
 3. `npm run server` (API on 3001; first start adds the owner admin and default categories) and `npm run dev`
    (app on 3000, forwards `/api`).
 
-Try other roles: Settings > Team > Add member, then account menu > **Acting as**.
+Sign in as the admin from `ADMIN_EMAIL` / `ADMIN_PASSWORD` (`.env.local`), then add people in Settings > Team.
 
-**Production:** `npm run build` then `npm run server`: one process serves both the API and the built app. With no
-sign-in, keep it on a private network. Health check: `GET /health` (200 when PostgreSQL is reachable).
+**Production:** `npm run build` then `npm run server`: one process serves both the API and the built app. Put it behind HTTPS
+(Caddy). Health check: `GET /health` (200 when PostgreSQL is reachable).
 
 ### Scripts
 
@@ -259,6 +260,7 @@ The committed `.env` holds **empty placeholders only**. Real values go in `.env.
 | `VITE_API_SERVER` | App | `true` = server mode; otherwise prototype mode |
 | `VITE_API_URL` | App | Only when the API is on another origin |
 | `DATABASE_URL` | Server | PostgreSQL connection string (secret) |
+| `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME` | Server | First admin, set on start while they have no password (secret) |
 | `PORT`, `STATIC_DIR`, `CORS_ORIGIN` | Server | Port (3001), built app folder (`dist`), allowed origins |
 
 ---
@@ -291,7 +293,7 @@ From `CLAUDE.md` (the full rulebook):
 - **One server instance only** — a second would overwrite the first one's changes.
 - Jobs and a CSV waiting to be imported live in memory: a restart mid-import loses the job (finished imports are
   saved). Unpolled jobs are dropped after an hour.
-- **No sign-in:** anyone who can reach the server can act as any member. Keep it private until sign-in is added.
+- Sign-in lockouts (5 wrong passwords → 15 minutes) are in memory and reset on restart. No password-reset email: an admin sets a new password.
 - Other people's changes appear on the next refetch, not instantly.
 - Auto-release of stale claims and connect-link expiry run at the start of each request (no scheduler).
 - Social platform APIs (lookup, sync, connect links, growth history) are not connected.

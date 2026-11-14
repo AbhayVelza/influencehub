@@ -329,6 +329,8 @@ export interface User {
   name: string
   email: string
   role: Role
+  /** Where they work (city / office), free text. */
+  location: string | null
   is_active: boolean
   created_at: ISODateString
 }
@@ -849,14 +851,17 @@ export interface ExpiringClaim {
 // ---------------------------------------------------------------------------
 // Team, categories, saved views
 
-/** An admin adds a member (there is no sign-in yet: people act as a member from the account menu). */
+/** An admin adds a member (no public sign-up). */
 export interface TeamMemberCreate {
   email: string
   role: Role
   name: string
+  location?: string | null
+  /** Server mode: their initial password (at least 8 characters), stored hashed and never returned. */
+  password?: string
 }
 
-export type TeamMemberUpdate = Partial<Pick<User, 'name' | 'role' | 'is_active'>>
+export type TeamMemberUpdate = Partial<Pick<User, 'name' | 'role' | 'location' | 'is_active'>>
 
 export interface CategoryCreate {
   name: string

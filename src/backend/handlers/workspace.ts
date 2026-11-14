@@ -76,6 +76,13 @@ function moveLegacyCategories(has: (name: string) => StoredCategory | undefined)
   }
 }
 
+/** A member's location: trimmed text or null; false when it's too long or not text. */
+function cleanLocation(value: unknown): string | null | false {
+  if (value == null) return null
+  if (typeof value !== 'string' || value.trim().length > 80) return false
+  return value.trim() || null
+}
+
 export const workspaceHandlers = [
   http.get(api('/me'), async () => {
     return HttpResponse.json(currentUser())
@@ -95,7 +102,9 @@ export const workspaceHandlers = [
     const name = typeof body.name === 'string' ? body.name.trim() : ''
     if (!name) return apiError(422, 'validation_error', 'Enter a name')
     if (db.team.some((u) => u.email.toLowerCase() === email)) return apiError(409, 'email_taken', 'A team member with this email exists')
-    const user: User = { id: nextId('usr'), name, email, role: body.role, is_active: true, created_at: nowIso() }
+    const location = cleanLocation(body.location)
+    if (location === false) return apiError(422, 'validation_error', 'Location must be at most 80 characters')
+    const user: User = { id: nextId('usr'), name, email, role: body.role, location, is_active: true, created_at: nowIso() }
     db.team.push(user)
     return HttpResponse.json(user, { status: 201 })
   }),
@@ -106,6 +115,9 @@ export const workspaceHandlers = [
     if (!user) return notFound('Team member')
     const body = await readJson<TeamMemberUpdate>(request)
     if (body.role !== undefined && !ROLES.includes(body.role)) return apiError(422, 'validation_error', 'Choose a role')
+    if (body.name !== undefined && !(typeof body.name === 'string' && body.name.trim())) return apiError(422, 'validation_error', 'Enter a name')
+    const location = body.location === undefined ? undefined : cleanLocation(body.location)
+    if (location === false) return apiError(422, 'validation_error', 'Location must be at most 80 characters')
     const demoting = body.role !== undefined && body.role !== user.role
     const deactivating = body.is_active === false && user.is_active
     if (user.id === currentUser().id && (demoting || deactivating)) {
@@ -116,7 +128,11 @@ export const workspaceHandlers = [
       const otherAdmins = db.team.filter((u) => u.id !== user.id && u.role === 'admin' && u.is_active).length
       if (otherAdmins === 0) return apiError(422, 'last_admin', 'There must be at least one active admin')
     }
-    Object.assign(user, body)
+    // Only these fields can change.
+    if (body.name !== undefined) user.name = body.name.trim()
+    if (body.role !== undefined) user.role = body.role
+    if (location !== undefined) user.location = location
+    if (typeof body.is_active === 'boolean') user.is_active = body.is_active
     return HttpResponse.json(user)
   }),
 

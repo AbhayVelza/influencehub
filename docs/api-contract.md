@@ -2,7 +2,7 @@
 
 The API: `src/backend/handlers` implement it, on the API server over PostgreSQL (in the browser in prototype mode). Detailed behaviour is in `contract-decisions.md`.
 
-Paths under `/api/v1`, answered for the acting team member (`X-Acting-As: <member id>`; no sign-in yet). Lists → `{ items, total, page,
+Paths under `/api/v1`, answered for the signed-in team member (session cookie; prototype mode: the "Acting as" member). Lists → `{ items, total, page,
 page_size }`. Errors → `{ error: { code, message } }` (`contract-decisions.md`, Acting member & team). Document files:
 `PUT` / `GET /files/<key>` (stored in PostgreSQL).
 - GET /influencers (q, category[], platform[], country[], state[], city[], stage[], assigned_to[], reach_min,
@@ -21,7 +21,9 @@ page_size }`. Errors → `{ error: { code, message } }` (`contract-decisions.md`
   GET /documents/{id}/download → {url} · DELETE /documents/{id}
 - POST /lookup {platform, username} → {job_id} · POST /imports/csv/presign · POST /imports/csv/upload {key, text} · POST /imports/csv → {job_id}
 - POST /exports/influencers → {job_id} · GET /jobs/{id} → {status, progress, result, error}
-- GET /me · GET /team · POST /team {email, name, role} (admin) → User · PATCH /team/{id} {name?, role?,
+- POST /auth/sign-in {email, password} · GET /auth/session · POST /auth/sign-out · POST /auth/password
+  {current_password, new_password} · POST /auth/set-password {user_id, password} (admin)
+- GET /me · GET /team · POST /team {email, name, role, location?, password} (admin) → User · PATCH /team/{id} {name?, role?, location?,
   is_active?} · GET/POST/PATCH/DELETE /categories · GET/POST/DELETE /saved-views
 - GET /pool (same filters, sort and pagination as /influencers) · GET /pool/filter-options · GET /pool/{id} ·
   GET /pool/expiring · POST /influencers/{id}/claim · POST /influencers/{id}/release {reason} ·

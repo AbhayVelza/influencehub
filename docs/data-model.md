@@ -16,9 +16,10 @@ Source of truth: `src/types/index.ts`. Update both together.
 - **PackageStatus**: preparing, sent, in_transit, delivered, returned
 - **AccountType**: business, creator, personal, unknown · **SyncStatus**: synced, pending, not_synced, error
 - **Role**: admin, manager, executive
-- **User** (team member): id (`usr_…`), name, email, role, is_active, created_at. **TeamMemberCreate** (POST /team):
-  email, name, role. **TeamMemberUpdate**: name?, role?, is_active?. There is no sign-in yet: people act as a member
-  from the account menu, and the team record decides their role.
+- **User** (team member): id (`usr_…`), name, email, role, location (free text, ≤ 80, nullable), is_active,
+  created_at. **TeamMemberCreate** (POST /team): email, name, role, location?, password (server mode; ≥ 8
+  characters, stored hashed, never returned). **TeamMemberUpdate**: name?, role?, location?, is_active?. The team
+  record decides access and role; sign-in data lives apart (`credentials`, `sessions`; `server.md`).
 - **Categories** (defaults for a new workspace; admins manage them in Settings → Categories): Fashion, Beauty, Food, Tech & Gadgets, Travel, Fitness & Lifestyle, Lifestyle, Gaming & Esports, Finance, Art & Designs, Marketing & Business
 - **Platform**: instagram, youtube, tiktok, facebook, threads, pinterest, linkedin, snapchat
 - **SyncMethod** (default per platform): `lookup` = instagram, youtube, threads, facebook (public Pages);

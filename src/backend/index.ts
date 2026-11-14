@@ -10,7 +10,7 @@ import { apiError } from './utils'
 // scoping, permissions), over data kept in this browser (./local-store). With VITE_API_SERVER=true the same handlers
 // run on the API server instead (server/main.ts), over PostgreSQL, and this module isn't loaded.
 
-/** Answers one API request for the acting member (src/lib/auth), then saves whatever it changed. */
+/** Answers one API request for the acting member (src/lib/auth, prototype mode), then saves whatever it changed. */
 export async function handleApiRequest(request: Request): Promise<Response> {
   try {
     await connect()

@@ -117,7 +117,7 @@ export function defaultSettings() {
 /** A new workspace's only data: the owner admin and the default categories (configuration, not sample data). */
 export function newWorkspace(): { team: User[]; categories: StoredCategory[] } {
   return {
-    team: [{ id: OWNER_ID, name: 'Admin', email: 'admin@influencehub.local', role: 'admin', is_active: true, created_at: nowIso() }],
+    team: [{ id: OWNER_ID, name: 'Admin', email: 'admin@influencehub.local', role: 'admin', location: null, is_active: true, created_at: nowIso() }],
     categories: DEFAULT_CATEGORIES.map((name, i) => ({ id: `cat_${String(i + 1).padStart(2, '0')}`, name, is_active: true })),
   }
 }
