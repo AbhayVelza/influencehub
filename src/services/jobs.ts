@@ -1,3 +1,4 @@
+import { LOCAL_UPLOAD_PREFIX } from '@/lib/upload-targets'
 import { http } from '@/services/http'
 import type { CsvImportRequest, CsvPresignResponse, ExportRequest, Job, JobRef } from '@/types'
 
@@ -8,10 +9,10 @@ export const jobsApi = {
 export const importsApi = {
   presignCsv: (filename: string) => http.post<CsvPresignResponse>('/imports/csv/presign', { filename }),
 
-  /** Uploads the file to the presigned URL (S3 in production, MSW in mock mode). */
+  /** Step 2: hand the CSV's text to the data layer (it's read for the import, never stored). */
   uploadToPresignedUrl: async (uploadUrl: string, file: File) => {
-    const response = await fetch(uploadUrl, { method: 'PUT', body: file, headers: { 'Content-Type': 'text/csv' } })
-    if (!response.ok) throw new Error(`Upload failed (${response.status})`)
+    if (!uploadUrl.startsWith(LOCAL_UPLOAD_PREFIX)) throw new Error('Upload failed: unknown upload target.')
+    await http.post('/imports/csv/upload', { key: uploadUrl.slice(LOCAL_UPLOAD_PREFIX.length), text: await file.text() })
   },
 
   startCsvImport: (body: CsvImportRequest) => http.post<JobRef>('/imports/csv', body),

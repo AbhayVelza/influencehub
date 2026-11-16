@@ -9,6 +9,7 @@ lerna-debug.log*
 
 node_modules
 dist
+dist-server
 dist-ssr
 test-results
 playwright-report
@@ -24,3 +25,7 @@ playwright-report
 *.njsproj
 *.sln
 *.sw?
+
+# Firebase service account keys (used by npm run seed:admin); never commit them
+service-account*.json
+*firebase-adminsdk*.json

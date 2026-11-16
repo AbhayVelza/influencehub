@@ -2,6 +2,7 @@ import { ChevronDown, FilePlus2, FileText, SearchX } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { DateRangeFilter } from '@/components/common/date-range-filter'
+import { CollapsibleFilters } from '@/components/common/collapsible-filters'
 import { MultiSelectFilter } from '@/components/common/multi-select-filter'
 import { PageHeader } from '@/components/common/page-header'
 import { Pagination } from '@/components/common/pagination'
@@ -106,30 +107,36 @@ export default function DocumentsPage() {
           label="Search creators"
           className="max-w-72"
         />
-        <MultiSelectFilter
-          label="Type"
-          options={DOCUMENT_TYPES.map((t) => ({ value: t, label: DOCUMENT_TYPE_META[t].label }))}
-          selected={params.type ?? []}
-          onChange={(type) => update({ type })}
-        />
-        <MultiSelectFilter
-          label="Uploaded by"
-          options={(team.data?.items ?? []).map((u) => ({ value: u.id, label: u.name }))}
-          selected={params.uploaded_by ?? []}
-          onChange={(uploaded_by) => update({ uploaded_by })}
-          loading={team.isLoading}
-          searchPlaceholder="Search team…"
-        />
-        <DateRangeFilter
-          label="Uploaded"
-          value={{ from: params.uploaded_from, to: params.uploaded_to }}
-          onChange={({ from, to }) => update({ uploaded_from: from, uploaded_to: to })}
-        />
-        {filtered && (
-          <Button variant="link" size="sm" onClick={() => setSearchParams(new URLSearchParams())}>
-            Clear all
-          </Button>
-        )}
+        <CollapsibleFilters
+          activeCount={(params.type?.length ? 1 : 0) + (params.uploaded_by?.length ? 1 : 0) + (params.uploaded_from || params.uploaded_to ? 1 : 0)}
+          actions={
+            filtered && (
+              <Button variant="link" size="sm" onClick={() => setSearchParams(new URLSearchParams())}>
+                Clear all
+              </Button>
+            )
+          }
+        >
+          <MultiSelectFilter
+            label="Type"
+            options={DOCUMENT_TYPES.map((t) => ({ value: t, label: DOCUMENT_TYPE_META[t].label }))}
+            selected={params.type ?? []}
+            onChange={(type) => update({ type })}
+          />
+          <MultiSelectFilter
+            label="Uploaded by"
+            options={(team.data?.items ?? []).map((u) => ({ value: u.id, label: u.name }))}
+            selected={params.uploaded_by ?? []}
+            onChange={(uploaded_by) => update({ uploaded_by })}
+            loading={team.isLoading}
+            searchPlaceholder="Search team…"
+          />
+          <DateRangeFilter
+            label="Uploaded"
+            value={{ from: params.uploaded_from, to: params.uploaded_to }}
+            onChange={({ from, to }) => update({ uploaded_from: from, uploaded_to: to })}
+          />
+        </CollapsibleFilters>
       </div>
 
       <div className="overflow-hidden rounded-lg border bg-card">

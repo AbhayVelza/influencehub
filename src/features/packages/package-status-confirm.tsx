@@ -10,9 +10,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { STAGE_META } from '@/lib/constants'
 import type { Stage } from '@/types'
-import type { StageChangingStatus } from './queries'
-
-const EFFECT: Record<StageChangingStatus, Stage> = { delivered: 'delivered', returned: 'onboarded' }
+import { stageAfterPackage, type StageChangingStatus } from './queries'
 
 interface PackageStatusConfirmProps {
   status: StageChangingStatus | null
@@ -25,12 +23,14 @@ interface PackageStatusConfirmProps {
 }
 
 export function PackageStatusConfirm({ status, influencerName, influencerStage, pending, onConfirm, onCancel }: PackageStatusConfirmProps) {
-  const target = status ? STAGE_META[EFFECT[status]].label : ''
+  const movedTo = status && influencerStage ? stageAfterPackage(influencerStage, status) : null
   const effect =
     influencerStage === undefined
-      ? `If ${influencerName} is in Package Sent, they’ll move to ${target}.`
-      : influencerStage === 'package_sent'
-        ? `${influencerName} will move from Package Sent to ${target}.`
+      ? status === 'delivered'
+        ? `If ${influencerName} is in Onboarded or Package Sent, they’ll move to Delivered.`
+        : `If ${influencerName} is in Package Sent, they’ll move to Onboarded.`
+      : movedTo
+        ? `${influencerName} will move from ${STAGE_META[influencerStage].label} to ${STAGE_META[movedTo].label}.`
         : `${influencerName} is in ${STAGE_META[influencerStage].label}, so their stage won’t change.`
 
   return (

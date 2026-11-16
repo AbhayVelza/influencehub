@@ -1,3 +1,4 @@
+import { PROFILE_LOOKUP_CONNECTED } from '@/lib/mode'
 import { useQueries, useQueryClient } from '@tanstack/react-query'
 import { CircleAlert, Download, FileUp, Loader2, RotateCcw, TriangleAlert, Upload } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type DragEvent } from 'react'
@@ -155,7 +156,7 @@ function MappingStep({
 }) {
   const categories = useCategories()
   const [mapping, setMapping] = useState<CsvColumnMapping>(() => autoMatchColumns(parsed.headers))
-  const [fetchProfiles, setFetchProfiles] = useState(true)
+  const [fetchProfiles, setFetchProfiles] = useState(PROFILE_LOOKUP_CONNECTED)
   const [onDuplicate, setOnDuplicate] = useState<CsvDuplicatePolicy>('skip')
   const categoryNames = useMemo(
     () => (categories.data?.items ?? []).filter((c) => c.is_active).map((c) => c.name),
@@ -305,15 +306,17 @@ function MappingStep({
       </section>
 
       <section className="space-y-3 rounded-md border p-3">
-        <label className="flex items-start gap-2 text-sm">
-          <Checkbox checked={fetchProfiles} onCheckedChange={(v) => setFetchProfiles(!!v)} className="mt-0.5" />
-          <span>
-            Fetch public profiles for imported rows
-            <span className="block text-xs text-muted-foreground">
-              Instagram, YouTube, Threads and Facebook Page stats. TikTok and Pinterest wait for a connect link.
+        {PROFILE_LOOKUP_CONNECTED && (
+          <label className="flex items-start gap-2 text-sm">
+            <Checkbox checked={fetchProfiles} onCheckedChange={(v) => setFetchProfiles(!!v)} className="mt-0.5" />
+            <span>
+              Fetch public profiles for imported rows
+              <span className="block text-xs text-muted-foreground">
+                Instagram, YouTube, Threads and Facebook Page stats. TikTok and Pinterest wait for a connect link.
+              </span>
             </span>
-          </span>
-        </label>
+          </label>
+        )}
         <fieldset className="space-y-1">
           <legend className="text-sm">If an account is already in the CRM</legend>
           <div role="radiogroup" className="flex gap-4 text-sm">

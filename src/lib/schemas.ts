@@ -10,6 +10,18 @@ const E164 = /^\+[1-9]\d{7,14}$/
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const HANDLE = /^[a-z0-9._-]{1,60}$/
 
+/** True when the value is a real email address (the Email field may also hold a note like "managed by @agency"). */
+export function isEmailAddress(value: string | null | undefined): value is string {
+  return !!value && EMAIL.test(value.trim())
+}
+
+/** Email field: real addresses are trimmed + lowercased; anything else (e.g. "managed by @iplixmedia") is kept as typed. Empty → null. */
+export function normalizeEmailField(value: string | null | undefined): string | null {
+  const v = value?.trim() ?? ''
+  if (!v) return null
+  return EMAIL.test(v) ? v.toLowerCase() : v
+}
+
 /** "98765 43210" → "+919876543210"; keeps an explicit country code. Empty → null. */
 export function normalizePhone(value: string | null | undefined): string | null {
   if (!value) return null
@@ -53,12 +65,12 @@ export const fieldSchemas = {
     .string()
     .transform(normalizePhone)
     .refine((v) => v === null || E164.test(v), 'Enter a valid phone number, e.g. +91 98765 43210'),
+  // An address or a contact note ("managed by @iplixmedia"); see normalizeEmailField.
   email: z
     .string()
     .trim()
-    .toLowerCase()
-    .refine((v) => v === '' || EMAIL.test(v), 'Enter a valid email address')
-    .transform((v) => v || null),
+    .max(200, 'Email must be 200 characters or fewer')
+    .transform(normalizeEmailField),
   city: optionalText(80, 'City'),
   state: optionalText(80, 'State'),
   country: optionalText(80, 'Country'),
@@ -256,19 +268,24 @@ export type AgreementFormInput = z.input<typeof agreementFormSchema>
 // ---------------------------------------------------------------------------
 // Settings
 
-export const inviteSchema = z.object({
-  email: z
-    .string()
-    .trim()
-    .toLowerCase()
-    .min(1, 'Email is required')
-    .refine((v) => EMAIL.test(v), 'Enter a valid email address'),
+const emailField = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .min(1, 'Email is required')
+  .refine((v) => EMAIL.test(v), 'Enter a valid email address')
+
+export const memberLocationSchema = optionalText(80, 'Location')
+
+/** Settings > Team "Add a team member". */
+export const teamMemberCreateSchema = z.object({
+  name: requiredText(100, 'Name'),
+  email: emailField,
   role: z.enum(['admin', 'manager', 'executive']),
-  /** Optional; the server derives one from the email. */
-  name: optionalText(100, 'Name'),
+  location: memberLocationSchema,
 })
 
-export type InviteInput = z.input<typeof inviteSchema>
+export type TeamMemberCreateInput = z.input<typeof teamMemberCreateSchema>
 
 // ---------------------------------------------------------------------------
 // Stage override

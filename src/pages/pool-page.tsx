@@ -1,22 +1,15 @@
-import { ChevronDown, Inbox, SearchX, UserRound, X } from 'lucide-react'
+import { Inbox, SearchX, UserRound, X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { PageHeader } from '@/components/common/page-header'
 import { Pagination } from '@/components/common/pagination'
-import { PersonAvatar } from '@/components/common/person-avatar'
 import { EmptyState, ErrorState } from '@/components/common/states'
 import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import { ActiveFilters } from '@/features/influencers/active-filters'
 import { InfluencerFilterBar } from '@/features/influencers/filter-bar'
 import { InfluencersTable } from '@/features/influencers/influencers-table'
 import { hasActiveFilters, PAGE_SIZE_OPTIONS, useInfluencerListParams, viewKey } from '@/features/influencers/list-params'
 import { ListSearch } from '@/features/influencers/list-search'
+import { BulkAssignDialog } from '@/features/pool/bulk-assign-dialog'
 import { buildPoolColumns } from '@/features/pool/columns'
 import { PoolPreviewDrawer } from '@/features/pool/pool-preview'
 import { usePoolList } from '@/features/pool/queries'
@@ -51,6 +44,12 @@ export default function PoolPage() {
 
   // The preview drawer keeps its row while closing, so the content doesn't vanish mid-animation.
   const [preview, setPreview] = useState<{ item: PoolItem; open: boolean } | null>(null)
+  // The rows are fixed when the dialog opens, so its count doesn't change while it closes.
+  const [bulkAssign, setBulkAssign] = useState<{ rows: PoolItem[]; open: boolean; pending: boolean }>({
+    rows: [],
+    open: false,
+    pending: false,
+  })
 
   const { setPage } = list
   useEffect(() => {
@@ -161,27 +160,10 @@ export default function PoolPage() {
                   <X />
                 </Button>
                 {canReassign ? (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm" disabled={actions.busy}>
-                        <UserRound />
-                        Assign to…
-                        <ChevronDown className="opacity-60" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="w-56">
-                      <DropdownMenuLabel className="text-xs text-muted-foreground">Assign selected to</DropdownMenuLabel>
-                      {members.map((user) => (
-                        <DropdownMenuItem
-                          key={user.id}
-                          onSelect={async () => keepOnly(await actions.assignMany(selectedRows, user.id, user.name))}
-                        >
-                          <PersonAvatar name={user.name} className="size-5 text-[9px]" />
-                          {user.id === me?.id ? `${user.name} (me)` : user.name}
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <Button size="sm" disabled={actions.busy} onClick={() => setBulkAssign({ rows: selectedRows, open: true, pending: false })}>
+                    <UserRound />
+                    Assign {selectedRows.length}…
+                  </Button>
                 ) : (
                   <Button size="sm" disabled={actions.busy} onClick={async () => keepOnly(await actions.claimMany(selectedRows))}>
                     <UserRound />
@@ -213,6 +195,22 @@ export default function PoolPage() {
         onClaim={(item) => void claim(item)}
         onAssign={assign}
       />
+
+      {canReassign && (
+        <BulkAssignDialog
+          count={bulkAssign.rows.length}
+          members={members}
+          meId={me?.id}
+          open={bulkAssign.open}
+          pending={bulkAssign.pending}
+          onOpenChange={(open) => setBulkAssign((s) => ({ ...s, open }))}
+          onConfirm={async (assignees) => {
+            setBulkAssign((s) => ({ ...s, pending: true }))
+            keepOnly(await actions.assignMany(bulkAssign.rows, assignees))
+            setBulkAssign((s) => ({ ...s, open: false, pending: false }))
+          }}
+        />
+      )}
     </div>
   )
 }

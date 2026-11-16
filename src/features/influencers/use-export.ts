@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { todayKey } from '@/lib/format'
-import { downloadFile, waitForJob } from '@/lib/jobs'
+import { downloadFile, isSessionChanged, waitForJob } from '@/lib/jobs'
 import { exportsApi, getErrorMessage } from '@/services'
 import type { ExportRequest, ExportResult } from '@/types'
 
@@ -23,6 +23,10 @@ export function useExportInfluencers() {
         id: toastId,
       })
     } catch (err) {
+      if (isSessionChanged(err)) {
+        toast.dismiss(toastId)
+        return
+      }
       toast.error('Export failed', { id: toastId, description: getErrorMessage(err) })
     } finally {
       setIsExporting(false)

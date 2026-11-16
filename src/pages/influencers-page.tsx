@@ -159,7 +159,7 @@ export default function InfluencersPage() {
         <InfluencersTable
           rows={rows}
           columns={columns}
-          visibilityKey="influencehub-influencer-columns"
+          visibilityKey="influencehub-influencer-columns-v2"
           onOpenRow={(row) => navigate(`/influencers/${row.id}`)}
           isLoading={query.isPending}
           isStale={query.isPlaceholderData}

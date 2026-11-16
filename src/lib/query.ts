@@ -1,6 +1,6 @@
 import { QueryClient } from '@tanstack/react-query'
 import { ApiError } from '@/services/http'
-import type { DocumentListParams, FollowUpBucket, InfluencerListParams } from '@/types'
+import type { DocumentListParams, FollowUpBucket, InfluencerFilters, InfluencerListParams } from '@/types'
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -22,7 +22,7 @@ export const queryKeys = {
   /** Prefix for everything derived from influencers (lists, filter options). */
   influencers: ['influencers'] as const,
   influencerList: (params: InfluencerListParams) => ['influencers', 'list', params] as const,
-  filterOptions: (country: string[], state: string[]) => ['influencers', 'filter-options', { country, state }] as const,
+  filterOptions: (filters: InfluencerFilters) => ['influencers', 'filter-options', filters] as const,
   /** Prefix for one influencer and everything hanging off it. */
   influencer: (id: string) => ['influencers', 'detail', id] as const,
   influencerActivity: (id: string) => ['influencers', 'detail', id, 'activity'] as const,
@@ -38,7 +38,7 @@ export const queryKeys = {
   /** Prefix for the Unassigned Pool (under `influencers`, so influencer invalidations refresh it too). */
   pool: ['influencers', 'pool'] as const,
   poolList: (params: InfluencerListParams) => ['influencers', 'pool', 'list', params] as const,
-  poolFilterOptions: (country: string[], state: string[]) => ['influencers', 'pool', 'filter-options', { country, state }] as const,
+  poolFilterOptions: (filters: InfluencerFilters) => ['influencers', 'pool', 'filter-options', filters] as const,
   poolItem: (id: string) => ['influencers', 'pool', 'item', id] as const,
   poolExpiring: ['influencers', 'pool', 'expiring'] as const,
   /** Prefix for all package lists. */

@@ -3,6 +3,7 @@ import { Pencil, Plus, X } from 'lucide-react'
 import { useState, type FormEvent, type ReactNode } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
+import { EmailValue } from '@/components/common/email-value'
 import { InlineSelectField, InlineTextField } from '@/components/common/inline-field'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -198,17 +199,13 @@ export function OverviewTab({ influencer }: { influencer: Influencer }) {
           />
           <InlineTextField
             label="Email"
-            inputType="email"
+            inputType="text"
             value={influencer.email}
             placeholder="Add email"
             schema={fieldSchemas.email}
             onSave={(email) => save({ email })}
             disabled={!canEdit}
-            render={(v) => (
-              <a href={`mailto:${v}`} className="hover:underline">
-                {v}
-              </a>
-            )}
+            render={(v) => <EmailValue value={v} />}
           />
           <InlineSelectField
             label="Category"

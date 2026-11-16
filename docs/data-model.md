@@ -10,13 +10,17 @@ Source of truth: `src/types/index.ts`. Update both together.
   onboarded → package_sent/on_hold/rejected; package_sent → delivered/onboarded (returned);
   on_hold → previous stage/rejected; rejected → data_gathered (manager/admin only). Admin can override.
   → contacted requires a call log with outcome "interested"; → onboarded (from contacted) requires a current
-  agreement; → package_sent requires a package with courier + tracking number.
+  agreement and at least one insights summary; → package_sent requires a package with courier + tracking number.
 - **CallOutcome**: interested, not_interested, call_back, no_answer, wrong_number
 - **DocumentType**: insights_summary, agreement
 - **PackageStatus**: preparing, sent, in_transit, delivered, returned
 - **AccountType**: business, creator, personal, unknown · **SyncStatus**: synced, pending, not_synced, error
 - **Role**: admin, manager, executive
-- **Categories**: Fashion, Beauty, Food, Tech, Travel, Fitness, Lifestyle, Gaming, Finance, Parenting, Other
+- **User** (team member): id (`usr_…`), name, email, role, location (free text, ≤ 80, nullable), is_active,
+  created_at. **TeamMemberCreate** (POST /team): email, name, role, location?. **TeamMemberUpdate**: name?, role?,
+  location?, is_active?. There is no sign-in yet: people act as a member
+  from the account menu, and the team record decides their role.
+- **Categories** (defaults for a new workspace; admins manage them in Settings → Categories): Fashion, Beauty, Food, Tech & Gadgets, Travel, Fitness & Lifestyle, Lifestyle, Gaming & Esports, Finance, Art & Designs, Marketing & Business
 - **Platform**: instagram, youtube, tiktok, facebook, threads, pinterest, linkedin, snapchat
 - **SyncMethod** (default per platform): `lookup` = instagram, youtube, threads, facebook (public Pages);
   `connect` = tiktok, pinterest; `manual` = linkedin, snapchat, and personal Instagram / Facebook profiles.

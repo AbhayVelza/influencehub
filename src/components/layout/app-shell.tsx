@@ -40,7 +40,6 @@ function ShellSkeleton() {
 
 export function AppShell() {
   const me = useMe()
-
   if (me.isPending) return <ShellSkeleton />
   if (me.isError) {
     return (

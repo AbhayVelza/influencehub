@@ -1,5 +1,6 @@
 import type { ColumnDef } from '@tanstack/react-table'
 import { BadgeCheck, UserRound } from 'lucide-react'
+import { EmailValue } from '@/components/common/email-value'
 import { PersonAvatar } from '@/components/common/person-avatar'
 import { AccountLabel, PlatformMarks } from '@/components/common/platform-badge'
 import { StageBadge } from '@/components/common/stage-badge'
@@ -47,9 +48,7 @@ export function buildPoolColumns({ canReassign, busy, onOpen, onClaim, onAssign 
           cell: ({ row }) => {
             const email = isFullInfluencer(row.original) ? row.original.email : null
             return email ? (
-              <a href={`mailto:${email}`} className="block max-w-52 truncate hover:underline">
-                {email}
-              </a>
+              <EmailValue value={email} className="block max-w-52 truncate" />
             ) : (
               muted
             )

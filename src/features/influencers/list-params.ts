@@ -18,7 +18,7 @@ export const INSIGHTS_OPTIONS = [
   { value: 'missing', label: 'Missing' },
 ]
 
-const SORT_KEYS: InfluencerSortKey[] = ['name', 'total_reach', 'primary_followers', 'city', 'stage', 'created_at', 'updated_at']
+const SORT_KEYS: InfluencerSortKey[] = ['name', 'total_reach', 'instagram_followers', 'followers', 'city', 'stage', 'created_at', 'updated_at']
 
 const ARRAY_KEYS = ['category', 'country', 'state', 'city', 'assigned_to'] as const
 
@@ -53,6 +53,10 @@ export function parseFilters(sp: URLSearchParams): InfluencerFilters {
   const max = toNumber(sp.get('reach_max'))
   if (min !== undefined) filters.reach_min = min
   if (max !== undefined) filters.reach_max = max
+  const followersMin = toNumber(sp.get('followers_min'))
+  const followersMax = toNumber(sp.get('followers_max'))
+  if (followersMin !== undefined) filters.followers_min = followersMin
+  if (followersMax !== undefined) filters.followers_max = followersMax
   return filters
 }
 
@@ -104,6 +108,13 @@ export function listReturnPath(): string {
   } catch {
     return '/influencers'
   }
+}
+
+/** Filters set in the filter bar, each counted once (the search box isn't one of them). */
+export function countActiveFilters(filters: InfluencerFilters): number {
+  const { q: _q, reach_min, reach_max, followers_min, followers_max, ...rest } = filters
+  const lists = Object.values(rest).filter((v) => (Array.isArray(v) ? v.length > 0 : v != null)).length
+  return lists + (reach_min != null || reach_max != null ? 1 : 0) + (followers_min != null || followers_max != null ? 1 : 0)
 }
 
 export function hasActiveFilters(filters: InfluencerFilters): boolean {

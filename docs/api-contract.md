@@ -1,10 +1,12 @@
 # API contract
 
-The MSW mocks implement this. Behaviour the backend must match is in `contract-decisions.md`.
+The API: `src/backend/handlers` implement it, on the API server over PostgreSQL (in the browser in prototype mode). Detailed behaviour is in `contract-decisions.md`.
 
-Base `VITE_API_URL` + `/api/v1`. Lists → `{ items, total, page, page_size }`. Errors → `{ error: { code, message } }`.
+Paths under `/api/v1`, answered for the acting team member (`X-Acting-As: <member id>`; no sign-in yet). Lists → `{ items, total, page,
+page_size }`. Errors → `{ error: { code, message } }` (`contract-decisions.md`, Acting member & team). Document files:
+`PUT` / `GET /files/<key>` (stored in PostgreSQL).
 - GET /influencers (q, category[], platform[], country[], state[], city[], stage[], assigned_to[], reach_min,
-  reach_max, agreement=signed|missing, insights=received|missing, sort, page, page_size) · GET /influencers/filter-options?country=&state= (cascading, with counts)
+  reach_max, followers_min, followers_max, agreement=signed|missing, insights=received|missing, sort, page, page_size) · GET /influencers/filter-options (same filters as the list, no sort / paging → options with faceted counts; `contract-decisions.md`, Filter options)
 - POST /influencers · GET/PATCH/DELETE /influencers/{id} · GET /influencers/check-handle?platform=&handle=
 - POST /influencers/{id}/stage {to, reason} · POST /influencers/bulk {ids, action, value}
 - GET /influencers/{id}/activity · POST /influencers/{id}/accounts · POST /influencers/merge
@@ -17,10 +19,11 @@ Base `VITE_API_URL` + `/api/v1`. Lists → `{ items, total, page, page_size }`. 
   GET /documents (type[], q, uploaded_by[], uploaded_from, uploaded_to, page, page_size) ·
   POST /documents/presign {influencer_id, type, file_name, content_type, size} → {upload_url, key} ·
   GET /documents/{id}/download → {url} · DELETE /documents/{id}
-- POST /lookup {platform, username} → {job_id} · POST /imports/csv/presign · POST /imports/csv → {job_id}
+- POST /lookup {platform, username} → {job_id} · POST /imports/csv/presign · POST /imports/csv/upload {key, text} · POST /imports/csv → {job_id}
 - POST /exports/influencers → {job_id} · GET /jobs/{id} → {status, progress, result, error}
-- GET /me · GET/POST/PATCH /team · GET/POST/PATCH /categories · GET/POST/DELETE /saved-views
+- GET /me · GET /team · POST /team {email, name, role, location?} (admin) → User · PATCH /team/{id} {name?, role?, location?,
+  is_active?} · GET/POST/PATCH/DELETE /categories · GET/POST/DELETE /saved-views
 - GET /pool (same filters, sort and pagination as /influencers) · GET /pool/filter-options · GET /pool/{id} ·
   GET /pool/expiring · POST /influencers/{id}/claim · POST /influencers/{id}/release {reason} ·
-  POST /influencers/bulk action `claim` · GET/PATCH /settings/pool {claim_limit, auto_release_days}
+  POST /influencers/bulk actions `claim`, `pool_assign` · GET/PATCH /settings/pool {claim_limit, auto_release_days}
 Async actions return job_id; UI polls GET /jobs/{id} every 2 s.

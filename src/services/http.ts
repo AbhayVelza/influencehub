@@ -1,4 +1,6 @@
-import { API_BASE } from '@/lib/env'
+import { currentAuthUid } from '@/lib/auth'
+import { ACTING_AS_HEADER, API_BASE, API_ORIGIN } from '@/lib/env'
+import { PROTOTYPE } from '@/lib/mode'
 import type { ApiErrorBody } from '@/types'
 
 export class ApiError extends Error {
@@ -45,31 +47,47 @@ function isApiErrorBody(value: unknown): value is ApiErrorBody {
   )
 }
 
+/**
+ * Every API call goes through here: to the API server (server/main.ts), saying which member it acts as, or in
+ * prototype mode to the data layer in this browser (src/backend), loaded on first use.
+ */
 export async function request<T>(path: string, { method = 'GET', query, body, signal }: RequestOptions = {}): Promise<T> {
   const qs = toSearchParams(query).toString()
-  const url = `${API_BASE}${path}${qs ? `?${qs}` : ''}`
+  const url = new URL(`${API_BASE}${path}${qs ? `?${qs}` : ''}`, API_ORIGIN || window.location.origin)
+
+  const headers: Record<string, string> = body !== undefined ? { 'Content-Type': 'application/json' } : {}
+  const init = { method, headers, body: body !== undefined ? JSON.stringify(body) : undefined }
 
   let response: Response
   try {
-    response = await fetch(url, {
-      method,
-      signal,
-      headers: body !== undefined ? { 'Content-Type': 'application/json' } : undefined,
-      body: body !== undefined ? JSON.stringify(body) : undefined,
-    })
+    if (PROTOTYPE) {
+      const { handleApiRequest } = await import('@/backend')
+      signal?.throwIfAborted()
+      response = await handleApiRequest(new Request(url, init))
+    } else {
+      headers[ACTING_AS_HEADER] = currentAuthUid()
+      signal?.throwIfAborted()
+      response = await fetch(url, { ...init, signal })
+    }
   } catch (err) {
     if (err instanceof DOMException && err.name === 'AbortError') throw err
-    throw new ApiError(0, 'network_error', 'Could not reach the server. Check your connection.')
+    console.error('Request failed', err)
+    throw new ApiError(0, 'network_error', 'Something went wrong. Check your connection and try again.')
   }
+  signal?.throwIfAborted()
 
   if (response.status === 204) return undefined as T
 
-  const data: unknown = await response.json().catch(() => null)
+  const invalid = Symbol('invalid')
+  const data: unknown = await response.json().catch(() => invalid)
 
   if (!response.ok) {
     if (isApiErrorBody(data)) throw new ApiError(response.status, data.error.code, data.error.message)
     throw new ApiError(response.status, 'http_error', `Request failed (${response.status})`)
   }
+
+  // Every endpoint answers JSON or 204; anything else must fail the query instead of resolving with null.
+  if (data === invalid) throw new ApiError(response.status, 'invalid_response', 'The server sent an unexpected response.')
 
   return data as T
 }

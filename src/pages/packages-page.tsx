@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { DateRangeFilter } from '@/components/common/date-range-filter'
+import { CollapsibleFilters } from '@/components/common/collapsible-filters'
 import { MultiSelectFilter } from '@/components/common/multi-select-filter'
 import { PageHeader } from '@/components/common/page-header'
 import { Pagination } from '@/components/common/pagination'
@@ -25,9 +26,9 @@ import { ListSearch } from '@/features/influencers/list-search'
 import { InfluencerPicker } from '@/features/packages/influencer-picker'
 import { PackageDrawer, type PackageTarget } from '@/features/packages/package-drawer'
 import { PackageStatusConfirm } from '@/features/packages/package-status-confirm'
-import { needsStatusConfirm, useUpdatePackage, type StageChangingStatus } from '@/features/packages/queries'
+import { movedStage, needsStatusConfirm, useUpdatePackage, type StageChangingStatus } from '@/features/packages/queries'
 import { copyToClipboard } from '@/lib/clipboard'
-import { COURIERS, PACKAGE_STATUS_META, PACKAGE_STATUSES } from '@/lib/constants'
+import { COURIERS, PACKAGE_STATUS_META, PACKAGE_STATUSES, STAGE_META } from '@/lib/constants'
 import { formatDate, formatNumber } from '@/lib/format'
 import { queryKeys } from '@/lib/query'
 import { cn } from '@/lib/utils'
@@ -98,7 +99,10 @@ export default function PackagesPage() {
   const saveStatus = async (pkg: PackageWithInfluencer, status: PackageStatus) => {
     try {
       await updatePackage.mutateAsync({ id: pkg.id, body: { status } })
-      toast.success(`Package marked ${PACKAGE_STATUS_META[status].label.toLowerCase()}`)
+      const stage = await movedStage(pkg.influencer_id, pkg.influencer.stage, pkg.status, status)
+      toast.success(`Package marked ${PACKAGE_STATUS_META[status].label.toLowerCase()}`, {
+        description: stage ? `${pkg.influencer.name} is now in ${STAGE_META[stage].label}` : undefined,
+      })
     } catch (err) {
       toast.error('Couldn’t update the package', { description: getErrorMessage(err) })
     }
@@ -129,32 +133,34 @@ export default function PackagesPage() {
           label="Search packages"
           className="max-w-72"
         />
-        <MultiSelectFilter
-          label="Status"
-          options={PACKAGE_STATUSES.map((s) => ({ value: s, label: PACKAGE_STATUS_META[s].label }))}
-          selected={params.status ?? []}
-          onChange={(status) => update({ status })}
-        />
-        <MultiSelectFilter
-          label="Courier"
-          options={COURIERS.map((c) => ({ value: c, label: c }))}
-          selected={params.courier ?? []}
-          onChange={(courier) => update({ courier })}
-        />
-        <DateRangeFilter
-          label="Sent"
-          value={{ from: params.sent_from, to: params.sent_to }}
-          onChange={({ from, to }) => update({ sent_from: from, sent_to: to })}
-        />
-        {filtered && (
-          <Button
-            variant="link"
-            size="sm"
-            onClick={() => setSearchParams(new URLSearchParams())}
-          >
-            Clear all
-          </Button>
-        )}
+        <CollapsibleFilters
+          activeCount={(params.status?.length ? 1 : 0) + (params.courier?.length ? 1 : 0) + (params.sent_from || params.sent_to ? 1 : 0)}
+          actions={
+            filtered && (
+              <Button variant="link" size="sm" onClick={() => setSearchParams(new URLSearchParams())}>
+                Clear all
+              </Button>
+            )
+          }
+        >
+          <MultiSelectFilter
+            label="Status"
+            options={PACKAGE_STATUSES.map((s) => ({ value: s, label: PACKAGE_STATUS_META[s].label }))}
+            selected={params.status ?? []}
+            onChange={(status) => update({ status })}
+          />
+          <MultiSelectFilter
+            label="Courier"
+            options={COURIERS.map((c) => ({ value: c, label: c }))}
+            selected={params.courier ?? []}
+            onChange={(courier) => update({ courier })}
+          />
+          <DateRangeFilter
+            label="Sent"
+            value={{ from: params.sent_from, to: params.sent_to }}
+            onChange={({ from, to }) => update({ sent_from: from, sent_to: to })}
+          />
+        </CollapsibleFilters>
       </div>
 
       <div className="overflow-hidden rounded-lg border bg-card">

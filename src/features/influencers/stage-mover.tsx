@@ -2,12 +2,13 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useState, type ReactNode } from 'react'
 import { toast } from 'sonner'
 import { LogCallDialog, type LogCallTarget } from '@/features/calls/log-call-dialog'
-import { DocumentUploadDialog } from '@/features/documents/document-upload-dialog'
+import { DocumentUploadDialog, type UploadTarget } from '@/features/documents/document-upload-dialog'
 import { PackageDrawer, type PackageTarget } from '@/features/packages/package-drawer'
 import { STAGE_META } from '@/lib/constants'
+import { missingOnboardingDocuments } from '@/lib/documents'
 import { queryKeys } from '@/lib/query'
 import { ApiError, getErrorMessage, influencersApi } from '@/services'
-import type { Stage } from '@/types'
+import type { DocumentType, Stage } from '@/types'
 import { invalidateInfluencer } from './detail-queries'
 import { StageReasonDialog } from './stage-reason-dialog'
 
@@ -21,7 +22,7 @@ export interface MoveOptions {
   /** Admin move outside the standard transitions: always asks for a reason. */
   override?: boolean
   /**
-   * Whether the target stage's requirement (interested call / tracked package / current agreement) is already met.
+   * Whether the target stage's requirement (interested call / tracked package / agreement + insights) is already met.
    * false opens the required modal straight away; undefined tries the move and opens it only if the API
    * answers `requirement_missing`.
    */
@@ -31,6 +32,9 @@ export interface MoveOptions {
 }
 
 type MoverReasonState = { target: MoveTarget; to: Stage; mode: 'confirm' | 'override' } | null
+
+/** Onboarding documents still to upload (the first one is showing); the move to Onboarded follows the last. */
+type OnboardingState = { target: MoveTarget; uploadTarget: UploadTarget; queue: DocumentType[]; total: number; open: boolean }
 
 /**
  * Stage moves with the same rules everywhere (detail page, pipeline): required modals, confirmations,
@@ -46,7 +50,7 @@ export function useStageMover(): {
   const [reasonState, setReasonState] = useState<MoverReasonState>(null)
   const [call, setCall] = useState<{ target: LogCallTarget; open: boolean } | null>(null)
   const [pkg, setPkg] = useState<{ target: PackageTarget; open: boolean } | null>(null)
-  const [agreement, setAgreement] = useState<{ target: MoveTarget; open: boolean } | null>(null)
+  const [onboarding, setOnboarding] = useState<OnboardingState | null>(null)
 
   const move = async (target: MoveTarget, to: Stage, reason?: string, optimistic?: MoveOptions['optimistic']) => {
     optimistic?.apply()
@@ -69,7 +73,30 @@ export function useStageMover(): {
 
   const openRequirement = async (target: MoveTarget, to: Stage) => {
     if (to === 'contacted') return setCall({ target, open: true })
-    if (to === 'onboarded') return setAgreement({ target, open: true })
+    if (to === 'onboarded') {
+      try {
+        // A fresh record: what's missing decides the upload steps; its accounts feed the insights platform choice.
+        const influencer = await queryClient.fetchQuery({
+          queryKey: queryKeys.influencer(target.id),
+          queryFn: ({ signal }) => influencersApi.get(target.id, signal),
+          staleTime: 0,
+        })
+        const queue = missingOnboardingDocuments(influencer.documents)
+        if (!queue.length) {
+          // The record says both are on file but the server still refuses: say so instead of failing silently.
+          if ((await move(target, 'onboarded')) === 'requirement') {
+            toast.error('Couldn’t move to Onboarded', {
+              description: 'The agreement and an insights summary are both needed. Check the Documents tab.',
+            })
+          }
+          return
+        }
+        setOnboarding({ target, uploadTarget: influencer, queue, total: queue.length, open: true })
+      } catch (err) {
+        toast.error('Couldn’t open the document upload', { description: getErrorMessage(err) })
+      }
+      return
+    }
     if (to === 'package_sent') {
       try {
         // The drawer prefills the influencer's address, so load the full record.
@@ -112,14 +139,28 @@ export function useStageMover(): {
           onOpenChange={(open) => setCall((c) => (c ? { ...c, open } : c))}
         />
       )}
-      {agreement && (
+      {onboarding && (
         <DocumentUploadDialog
-          influencer={agreement.target}
-          type="agreement"
-          open={agreement.open}
-          onOpenChange={(open) => setAgreement((a) => (a ? { ...a, open } : a))}
-          // The requirement is met now: finish the move.
-          onUploaded={() => void move(agreement.target, 'onboarded')}
+          influencer={onboarding.uploadTarget}
+          type={onboarding.queue[0]}
+          note={
+            onboarding.total > 1
+              ? `Step ${onboarding.total - onboarding.queue.length + 1} of ${onboarding.total}: Onboarded needs the agreement and an insights summary`
+              : 'needed to move to Onboarded'
+          }
+          open={onboarding.open}
+          // A user close (cancel, Esc, outside click) drops the flow. A successful upload doesn't close the dialog:
+          // onUploaded below opens the next step or clears the flow and finishes the move.
+          onOpenChange={(open) => !open && setOnboarding(null)}
+          closeOnUpload={false}
+          onUploaded={async () => {
+            const rest = onboarding.queue.slice(1)
+            // Everything's on file now: finish the move. Otherwise ask for the next document.
+            if (rest.length) return setOnboarding({ ...onboarding, queue: rest, open: true })
+            setOnboarding(null)
+            // Still refused (e.g. a document was deleted meanwhile): rebuild the steps from fresh data.
+            if ((await move(onboarding.target, 'onboarded')) === 'requirement') await openRequirement(onboarding.target, 'onboarded')
+          }}
         />
       )}
       {pkg && (

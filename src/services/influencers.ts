@@ -8,6 +8,7 @@ import type {
   CallLogCreate,
   CheckHandleResponse,
   FilterOptions,
+  InfluencerFilters,
   Influencer,
   InfluencerCreate,
   InfluencerListParams,
@@ -26,8 +27,8 @@ export const influencersApi = {
   list: (params: InfluencerListParams = {}, signal?: AbortSignal) =>
     http.get<Paginated<Influencer>>(base, { ...params }, signal),
 
-  filterOptions: (params: { country?: string[]; state?: string[] } = {}, signal?: AbortSignal) =>
-    http.get<FilterOptions>(`${base}/filter-options`, params, signal),
+  filterOptions: (params: InfluencerFilters = {}, signal?: AbortSignal) =>
+    http.get<FilterOptions>(`${base}/filter-options`, { ...params }, signal),
 
   checkHandle: (platform: Platform, handle: string, signal?: AbortSignal) =>
     http.get<CheckHandleResponse>(`${base}/check-handle`, { platform, handle }, signal),

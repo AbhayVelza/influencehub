@@ -1,8 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { UserPlus } from 'lucide-react'
-import { useState } from 'react'
+import { useState, type ComponentProps } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
+import { InlineTextField } from '@/components/common/inline-field'
 import { PersonAvatar } from '@/components/common/person-avatar'
 import { ErrorState } from '@/components/common/states'
 import { Button } from '@/components/ui/button'
@@ -16,54 +17,82 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useMe } from '@/hooks/use-me'
 import { useTeam } from '@/hooks/use-team'
 import { ROLE_LABEL } from '@/lib/constants'
-import { inviteSchema, type InviteInput } from '@/lib/schemas'
+import { memberLocationSchema, teamMemberCreateSchema, type TeamMemberCreateInput } from '@/lib/schemas'
 import { cn } from '@/lib/utils'
-import { getErrorMessage } from '@/services'
-import type { Role, User } from '@/types'
-import { useInviteMember, useUpdateMember } from './queries'
+import { ApiError, getErrorMessage } from '@/services'
+import type { Role, TeamMemberUpdate, User } from '@/types'
+import { useAddMember, useUpdateMember } from './queries'
 
 const ROLES = Object.keys(ROLE_LABEL) as Role[]
 
-function InviteDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
-  const invite = useInviteMember()
-  const form = useForm<InviteInput, unknown, ReturnType<typeof inviteSchema.parse>>({
-    resolver: zodResolver(inviteSchema),
-    defaultValues: { email: '', role: 'executive', name: '' },
+/** A labelled text input with its error message. */
+function TextInput({ id, label, error, ...props }: ComponentProps<typeof Input> & { id: string; label: string; error?: string }) {
+  return (
+    <div className="grid gap-1.5">
+      <Label htmlFor={id}>{label}</Label>
+      <Input id={id} aria-invalid={!!error} aria-describedby={error ? `${id}-error` : undefined} {...props} />
+      {error && (
+        <p id={`${id}-error`} className="text-xs text-destructive">
+          {error}
+        </p>
+      )}
+    </div>
+  )
+}
+
+function AddMemberDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+  const add = useAddMember()
+  const [formError, setFormError] = useState<string | null>(null)
+  const form = useForm<TeamMemberCreateInput, unknown, ReturnType<typeof teamMemberCreateSchema.parse>>({
+    resolver: zodResolver(teamMemberCreateSchema),
+    defaultValues: { name: '', email: '', role: 'executive', location: '' },
   })
   const { register, control, handleSubmit, reset, setError, formState } = form
+  const { errors } = formState
+
+  const close = (next: boolean) => {
+    if (add.isPending) return
+    if (!next) {
+      reset()
+      setFormError(null)
+    }
+    onOpenChange(next)
+  }
 
   const onSubmit = handleSubmit(async (values) => {
+    setFormError(null)
     try {
-      const user = await invite.mutateAsync({ email: values.email, role: values.role, name: values.name ?? undefined })
-      toast.success(`Invited ${user.name} as ${ROLE_LABEL[user.role]}`)
+      const user = await add.mutateAsync(values)
+      toast.success(`Added ${user.name} as ${ROLE_LABEL[user.role]}`)
       reset()
       onOpenChange(false)
     } catch (err) {
-      setError('email', { message: getErrorMessage(err) })
+      const code = err instanceof ApiError ? err.code : null
+      if (code === 'email_taken') setError('email', { message: getErrorMessage(err) }, { shouldFocus: true })
+      else setFormError(getErrorMessage(err))
     }
   })
 
   return (
-    <Dialog open={open} onOpenChange={(next) => !invite.isPending && onOpenChange(next)}>
+    <Dialog open={open} onOpenChange={close}>
       <DialogContent className="sm:max-w-md">
         <form onSubmit={onSubmit} className="space-y-4" noValidate>
           <DialogHeader>
-            <DialogTitle>Invite a team member</DialogTitle>
-            <DialogDescription>They’ll get access with the role you choose.</DialogDescription>
+            <DialogTitle>Add a team member</DialogTitle>
+            <DialogDescription>
+              There’s no sign-in: switch to them from the account menu (Acting as) to use their role.
+            </DialogDescription>
           </DialogHeader>
+          <TextInput id="member-name" label="Name" autoFocus autoComplete="off" error={errors.name?.message} {...register('name')} />
+          <TextInput id="member-email" label="Email" type="email" autoComplete="off" error={errors.email?.message} {...register('email')} />
           <div className="grid gap-1.5">
-            <Label htmlFor="invite-email">Email</Label>
-            <Input id="invite-email" type="email" autoFocus aria-invalid={!!formState.errors.email} {...register('email')} />
-            {formState.errors.email && <p className="text-xs text-destructive">{formState.errors.email.message}</p>}
-          </div>
-          <div className="grid gap-1.5">
-            <Label htmlFor="invite-role">Role</Label>
+            <Label htmlFor="member-role">Role</Label>
             <Controller
               control={control}
               name="role"
               render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger id="invite-role" className="w-full">
+                  <SelectTrigger id="member-role" className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -77,18 +106,24 @@ function InviteDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (op
               )}
             />
           </div>
-          <div className="grid gap-1.5">
-            <Label htmlFor="invite-name">
-              Name <span className="font-normal text-muted-foreground">(optional)</span>
-            </Label>
-            <Input id="invite-name" {...register('name')} />
-          </div>
+          <TextInput
+            id="member-location"
+            label="Location (optional)"
+            placeholder="e.g. Mumbai office"
+            error={errors.location?.message}
+            {...register('location')}
+          />
+          {formError && (
+            <p role="alert" className="text-sm text-destructive">
+              {formError}
+            </p>
+          )}
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={invite.isPending}>
+            <Button type="button" variant="outline" onClick={() => close(false)} disabled={add.isPending}>
               Cancel
             </Button>
-            <Button type="submit" disabled={invite.isPending}>
-              Send invite
+            <Button type="submit" disabled={add.isPending}>
+              Add member
             </Button>
           </DialogFooter>
         </form>
@@ -101,9 +136,9 @@ export function TeamSettings() {
   const team = useTeam()
   const { data: me } = useMe()
   const update = useUpdateMember()
-  const [inviteOpen, setInviteOpen] = useState(false)
+  const [addOpen, setAddOpen] = useState(false)
 
-  const change = (user: User, body: Partial<Pick<User, 'role' | 'is_active'>>, success: string) =>
+  const change = (user: User, body: TeamMemberUpdate, success: string) =>
     update.mutate(
       { id: user.id, body },
       {
@@ -117,11 +152,13 @@ export function TeamSettings() {
       <CardHeader className="flex flex-row items-start justify-between gap-4">
         <div className="space-y-1.5">
           <CardTitle className="text-base">Team & roles</CardTitle>
-          <CardDescription>You can’t change your own role or deactivate yourself, and there’s always at least one admin.</CardDescription>
+          <CardDescription>
+            Add people and switch to them from the account menu (Acting as).             You can’t change your own role or deactivate yourself, and there’s always at least one admin.
+          </CardDescription>
         </div>
-        <Button onClick={() => setInviteOpen(true)}>
+        <Button onClick={() => setAddOpen(true)}>
           <UserPlus />
-          Invite member
+          Add member
         </Button>
       </CardHeader>
       <CardContent>
@@ -139,6 +176,7 @@ export function TeamSettings() {
               <TableRow>
                 <TableHead>Member</TableHead>
                 <TableHead>Role</TableHead>
+                <TableHead>Location</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">
                   <span className="sr-only">Actions</span>
@@ -180,6 +218,15 @@ export function TeamSettings() {
                       </Select>
                     </TableCell>
                     <TableCell>
+                      <InlineTextField
+                        label={`Location for ${user.name}`}
+                        value={user.location ?? ''}
+                        placeholder="Add location"
+                        schema={memberLocationSchema}
+                        onSave={(location) => update.mutateAsync({ id: user.id, body: { location } })}
+                      />
+                    </TableCell>
+                    <TableCell>
                       <span
                         className={cn(
                           'rounded-full px-2 py-0.5 text-xs font-medium',
@@ -189,7 +236,7 @@ export function TeamSettings() {
                         {user.is_active ? 'Active' : 'Deactivated'}
                       </span>
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="space-x-1 text-right">
                       {!self && (
                         <Button
                           variant={user.is_active ? 'ghost' : 'outline'}
@@ -210,7 +257,7 @@ export function TeamSettings() {
           </Table>
         )}
       </CardContent>
-      <InviteDialog open={inviteOpen} onOpenChange={setInviteOpen} />
+      <AddMemberDialog open={addOpen} onOpenChange={setAddOpen} />
     </Card>
   )
 }

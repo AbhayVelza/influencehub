@@ -27,6 +27,10 @@ interface DocumentUploadDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onUploaded?: (doc: InfluencerDocument) => void
+  /** Shown after the creator's name, e.g. "Step 1 of 2 · …". */
+  note?: string
+  /** false: a successful upload leaves closing to `onUploaded` (e.g. it opens the next step). Default true. */
+  closeOnUpload?: boolean
 }
 
 const ANY_PLATFORM = 'any'
@@ -261,11 +265,11 @@ function Footer({ busy, onCancel }: { busy: boolean; onCancel: () => void }) {
 }
 
 /** Upload one insights summary or agreement: pick the file, fill in its details, watch the progress. */
-export function DocumentUploadDialog({ influencer, type, open, onOpenChange, onUploaded }: DocumentUploadDialogProps) {
+export function DocumentUploadDialog({ influencer, type, open, onOpenChange, onUploaded, note, closeOnUpload = true }: DocumentUploadDialogProps) {
   const label = DOCUMENT_TYPE_META[type].label
   const done = (doc: InfluencerDocument) => {
     toast.success(`${label} uploaded`, { description: doc.title })
-    onOpenChange(false)
+    if (closeOnUpload) onOpenChange(false)
     onUploaded?.(doc)
   }
 
@@ -274,13 +278,16 @@ export function DocumentUploadDialog({ influencer, type, open, onOpenChange, onU
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Upload {label.toLowerCase()}</DialogTitle>
-          <DialogDescription>{influencer?.name}</DialogDescription>
+          <DialogDescription>
+            {influencer?.name}
+            {note && ` · ${note}`}
+          </DialogDescription>
         </DialogHeader>
         {influencer &&
           (type === 'agreement' ? (
-            <AgreementForm influencer={influencer} onDone={done} onCancel={() => onOpenChange(false)} />
+            <AgreementForm key="agreement" influencer={influencer} onDone={done} onCancel={() => onOpenChange(false)} />
           ) : (
-            <InsightsForm influencer={influencer} onDone={done} onCancel={() => onOpenChange(false)} />
+            <InsightsForm key="insights" influencer={influencer} onDone={done} onCancel={() => onOpenChange(false)} />
           ))}
       </DialogContent>
     </Dialog>

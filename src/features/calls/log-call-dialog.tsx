@@ -22,7 +22,7 @@ import { dateTimeInputFromNow, parseDateTimeInput } from '@/lib/format'
 import { callLogSchema, type CallLogFormInput } from '@/lib/schemas'
 import { getStandardTransitions } from '@/lib/stages'
 import { cn } from '@/lib/utils'
-import { getErrorMessage } from '@/services'
+import { ApiError, getErrorMessage } from '@/services'
 import type { CallOutcome, Stage } from '@/types'
 import { useLogCall } from './queries'
 
@@ -56,7 +56,7 @@ export function LogCallDialog({ influencer, open, onOpenChange, intent }: LogCal
   const logCall = useLogCall(influencer.id)
   const changeStage = useChangeStage(influencer.id)
   const form = useForm({ resolver: zodResolver(callLogSchema), defaultValues: defaults(intent) })
-  const { register, control, handleSubmit, setValue, reset, formState } = form
+  const { register, control, handleSubmit, setValue, setError, reset, formState } = form
 
   useEffect(() => {
     if (open) reset(defaults(intent))
@@ -75,6 +75,11 @@ export function LogCallDialog({ influencer, open, onOpenChange, intent }: LogCal
         follow_up_date: values.follow_up ? parseDateTimeInput(values.follow_up) : null,
       })
     } catch (err) {
+      // Another call already has this slot: say so on the field and keep the dialog open to pick another time.
+      if (err instanceof ApiError && err.code === 'time_taken') {
+        setError('follow_up', { message: err.message }, { shouldFocus: true })
+        return
+      }
       toast.error('Couldn’t log the call', { description: getErrorMessage(err) })
       return
     }

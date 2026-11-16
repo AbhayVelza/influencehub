@@ -1,19 +1,27 @@
 # InfluenceHub — frontend
 
 Internal CRM for finding, calling, onboarding and shipping packages to influencers.
-React 19 + TypeScript + Vite, with a mock API (MSW) so it runs without a backend.
+React 19 + TypeScript + Vite. Two modes, picked by the build env:
+
+- **Server mode** (`VITE_API_SERVER=true`): data and document files in PostgreSQL behind the API server in `server/`.
+  Setup: [`docs/server.md`](docs/server.md).
+- **Prototype mode** (the default): no server, all data saved in this browser. For demos and testing.
+
+There is **no sign-in yet**: the account menu's **Acting as** picks which team member you are. No sample data: the
+app starts empty except for an admin. One-page overview of the whole project: [`docs/project-overview.md`](docs/project-overview.md).
 
 ## What it does
 
 **Business flow:** gather data → call → onboard → send package.
 
-Influencers are added by public profile lookup, manually or by CSV. One creator can have accounts on several
-platforms (Instagram, YouTube, TikTok, Facebook, Threads, Pinterest, LinkedIn, Snapchat), each with its own stats.
+Influencers are added manually or by CSV (public profile lookup and syncing need a platform API, not connected yet).
+One creator can have accounts on several platforms (Instagram, YouTube, TikTok, Facebook, Threads, Pinterest,
+LinkedIn, Snapchat), each with its own stats.
 
 | Stage | Meaning |
 | --- | --- |
 | Data Gathered → Contacted | Needs a call logged with outcome "Interested" |
-| Contacted → Onboarded | Creator agreed; needs a current agreement on file |
+| Contacted → Onboarded | Creator agreed; needs a current agreement and an insights summary on file |
 | Onboarded → Package Sent | Needs a package with courier and tracking number |
 | Package Sent → Delivered | Package arrived (a returned package moves them back to Onboarded) |
 | On Hold / Rejected | Side stages. On Hold resumes to the previous stage; reopening Rejected is manager/admin only |
@@ -24,105 +32,85 @@ Admins can override any stage move, with a required reason.
 ## Features
 
 - **Dashboard**: KPIs, pipeline funnel, by-category and top-cities charts, my follow-ups, activity feed.
-- **Influencers**: filterable (category, platform, country → state → city, stage, owner, agreement, insights, reach), sortable table,
-  saved views, bulk actions, CSV import / export. Filters live in the URL.
-- **Influencer detail**: stage stepper, social accounts with per-platform stats, sync / connect link / manual
-  stats, growth chart and recent posts, calls, packages, activity log.
-- **Add / Import**: profile lookup (with "Also found" linked accounts), manual entry, CSV with a preview.
+- **Influencers**: filterable (category, platform, country → state → city, stage, owner, agreement, insights, reach),
+  sortable table, saved views, bulk actions, CSV import / export. Filters live in the URL.
+- **Influencer detail**: stage stepper, social accounts with per-platform stats, calls, packages, documents, activity.
+- **Add / Import**: manual entry and CSV with a preview.
 - **Unassigned Pool**: influencers with no owner. Executives see a preview and claim; managers assign.
   Optional guards: claim limit and auto-release.
 - **Possible duplicates** (manager/admin): side-by-side pairs with confidence and reasons; merge or dismiss.
-  Duplicate warnings also appear before every add.
-- **Documents**: insights summaries (many) and agreements (a new upload becomes current, older versions stay as
-  history) per influencer, with a sidebar page for all of them. PDF / JPG / PNG / DOCX / XLSX up to 20 MB, upload
-  progress, PDF and image preview, soft delete (manager/admin). Uploading ticks the onboarding checklist.
+- **Documents**: insights summaries and agreements (current + version history). PDF / JPG / PNG / DOCX / XLSX up to
+  20 MB, upload progress, preview, soft delete (manager/admin).
+- **Onboarded**: one tab per platform listing the creators onboarded there.
 - **Pipeline** kanban, **Calls & Follow-ups**, **Packages**.
-- **Settings** (admin): Instagram integration, team and roles, categories, pool guards.
+- **Settings** (admin): Instagram integration, team (add members, roles, deactivate), categories, pool guards.
 - Light / dark theme, usable at 1024px, skeleton / empty / error states. Dates are `dd/MM/yyyy` and date-times
   `dd/MM/yyyy, hh:mm a` in Asia/Kolkata (the API stays ISO 8601).
 
 ## Tech stack
 
 Vite, React 19, TypeScript, Tailwind, shadcn/ui, lucide-react, React Router, TanStack Query and Table, Recharts,
-dnd-kit, react-hook-form + zod, date-fns, sonner, MSW (mock API), Playwright (e2e), oxlint.
+dnd-kit, react-hook-form + zod, date-fns, sonner, MSW's request router (no service worker), oxlint.
+API server: Node, Hono, PostgreSQL (`postgres`).
 
 ## Project layout
 
 ```
 src/
   components/   layout shell, shared UI, shadcn/ui
-  features/     add-influencer, calls, dashboard, documents, duplicates, influencers, packages, pipeline, pool, settings
+  features/     add-influencer, calls, dashboard, documents, duplicates, influencers, onboarded, packages,
+                pipeline, pool, settings
   pages/        one component per route
   services/     the only place that calls the API
-  lib/          schemas (zod), platforms, stages, permissions, formatting, session
-  mocks/        MSW handlers, in-memory database, fixtures
-  types/        API types, the source of truth for the contract
-e2e/            Playwright tests
+  backend/      the business rules (API handlers) over a working copy of the data
+  lib/          acting member (auth), schemas (zod), platforms, stages, permissions, formatting, session, mode
+  types/        data types, the source of truth for the contract
+server/         the API server: runs src/backend's handlers over PostgreSQL (main.ts, pg-store.ts, schema.sql)
 ```
 
 ## Run it
 
+### Prototype mode (no setup)
+
 ```bash
 npm install
-npm run dev        # http://localhost:5173, mock API on (see .env.development)
+npm run dev          # http://localhost:3000, you're the Admin
 ```
+
+Everything is saved in this browser (IndexedDB). Account menu > **Reset prototype data** starts again.
+
+### Server mode (PostgreSQL)
+
+Create the database and fill `.env.local` ([`docs/server.md`](docs/server.md)), then:
+
+```bash
+npm install
+npm run server       # API on http://localhost:3001 (creates tables, adds the owner admin on first start)
+npm run dev          # app on http://localhost:3000
+```
+
+To try other roles: **Settings > Team & roles > Add member**, then account menu > **Acting as**.
 
 | Script | What it does |
 | --- | --- |
-| `npm run dev` | Dev server with the mock API |
-| `npm run build` | Type-check and build to `dist/` |
-| `npm run preview` | Serve the production build |
+| `npm run dev` | App dev server on port 3000 |
+| `npm run build` | Type-check and build the app to `dist/` |
+| `npm run preview` | Serve the production build on port 3000 |
+| `npm run server:build` / `npm run server` / `npm start` | Build / build and start / start the API server (port 3001) |
 | `npm run lint` / `npm run typecheck` | oxlint / TypeScript |
-| `npm run test:e2e` | Playwright end-to-end tests (`e2e/`) against the dev server with mocks, on port 5199 |
-
-E2E tests use the installed Microsoft Edge. Elsewhere, run `npx playwright install chromium` and set
-`E2E_CHANNEL=chromium`.
 
 ## Environment variables
 
 | Variable | Meaning |
 | --- | --- |
-| `VITE_API_URL` | API origin, without `/api/v1`. Empty = same origin. |
-| `VITE_USE_MOCKS` | `true` serves the API from MSW in the browser (`src/mocks`). Read at build time: a production build without it contains no mock code. |
+| `VITE_API_SERVER` | `true` = server mode; otherwise prototype mode |
+| `VITE_API_URL` | Only when the API server is on another origin than the app |
+| `DATABASE_URL` | PostgreSQL connection string for the server (secret) |
+| `PORT`, `STATIC_DIR`, `CORS_ORIGIN` | Server port (3001), built app folder (`dist`), allowed origins |
 
-Copy `.env.example` to `.env.local` to override. `.env.development` turns the mocks on for `npm run dev`;
-`npm run build` has them off unless you set `VITE_USE_MOCKS=true`.
+The committed `.env` holds empty placeholders only. Put your values in `.env.local` (gitignored).
 
-## Mock data
-
-- 54 influencers (70% in Indian cities) across every stage, plus calls, packages, activity and a 4-person team.
-  Each has an Instagram account plus, for many, YouTube, TikTok, Facebook (Pages and two personal profiles),
-  Threads, Pinterest, LinkedIn or Snapchat, in every sync / connect state.
-- 4 planted duplicate pairs for **Possible duplicates**: same email (Riya Shah / Riya S.), a YouTube channel linked
-  from an Instagram bio (Ishaan Kapoor / Ishaan Talks), the same handle on two platforms (Arjun Pillai / Arjun P),
-  and a similar name in the same city (Kabir Malhotra / Kabir Malhothra).
-  Dates shift on load, so "due today" and "overdue" follow-ups are always current.
-- Documents: agreements for most onboarded-and-later influencers (two have a version history), insights summaries for
-  some, and 3 onboarded influencers without an agreement (see the dashboard KPI). Uploaded files live in memory as blob
-  URLs; seeded ones are generated placeholders when previewed or downloaded.
-- Data lives in memory: a full page reload resets it.
-- Usernames that simulate failures (lookup in **Add influencer**, and **Sync now**; any lookup platform):
-
-  | Username contains | Result |
-  | --- | --- |
-  | `personal` | Personal Instagram / Facebook profile: offered "Enter manually" |
-  | `notfound` | Account not found |
-  | `ratelimit` | Instagram rate limit |
-  | `multi` | A profile whose bio links another platform ("Also found: …") |
-  | anything else | A generated profile (about half link another platform in their bio) |
-
-  A handle already in the CRM (e.g. `riyastyle`) returns "Already in CRM"; one in the Unassigned Pool (e.g.
-  `oliviaexplores`) offers "Claim it".
-- 12 influencers start unassigned (in the Unassigned Pool), 8 of them in Data Gathered. Arjun claimed `priyaeatskochi`
-  6 days ago and Sneha claimed `meerathemom` 10 days ago, both with no call since: turn on auto-release (7 days) in
-  Settings → Unassigned Pool to see one released at once and the other flagged in Arjun's notifications.
-
-## View as (who you're signed in as)
-
-With mocks on, the user menu (top right) has **View as**: Ananya (Admin), Rahul (Manager), and two executives,
-Sneha and Arjun. It changes who `/me` returns and who the mock API enforces permissions and scoping for, so
-hidden buttons, 403s and 404s can be tried in the browser. It's stored in `localStorage`, resets the cached
-data, and does nothing against a real backend.
+## Roles
 
 | | Executive | Manager | Admin |
 | --- | :---: | :---: | :---: |
@@ -132,27 +120,22 @@ data, and does nothing against a real backend.
 | Upload documents | own | all | all |
 | Delete documents (soft) |  | ✓ | ✓ |
 | Reassign, delete, reopen rejected, import / export, review & merge duplicates |  | ✓ | ✓ |
-| Stage override (with reason), Settings (incl. pool guards) |  |  | ✓ |
+| Stage override (with reason), Settings (incl. team and pool guards) |  |  | ✓ |
+
+The data layer (`src/backend`) applies these and the UI hides what a role can't do.
 
 ## API
 
-Base URL is `VITE_API_URL` + `/api/v1`. Lists return `{ items, total, page, page_size }` and errors return
-`{ error: { code, message } }`. Long actions (lookup, sync, import, export) return a `job_id`; the UI polls
-`GET /jobs/{id}` every 2 seconds. Executives are scoped server-side to their own influencers.
-Resources: influencers, accounts, duplicates, calls, packages, documents, pipeline, dashboard, pool, team, categories,
-saved views, imports / exports, settings.
+The services call `/api/v1/...`: the API server, or the data layer in the browser in prototype mode. Shapes are in
+`docs/api-contract.md`. Lists return `{ items, total, page, page_size }`, errors `{ error: { code, message } }`.
+Imports and exports return a `job_id` that the UI polls (`GET /jobs/{id}`).
 
-## Tests
+## Checks
 
-`npm run test:e2e` runs 36 Playwright tests against the mock API: cascading filters and URL restore, sorting,
-bulk stage changes, stage modals, admin override, package return, the role permissions matrix, pool claim /
-release, duplicates, platforms, the dd/MM/yyyy date format (list, detail, forms, CSV), documents (upload, preview,
-download, delete rights, scoping, checklist) and an axe accessibility check on every main page. Each test starts with fresh mock
-data and fails on any console error.
-
-Before calling a change done, run `npm run lint`, `npm run typecheck`, `npm run build` and `npm run test:e2e`.
+Before calling a change done, run `npm run lint`, `npm run typecheck`, `npm run build` and `npm run server:build`.
+There is no automated end-to-end suite yet.
 
 ## More
 
-`CLAUDE.md` holds the rules and conventions. `docs/` holds the data model, the API contract and every contract
-decision the backend must match (including the exact name-similarity rule for duplicate detection).
+`CLAUDE.md` holds the rules and conventions. `docs/` holds the project overview, data model, API contract, contract
+decisions, dates and documents, screens and `docs/server.md` (PostgreSQL and the API server).

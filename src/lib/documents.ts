@@ -1,6 +1,6 @@
 import { formatDay, todayKey } from '@/lib/format'
 import { PLATFORM_META } from '@/lib/platforms'
-import type { DocumentType, InfluencerDocument } from '@/types'
+import type { DocumentSummary, DocumentType, InfluencerDocument } from '@/types'
 
 export const DOCUMENT_TYPE_META: Record<DocumentType, { label: string; plural: string }> = {
   insights_summary: { label: 'Insights summary', plural: 'Insights summaries' },
@@ -8,6 +8,17 @@ export const DOCUMENT_TYPE_META: Record<DocumentType, { label: string; plural: s
 }
 
 export const DOCUMENT_TYPES = Object.keys(DOCUMENT_TYPE_META) as DocumentType[]
+
+/**
+ * The documents still needed to move Contacted → Onboarded (the Onboarded rule): a current agreement and an insights
+ * summary, collected together. In upload order; empty when both are on file.
+ */
+export function missingOnboardingDocuments(documents: DocumentSummary | null | undefined): DocumentType[] {
+  const missing: DocumentType[] = []
+  if (!documents?.has_agreement) missing.push('agreement')
+  if (!documents?.insights_count) missing.push('insights_summary')
+  return missing
+}
 
 export const MAX_DOCUMENT_BYTES = 20 * 1024 * 1024
 
