@@ -15,7 +15,7 @@ export async function resetSession() {
   for (const listener of listeners) listener()
 }
 
-const subscribe = (listener: () => void) => {
+export const subscribeSession = (listener: () => void) => {
   listeners.add(listener)
   return () => listeners.delete(listener)
 }
@@ -25,5 +25,5 @@ export const getSessionEpoch = () => session
 
 /** Changes on every resetSession; used as the routed tree's key. */
 export function useSessionKey() {
-  return useSyncExternalStore(subscribe, () => session)
+  return useSyncExternalStore(subscribeSession, () => session)
 }

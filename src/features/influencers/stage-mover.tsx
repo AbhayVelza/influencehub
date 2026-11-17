@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { useState, type ReactNode } from 'react'
+import { useRef, useState, type ReactNode } from 'react'
 import { toast } from 'sonner'
 import { LogCallDialog, type LogCallTarget } from '@/features/calls/log-call-dialog'
 import { DocumentUploadDialog, type UploadTarget } from '@/features/documents/document-upload-dialog'
@@ -34,7 +34,7 @@ export interface MoveOptions {
 type MoverReasonState = { target: MoveTarget; to: Stage; mode: 'confirm' | 'override' } | null
 
 /** Onboarding documents still to upload (the first one is showing); the move to Onboarded follows the last. */
-type OnboardingState = { target: MoveTarget; uploadTarget: UploadTarget; queue: DocumentType[]; total: number; open: boolean }
+type OnboardingState = { target: MoveTarget; uploadTarget: UploadTarget; queue: DocumentType[]; total: number; open: boolean; flowId: number }
 
 /**
  * Stage moves with the same rules everywhere (detail page, pipeline): required modals, confirmations,
@@ -46,6 +46,7 @@ export function useStageMover(): {
   dialogs: ReactNode
 } {
   const queryClient = useQueryClient()
+  const onboardingFlowIdRef = useRef(0)
   const [pending, setPending] = useState(false)
   const [reasonState, setReasonState] = useState<MoverReasonState>(null)
   const [call, setCall] = useState<{ target: LogCallTarget; open: boolean } | null>(null)
@@ -74,6 +75,7 @@ export function useStageMover(): {
   const openRequirement = async (target: MoveTarget, to: Stage) => {
     if (to === 'contacted') return setCall({ target, open: true })
     if (to === 'onboarded') {
+      const flowId = ++onboardingFlowIdRef.current
       try {
         // A fresh record: what's missing decides the upload steps; its accounts feed the insights platform choice.
         const influencer = await queryClient.fetchQuery({
@@ -81,18 +83,21 @@ export function useStageMover(): {
           queryFn: ({ signal }) => influencersApi.get(target.id, signal),
           staleTime: 0,
         })
+        if (onboardingFlowIdRef.current !== flowId) return
         const queue = missingOnboardingDocuments(influencer.documents)
         if (!queue.length) {
           // The record says both are on file but the server still refuses: say so instead of failing silently.
           if ((await move(target, 'onboarded')) === 'requirement') {
+            if (onboardingFlowIdRef.current !== flowId) return
             toast.error('Couldn’t move to Onboarded', {
               description: 'The agreement and an insights summary are both needed. Check the Documents tab.',
             })
           }
           return
         }
-        setOnboarding({ target, uploadTarget: influencer, queue, total: queue.length, open: true })
+        setOnboarding({ target, uploadTarget: influencer, queue, total: queue.length, open: true, flowId })
       } catch (err) {
+        if (onboardingFlowIdRef.current !== flowId) return
         toast.error('Couldn’t open the document upload', { description: getErrorMessage(err) })
       }
       return
@@ -151,15 +156,24 @@ export function useStageMover(): {
           open={onboarding.open}
           // A user close (cancel, Esc, outside click) drops the flow. A successful upload doesn't close the dialog:
           // onUploaded below opens the next step or clears the flow and finishes the move.
-          onOpenChange={(open) => !open && setOnboarding(null)}
+          onOpenChange={(open) => {
+            if (!open) {
+              onboardingFlowIdRef.current += 1
+              setOnboarding(null)
+            }
+          }}
           closeOnUpload={false}
           onUploaded={async () => {
+            if (onboardingFlowIdRef.current !== onboarding.flowId) return
             const rest = onboarding.queue.slice(1)
             // Everything's on file now: finish the move. Otherwise ask for the next document.
             if (rest.length) return setOnboarding({ ...onboarding, queue: rest, open: true })
+            const flowId = onboarding.flowId
             setOnboarding(null)
             // Still refused (e.g. a document was deleted meanwhile): rebuild the steps from fresh data.
-            if ((await move(onboarding.target, 'onboarded')) === 'requirement') await openRequirement(onboarding.target, 'onboarded')
+            const result = await move(onboarding.target, 'onboarded')
+            if (onboardingFlowIdRef.current !== flowId) return
+            if (result === 'requirement') await openRequirement(onboarding.target, 'onboarded')
           }}
         />
       )}

@@ -50,6 +50,14 @@ member you are. Without `VITE_API_SERVER` the app runs in **prototype mode** (no
 | `npm run dev` | The app on port 3000; it forwards `/api` to the server. |
 | `npm run build` then `npm run server` | Production: the server also serves the built app from `dist/`, one process on one port. |
 | `npm start` | Starts an already-built server. |
+| `npm run server:supabase` | Same server, but over Supabase (`SUPABASE_DATABASE_URL`) instead of local PostgreSQL. |
+| `npm run db:copy` | Copies all data + files local → Supabase (`-- --from supabase` for Supabase → local). Refuses a target that has data unless `-- --replace`. Stop the server first. |
+
+**Supabase (shared test database).** PostgreSQL stays the database; Supabase is just a hosted PostgreSQL that the
+team tests on. Put its connection string (Project → Connect → Session pooler, port 5432) in `.env.local` as
+`SUPABASE_DATABASE_URL`. TLS is used for any non-localhost host; the transaction pooler (port 6543) works too
+(prepared statements off). Only **one** server may run against a database (it keeps a working copy in memory), so
+testers share one running server rather than each starting their own against Supabase.
 
 Server environment: `DATABASE_URL` (required), `PORT` (default 3001), `STATIC_DIR` (default `dist`), `CORS_ORIGIN`
 (comma-separated origins; only when the app is served from elsewhere, together with `VITE_API_URL` in the app's

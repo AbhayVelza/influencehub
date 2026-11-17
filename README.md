@@ -106,6 +106,7 @@ To try other roles: **Settings > Team & roles > Add member**, then account menu 
 | `VITE_API_SERVER` | `true` = server mode; otherwise prototype mode |
 | `VITE_API_URL` | Only when the API server is on another origin than the app |
 | `DATABASE_URL` | PostgreSQL connection string for the server (secret) |
+| `SUPABASE_DATABASE_URL` | Supabase's PostgreSQL connection string, used by `npm run server:supabase` / `db:copy` (secret) |
 | `PORT`, `STATIC_DIR`, `CORS_ORIGIN` | Server port (3001), built app folder (`dist`), allowed origins |
 
 The committed `.env` holds empty placeholders only. Put your values in `.env.local` (gitignored).
