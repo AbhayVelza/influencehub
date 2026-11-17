@@ -28,13 +28,28 @@ const SETTINGS = { poolSettings: 'pool', instagramSettings: 'instagram', migrati
 const DISMISSED = 'dismissed_duplicates'
 
 let sql: postgres.Sql | null = null
+
+/** `--supabase` (or DB_TARGET=supabase) uses SUPABASE_DATABASE_URL, the shared test database; otherwise DATABASE_URL. */
+function databaseUrl(): string {
+  const supabase = process.argv.includes('--supabase') || process.env.DB_TARGET?.trim() === 'supabase'
+  const name = supabase ? 'SUPABASE_DATABASE_URL' : 'DATABASE_URL'
+  const url = process.env[name]?.trim()
+  if (!url) throw new Error(`${name} is not set. Put your PostgreSQL connection string in .env.local.`)
+  return url
+}
 let ready: Promise<void> | null = null
 
 function client(): postgres.Sql {
   if (sql) return sql
-  const url = process.env.DATABASE_URL?.trim()
-  if (!url) throw new Error('DATABASE_URL is not set. Put your PostgreSQL connection string in .env.local.')
-  sql = postgres(url, { max: 4, onnotice: () => undefined })
+  const url = databaseUrl()
+  const local = /@(localhost|127\.0\.0\.1)[:/]/.test(url)
+  sql = postgres(url, {
+    max: 4,
+    onnotice: () => undefined,
+    // Hosted PostgreSQL (Supabase) needs TLS; a transaction pooler (port 6543) can't keep prepared statements.
+    ssl: local || /sslmode=disable/.test(url) ? false : 'require',
+    prepare: !/:6543\//.test(url),
+  })
   return sql
 }
 
