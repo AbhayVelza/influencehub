@@ -73,7 +73,7 @@ accounts on several platforms, each with its own stats.
 **Not connected yet:** public profile lookup, "Sync now", connect links and growth history need the platforms'
 APIs. Until then accounts keep the stats people type in.
 
-**UX rules:** light/dark theme; desktop-first, usable at 1024px; skeleton, empty and error states everywhere;
+**UX rules:** light/dark theme; responsive from 360px phones up (menu sheet below 1024px); skeleton, empty and error states everywhere;
 numbers as 12.4K / 1.2M; dates `dd/MM/yyyy` and date-times `dd/MM/yyyy, hh:mm a` in Asia/Kolkata; relative times;
 toasts; "/" focuses search; filters collapsed behind a "Filters" button.
 

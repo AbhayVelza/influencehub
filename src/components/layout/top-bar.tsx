@@ -4,19 +4,21 @@ import { useAddInfluencer } from '@/features/add-influencer/context'
 import { useCan } from '@/hooks/use-me'
 import { GlobalSearch } from './global-search'
 import { NotificationsMenu } from './notifications-menu'
+import { MobileNav } from './sidebar'
 import { UserMenu } from './user-menu'
 
 export function TopBar() {
   const { open } = useAddInfluencer()
   const canCreate = useCan('influencer:create')
   return (
-    <header className="flex h-14 shrink-0 items-center gap-3 border-b bg-background px-4 lg:px-6">
+    <header className="flex h-14 shrink-0 items-center gap-2 border-b sm:gap-3 bg-background px-2 sm:px-4 lg:px-6">
+      <MobileNav />
       <GlobalSearch />
-      <div className="ml-auto flex items-center gap-1.5">
+      <div className="ml-auto flex shrink-0 items-center gap-1.5">
         {canCreate && (
-          <Button onClick={() => open()}>
+          <Button onClick={() => open()} aria-label="Add Influencer">
             <Plus />
-            Add Influencer
+            <span className="hidden sm:inline">Add Influencer</span>
           </Button>
         )}
         <NotificationsMenu />

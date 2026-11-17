@@ -6,6 +6,7 @@ import {
   FileText,
   Inbox,
   LayoutDashboard,
+  Menu,
   Package,
   PhoneCall,
   Settings,
@@ -15,6 +16,8 @@ import {
 import { useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { PlatformIcon } from '@/components/common/platform-icon'
+import { Button } from '@/components/ui/button'
+import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { useDuplicatePairs } from '@/features/duplicates/queries'
 import { usePoolCount } from '@/features/pool/queries'
 import { useDefaultMine, useFollowUps } from '@/hooks/use-follow-ups'
@@ -115,7 +118,8 @@ function OnboardedGroup() {
   )
 }
 
-export function Sidebar() {
+/** Logo + navigation; shared by the desktop sidebar and the mobile menu. */
+function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
   const canSeeSettings = useCan('integrations:manage')
   const { data: dueToday } = useFollowUps('today', 1, 25, useDefaultMine())
   const poolCount = usePoolCount()
@@ -137,14 +141,21 @@ export function Sidebar() {
   ]
 
   return (
-    <aside className="flex w-56 shrink-0 flex-col border-r border-sidebar-border bg-sidebar">
+    <>
       <div className="flex h-14 items-center gap-2 border-b border-sidebar-border px-4">
         <div className="flex size-7 items-center justify-center rounded-md bg-primary text-sm font-bold text-primary-foreground">
           IH
         </div>
         <span className="font-heading font-semibold tracking-tight">InfluenceHub</span>
       </div>
-      <nav aria-label="Main" className="flex flex-1 flex-col gap-0.5 overflow-y-auto p-2">
+      <nav
+        aria-label="Main"
+        className="flex flex-1 flex-col gap-0.5 overflow-y-auto p-2"
+        // Closes the mobile menu once a link is picked.
+        onClick={(e) => {
+          if (onNavigate && (e.target as HTMLElement).closest('a')) onNavigate()
+        }}
+      >
         {items.map((item) => (
           <SidebarLink key={item.to} item={item} />
         ))}
@@ -155,6 +166,34 @@ export function Sidebar() {
           </div>
         )}
       </nav>
+    </>
+  )
+}
+
+/** The fixed sidebar, from 1024px up. */
+export function Sidebar() {
+  return (
+    <aside className="hidden w-56 shrink-0 flex-col border-r border-sidebar-border bg-sidebar lg:flex">
+      <SidebarBody />
     </aside>
+  )
+}
+
+/** Below 1024px the sidebar opens from a menu button in the top bar. */
+export function MobileNav() {
+  const [open, setOpen] = useState(false)
+  return (
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger asChild>
+        <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open menu">
+          <Menu />
+        </Button>
+      </SheetTrigger>
+      <SheetContent side="left" className="w-64 gap-0 bg-sidebar p-0 sm:max-w-64">
+        <SheetTitle className="sr-only">Menu</SheetTitle>
+        <SheetDescription className="sr-only">Main navigation</SheetDescription>
+        <SidebarBody onNavigate={() => setOpen(false)} />
+      </SheetContent>
+    </Sheet>
   )
 }

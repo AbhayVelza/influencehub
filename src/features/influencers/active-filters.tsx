@@ -73,7 +73,7 @@ export function ActiveFilters({ filters, onChange, onClear }: ActiveFiltersProps
   if (filters.reach_min != null || filters.reach_max != null) {
     chips.push({
       key: 'reach',
-      label: `Reach ${formatFollowerRange({ min: filters.reach_min, max: filters.reach_max })}`,
+      label: `Total followers ${formatFollowerRange({ min: filters.reach_min, max: filters.reach_max })}`,
       remove: () => onChange({ reach_min: undefined, reach_max: undefined }),
     })
   }

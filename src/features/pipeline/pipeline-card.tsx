@@ -45,7 +45,7 @@ export function PipelineCardView({
         </div>
       </div>
       <p className="text-xs text-muted-foreground">
-        <span className="font-medium text-foreground tabular-nums">{formatCompact(card.total_reach)}</span> reach ·{' '}
+        <span className="font-medium text-foreground tabular-nums">{formatCompact(card.total_reach)}</span> followers ·{' '}
         {card.category}
       </p>
       <div className="flex items-center justify-between gap-2 text-xs">

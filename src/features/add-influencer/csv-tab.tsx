@@ -377,7 +377,7 @@ function Summary({ result, onDone, onAgain }: { result: CsvImportResult; onDone:
   return (
     <div className="space-y-4" aria-live="polite">
       <p className="font-medium">Import finished · {formatNumber(result.total_rows)} rows</p>
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         <Stat label="Created" value={result.created} />
         <Stat label="Updated" value={result.updated} />
         <Stat label="Duplicates skipped" value={result.duplicates} />

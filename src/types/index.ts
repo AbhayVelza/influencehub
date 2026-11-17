@@ -333,6 +333,8 @@ export interface User {
   location: string | null
   is_active: boolean
   created_at: ISODateString
+  /** Set when an admin deletes a deactivated member: hidden from the team list, kept so history still shows their name. */
+  deleted_at?: ISODateString | null
 }
 
 export interface Category {

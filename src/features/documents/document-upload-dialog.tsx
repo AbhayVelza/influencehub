@@ -166,7 +166,7 @@ function InsightsForm({ influencer, onDone, onCancel }: { influencer: UploadTarg
       <Field id="doc-title" label="Title" error={errors.title?.message}>
         <Input id="doc-title" placeholder="e.g. Instagram insights · Sep 2026" aria-invalid={!!errors.title} {...register('title')} />
       </Field>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Field id="doc-period-start" label="Period start" error={errors.period_start?.message}>
           <DateInput id="doc-period-start" aria-invalid={!!errors.period_start} {...register('period_start')} />
         </Field>
@@ -233,7 +233,7 @@ function AgreementForm({ influencer, onDone, onCancel }: { influencer: UploadTar
       <Field id="doc-title" label="Title" error={errors.title?.message}>
         <Input id="doc-title" aria-invalid={!!errors.title} {...register('title')} />
       </Field>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Field id="doc-signed-on" label="Signed on" error={errors.signed_on?.message}>
           <DateInput id="doc-signed-on" aria-invalid={!!errors.signed_on} {...register('signed_on')} />
         </Field>

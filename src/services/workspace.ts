@@ -34,6 +34,8 @@ export const teamApi = {
   list: (signal?: AbortSignal) => http.get<Paginated<User>>('/team', undefined, signal),
   create: (body: TeamMemberCreate) => http.post<User>('/team', body),
   update: (id: string, body: TeamMemberUpdate) => http.patch<User>(`/team/${id}`, body),
+  /** Deactivated members only; 409 `owns_influencers` while they still own any. */
+  remove: (id: string) => http.delete(`/team/${id}`),
 }
 
 export const categoriesApi = {

@@ -76,7 +76,7 @@ export function EditStatsDialog({
             </DialogTitle>
             <DialogDescription>Entered by hand. Leave a field empty if you don’t know it.</DialogDescription>
           </DialogHeader>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {defs.map((def) => (
               <div key={def.key} className="grid gap-1">
                 <Label htmlFor={`stat-${def.key}`} className="text-xs">

@@ -33,7 +33,7 @@ export function GlobalSearch() {
         aria-label="Search influencers"
         className="pr-8 pl-8"
       />
-      <kbd className="pointer-events-none absolute top-1/2 right-2 -translate-y-1/2 rounded border bg-muted px-1.5 font-mono text-[11px] text-muted-foreground">
+      <kbd className="pointer-events-none absolute hidden sm:block top-1/2 right-2 -translate-y-1/2 rounded border bg-muted px-1.5 font-mono text-[11px] text-muted-foreground">
         /
       </kbd>
     </form>

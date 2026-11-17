@@ -188,7 +188,7 @@ export function InfluencerHeader({
             <PlatformMarks platforms={influencer.accounts.map((a) => a.platform)} />
             {influencer.total_reach != null && (
               <span title={formatNumber(influencer.total_reach)}>
-                <span className="font-medium text-foreground tabular-nums">{formatCompact(influencer.total_reach)}</span> total reach
+                <span className="font-medium text-foreground tabular-nums">{formatCompact(influencer.total_reach)}</span> total followers
               </span>
             )}
             {location !== '—' && (
@@ -214,10 +214,12 @@ export function InfluencerHeader({
             <PhoneCall />
             Log call
           </Button>
-          <Button variant="outline" onClick={() => onCreatePackage()}>
-            <Package />
-            Create package
-          </Button>
+          {influencer.stage !== 'rejected' && (
+            <Button variant="outline" onClick={() => onCreatePackage()}>
+              <Package />
+              Create package
+            </Button>
+          )}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" aria-label="More actions">

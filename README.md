@@ -44,7 +44,7 @@ Admins can override any stage move, with a required reason.
 - **Onboarded**: one tab per platform listing the creators onboarded there.
 - **Pipeline** kanban, **Calls & Follow-ups**, **Packages**.
 - **Settings** (admin): Instagram integration, team (add members, roles, deactivate), categories, pool guards.
-- Light / dark theme, usable at 1024px, skeleton / empty / error states. Dates are `dd/MM/yyyy` and date-times
+- Light / dark theme, responsive from phones (360px) to desktop, skeleton / empty / error states. Dates are `dd/MM/yyyy` and date-times
   `dd/MM/yyyy, hh:mm a` in Asia/Kolkata (the API stays ISO 8601).
 
 ## Tech stack

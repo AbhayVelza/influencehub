@@ -12,10 +12,12 @@ import type { Package } from '@/types'
 interface PackagesTabProps {
   influencerId: string
   onCreate: () => void
+  /** False for a rejected influencer: no new packages. */
+  canCreate: boolean
   onEdit: (pkg: Package) => void
 }
 
-export function PackagesTab({ influencerId, onCreate, onEdit }: PackagesTabProps) {
+export function PackagesTab({ influencerId, onCreate, canCreate, onEdit }: PackagesTabProps) {
   const packages = usePackages({ influencer_id: influencerId, page_size: 100 })
 
   if (packages.isPending) {
@@ -35,20 +37,26 @@ export function PackagesTab({ influencerId, onCreate, onEdit }: PackagesTabProps
       <EmptyState
         icon={PackageIcon}
         title="No packages yet"
-        description="Create a package once the influencer is onboarded and the address is confirmed."
-        action={<Button onClick={onCreate}>Create package</Button>}
+        description={
+          canCreate
+            ? 'Create a package once the influencer is onboarded and the address is confirmed.'
+            : 'This influencer was rejected, so no packages can be created.'
+        }
+        action={canCreate ? <Button onClick={onCreate}>Create package</Button> : undefined}
       />
     )
   }
 
   return (
     <div className="space-y-3">
-      <div className="flex justify-end">
-        <Button variant="outline" size="sm" onClick={onCreate}>
-          <Plus />
-          Create package
-        </Button>
-      </div>
+      {canCreate && (
+        <div className="flex justify-end">
+          <Button variant="outline" size="sm" onClick={onCreate}>
+            <Plus />
+            Create package
+          </Button>
+        </div>
+      )}
       <ul className="space-y-2">
         {packages.data.items.map((pkg) => (
           <li key={pkg.id} className="rounded-lg border bg-card p-3 text-sm">

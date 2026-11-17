@@ -32,8 +32,8 @@ const muted = <span className="text-muted-foreground">—</span>
 /** Sum across all accounts; shown on the Onboarded tabs only (not the main Influencers list). */
 export const totalReachColumn: ColumnDef<Influencer> = {
   id: 'total_reach',
-  header: 'Total reach',
-  meta: { label: 'Total reach', sortKey: 'total_reach', sortDescFirst: true, align: 'right' },
+  header: 'Total followers',
+  meta: { label: 'Total followers', sortKey: 'total_reach', sortDescFirst: true, align: 'right' },
   cell: ({ row }) => {
     const n = row.original.total_reach
     return n == null ? muted : <span title={`${formatNumber(n)} across ${row.original.accounts.length} account(s)`}>{formatCompact(n)}</span>
