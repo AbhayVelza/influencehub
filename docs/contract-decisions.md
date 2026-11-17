@@ -192,6 +192,10 @@ layer and the PostgreSQL layout: `server.md`.
   `422 validation_error` (bad email, bad role, missing name, location over 80 characters), `409 email_taken`. Success → `201 User` (`id` = `usr_…`).
 - **`PATCH /team/{id}`** `{name?, role?, location?, is_active?}` (no other field changes) → 422 `self_change` when you change your own role / deactivate
   yourself, 422 `last_admin` when it would leave no active admin. A deactivated member can no longer be acted as.
+- **`DELETE /team/{id}`** (admin) → 204. Errors, in order: 404 (unknown or already deleted), 422 `self_change`, 422
+  `still_active` (deactivate first), 409 `owns_influencers` ("still owns N influencers. Reassign or release them
+  first."). A soft delete: the record gets `deleted_at` and stays in `GET /team` so history (calls, packages,
+  activity) still shows the name; the Settings list hides it, `PATCH` answers 404, and its email can be added again.
 - **Uploads**: `POST /documents/presign` returns `upload_url` = `/api/v1/files/<key>` (prototype: `"local-file:<key>"`);
   `documentsApi.upload` PUTs the file there (the server checks the key came from a presign, stores it in the `files`
   table) and `POST /influencers/{id}/documents` saves the metadata (`storage_key`). `GET /documents/{id}/download`

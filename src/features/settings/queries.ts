@@ -50,6 +50,14 @@ export function useUpdateMember() {
   })
 }
 
+export function useDeleteMember() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => teamApi.remove(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.team }),
+  })
+}
+
 function useCategoryMutation<T>(fn: (input: T) => Promise<unknown>) {
   const queryClient = useQueryClient()
   return useMutation({

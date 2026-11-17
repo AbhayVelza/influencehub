@@ -191,7 +191,7 @@ export function InfluencerFilterBar({
           />
         )}
         <FollowersFilter
-          label="Total reach"
+          label="Total followers"
           min={filters.reach_min}
           max={filters.reach_max}
           onChange={({ min, max }) => onChange({ reach_min: min, reach_max: max })}

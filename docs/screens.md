@@ -14,14 +14,14 @@ active filters stay visible. `CollapsibleFilters` in `components/common/collapsi
 2. **Dashboard**: KPIs (total, pool, contacted this week, onboarded this month, packages in transit, follow-ups today, onboarded without agreement → filtered list),
    pipeline funnel (click → filtered list), by-category + top-cities bars, my follow-ups, activity feed.
 3. **Influencers list**: header w/ count + Import CSV / Export / + Add; search; Saved views; filters
-   Category/Platform/Country/State/City/Stage/Assigned/Agreement (signed, missing)/Insights (received, missing)/Total reach; chips; table; bulk bar; pagination. Columns:
+   Category/Platform/Country/State/City/Stage/Assigned/Agreement (signed, missing)/Insights (received, missing)/Total followers; chips; table; bulk bar; pagination. Columns:
    name+avatar+verified, category, primary account, platforms, Instagram followers, phone, email (shown by default), city,
    state, country, stage, assigned to, docs (Insights ✓/✗, Agreement ✓/✗; — in the pool), sync (primary), last synced
    (primary). Filters in URL. Every option shows a count that follows the other active filters (ticking Stage updates the
    Category / Country / … counts, and the reverse); options with nothing left stay listed, dimmed at 0. Clear one filter
    ("Clear <filter>" in its menu, a chip's ×) or all ("Clear all").
-4. **Influencer detail**: header (avatar, name, primary account, category, platforms, total reach, location, Stage ▾,
-   Owner ▾, Log call, Create package, ⋯) + stage stepper. Left: **Social accounts** — a list of accounts (tabs), each
+4. **Influencer detail**: header (avatar, name, primary account, category, platforms, total followers, location, Stage ▾,
+   Owner ▾, Log call, Create package (hidden for Rejected; the Packages page picker skips them too), ⋯) + stage stepper. Left: **Social accounts** — a list of accounts (tabs), each
    with its platform's stat cards (`PLATFORM_META` labels), method + status (Sync now / Send connect link (copy or
    email) / Edit stats), growth chart where snapshots exist, recent posts (Instagram, YouTube); + Add account (with
    duplicate check). Right tabs: Overview, Calls, Packages, Documents, Activity.

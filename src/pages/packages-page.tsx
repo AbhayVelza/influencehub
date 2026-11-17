@@ -109,7 +109,7 @@ export default function PackagesPage() {
   }
 
   return (
-    <div className="space-y-4 p-6">
+    <div className="space-y-4 p-4 sm:p-6">
       <PageHeader
         title={
           <>
@@ -295,6 +295,7 @@ export default function PackagesPage() {
       <InfluencerPicker
         open={pickerOpen}
         onOpenChange={setPickerOpen}
+        eligible={(inf) => inf.stage !== 'rejected'}
         onPick={(influencer) => {
           setPickerOpen(false)
           setDrawer({ influencer, pkg: null, open: true })

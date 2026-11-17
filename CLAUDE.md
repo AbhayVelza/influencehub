@@ -29,7 +29,7 @@ PostgreSQL (`postgres`; data and document files), Hono
 (API server), MSW's `getResponse` router (routes API calls to the handlers, in the browser and on the server; no
 service worker).
 
-**UX**: light/dark; desktop-first, usable at 1024px; skeletons + empty + error states everywhere;
+**UX**: light/dark; responsive from 360px phones up (sidebar becomes a menu sheet below 1024px; tables and the pipeline scroll sideways; forms stack on phones); skeletons + empty + error states everywhere;
 numbers 12.4K / 1.2M; dates dd/MM/yyyy; relative times; toasts; "/" focuses search; same stage colors everywhere.
 
 ## Rules
@@ -52,7 +52,7 @@ numbers 12.4K / 1.2M; dates dd/MM/yyyy; relative times; toasts; "/" focuses sear
 ## Conventions (reuse, don't duplicate)
 - Validation: `src/lib/schemas.ts` (forms, inline edits, CSV rows via `src/lib/csv-import.ts`, the data layer).
 - Platforms: `src/lib/platforms.ts` (labels, metrics, sync defaults, handle normalising, linked-account parsing,
-  total reach); `PlatformMark` / `AccountLabel` in `components/common/platform-badge.tsx`.
+  total followers, shown as "Total followers"; field `total_reach`); `PlatformMark` / `AccountLabel` in `components/common/platform-badge.tsx`.
 - Stage rules: `src/lib/stages.ts`; stage moves in the UI go through `useStageMover`
   (`src/features/influencers/stage-mover.tsx`): required modals, confirms, override reasons.
 - Permissions: `src/lib/permissions.ts` (`useCan`). Stage colours: `STAGE_META` in `src/lib/constants.ts`.

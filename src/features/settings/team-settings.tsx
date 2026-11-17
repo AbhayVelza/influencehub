@@ -6,6 +6,16 @@ import { toast } from 'sonner'
 import { InlineTextField } from '@/components/common/inline-field'
 import { PersonAvatar } from '@/components/common/person-avatar'
 import { ErrorState } from '@/components/common/states'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -21,7 +31,7 @@ import { memberLocationSchema, teamMemberCreateSchema, type TeamMemberCreateInpu
 import { cn } from '@/lib/utils'
 import { ApiError, getErrorMessage } from '@/services'
 import type { Role, TeamMemberUpdate, User } from '@/types'
-import { useAddMember, useUpdateMember } from './queries'
+import { useAddMember, useDeleteMember, useUpdateMember } from './queries'
 
 const ROLES = Object.keys(ROLE_LABEL) as Role[]
 
@@ -136,7 +146,24 @@ export function TeamSettings() {
   const team = useTeam()
   const { data: me } = useMe()
   const update = useUpdateMember()
+  const remove = useDeleteMember()
   const [addOpen, setAddOpen] = useState(false)
+  const [deleting, setDeleting] = useState<User | null>(null)
+
+  const confirmDelete = () => {
+    if (!deleting) return
+    const user = deleting
+    remove.mutate(user.id, {
+      onSuccess: () => {
+        toast.success(`${user.name} deleted`)
+        setDeleting(null)
+      },
+      onError: (err) => {
+        toast.error(`Couldn’t delete ${user.name}`, { description: getErrorMessage(err) })
+        setDeleting(null)
+      },
+    })
+  }
 
   const change = (user: User, body: TeamMemberUpdate, success: string) =>
     update.mutate(
@@ -184,7 +211,7 @@ export function TeamSettings() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {team.data.items.map((user) => {
+              {team.data.items.filter((user) => !user.deleted_at).map((user) => {
                 const self = user.id === me?.id
                 return (
                   <TableRow key={user.id} className={cn(!user.is_active && 'text-muted-foreground')}>
@@ -249,6 +276,11 @@ export function TeamSettings() {
                           {user.is_active ? 'Deactivate' : 'Reactivate'}
                         </Button>
                       )}
+                      {!self && !user.is_active && (
+                        <Button variant="destructive" size="sm" disabled={remove.isPending} onClick={() => setDeleting(user)}>
+                          Delete
+                        </Button>
+                      )}
                     </TableCell>
                   </TableRow>
                 )
@@ -258,6 +290,30 @@ export function TeamSettings() {
         )}
       </CardContent>
       <AddMemberDialog open={addOpen} onOpenChange={setAddOpen} />
+      <AlertDialog open={!!deleting} onOpenChange={(open) => !open && !remove.isPending && setDeleting(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {deleting?.name}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              They’ll be removed from the team and can’t be reactivated. Calls, packages and activity they recorded keep
+              their name.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={remove.isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              disabled={remove.isPending}
+              onClick={(e) => {
+                e.preventDefault()
+                confirmDelete()
+              }}
+            >
+              Delete member
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   )
 }

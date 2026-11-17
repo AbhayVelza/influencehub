@@ -59,7 +59,7 @@ export function PoolPreview({ item }: { item: PoolItem }) {
         <Row label="Platforms">
           <PlatformMarks platforms={poolPlatforms(item)} />
         </Row>
-        <Row label="Total reach">
+        <Row label="Total followers">
           {item.total_reach == null ? none : <span title={formatNumber(item.total_reach)}>{formatCompact(item.total_reach)}</span>}
         </Row>
         <Row label="Location">{formatLocation([item.city, item.state, item.country])}</Row>
@@ -164,7 +164,7 @@ export function PoolActions({
   }
   return (
     <>
-      <Button asChild variant="ghost">
+      <Button asChild variant="outline">
         <Link to={`/influencers/${item.id}`}>Open full profile</Link>
       </Button>
       <AssignMenu onAssign={onAssign} disabled={busy} />

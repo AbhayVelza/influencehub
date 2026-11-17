@@ -101,7 +101,7 @@ export const workspaceHandlers = [
     if (!ROLES.includes(body.role)) return apiError(422, 'validation_error', 'Choose a role')
     const name = typeof body.name === 'string' ? body.name.trim() : ''
     if (!name) return apiError(422, 'validation_error', 'Enter a name')
-    if (db.team.some((u) => u.email.toLowerCase() === email)) return apiError(409, 'email_taken', 'A team member with this email exists')
+    if (db.team.some((u) => !u.deleted_at && u.email.toLowerCase() === email)) return apiError(409, 'email_taken', 'A team member with this email exists')
     const location = cleanLocation(body.location)
     if (location === false) return apiError(422, 'validation_error', 'Location must be at most 80 characters')
     const user: User = { id: nextId('usr'), name, email, role: body.role, location, is_active: true, created_at: nowIso() }
@@ -111,7 +111,7 @@ export const workspaceHandlers = [
 
   http.patch(api('/team/:id'), async ({ params, request }) => {
     if (!can(currentUser().role, 'team:manage')) return forbidden('Only admins can manage the team')
-    const user = db.team.find((u) => u.id === params.id)
+    const user = db.team.find((u) => u.id === params.id && !u.deleted_at)
     if (!user) return notFound('Team member')
     const body = await readJson<TeamMemberUpdate>(request)
     if (body.role !== undefined && !ROLES.includes(body.role)) return apiError(422, 'validation_error', 'Choose a role')
@@ -134,6 +134,22 @@ export const workspaceHandlers = [
     if (location !== undefined) user.location = location
     if (typeof body.is_active === 'boolean') user.is_active = body.is_active
     return HttpResponse.json(user)
+  }),
+
+  // Deletes a deactivated member who owns no influencers. The record stays (marked deleted) so calls, packages and
+  // activity still show who did them; it's hidden from the team list and can't be acted as or reactivated.
+  http.delete(api('/team/:id'), async ({ params }) => {
+    if (!can(currentUser().role, 'team:manage')) return forbidden('Only admins can manage the team')
+    const user = db.team.find((u) => u.id === params.id && !u.deleted_at)
+    if (!user) return notFound('Team member')
+    if (user.id === currentUser().id) return apiError(422, 'self_change', 'You can’t delete yourself')
+    if (user.is_active) return apiError(422, 'still_active', 'Deactivate this member before deleting them')
+    const owned = db.influencers.filter((i) => i.assigned_to === user.id).length
+    if (owned > 0) {
+      return apiError(409, 'owns_influencers', `${user.name} still owns ${owned} influencer${owned === 1 ? '' : 's'}. Reassign or release them first.`)
+    }
+    user.deleted_at = nowIso()
+    return new HttpResponse(null, { status: 204 })
   }),
 
   // ---- Categories ---------------------------------------------------------

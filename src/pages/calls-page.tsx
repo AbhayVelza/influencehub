@@ -117,7 +117,7 @@ export default function CallsPage() {
   }
 
   return (
-    <div className="space-y-4 p-6">
+    <div className="space-y-4 p-4 sm:p-6">
       <PageHeader title="Calls & Follow-ups" description="Every time is shown in IST." />
       <Tabs value={bucket} onValueChange={(v) => update({ tab: v === 'today' ? null : v, page: null })} className="gap-4">
         <div className="flex flex-wrap items-center justify-between gap-3">

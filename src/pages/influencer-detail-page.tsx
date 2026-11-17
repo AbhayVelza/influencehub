@@ -35,7 +35,7 @@ type Tab = (typeof TABS)[number]
 
 function DetailSkeleton() {
   return (
-    <div className="space-y-6 p-6" aria-busy="true" aria-label="Loading influencer">
+    <div className="space-y-6 p-4 sm:p-6" aria-busy="true" aria-label="Loading influencer">
       <Skeleton className="h-6 w-28" />
       <div className="flex items-center gap-4">
         <Skeleton className="size-14 rounded-full" />
@@ -57,7 +57,7 @@ function DetailSkeleton() {
 function PoolPreviewPage({ item }: { item: PoolItem }) {
   const { claim, busy } = usePoolActions()
   return (
-    <div className="mx-auto max-w-xl space-y-4 p-6">
+    <div className="mx-auto max-w-xl space-y-4 p-4 sm:p-6">
       <Button asChild variant="ghost" size="sm" className="-ml-2 text-muted-foreground">
         <Link to="/pool">
           <ArrowLeft />
@@ -150,7 +150,7 @@ export default function InfluencerDetailPage() {
   const openPackage = (intent?: 'package_sent', pkg?: Package) => setPackageDrawer({ open: true, intent, pkg })
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-4 sm:p-6">
       <InfluencerHeader
         influencer={data}
         previousStage={previousStage}
@@ -165,7 +165,7 @@ export default function InfluencerDetailPage() {
         <SocialAccountsPanel influencer={data} />
 
         <Tabs value={tab} onValueChange={setTab} className="min-w-0 gap-4">
-          <TabsList>
+          <TabsList className="max-w-full justify-start overflow-x-auto">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="calls">Calls{callCount ? ` (${callCount})` : ''}</TabsTrigger>
             <TabsTrigger value="packages">Packages{packageCount ? ` (${packageCount})` : ''}</TabsTrigger>
@@ -179,7 +179,7 @@ export default function InfluencerDetailPage() {
             <CallsTab influencerId={data.id} onLogCall={() => openLogCall()} />
           </TabsContent>
           <TabsContent value="packages">
-            <PackagesTab influencerId={data.id} onCreate={() => openPackage()} onEdit={(pkg) => openPackage(undefined, pkg)} />
+            <PackagesTab influencerId={data.id} canCreate={data.stage !== 'rejected'} onCreate={() => openPackage()} onEdit={(pkg) => openPackage(undefined, pkg)} />
           </TabsContent>
           <TabsContent value="documents">
             <DocumentsTab influencer={data} />

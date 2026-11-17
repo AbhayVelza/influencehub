@@ -22,7 +22,7 @@ page_size }`. Errors → `{ error: { code, message } }` (`contract-decisions.md`
 - POST /lookup {platform, username} → {job_id} · POST /imports/csv/presign · POST /imports/csv/upload {key, text} · POST /imports/csv → {job_id}
 - POST /exports/influencers → {job_id} · GET /jobs/{id} → {status, progress, result, error}
 - GET /me · GET /team · POST /team {email, name, role, location?} (admin) → User · PATCH /team/{id} {name?, role?, location?,
-  is_active?} · GET/POST/PATCH/DELETE /categories · GET/POST/DELETE /saved-views
+  is_active?} · DELETE /team/{id} (admin; deactivated members only) → 204 · GET/POST/PATCH/DELETE /categories · GET/POST/DELETE /saved-views
 - GET /pool (same filters, sort and pagination as /influencers) · GET /pool/filter-options · GET /pool/{id} ·
   GET /pool/expiring · POST /influencers/{id}/claim · POST /influencers/{id}/release {reason} ·
   POST /influencers/bulk actions `claim`, `pool_assign` · GET/PATCH /settings/pool {claim_limit, auto_release_days}

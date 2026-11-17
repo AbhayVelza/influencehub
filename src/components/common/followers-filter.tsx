@@ -16,7 +16,7 @@ const PRESETS: { label: string; range: Range }[] = [
 ]
 
 interface FollowersFilterProps {
-  /** Button text, e.g. "Total reach". */
+  /** Button text, e.g. "Total followers". */
   label?: string
   min?: number
   max?: number

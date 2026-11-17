@@ -15,7 +15,7 @@ export default function SettingsPage() {
   const tab: Tab = param && TABS.includes(param) ? param : 'instagram'
 
   return (
-    <div className="space-y-4 p-6">
+    <div className="space-y-4 p-4 sm:p-6">
       <PageHeader title="Settings" description="Admin only." />
       <Tabs
         value={tab}
