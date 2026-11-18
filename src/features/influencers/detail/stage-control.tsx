@@ -11,9 +11,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useMe } from '@/hooks/use-me'
-import { ALL_STAGES, STAGE_META } from '@/lib/constants'
+import { STAGE_META } from '@/lib/constants'
 import { missingOnboardingDocuments } from '@/lib/documents'
-import { getStandardTransitions } from '@/lib/stages'
+import { getOverrideTargets, getStandardTransitions } from '@/lib/stages'
 import { cn } from '@/lib/utils'
 import type { Influencer, Stage } from '@/types'
 import { useStageMover } from '../stage-mover'
@@ -34,7 +34,8 @@ export function StageControl({ influencer, previousStage, hasInterestedCall, has
   if (!me) return null
   const from = influencer.stage
   const standard = getStandardTransitions(from, me.role, previousStage)
-  const overrides = me.role === 'admin' ? ALL_STAGES.filter((s) => s !== from && !standard.includes(s)) : []
+  // Up to Onboarded only, and none once the creator is onboarded (src/lib/stages.ts).
+  const overrides = getOverrideTargets(from, me.role, previousStage)
 
   // Entering Onboarded from Contacted needs a current agreement and an insights summary (resuming from hold doesn't).
   const needsDocuments = (to: Stage) => to === 'onboarded' && from === 'contacted'

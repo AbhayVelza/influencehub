@@ -3,7 +3,7 @@ import { dayKey, formatDate, todayKey } from '@/lib/format'
 import { can } from '@/lib/permissions'
 import { audienceOf, instagramFollowers, normalizeHandle, PLATFORM_META, PLATFORMS, primaryAccount, toRef } from '@/lib/platforms'
 import { normalizeEmailField, normalizePhone } from '@/lib/schemas'
-import { getAllowedTransitions, isOverride, ONBOARDED_OR_LATER } from '@/lib/stages'
+import { getAllowedTransitions, isOverride, ONBOARDED_OR_LATER, OVERRIDE_TARGETS } from '@/lib/stages'
 import type {
   AccountCreate,
   CheckHandleResponse,
@@ -399,12 +399,27 @@ export function changeStage(
     if (inf.stage === 'rejected' && !can(user.role, 'stage:reopen')) {
       return { ok: false, status: 403, code: 'forbidden', message: 'Only managers and admins can reopen rejected influencers' }
     }
+    if (can(user.role, 'stage:override') && (ONBOARDED_OR_LATER.includes(inf.stage) || (previous && ONBOARDED_OR_LATER.includes(previous)))) {
+      return { ok: false, status: 422, code: 'invalid_transition', message: 'Overrides aren’t allowed once a creator is onboarded' }
+    }
+    if (can(user.role, 'stage:override') && !OVERRIDE_TARGETS.includes(to)) {
+      return { ok: false, status: 422, code: 'invalid_transition', message: 'Overrides can only move a creator up to Onboarded' }
+    }
     return { ok: false, status: 422, code: 'invalid_transition', message: `Cannot move from ${inf.stage} to ${to}` }
   }
 
   const override = isOverride(inf.stage, to, user.role, previous)
   if (override && !reason) {
     return { ok: false, status: 422, code: 'reason_required', message: 'A reason is required to override the stage rules' }
+  }
+  // Agreements are the onboarding requirement that even an override can't skip.
+  if (override && to === 'onboarded' && !hasCurrentAgreement(inf.id)) {
+    return {
+      ok: false,
+      status: 422,
+      code: 'requirement_missing',
+      message: 'Upload the signed agreement before moving to Onboarded',
+    }
   }
   if (!override && !skipRequirements) {
     if (to === 'contacted' && !db.calls.some((c) => c.influencer_id === inf.id && c.outcome === 'interested')) {

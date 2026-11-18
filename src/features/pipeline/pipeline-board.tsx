@@ -23,7 +23,7 @@ import { useStageMover } from '@/features/influencers/stage-mover'
 import { useMe } from '@/hooks/use-me'
 import { useTeamMap } from '@/hooks/use-team'
 import { ALL_STAGES, PIPELINE_STAGES, STAGE_META } from '@/lib/constants'
-import { getStandardTransitions } from '@/lib/stages'
+import { getOverrideTargets, getStandardTransitions } from '@/lib/stages'
 import { cn } from '@/lib/utils'
 import type { InfluencerFilters, PipelineCard, PipelineResponse, Role, Stage, User } from '@/types'
 import { columnKeyboardCoordinates, PIPELINE_KEYBOARD_CODES } from './keyboard'
@@ -42,11 +42,11 @@ function loadCollapsed(): Record<string, boolean> {
 
 type DropKind = 'standard' | 'override' | 'blocked' | 'current'
 
-/** Standard moves for the role; admins can also drop anywhere else as an override. */
+/** Standard moves for the role; admins can also override up to Onboarded (not once a creator is onboarded). */
 function dropKind(card: PipelineCard, to: Stage, role: Role, previous: Stage | null): DropKind {
   if (to === card.stage) return 'current'
   if (getStandardTransitions(card.stage, role, previous).includes(to)) return 'standard'
-  return role === 'admin' ? 'override' : 'blocked'
+  return getOverrideTargets(card.stage, role, previous).includes(to) ? 'override' : 'blocked'
 }
 
 // Pointer drops use the column under the pointer; keyboard drops (no pointer) fall back to overlap.
