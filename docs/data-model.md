@@ -17,7 +17,7 @@ Source of truth: `src/types/index.ts`. Update both together.
 - **DocumentType**: insights_summary, agreement
 - **PackageStatus**: preparing, sent, in_transit, delivered, returned
 - **AccountType**: business, creator, personal, unknown · **SyncStatus**: synced, pending, not_synced, error
-- **Role**: admin, manager, executive
+- **Role**: admin, manager, executive, brand_specialist ("Brand Specialist")
 - **User** (team member): id (`usr_…`), name, email, role, location (free text, ≤ 80, nullable), is_active,
   created_at. **TeamMemberCreate** (POST /team): email, name, role, location?. **TeamMemberUpdate**: name?, role?,
   location?, is_active?. There is no sign-in yet: people act as a member
@@ -55,6 +55,10 @@ Source of truth: `src/types/index.ts`. Update both together.
 - **Permissions**: executive = view/add/edit/call/package/change stage on **their own** influencers, see the pool
   (preview only), claim from it, release their own to it; manager += see everything, assign/reassign, release anyone's,
   reopen rejected, delete, import/export, review & merge duplicates; admin += override stages, manage team,
-  categories, integrations, pool guards.
+  categories, integrations, pool guards. **Brand Specialist** = read-only, onboarded creators only (Onboarded,
+  Welcome Kit, Delivered): the Dashboard's onboarded numbers, the Influencers list and the Onboarded tabs (both without
+  Stage, Assigned to, Docs, selection or saved views), and a read-only profile (identity, accounts, contact, location,
+  address, tags, notes). No pool, pipeline, calls, Welcome Kits, documents or activity. Only an admin can give someone
+  this role.
   **Documents**: upload = executive (own influencers only), manager, admin; delete (soft) = manager and admin only;
   view follows influencer scoping and is never offered for pool (unassigned) influencers.

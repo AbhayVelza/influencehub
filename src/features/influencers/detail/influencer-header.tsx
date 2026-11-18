@@ -111,6 +111,50 @@ function OwnerControl({ influencer, onRelease }: { influencer: Influencer; onRel
   )
 }
 
+/** Back link, avatar, name, primary account, category, platforms, followers and location. No stage, owner or actions. */
+export function InfluencerIdentity({ influencer, backTo, backLabel }: { influencer: Influencer; backTo: string; backLabel: string }) {
+  const location = formatLocation([influencer.city, influencer.state, influencer.country])
+  const primary = primaryAccount(influencer)
+  return (
+    <>
+      <Button asChild variant="ghost" size="sm" className="-ml-2 text-muted-foreground">
+        <Link to={backTo}>
+          <ArrowLeft />
+          {backLabel}
+        </Link>
+      </Button>
+
+      <div className="flex flex-wrap items-start gap-4">
+        <PersonAvatar name={influencer.name} src={influencer.profile_pic_url} className="size-14 text-base" />
+        <div className="min-w-0 flex-1 space-y-1">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <h1 className="flex items-center gap-1.5 font-heading text-xl font-semibold tracking-tight">
+              {influencer.name}
+              {influencer.is_verified && <BadgeCheck className="size-5 text-sky-500" aria-label="Verified account" />}
+            </h1>
+            <AccountLabel account={primary && toRef(primary)} link className="text-sm text-muted-foreground" />
+          </div>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+            <span className="rounded-full border px-2 py-0.5 text-xs text-foreground">{influencer.category}</span>
+            <PlatformMarks platforms={influencer.accounts.map((a) => a.platform)} />
+            {influencer.total_reach != null && (
+              <span title={formatNumber(influencer.total_reach)}>
+                <span className="font-medium text-foreground tabular-nums">{formatCompact(influencer.total_reach)}</span> total followers
+              </span>
+            )}
+            {location !== '—' && (
+              <span className="inline-flex items-center gap-1">
+                <MapPin className="size-3.5" />
+                {location}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+    </>
+  )
+}
+
 interface InfluencerHeaderProps {
   influencer: Influencer
   previousStage: Stage | null
@@ -152,7 +196,6 @@ export function InfluencerHeader({
       },
       onError: (err) => toast.error('Couldn’t release', { description: getErrorMessage(err) }),
     })
-  const location = formatLocation([influencer.city, influencer.state, influencer.country])
   const primary = primaryAccount(influencer)
 
   const onDelete = () =>
@@ -166,40 +209,7 @@ export function InfluencerHeader({
 
   return (
     <header className="space-y-4">
-      <Button asChild variant="ghost" size="sm" className="-ml-2 text-muted-foreground">
-        <Link to={listReturnPath()}>
-          <ArrowLeft />
-          Influencers
-        </Link>
-      </Button>
-
-      <div className="flex flex-wrap items-start gap-4">
-        <PersonAvatar name={influencer.name} src={influencer.profile_pic_url} className="size-14 text-base" />
-        <div className="min-w-0 flex-1 space-y-1">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <h1 className="flex items-center gap-1.5 font-heading text-xl font-semibold tracking-tight">
-              {influencer.name}
-              {influencer.is_verified && <BadgeCheck className="size-5 text-sky-500" aria-label="Verified account" />}
-            </h1>
-            <AccountLabel account={primary && toRef(primary)} link className="text-sm text-muted-foreground" />
-          </div>
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
-            <span className="rounded-full border px-2 py-0.5 text-xs text-foreground">{influencer.category}</span>
-            <PlatformMarks platforms={influencer.accounts.map((a) => a.platform)} />
-            {influencer.total_reach != null && (
-              <span title={formatNumber(influencer.total_reach)}>
-                <span className="font-medium text-foreground tabular-nums">{formatCompact(influencer.total_reach)}</span> total followers
-              </span>
-            )}
-            {location !== '—' && (
-              <span className="inline-flex items-center gap-1">
-                <MapPin className="size-3.5" />
-                {location}
-              </span>
-            )}
-          </div>
-        </div>
-      </div>
+      <InfluencerIdentity influencer={influencer} backTo={listReturnPath()} backLabel="Influencers" />
 
       <div className="flex flex-wrap items-center gap-2">
         <StageControl

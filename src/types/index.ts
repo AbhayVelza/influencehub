@@ -29,7 +29,7 @@ export type ConnectStatus = 'not_connected' | 'link_sent' | 'connected' | 'expir
 
 export type SyncStatus = 'synced' | 'pending' | 'not_synced' | 'error'
 
-export type Role = 'admin' | 'manager' | 'executive'
+export type Role = 'admin' | 'manager' | 'executive' | 'brand_specialist'
 
 export type CategoryName =
   | 'Fashion'
@@ -604,6 +604,48 @@ export interface DashboardSummary {
   top_cities: { city: string; count: number }[]
   my_follow_ups: CallLogWithInfluencer[]
   recent_activity: ActivityWithInfluencer[]
+  /** Moves onto Onboarded per week, the last 12 weeks oldest first; `week_start` = Monday (yyyy-MM-dd, IST). */
+  onboarded_by_week: { week_start: string; count: number }[]
+  /** Calls logged per day, the last 30 days oldest first (yyyy-MM-dd, IST). Empty without CRM access. */
+  calls_by_day: { day: string; count: number }[]
+  /** Creators with an account on each platform (a creator can count on several), largest first; zeros left out. */
+  by_platform: { platform: Platform; count: number }[]
+  /** Creators per total-followers band, smallest band first (creators with no follower count are left out). */
+  follower_bands: { band: string; count: number }[]
+  /** Welcome Kits per status, in status order. Empty without CRM access. */
+  packages_by_status: { status: PackageStatus; count: number }[]
+  /** Call outcomes over the last 30 days, in outcome order. Empty without CRM access. */
+  call_outcomes_30d: { outcome: CallOutcome; count: number }[]
+  /** Per active member (not Brand Specialists); managers and admins only, null for everyone else. */
+  team: TeamPerformanceRow[] | null
+  /** The 10 creators most recently moved onto Onboarded (still onboarded or later), newest first. */
+  recently_onboarded: RecentlyOnboarded[]
+}
+
+export interface TeamPerformanceRow {
+  user_id: string
+  name: string
+  role: Role
+  /** Influencers they own now. */
+  owned: number
+  /** Calls they logged since Monday 00:00 IST. */
+  calls_this_week: number
+  /** Creators they moved onto Onboarded this calendar month. */
+  onboarded_this_month: number
+  /** Welcome Kits sent this month to creators they own. */
+  kits_sent_this_month: number
+}
+
+export interface RecentlyOnboarded {
+  id: string
+  name: string
+  profile_pic_url: string | null
+  primary_account: AccountRef | null
+  platforms: Platform[]
+  total_reach: number | null
+  category: string
+  city: string | null
+  onboarded_at: ISODateString
 }
 
 // ---------------------------------------------------------------------------

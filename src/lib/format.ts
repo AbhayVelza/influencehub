@@ -72,6 +72,11 @@ export const formatTime = (iso: string | null | undefined) => formatIst(iso, TIM
 /** "28/10" for chart axes. */
 export const formatChartDate = (iso: string | null | undefined) => formatIst(iso, CHART_DATE_PATTERN)
 
+/** A calendar date (`yyyy-MM-dd`) → "28/10" for chart axes. No timezone shift. */
+export function formatChartDay(day: string): string {
+  return formatDay(day).slice(0, 5)
+}
+
 /** A calendar date without a time (API `yyyy-MM-dd`, e.g. a signing date) → "28/10/2026". No timezone shift. */
 export function formatDay(day: string | null | undefined): string {
   const match = day?.match(/^(\d{4})-(\d{2})-(\d{2})/)

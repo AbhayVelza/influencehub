@@ -3,7 +3,7 @@ import { dayKey, formatDate, todayKey } from '@/lib/format'
 import { can } from '@/lib/permissions'
 import { audienceOf, instagramFollowers, normalizeHandle, PLATFORM_META, PLATFORMS, primaryAccount, toRef } from '@/lib/platforms'
 import { normalizeEmailField, normalizePhone } from '@/lib/schemas'
-import { getAllowedTransitions, isOverride } from '@/lib/stages'
+import { getAllowedTransitions, isOverride, ONBOARDED_OR_LATER } from '@/lib/stages'
 import type {
   AccountCreate,
   CheckHandleResponse,
@@ -230,8 +230,12 @@ export const OWNER_CHANGE_MESSAGE = 'Executives take influencers by claiming the
 // ---------------------------------------------------------------------------
 // Visibility and the Unassigned Pool
 
-/** Executives see only influencers they own; unassigned ones are reachable only through the pool. */
+/**
+ * Executives see only influencers they own; unassigned ones are reachable only through the pool. Brand Specialists see
+ * only onboarded creators (Onboarded, Welcome Kit, Delivered).
+ */
 export function canSee(user: User, inf: Influencer): boolean {
+  if (user.role === 'brand_specialist') return ONBOARDED_OR_LATER.includes(inf.stage)
   return user.role !== 'executive' || inf.assigned_to === user.id
 }
 

@@ -10,6 +10,8 @@ import { UserMenu } from './user-menu'
 export function TopBar() {
   const { open } = useAddInfluencer()
   const canCreate = useCan('influencer:create')
+  // Brand Specialists have no follow-ups or claims to be told about. Their search covers onboarded creators only.
+  const crm = useCan('crm:access')
   return (
     <header className="flex h-14 shrink-0 items-center gap-2 border-b sm:gap-3 bg-background px-2 sm:px-4 lg:px-6">
       <MobileNav />
@@ -21,7 +23,7 @@ export function TopBar() {
             <span className="hidden sm:inline">Add Influencer</span>
           </Button>
         )}
-        <NotificationsMenu />
+        {crm && <NotificationsMenu />}
         <UserMenu />
       </div>
     </header>

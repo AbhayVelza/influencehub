@@ -123,6 +123,10 @@ The committed `.env` holds empty placeholders only. Put your values in `.env.loc
 | Reassign, delete, reopen rejected, import / export, review & merge duplicates |  | ✓ | ✓ |
 | Stage override (with reason), Settings (incl. team and pool guards) |  |  | ✓ |
 
+**Brand Specialist** (set by an admin): read-only, onboarded creators only. They see the Dashboard's onboarded
+numbers, the Influencers list and Onboarded tabs (onboarded creators only, without the Stage, Assigned to and Docs
+columns) and a read-only profile. They have no pool, pipeline, calls, Welcome Kits, documents or activity.
+
 The data layer (`src/backend`) applies these and the UI hides what a role can't do.
 
 ## API

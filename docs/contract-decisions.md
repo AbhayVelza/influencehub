@@ -145,6 +145,13 @@ Record any new API decision here. Dates and documents: `dates-and-documents.md`.
   synced, failed} }`. PATCH accepts `{ sync_interval_hours }` and returns the full object.
 - `GET /dashboard/summary`: `top_cities` = top 10 by influencer count; `recent_activity` = latest 20;
   `my_follow_ups` = today + overdue, scoped like `mine=true`; "contacted this week" counts moves since Monday 00:00 IST.
+  Trends, breakdowns and tables (`src/backend/dashboard.ts`, over what the caller can see): `onboarded_by_week` (moves
+  onto Onboarded, last 12 Monday-weeks), `calls_by_day` (last 30 IST days), `by_platform` (creators with an account
+  there; zeros dropped), `follower_bands` (total followers: under 10K, 10K–50K, 50K–100K, 100K–500K, 500K+; no
+  count = left out), `packages_by_status`, `call_outcomes_30d`, `team` (managers/admins only, else null: per active
+  non–Brand-Specialist member, owned now, calls since Monday, moves onto Onboarded this month by them, Welcome Kits
+  sent this month to creators they own) and `recently_onboarded` (10 latest moves onto Onboarded, still onboarded or
+  later).
 - Team: see **Authentication & team** below.
 - Categories carry `influencer_count`. `DELETE /categories/{id}` (admin) → 409 `in_use` while any influencer
   uses it (deactivate instead); 204 otherwise. Renaming a category renames it on its influencers. Inactive
@@ -201,6 +208,23 @@ layer and the PostgreSQL layout: `server.md`.
   table) and `POST /influencers/{id}/documents` saves the metadata (`storage_key`). `GET /documents/{id}/download`
   returns `{url}` = the same `/api/v1/files/<key>`, which serves the file. `POST /imports/csv/presign` returns
   `"local-upload:<key>"` (`src/lib/upload-targets.ts`).
+
+## Brand Specialist role (`brand_specialist`)
+
+Read-only access to onboarded creators, enforced by the handlers (not just hidden in the UI):
+- `canSee` (`src/backend/domain.ts`) limits a Brand Specialist to creators in Onboarded, Welcome Kit or Delivered;
+  anything else is 404, like an executive's unowned influencer.
+- The pre-handler in `src/backend/handlers/index.ts` answers 403 to every request outside a GET allowlist: `/me`,
+  `/team` (names for "Acting as"), `/categories`, `/dashboard/summary`, `/influencers`, `/influencers/filter-options`,
+  `/influencers/{id}` and `/accounts/{id}/snapshots|media`. So no writes, pool, pipeline, calls, Welcome Kits,
+  documents, activity, duplicates, saved views, imports or exports.
+- `GET /dashboard/summary` keeps `kpis.total`, `kpis.onboarded_this_month`, `by_category` and `top_cities` (all over
+  onboarded creators), plus `onboarded_by_week`, `by_platform`, `follower_bands` and `recently_onboarded`; the
+  other KPIs are 0 (`claimed_this_week` null), `team` is null and `funnel`, `my_follow_ups`, `recent_activity`,
+  `calls_by_day`, `packages_by_status` and `call_outcomes_30d` are empty.
+- The influencer records still carry `stage` and `assigned_to`; the UI hides them (the Influencers list and Onboarded
+  tabs drop the Stage, Assigned to and Docs columns; the profile shows no stage, owner or onboarding checklist).
+- Roles are set through `POST /team` / `PATCH /team/{id}`, which need `team:manage` (admin only).
 
 ## Scheduled rules (no scheduler without a server)
 - **Auto-release**: when `auto_release_days` = N is set, an influencer whose current ownership came from a claim (its

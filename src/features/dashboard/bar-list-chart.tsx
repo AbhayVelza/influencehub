@@ -56,7 +56,7 @@ export function BarListChart({ data, unit, labelHeader }: { data: Datum[]; unit:
         <div style={{ height }} role="img" aria-label={`${unit} by ${labelHeader.toLowerCase()}: ${data.map((d) => `${d.label} ${d.value}`).join(', ')}`}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data} layout="vertical" margin={{ top: 0, right: 12, bottom: 0, left: 0 }} barCategoryGap={4}>
-              <CartesianGrid horizontal={false} stroke="var(--border)" strokeWidth={1} />
+              <CartesianGrid horizontal={false} stroke="var(--chart-grid)" strokeWidth={1} />
               <XAxis
                 type="number"
                 allowDecimals={false}

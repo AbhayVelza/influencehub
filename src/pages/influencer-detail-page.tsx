@@ -16,7 +16,7 @@ import {
 import { ActivityTab } from '@/features/influencers/detail/activity-tab'
 import { CallsTab } from '@/features/influencers/detail/calls-tab'
 import { DocumentsTab } from '@/features/influencers/detail/documents-tab'
-import { InfluencerHeader } from '@/features/influencers/detail/influencer-header'
+import { InfluencerHeader, InfluencerIdentity } from '@/features/influencers/detail/influencer-header'
 import { SocialAccountsPanel } from '@/features/influencers/detail/social-accounts-panel'
 import { OverviewTab } from '@/features/influencers/detail/overview-tab'
 import { PackagesTab } from '@/features/influencers/detail/packages-tab'
@@ -26,7 +26,7 @@ import { usePackages } from '@/features/packages/queries'
 import { PoolPreview, PoolActions } from '@/features/pool/pool-preview'
 import { usePoolItem } from '@/features/pool/queries'
 import { usePoolActions } from '@/features/pool/use-pool-actions'
-import { useMe } from '@/hooks/use-me'
+import { useCan, useMe } from '@/hooks/use-me'
 import { ApiError } from '@/services'
 import type { Package, PoolItem } from '@/types'
 
@@ -76,6 +76,50 @@ function PoolPreviewPage({ item }: { item: PoolItem }) {
 }
 
 export default function InfluencerDetailPage() {
+  return useCan('crm:access') ? <FullInfluencerDetail /> : <ReadOnlyProfile />
+}
+
+/**
+ * A Brand Specialist's view of an onboarded creator: identity, social accounts and contact details, read-only. No
+ * stage, owner, calls, Welcome Kits, documents or activity (the server refuses those requests too).
+ */
+function ReadOnlyProfile() {
+  const { id = '' } = useParams()
+  const influencer = useInfluencer(id)
+  if (influencer.isPending) return <DetailSkeleton />
+  if (influencer.isError) {
+    if (influencer.error instanceof ApiError && influencer.error.status === 404) {
+      return (
+        <EmptyState
+          icon={SearchX}
+          title="Influencer not found"
+          description="Only onboarded creators are shown here."
+          action={
+            <Button asChild variant="outline">
+              <Link to={listReturnPath()}>Back to influencers</Link>
+            </Button>
+          }
+          className="py-24"
+        />
+      )
+    }
+    return <ErrorState title="Couldn’t load this influencer" error={influencer.error} onRetry={() => influencer.refetch()} className="py-24" />
+  }
+  const data = influencer.data
+  return (
+    <div className="space-y-6 p-4 sm:p-6">
+      <header className="space-y-4">
+        <InfluencerIdentity influencer={data} backTo={listReturnPath()} backLabel="Influencers" />
+      </header>
+      <div className="grid items-start gap-6 lg:grid-cols-[19rem_minmax(0,1fr)]">
+        <SocialAccountsPanel influencer={data} />
+        <OverviewTab influencer={data} />
+      </div>
+    </div>
+  )
+}
+
+function FullInfluencerDetail() {
   const { id = '' } = useParams()
   const [searchParams, setSearchParams] = useSearchParams()
   const influencer = useInfluencer(id)

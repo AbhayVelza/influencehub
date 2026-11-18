@@ -12,7 +12,11 @@ active filters stay visible. `CollapsibleFilters` in `components/common/collapsi
    search, "+ Add Influencer", notifications, account menu ("Account menu"): theme, **Acting as** (pick a team member; there is no
    sign-in yet) and, in prototype mode, **Reset prototype data**.
 2. **Dashboard**: KPIs (total, pool, contacted this week, onboarded this month, packages in transit, follow-ups today, onboarded without agreement → filtered list),
-   pipeline funnel (click → filtered list), by-category + top-cities bars, my follow-ups, activity feed.
+   onboarded per week (columns, 12 weeks) + calls per day (area, 30 days), pipeline funnel (click → filtered list) + my
+   follow-ups, Welcome Kits by status + call outcomes (segmented bars) + creators by platform (meter list), follower
+   size (columns) + by-category + top-cities bars, team performance table (manager/admin), recently onboarded table,
+   activity feed. Every chart has a table view; one column on phones, 2–3 per row from tablets up. Brand Specialist:
+   two KPIs, onboarded per week, platform, follower size, category, cities and recently onboarded only.
 3. **Influencers list**: header w/ count + Import CSV / Export / + Add; search; Saved views; filters
    Category/Platform/Country/State/City/Stage/Assigned/Agreement (signed, missing)/Insights (received, missing)/Total followers; chips; table; bulk bar; pagination. Columns:
    name+avatar+verified, category, primary account, platforms, Instagram followers, phone, email (shown by default), city,

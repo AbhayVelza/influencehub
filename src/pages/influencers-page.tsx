@@ -27,6 +27,8 @@ import { useTeamMap } from '@/hooks/use-team'
 import { formatNumber } from '@/lib/format'
 import type { Influencer } from '@/types'
 
+const CRM_ONLY_COLUMNS = new Set(['select', 'stage', 'assigned_to', 'docs'])
+
 export default function InfluencersPage() {
   const list = useInfluencerListParams()
   const { params, filters, sort, page, pageSize } = list
@@ -40,7 +42,10 @@ export default function InfluencersPage() {
   const addInfluencer = useAddInfluencer()
   const navigate = useNavigate()
   const team = useTeamMap()
-  const columns = useMemo(() => buildColumns(team), [team])
+  // Brand Specialists see onboarded creators only (the server limits the list), read-only: no selection, and no
+  // stage, owner or documents.
+  const crm = useCan('crm:access')
+  const columns = useMemo(() => buildColumns(team).filter((c) => crm || !CRM_ONLY_COLUMNS.has(c.id ?? '')), [team, crm])
 
   const rows = useMemo(() => query.data?.items ?? [], [query.data])
   const total = query.data?.total ?? 0
@@ -84,6 +89,8 @@ export default function InfluencersPage() {
         </Button>
       }
     />
+  ) : !crm ? (
+    <EmptyState icon={Users} title="No onboarded creators yet" description="Creators show here once they’re onboarded." />
   ) : canReassign ? (
     <EmptyState
       icon={Users}
@@ -116,6 +123,7 @@ export default function InfluencersPage() {
               )}
             </>
           }
+          description={crm ? undefined : 'Every onboarded creator.'}
           actions={
             <>
               {canImport && (
@@ -146,14 +154,22 @@ export default function InfluencersPage() {
 
         <div className="flex items-center justify-between gap-3">
           <ListSearch value={filters.q} onChange={(q) => list.setFilters({ q }, { replace: true })} />
-          <SavedViewsMenu
-            filters={filters}
-            sort={sort}
-            onApply={(view) => list.replaceAll({ ...view.filters, sort: view.sort ?? undefined, page_size: pageSize })}
-          />
+          {crm && (
+            <SavedViewsMenu
+              filters={filters}
+              sort={sort}
+              onApply={(view) => list.replaceAll({ ...view.filters, sort: view.sort ?? undefined, page_size: pageSize })}
+            />
+          )}
         </div>
 
-        <InfluencerFilterBar filters={filters} onChange={list.setFilters} hideAssigned={!canReassign} />
+        <InfluencerFilterBar
+          filters={filters}
+          onChange={list.setFilters}
+          hideAssigned={!canReassign}
+          hideStage={!crm}
+          hideDocuments={!crm}
+        />
         <ActiveFilters filters={filters} onChange={list.setFilters} onClear={list.clearFilters} />
 
         <InfluencersTable

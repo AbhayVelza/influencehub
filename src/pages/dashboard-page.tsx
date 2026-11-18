@@ -11,14 +11,21 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { LogCallDialog, type LogCallTarget } from '@/features/calls/log-call-dialog'
 import { useMarkFollowUpDone } from '@/features/calls/queries'
+import { AreaTrendChart } from '@/features/dashboard/area-trend-chart'
 import { BarListChart } from '@/features/dashboard/bar-list-chart'
+import { ColumnChart } from '@/features/dashboard/column-chart'
+import { RecentlyOnboardedTable, TeamPerformanceTable } from '@/features/dashboard/dashboard-tables'
+import { MeterList } from '@/features/dashboard/meter-list'
 import { PipelineFunnel } from '@/features/dashboard/pipeline-funnel'
-import { useMe } from '@/hooks/use-me'
+import { SegmentedBar } from '@/features/dashboard/segmented-bar'
+import { PlatformMark } from '@/components/common/platform-badge'
+import { PLATFORM_META } from '@/lib/platforms'
+import { useCan, useMe } from '@/hooks/use-me'
 import { useTeamMap } from '@/hooks/use-team'
 import { describeActivity } from '@/lib/activity-text'
-import { CALL_OUTCOME_META } from '@/lib/constants'
+import { CALL_OUTCOME_META, PACKAGE_STATUS_META } from '@/lib/constants'
 import { RelativeTime } from '@/components/common/relative-time'
-import { dayKey, formatDateTime, formatNumber, formatTime, todayKey } from '@/lib/format'
+import { dayKey, formatChartDay, formatDateTime, formatDay, formatNumber, formatTime, todayKey } from '@/lib/format'
 import { queryKeys } from '@/lib/query'
 import { ONBOARDED_OR_LATER } from '@/lib/stages'
 import { cn } from '@/lib/utils'
@@ -26,14 +33,18 @@ import { dashboardApi, getErrorMessage } from '@/services'
 import type { DashboardSummary } from '@/types'
 
 function Kpi({ label, value, to, hint }: { label: string; value: number; to?: string; hint?: string }) {
+  // Two parts: the words on top, the number below a divider. Tiles in a row share a height, so every number sits on
+  // the same line.
   const body = (
     <>
-      <div className="text-xs font-medium text-muted-foreground">{label}</div>
-      <div className="mt-1 text-2xl font-semibold tabular-nums">{formatNumber(value)}</div>
-      {hint && <div className="mt-0.5 text-xs text-muted-foreground">{hint}</div>}
+      <div className="flex-1 px-4 pt-3.5 pb-2.5">
+        <div className="text-xs font-medium text-muted-foreground">{label}</div>
+        {hint && <div className="mt-0.5 text-xs text-muted-foreground">{hint}</div>}
+      </div>
+      <div className="border-t px-4 py-2 text-2xl font-semibold">{formatNumber(value)}</div>
     </>
   )
-  const className = 'block rounded-xl bg-card p-4 ring-1 ring-foreground/10'
+  const className = 'flex h-full flex-col overflow-hidden rounded-xl bg-card ring-1 ring-border'
   return to ? (
     <Link to={to} className={cn(className, 'hover:bg-muted/50 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none')}>
       {body}
@@ -161,62 +172,164 @@ function DashboardSkeleton() {
   )
 }
 
+/** Chart rows for the dashboard's trends and breakdowns. */
+function chartData(s: DashboardSummary) {
+  return {
+    weeks: s.onboarded_by_week.map((w) => ({
+      key: w.week_start,
+      label: formatChartDay(w.week_start),
+      fullLabel: `Week of ${formatDay(w.week_start)}`,
+      value: w.count,
+    })),
+    days: s.calls_by_day.map((d) => ({ key: d.day, label: formatChartDay(d.day), fullLabel: formatDay(d.day), value: d.count })),
+    bands: s.follower_bands.map((b) => ({ key: b.band, label: b.band, fullLabel: b.band, value: b.count })),
+    platforms: s.by_platform.map((p) => ({
+      key: p.platform,
+      name: PLATFORM_META[p.platform].label,
+      label: (
+        <span className="inline-flex items-center gap-1.5">
+          <PlatformMark platform={p.platform} />
+          {PLATFORM_META[p.platform].label}
+        </span>
+      ),
+      value: p.count,
+    })),
+    kits: s.packages_by_status.map((p) => ({ key: p.status, label: PACKAGE_STATUS_META[p.status].label, value: p.count })),
+    outcomes: s.call_outcomes_30d.map((o) => ({ key: o.outcome, label: CALL_OUTCOME_META[o.outcome].label, value: o.count })),
+  }
+}
+
 export default function DashboardPage() {
   const { data: me } = useMe()
+  const crm = useCan('crm:access')
   const summary = useQuery({ queryKey: queryKeys.dashboard, queryFn: ({ signal }) => dashboardApi.summary(signal), refetchInterval: 60_000 })
+  const noun = crm ? 'Influencers' : 'Creators'
 
   return (
     <div className="space-y-4 p-4 sm:p-6">
-      <PageHeader title={me ? `Welcome back, ${me.name.split(' ')[0]}` : 'Dashboard'} description="Where the pipeline stands today." />
+      <PageHeader
+        title={me ? `Welcome back, ${me.name.split(' ')[0]}` : 'Dashboard'}
+        description={crm ? 'Where the pipeline stands today.' : 'Your onboarded creators at a glance.'}
+      />
       {summary.isPending ? (
         <DashboardSkeleton />
       ) : summary.isError ? (
         <ErrorState title="Couldn’t load the dashboard" error={summary.error} onRetry={() => summary.refetch()} />
       ) : (
-        <>
-          <section aria-label="Key numbers" className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-7">
-            <Kpi label={me?.role === 'executive' ? 'My influencers' : 'Total influencers'} value={summary.data.kpis.total} to="/influencers" />
-            <Kpi
-              label="Unassigned Pool"
-              value={summary.data.kpis.pool}
-              to="/pool"
-              hint={summary.data.kpis.claimed_this_week === null ? undefined : `${formatNumber(summary.data.kpis.claimed_this_week)} claimed this week`}
-            />
-            <Kpi label="Contacted this week" value={summary.data.kpis.contacted_this_week} hint="Moved to Contacted since Monday" />
-            <Kpi label="Onboarded this month" value={summary.data.kpis.onboarded_this_month} />
-            <Kpi label="Welcome Kits in transit" value={summary.data.kpis.packages_in_transit} to="/packages?status=sent&status=in_transit" />
-            <Kpi label="Follow-ups today" value={summary.data.kpis.follow_ups_today} to="/calls" />
-            <Kpi
-              label="Onboarded without agreement"
-              value={summary.data.kpis.onboarded_without_agreement}
-              to={`/influencers?${ONBOARDED_OR_LATER.map((s) => `stage=${s}`).join('&')}&agreement=missing`}
-              hint="Onboarded or later, no agreement on file"
-            />
-          </section>
+        (() => {
+          const s = summary.data
+          const c = chartData(s)
+          const onboardedWeeks = (
+            <Panel title="Onboarded per week · last 12 weeks">
+              <ColumnChart data={c.weeks} unit="Onboarded" labelHeader="Week" />
+            </Panel>
+          )
+          const breakdowns = (
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <Panel title={`${noun} by follower size`}>
+                <ColumnChart data={c.bands} unit={noun} labelHeader="Total followers" height={200} showEveryLabel />
+              </Panel>
+              <Panel title={`${noun} by category`}>
+                <BarListChart data={s.by_category.map((x) => ({ label: x.category, value: x.count }))} unit={noun} labelHeader="Category" />
+              </Panel>
+              <Panel title="Top 10 cities" className="md:col-span-2 xl:col-span-1">
+                <BarListChart data={s.top_cities.map((x) => ({ label: x.city, value: x.count }))} unit={noun} labelHeader="City" />
+              </Panel>
+            </div>
+          )
+          const platforms = (
+            <Panel title={`${noun} by platform`}>
+              <MeterList rows={c.platforms} whole={s.kpis.total} unit={noun} />
+            </Panel>
+          )
+          const recent = (
+            <Panel title="Recently onboarded">
+              <RecentlyOnboardedTable rows={s.recently_onboarded} />
+            </Panel>
+          )
 
-          <div className="grid gap-4 lg:grid-cols-2">
-            <Panel title="Pipeline" action={<span className="text-xs text-muted-foreground">Click a stage to see its influencers</span>}>
-              <PipelineFunnel funnel={summary.data.funnel} />
-            </Panel>
-            <Panel title="My follow-ups · today & overdue">
-              <MyFollowUps items={summary.data.my_follow_ups} />
-            </Panel>
-            <Panel title="Influencers by category">
-              <BarListChart
-                data={summary.data.by_category.map((c) => ({ label: c.category, value: c.count }))}
-                unit="Influencers"
-                labelHeader="Category"
-              />
-            </Panel>
-            <Panel title="Top 10 cities">
-              <BarListChart data={summary.data.top_cities.map((c) => ({ label: c.city, value: c.count }))} unit="Influencers" labelHeader="City" />
-            </Panel>
-          </div>
+          if (!crm) {
+            // Brand Specialist: onboarded numbers only (the server sends nothing else).
+            return (
+              <>
+                <section aria-label="Key numbers" className="grid grid-cols-2 gap-3 sm:max-w-md">
+                  <Kpi label="Onboarded creators" value={s.kpis.total} to="/influencers" />
+                  <Kpi label="Onboarded this month" value={s.kpis.onboarded_this_month} />
+                </section>
+                <div className="grid gap-4 lg:grid-cols-2">
+                  {onboardedWeeks}
+                  {platforms}
+                </div>
+                {breakdowns}
+                {recent}
+              </>
+            )
+          }
 
-          <Panel title="Recent activity">
-            <RecentActivity items={summary.data.recent_activity} />
-          </Panel>
-        </>
+          return (
+            <>
+              <section aria-label="Key numbers" className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-7">
+                <Kpi label={me?.role === 'executive' ? 'My influencers' : 'Total influencers'} value={s.kpis.total} to="/influencers" />
+                <Kpi
+                  label="Unassigned Pool"
+                  value={s.kpis.pool}
+                  to="/pool"
+                  hint={s.kpis.claimed_this_week === null ? undefined : `${formatNumber(s.kpis.claimed_this_week)} claimed this week`}
+                />
+                <Kpi label="Contacted this week" value={s.kpis.contacted_this_week} hint="Moved to Contacted since Monday" />
+                <Kpi label="Onboarded this month" value={s.kpis.onboarded_this_month} />
+                <Kpi label="Welcome Kits in transit" value={s.kpis.packages_in_transit} to="/packages?status=sent&status=in_transit" />
+                <Kpi label="Follow-ups today" value={s.kpis.follow_ups_today} to="/calls" />
+                <Kpi
+                  label="Onboarded without agreement"
+                  value={s.kpis.onboarded_without_agreement}
+                  to={`/influencers?${ONBOARDED_OR_LATER.map((st) => `stage=${st}`).join('&')}&agreement=missing`}
+                  hint="Onboarded or later, no agreement on file"
+                />
+              </section>
+
+              <div className="grid gap-4 lg:grid-cols-2">
+                {onboardedWeeks}
+                <Panel title="Calls per day · last 30 days">
+                  <AreaTrendChart data={c.days} unit="Calls" labelHeader="Day" />
+                </Panel>
+              </div>
+
+              <div className="grid gap-4 lg:grid-cols-2">
+                <Panel title="Pipeline" action={<span className="text-xs text-muted-foreground">Click a stage to see its influencers</span>}>
+                  <PipelineFunnel funnel={s.funnel} />
+                </Panel>
+                <Panel title="My follow-ups · today & overdue">
+                  <MyFollowUps items={s.my_follow_ups} />
+                </Panel>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                <Panel title="Welcome Kits by status">
+                  <SegmentedBar parts={c.kits} unit="Welcome Kits" labelHeader="Status" />
+                </Panel>
+                <Panel title="Call outcomes · last 30 days">
+                  <SegmentedBar parts={c.outcomes} unit="Calls" labelHeader="Outcome" />
+                </Panel>
+                <div className="md:col-span-2 xl:col-span-1">{platforms}</div>
+              </div>
+
+              {breakdowns}
+
+              {s.team && (
+                <Panel title="Team performance">
+                  <TeamPerformanceTable rows={s.team} />
+                </Panel>
+              )}
+
+              {recent}
+
+              <Panel title="Recent activity">
+                <RecentActivity items={s.recent_activity} />
+              </Panel>
+            </>
+          )
+        })()
       )}
     </div>
   )

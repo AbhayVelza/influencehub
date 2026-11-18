@@ -135,6 +135,7 @@ export const ROLE_LABEL: Record<Role, string> = {
   admin: 'Admin',
   manager: 'Manager',
   executive: 'Executive',
+  brand_specialist: 'Brand Specialist',
 }
 
 export const DEFAULT_CATEGORIES: CategoryName[] = [

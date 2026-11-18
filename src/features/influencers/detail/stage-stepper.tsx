@@ -28,7 +28,7 @@ export function StageStepper({ stage, position }: StageStepperProps) {
                   className={cn(
                     'flex size-5 shrink-0 items-center justify-center rounded-full border-2',
                     done && cn('border-transparent text-white', STAGE_META[s].dot),
-                    current && cn('border-transparent ring-4 ring-foreground/10', STAGE_META[s].dot),
+                    current && cn('border-transparent ring-4 ring-border', STAGE_META[s].dot),
                     paused && 'border-dashed border-muted-foreground',
                     !done && !current && !paused && 'border-border',
                   )}

@@ -126,10 +126,14 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
   const canMerge = useCan('influencer:merge')
   const duplicates = useDuplicatePairs()
   const canView = useCan('influencer:view')
+  // Brand Specialists get the Dashboard, Influencers (onboarded creators only) and the Onboarded tabs.
+  const crm = useCan('crm:access')
 
-  const items: NavItem[] = [
-    { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
-    { to: '/influencers', label: 'Influencers', icon: Users },
+  const dashboard: NavItem = { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true }
+  const influencers: NavItem = { to: '/influencers', label: 'Influencers', icon: Users }
+  const items: NavItem[] = !crm ? [dashboard, influencers] : [
+    dashboard,
+    influencers,
     { to: '/pool', label: 'Unassigned Pool', icon: Inbox, badge: poolCount, badgeLabel: 'unassigned' },
     ...(canMerge
       ? [{ to: '/duplicates', label: 'Possible duplicates', icon: CopyCheck, badge: duplicates.data?.total, badgeLabel: 'to review' }]
