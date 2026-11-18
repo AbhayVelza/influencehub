@@ -16,7 +16,7 @@ import type { InfluencerFilters } from '@/types'
 
 function BoardSkeleton() {
   return (
-    <div className="flex gap-3" aria-busy="true" aria-label="Loading pipeline">
+    <div className="flex gap-3 overflow-hidden" aria-busy="true" aria-label="Loading pipeline">
       {Array.from({ length: 5 }, (_, i) => (
         <div key={i} className="min-w-48 flex-1 basis-0 space-y-2 rounded-xl border bg-muted/40 p-2">
           <Skeleton className="h-6 w-32" />
@@ -38,7 +38,7 @@ export default function PipelinePage() {
   const canReassign = useCan('influencer:reassign')
 
   return (
-    <div className="space-y-4 p-6">
+    <div className="space-y-4 p-4 sm:p-6">
       <PageHeader
         title={
           <>

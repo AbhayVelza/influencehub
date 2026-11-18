@@ -230,18 +230,18 @@ export const influencerHandlers = [
       }
     } else if (body.action === 'sync') {
       const found = ids.map((id) => findVisible(id, user)).filter((i): i is Influencer => !!i)
-      const accounts = found.flatMap((inf) => syncableAccounts(inf).map((a) => ({ inf, a })))
+      const accounts = found.flatMap((inf) => syncableAccounts(inf).map((a) => ({ influencerId: inf.id, accountId: a.id, platform: a.platform })))
       result.succeeded = found.map((i) => i.id)
       ids.filter((id) => !result.succeeded.includes(id)).forEach(notFoundRow)
       result.job_id = createJob((): BulkSyncResult => {
         const sync: BulkSyncResult = { synced: 0, failed: [] }
-        for (const { inf, a } of accounts) {
+        for (const target of accounts) {
           try {
-            syncAccount(a.id)
+            syncAccount(target.accountId)
             sync.synced++
           } catch (err) {
             const message = err instanceof Error ? err.message : 'Sync failed'
-            sync.failed.push({ id: inf.id, message: `${PLATFORM_META[a.platform].label}: ${message}` })
+            sync.failed.push({ id: target.influencerId, message: `${PLATFORM_META[target.platform].label}: ${message}` })
           }
         }
         return sync
@@ -352,15 +352,21 @@ export const influencerHandlers = [
     const body = await readJson<CallLogCreate>(request)
     if (!CALL_OUTCOMES.includes(body.outcome)) return apiError(422, 'validation_error', 'Choose a call outcome')
 
-    // One call per time slot across the workspace: no other open follow-up at the same date and minute. This
-    // influencer's own open follow-ups don't count (logging this call completes them, just below).
+    // One call per time slot per executive: no other open follow-up for this executive at the same date and minute.
+    // Two different executives can schedule calls at the same time for different influencers.
+    // This influencer's own open follow-ups don't count (logging this call completes them, just below).
     // null / undefined = no follow-up; anything else (an empty string included) must be a full timestamp.
     if (body.follow_up_date != null) {
       if (!isTimestamp(body.follow_up_date)) return apiError(422, 'validation_error', 'Enter a valid follow-up date and time')
       const slot = minuteOf(body.follow_up_date)
-      const taken = db.calls.some(
-        (c) => c.influencer_id !== inf.id && c.follow_up_date && !c.follow_up_done && minuteOf(c.follow_up_date) === slot,
-      )
+      const executiveId = inf.assigned_to ?? currentUser().id
+      const taken = db.calls.some((c) => {
+        if (c.influencer_id === inf.id || !c.follow_up_date || c.follow_up_done) return false
+        if (minuteOf(c.follow_up_date) !== slot) return false
+        const cInf = findInfluencer(c.influencer_id)
+        const cExecId = cInf?.assigned_to ?? c.called_by
+        return cExecId === executiveId
+      })
       if (taken) {
         return apiError(
           409,
@@ -388,6 +394,21 @@ export const influencerHandlers = [
     inf.onboarding_checklist.called = true
     inf.updated_at = call.created_at
     logActivity(inf.id, 'call_logged', { call_id: call.id, outcome: call.outcome })
+
+    // Auto-transitions based on call outcome:
+    // - "not_interested": moved to rejected
+    // - "no_answer" or "wrong_number": added to on_hold section
+    if (body.outcome === 'not_interested') {
+      if (inf.stage !== 'rejected') {
+        changeStage(inf, 'rejected', 'Call outcome: Not interested', currentUser())
+      }
+    } else if (body.outcome === 'no_answer' || body.outcome === 'wrong_number') {
+      if (inf.stage !== 'on_hold') {
+        const reason = body.outcome === 'no_answer' ? 'Call outcome: No answer' : 'Call outcome: Wrong number'
+        changeStage(inf, 'on_hold', reason, currentUser())
+      }
+    }
+
     return HttpResponse.json(call, { status: 201 })
   }),
 ]

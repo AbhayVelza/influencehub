@@ -55,12 +55,12 @@ Record any new API decision here. Dates and documents: `dates-and-documents.md`.
   survivor's primary stays primary); calls, packages and activity move to the survivor; tags are joined;
   checklist items are kept if either has them; the more advanced stage wins (main pipeline order; on_hold/rejected
   rank below data_gathered; ties keep the survivor's). The duplicate is deleted; `merged` is logged on the survivor.
-- Logging a call (`POST /influencers/{id}/calls`) marks that influencer's open follow-ups as done.
-- One call per time slot (added 06/11/2026): a `follow_up_date` on the same date and minute as another open
-  follow-up anywhere in the workspace is refused with `409 time_taken` ("Another call is already scheduled for
-  dd/MM/yyyy, hh:mm a. Pick a different time."; it doesn't say whose). Done follow-ups free their slot; the same
-  influencer's own open follow-up doesn't block, since logging the call completes it. The Log Call dialog shows the
-  message on the follow-up field and stays open.
+- Logging a call (`POST /influencers/{id}/calls`) marks that influencer's open follow-ups as done, and triggers automated stage transitions based on outcome: `not_interested` moves to `rejected`; `no_answer` and `wrong_number` move to `on_hold`; `call_back` schedules a follow-up; `interested` enables moving to `contacted`.
+- One call per time slot per executive (updated 14/11/2026): a `follow_up_date` on the same date and minute as
+  another open follow-up for the same executive is refused with `409 time_taken` ("Another call is already scheduled for
+  dd/MM/yyyy, hh:mm a. Pick a different time."). Different executives can schedule calls at the same time for different
+  influencers. Done follow-ups free their slot; the same influencer's own open follow-up doesn't block, since logging
+  the call completes it. The Log Call dialog shows the message on the follow-up field and stays open.
 - Admin override (a move outside the standard transitions) skips the call/package/agreement requirements but needs a
   `reason`; without one → `422 reason_required`. Activity payload: `{from, to, reason, override: true}`.
   Bulk `change_stage` has no reason field, so it can't override.
@@ -192,6 +192,10 @@ layer and the PostgreSQL layout: `server.md`.
   `422 validation_error` (bad email, bad role, missing name, location over 80 characters), `409 email_taken`. Success → `201 User` (`id` = `usr_…`).
 - **`PATCH /team/{id}`** `{name?, role?, location?, is_active?}` (no other field changes) → 422 `self_change` when you change your own role / deactivate
   yourself, 422 `last_admin` when it would leave no active admin. A deactivated member can no longer be acted as.
+- **`DELETE /team/{id}`** (admin) → 204. Errors, in order: 404 (unknown or already deleted), 422 `self_change`, 422
+  `still_active` (deactivate first), 409 `owns_influencers` ("still owns N influencers. Reassign or release them
+  first."). A soft delete: the record gets `deleted_at` and stays in `GET /team` so history (calls, packages,
+  activity) still shows the name; the Settings list hides it, `PATCH` answers 404, and its email can be added again.
 - **Uploads**: `POST /documents/presign` returns `upload_url` = `/api/v1/files/<key>` (prototype: `"local-file:<key>"`);
   `documentsApi.upload` PUTs the file there (the server checks the key came from a presign, stores it in the `files`
   table) and `POST /influencers/{id}/documents` saves the metadata (`storage_key`). `GET /documents/{id}/download`

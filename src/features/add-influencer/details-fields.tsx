@@ -58,9 +58,9 @@ export function DetailsFields({ idPrefix, showName = true }: { idPrefix: string;
   const owners = canReassign ? (team.data?.items ?? []).filter((u) => u.is_active) : me ? [me] : []
 
   return (
-    <div className="grid grid-cols-2 gap-3">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
       {showName && (
-        <Field id={id('name')} label="Name" error={errors.name} className="col-span-2">
+        <Field id={id('name')} label="Name" error={errors.name} className="sm:col-span-2">
           <Input id={id('name')} aria-invalid={!!errors.name} {...register('name')} />
         </Field>
       )}
@@ -113,7 +113,7 @@ export function DetailsFields({ idPrefix, showName = true }: { idPrefix: string;
       <Field id={id('email')} label="Email" error={errors.email}>
         <Input id={id('email')} type="text" placeholder="name@example.com or managed by @agency" aria-invalid={!!errors.email} {...register('email')} />
       </Field>
-      <div className="col-span-2 grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:col-span-2 sm:grid-cols-3">
         <Field id={id('city')} label="City" error={errors.city}>
           <Input id={id('city')} aria-invalid={!!errors.city} {...register('city')} />
         </Field>

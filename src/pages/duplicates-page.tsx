@@ -25,7 +25,7 @@ function Side({ influencer }: { influencer: Influencer }) {
   const rows: [string, ReactNode][] = [
     ['Primary account', <AccountLabel key="p" account={primary && toRef(primary)} link />],
     ['Platforms', <PlatformMarks key="pl" platforms={influencer.accounts.map((a) => a.platform)} />],
-    ['Total reach', influencer.total_reach == null ? '—' : <span key="r" title={formatNumber(influencer.total_reach)}>{formatCompact(influencer.total_reach)}</span>],
+    ['Total followers', influencer.total_reach == null ? '—' : <span key="r" title={formatNumber(influencer.total_reach)}>{formatCompact(influencer.total_reach)}</span>],
     ['Email', influencer.email ?? '—'],
     ['Phone', influencer.phone ?? '—'],
     ['Location', formatLocation([influencer.city, influencer.state, influencer.country])],
@@ -100,7 +100,7 @@ function PairCard({ pair }: { pair: DuplicatePair }) {
 export default function DuplicatesPage() {
   const pairs = useDuplicatePairs()
   return (
-    <div className="space-y-4 p-6">
+    <div className="space-y-4 p-4 sm:p-6">
       <PageHeader
         title={
           <>

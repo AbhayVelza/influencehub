@@ -148,7 +148,7 @@ function RecentActivity({ items }: { items: DashboardSummary['recent_activity'] 
 function DashboardSkeleton() {
   return (
     <div className="space-y-4" aria-busy="true" aria-label="Loading dashboard">
-      <div className="grid grid-cols-3 gap-3 xl:grid-cols-7">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-7">
         {Array.from({ length: 7 }, (_, i) => (
           <Skeleton key={i} className="h-24" />
         ))}
@@ -166,7 +166,7 @@ export default function DashboardPage() {
   const summary = useQuery({ queryKey: queryKeys.dashboard, queryFn: ({ signal }) => dashboardApi.summary(signal), refetchInterval: 60_000 })
 
   return (
-    <div className="space-y-4 p-6">
+    <div className="space-y-4 p-4 sm:p-6">
       <PageHeader title={me ? `Welcome back, ${me.name.split(' ')[0]}` : 'Dashboard'} description="Where the pipeline stands today." />
       {summary.isPending ? (
         <DashboardSkeleton />
@@ -174,7 +174,7 @@ export default function DashboardPage() {
         <ErrorState title="Couldn’t load the dashboard" error={summary.error} onRetry={() => summary.refetch()} />
       ) : (
         <>
-          <section aria-label="Key numbers" className="grid grid-cols-3 gap-3 xl:grid-cols-7">
+          <section aria-label="Key numbers" className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-7">
             <Kpi label={me?.role === 'executive' ? 'My influencers' : 'Total influencers'} value={summary.data.kpis.total} to="/influencers" />
             <Kpi
               label="Unassigned Pool"

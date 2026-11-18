@@ -16,6 +16,7 @@ interface LocalJob {
   /** Runs once when the job finishes. Throw JobFailure to fail the job. */
   run: () => unknown
   done: boolean
+  staged: boolean
   result: unknown
   error: { code: string; message: string } | null
 }
@@ -28,8 +29,42 @@ export function createJob(run: () => unknown, durationMs = 0): string {
   const cutoff = Date.now() - 60 * 60 * 1000
   for (const [key, job] of jobs) if (job.startedAt < cutoff) jobs.delete(key)
   const id = nextId('job')
-  jobs.set(id, { id, startedAt: Date.now(), durationMs, run, done: false, result: null, error: null })
+  jobs.set(id, { id, startedAt: Date.now(), durationMs, run, done: false, staged: false, result: null, error: null })
   return id
+}
+
+export function executeJob(id: string): void {
+  const job = jobs.get(id)
+  if (!job || job.done || job.staged) return
+  try {
+    job.result = job.run()
+  } catch (err) {
+    job.error =
+      err instanceof JobFailure
+        ? { code: err.code, message: err.message }
+        : { code: 'internal_error', message: err instanceof Error ? err.message : 'Job failed' }
+  }
+  job.staged = true
+}
+
+export function commitJobs(): void {
+  for (const job of jobs.values()) {
+    if (job.staged) {
+      job.done = true
+      job.staged = false
+      job.run = () => undefined
+    }
+  }
+}
+
+export function revertJobs(): void {
+  for (const job of jobs.values()) {
+    if (job.staged) {
+      job.staged = false
+      job.result = null
+      job.error = null
+    }
+  }
 }
 
 export function readJob(id: string): Job | null {
@@ -37,21 +72,11 @@ export function readJob(id: string): Job | null {
   if (!job) return null
   const elapsed = Date.now() - job.startedAt
 
-  if (!job.done && elapsed >= job.durationMs) {
-    job.done = true
-    try {
-      job.result = job.run()
-    } catch (err) {
-      job.error =
-        err instanceof JobFailure
-          ? { code: err.code, message: err.message }
-          : { code: 'internal_error', message: err instanceof Error ? err.message : 'Job failed' }
-    }
-    // It runs once: drop the closure so what it captured (e.g. a CSV's text) can be freed.
-    job.run = () => undefined
+  if (!job.done && !job.staged && elapsed >= job.durationMs) {
+    executeJob(id)
   }
 
-  if (job.done) {
+  if (job.done || job.staged) {
     return {
       id: job.id,
       status: job.error ? 'failed' : 'succeeded',

@@ -44,7 +44,7 @@ Admins can override any stage move, with a required reason.
 - **Onboarded**: one tab per platform listing the creators onboarded there.
 - **Pipeline** kanban, **Calls & Follow-ups**, **Packages**.
 - **Settings** (admin): Instagram integration, team (add members, roles, deactivate), categories, pool guards.
-- Light / dark theme, usable at 1024px, skeleton / empty / error states. Dates are `dd/MM/yyyy` and date-times
+- Light / dark theme, responsive from phones (360px) to desktop, skeleton / empty / error states. Dates are `dd/MM/yyyy` and date-times
   `dd/MM/yyyy, hh:mm a` in Asia/Kolkata (the API stays ISO 8601).
 
 ## Tech stack
@@ -106,6 +106,7 @@ To try other roles: **Settings > Team & roles > Add member**, then account menu 
 | `VITE_API_SERVER` | `true` = server mode; otherwise prototype mode |
 | `VITE_API_URL` | Only when the API server is on another origin than the app |
 | `DATABASE_URL` | PostgreSQL connection string for the server (secret) |
+| `SUPABASE_DATABASE_URL` | Supabase's PostgreSQL connection string, used by `npm run server:supabase` / `db:copy` (secret) |
 | `PORT`, `STATIC_DIR`, `CORS_ORIGIN` | Server port (3001), built app folder (`dist`), allowed origins |
 
 The committed `.env` holds empty placeholders only. Put your values in `.env.local` (gitignored).

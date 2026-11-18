@@ -105,6 +105,7 @@ function load(data: Snapshot) {
 
 let ready: Promise<void> | null = null
 let lastSaved = ''
+let initialSnapshot = ''
 let warned = false
 
 function warnOnce(err: unknown) {
@@ -123,7 +124,8 @@ export async function connect(): Promise<void> {
       warnOnce(err)
     }
     load(data ?? emptyWorkspace())
-    lastSaved = data ? JSON.stringify(snapshot()) : ''
+    initialSnapshot = JSON.stringify(snapshot())
+    lastSaved = data ? initialSnapshot : ''
   })()
   await ready
 }
@@ -139,6 +141,15 @@ export async function flush(): Promise<void> {
     lastSaved = json
   } catch (err) {
     warnOnce(err)
+    throw err
+  }
+}
+
+/** Restores the working copy to the last persisted snapshot (or the initial state if nothing was saved yet). */
+export function revert(): void {
+  const target = lastSaved || initialSnapshot
+  if (target) {
+    load(JSON.parse(target) as Snapshot)
   }
 }
 

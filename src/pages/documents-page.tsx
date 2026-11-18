@@ -68,7 +68,7 @@ export default function DocumentsPage() {
   const COLUMNS = 7
 
   return (
-    <div className="space-y-4 p-6">
+    <div className="space-y-4 p-4 sm:p-6">
       <PageHeader
         title={
           <>

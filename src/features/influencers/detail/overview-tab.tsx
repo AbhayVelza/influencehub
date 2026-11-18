@@ -64,9 +64,9 @@ function AddressEditor({
   })
 
   return (
-    <form onSubmit={onSubmit} className="grid grid-cols-2 gap-2" noValidate aria-label="Edit address">
+    <form onSubmit={onSubmit} className="grid grid-cols-1 gap-2 sm:grid-cols-2" noValidate aria-label="Edit address">
       {ADDRESS_FIELDS.map(({ name, label, span }) => (
-        <div key={name} className={span === 2 ? 'col-span-2 grid gap-1' : 'grid gap-1'}>
+        <div key={name} className={span === 2 ? 'grid gap-1 sm:col-span-2' : 'grid gap-1'}>
           <Label htmlFor={`addr-${name}`} className="text-xs">
             {label}
           </Label>
@@ -74,7 +74,7 @@ function AddressEditor({
           {formState.errors[name] && <p className="text-xs text-destructive">{formState.errors[name]?.message}</p>}
         </div>
       ))}
-      <div className="col-span-2 flex justify-end gap-2 pt-1">
+      <div className="flex justify-end gap-2 pt-1 sm:col-span-2">
         <Button type="button" variant="outline" size="sm" onClick={onCancel}>
           Cancel
         </Button>

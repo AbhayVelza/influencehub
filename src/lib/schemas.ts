@@ -275,7 +275,13 @@ const emailField = z
   .min(1, 'Email is required')
   .refine((v) => EMAIL.test(v), 'Enter a valid email address')
 
-export const memberLocationSchema = optionalText(80, 'Location')
+export const memberLocationSchema = z
+  .string()
+  .trim()
+  .max(80, 'Location must be at most 80 characters')
+  .nullable()
+  .optional()
+  .transform((v) => (v && v.trim() ? v.trim() : null))
 
 /** Settings > Team "Add a team member". */
 export const teamMemberCreateSchema = z.object({

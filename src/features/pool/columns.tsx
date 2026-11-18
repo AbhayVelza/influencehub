@@ -102,8 +102,8 @@ export function buildPoolColumns({ canReassign, busy, onOpen, onClaim, onAssign 
     },
     {
       id: 'total_reach',
-      header: 'Total reach',
-      meta: { label: 'Total reach', sortKey: 'total_reach', sortDescFirst: true, align: 'right' },
+      header: 'Total followers',
+      meta: { label: 'Total followers', sortKey: 'total_reach', sortDescFirst: true, align: 'right' },
       cell: ({ row }) => {
         const n = row.original.total_reach
         return n == null ? muted : <span title={formatNumber(n)}>{formatCompact(n)}</span>

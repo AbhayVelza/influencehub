@@ -11,7 +11,9 @@
     "preview": "vite preview --host 0.0.0.0 --port 3000",
     "server:build": "vite build --config vite.server.config.ts",
     "server": "npm run server:build && npm run start",
-    "start": "node --env-file-if-exists=.env.local dist-server/main.js"
+    "start": "node --env-file-if-exists=.env.local dist-server/main.js",
+    "server:supabase": "npm run server:build && npm run start -- --supabase",
+    "db:copy": "node --env-file-if-exists=.env.local scripts/db-copy.mjs"
   },
   "dependencies": {
     "@date-fns/tz": "^1.5.0",
