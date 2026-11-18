@@ -1,9 +1,10 @@
+import { STAGE_META } from '@/lib/constants'
 import { csvCell } from '@/lib/csv'
 import { dayKey, formatDate, todayKey } from '@/lib/format'
 import { can } from '@/lib/permissions'
 import { audienceOf, instagramFollowers, normalizeHandle, PLATFORM_META, PLATFORMS, primaryAccount, toRef } from '@/lib/platforms'
 import { normalizeEmailField, normalizePhone } from '@/lib/schemas'
-import { getAllowedTransitions, isOverride, ONBOARDED_OR_LATER, OVERRIDE_TARGETS } from '@/lib/stages'
+import { getAllowedTransitions, isOverride, ONBOARDED_OR_LATER, overrideBlockReason, STAGE_TRANSITIONS } from '@/lib/stages'
 import type {
   AccountCreate,
   CheckHandleResponse,
@@ -24,6 +25,7 @@ import {
   logActivity,
   nextId,
   nowIso,
+  everOnboarded,
   previousStageOf,
   refreshDerived,
   toSummary,
@@ -383,29 +385,30 @@ export type StageResult = { ok: true; influencer: Influencer } | { ok: false; st
 /**
  * `skipRequirements`: the caller has already proven the target stage's requirement some other way (a delivered
  * package moving an Onboarded creator through Welcome Kit). The transition rules still apply.
+ * `allowOverride: false`: standard moves only, even for an admin (bulk changes and automatic moves, which carry no
+ * override reason), so a refusal is reported as a plain "can't move" rather than an override rule.
  */
 export function changeStage(
   inf: Influencer,
   to: Stage,
   reason: string | undefined,
   user: User = currentUser(),
-  { skipRequirements = false }: { skipRequirements?: boolean } = {},
+  { skipRequirements = false, allowOverride = true }: { skipRequirements?: boolean; allowOverride?: boolean } = {},
 ): StageResult {
   if (!STAGE_ORDER.includes(to)) return { ok: false, status: 422, code: 'validation_error', message: 'Unknown stage' }
   if (inf.stage === to) return { ok: false, status: 422, code: 'invalid_transition', message: 'Already in this stage' }
 
   const previous = inf.stage === 'on_hold' ? previousStageOf(inf.id) : null
-  if (!getAllowedTransitions(inf.stage, user.role, previous).includes(to)) {
-    if (inf.stage === 'rejected' && !can(user.role, 'stage:reopen')) {
+  const ctx = { previousStage: previous, everOnboarded: everOnboarded(inf) }
+  if (!getAllowedTransitions(inf.stage, user.role, ctx, allowOverride).includes(to)) {
+    // Only an actual reopen (Rejected → Data Gathered) is a matter of role; any other move out of Rejected is just not a move.
+    if (inf.stage === 'rejected' && STAGE_TRANSITIONS.rejected.includes(to) && !can(user.role, 'stage:reopen')) {
       return { ok: false, status: 403, code: 'forbidden', message: 'Only managers and admins can reopen rejected influencers' }
     }
-    if (can(user.role, 'stage:override') && (ONBOARDED_OR_LATER.includes(inf.stage) || (previous && ONBOARDED_OR_LATER.includes(previous)))) {
-      return { ok: false, status: 422, code: 'invalid_transition', message: 'Overrides aren’t allowed once a creator is onboarded' }
-    }
-    if (can(user.role, 'stage:override') && !OVERRIDE_TARGETS.includes(to)) {
-      return { ok: false, status: 422, code: 'invalid_transition', message: 'Overrides can only move a creator up to Onboarded' }
-    }
-    return { ok: false, status: 422, code: 'invalid_transition', message: `Cannot move from ${inf.stage} to ${to}` }
+    // The override rule's own reason (src/lib/stages.ts), only where an override was on the table.
+    const blocked = allowOverride && user.role === 'admin' ? overrideBlockReason(inf.stage, to, user.role, ctx) : null
+    const label = (s: Stage) => STAGE_META[s].label
+    return { ok: false, status: 422, code: 'invalid_transition', message: blocked ?? `Can’t move from ${label(inf.stage)} to ${label(to)}` }
   }
 
   const override = isOverride(inf.stage, to, user.role, previous)

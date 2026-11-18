@@ -75,7 +75,10 @@ function stored(key: ListKey, item: object): Data {
   const data = JSON.parse(JSON.stringify(item)) as Data
   delete data.id
   // An influencer's documents summary is derived from the documents on every response.
-  if (key === 'influencers') delete data.documents
+  if (key === 'influencers') {
+    delete data.documents
+    delete data.ever_onboarded // derived from the activity log on every read, never stored
+  }
   return data
 }
 

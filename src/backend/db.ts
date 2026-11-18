@@ -1,6 +1,7 @@
 import { DEFAULT_CATEGORIES } from '@/lib/constants'
 import { OWNER_ID } from '@/lib/mode'
 import { primaryAccount, toRef, totalReach } from '@/lib/platforms'
+import { ONBOARDED_OR_LATER } from '@/lib/stages'
 import type {
   Activity,
   ActivityType,
@@ -15,6 +16,7 @@ import type {
   PoolSettings,
   SavedView,
   SocialAccount,
+  Stage,
   User,
 } from '@/types'
 
@@ -46,9 +48,41 @@ export function attachDocumentSummary(inf: Influencer): Influencer {
   Object.defineProperty(inf, 'toJSON', {
     enumerable: false,
     configurable: true,
-    value: () => ({ ...inf, documents: documentSummary(inf) }),
+    value: () => ({ ...inf, documents: documentSummary(inf), ever_onboarded: everOnboarded(inf) }),
   })
   return inf
+}
+
+/**
+ * Whether the creator has been Onboarded (or later) at any point: now, or by a recorded move. Derived on every read,
+ * never stored, so the override rule can't be sidestepped by moving an onboarded creator to Rejected or On Hold.
+ */
+export function everOnboarded(inf: Pick<Influencer, 'id' | 'stage'>): boolean {
+  if (ONBOARDED_OR_LATER.includes(inf.stage)) return true
+  return onboardedIndex().has(inf.id)
+}
+
+/**
+ * Ids with a recorded move onto Onboarded or later, built once from the activity log and reused (every response and
+ * every store flush serialises all influencers, so a scan per influencer would cost influencers × activities).
+ * Dropped at the start of each request (`setActingUid`), on every new activity (`logActivity`) and after a merge
+ * re-points activities (`invalidateEverOnboarded`).
+ */
+let onboardedIds: Set<string> | null = null
+
+function onboardedIndex(): Set<string> {
+  if (!onboardedIds) {
+    onboardedIds = new Set(
+      db.activities
+        .filter((a) => a.type === 'stage_changed' && ONBOARDED_OR_LATER.includes(a.payload.to as Stage))
+        .map((a) => a.influencer_id),
+    )
+  }
+  return onboardedIds
+}
+
+export function invalidateEverOnboarded() {
+  onboardedIds = null
 }
 
 /** What's on file for an influencer (null in the pool: documents aren't shown for unassigned influencers). */
@@ -143,6 +177,7 @@ export function resolveActingUid(uid: string | null): string | null {
 
 /** Set for each request (resolveActingUid). */
 export function setActingUid(uid: string | null) {
+  invalidateEverOnboarded()
   actingUid = uid
 }
 
@@ -202,6 +237,7 @@ export function logActivity(
     created_at: nowIso(),
   }
   db.activities.push(activity)
+  invalidateEverOnboarded()
   return activity
 }
 

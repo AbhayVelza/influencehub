@@ -35,7 +35,9 @@ export function StageControl({ influencer, previousStage, hasInterestedCall, has
   const from = influencer.stage
   const standard = getStandardTransitions(from, me.role, previousStage)
   // Up to Onboarded only, and none once the creator is onboarded (src/lib/stages.ts).
-  const overrides = getOverrideTargets(from, me.role, previousStage)
+  const overrides = getOverrideTargets(from, me.role, { previousStage, everOnboarded: influencer.ever_onboarded })
+  // An override into Onboarded still needs the signed agreement; the mover asks for it first when it's missing.
+  const hasAgreement = !!influencer.documents?.has_agreement
 
   // Entering Onboarded from Contacted needs a current agreement and an insights summary (resuming from hold doesn't).
   const needsDocuments = (to: Stage) => to === 'onboarded' && from === 'contacted'
@@ -95,9 +97,13 @@ export function StageControl({ influencer, previousStage, hasInterestedCall, has
                   Override (admin)
                 </DropdownMenuLabel>
                 {overrides.map((to) => (
-                  <DropdownMenuItem key={to} onSelect={() => mover.requestMove(influencer, to, { override: true })}>
+                  <DropdownMenuItem
+                    key={to}
+                    onSelect={() => mover.requestMove(influencer, to, { override: true, requirementMet: to === 'onboarded' ? hasAgreement : undefined })}
+                  >
                     <StageDot stage={to} />
                     {STAGE_META[to].label}
+                    {to === 'onboarded' && !hasAgreement && <span className="ml-auto text-xs text-muted-foreground">Upload agreement…</span>}
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuGroup>

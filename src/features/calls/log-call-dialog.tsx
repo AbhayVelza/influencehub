@@ -17,13 +17,13 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { useChangeStage } from '@/features/influencers/detail-queries'
 import { useMe } from '@/hooks/use-me'
-import { CALL_OUTCOME_META, CALL_OUTCOMES } from '@/lib/constants'
+import { CALL_OUTCOME_META, CALL_OUTCOMES, STAGE_META } from '@/lib/constants'
 import { dateTimeInputFromNow, parseDateTimeInput } from '@/lib/format'
 import { callLogSchema, type CallLogFormInput } from '@/lib/schemas'
 import { getStandardTransitions } from '@/lib/stages'
 import { cn } from '@/lib/utils'
 import { ApiError, getErrorMessage } from '@/services'
-import type { CallOutcome, Stage } from '@/types'
+import type { CallLogCreated, CallOutcome, Stage } from '@/types'
 import { useLogCall } from './queries'
 
 export interface LogCallTarget {
@@ -68,8 +68,9 @@ export function LogCallDialog({ influencer, open, onOpenChange, intent }: LogCal
   const busy = logCall.isPending || changeStage.isPending
 
   const onSubmit = handleSubmit(async (values) => {
+    let created: CallLogCreated
     try {
-      await logCall.mutateAsync({
+      created = await logCall.mutateAsync({
         outcome: values.outcome as CallOutcome,
         notes: values.notes,
         follow_up_date: values.follow_up ? parseDateTimeInput(values.follow_up) : null,
@@ -93,12 +94,11 @@ export function LogCallDialog({ influencer, open, onOpenChange, intent }: LogCal
       }
       return
     }
-    if (values.outcome === 'not_interested') {
-      toast.success(`Call logged · ${influencer.name} moved to Rejected`)
-      return
-    }
-    if (values.outcome === 'no_answer' || values.outcome === 'wrong_number') {
-      toast.success(`Call logged · ${influencer.name} moved to On Hold`)
+    // Not interested → Rejected, no answer / wrong number → On Hold: report what the server actually did.
+    const change = created.stage_change
+    if (change) {
+      if (change.moved) toast.success(`Call logged · ${influencer.name} moved to ${STAGE_META[change.to].label}`)
+      else toast.warning(`Call logged, but ${influencer.name} stays in ${STAGE_META[influencer.stage].label}`, { description: change.message ?? undefined })
       return
     }
     if (values.outcome === 'call_back') {

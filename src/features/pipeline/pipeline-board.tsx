@@ -40,13 +40,19 @@ function loadCollapsed(): Record<string, boolean> {
   }
 }
 
-type DropKind = 'standard' | 'override' | 'blocked' | 'current'
+/** `pending`: an On Hold card whose previous stage is still being looked up, so the answer isn't known yet. */
+type DropKind = 'standard' | 'override' | 'blocked' | 'current' | 'pending'
 
-/** Standard moves for the role; admins can also override up to Onboarded (not once a creator is onboarded). */
-function dropKind(card: PipelineCard, to: Stage, role: Role, previous: Stage | null): DropKind {
+/**
+ * Standard moves for the role; admins can also override (rules in `overrideBlockReason`, src/lib/stages.ts).
+ * `previous`: an On Hold card's previous stage; `undefined` while it's being looked up, `null` when there's none.
+ */
+function dropKind(card: PipelineCard, to: Stage, role: Role, previous: Stage | null | undefined): DropKind {
   if (to === card.stage) return 'current'
+  if (card.stage === 'on_hold' && previous === undefined && to !== 'rejected') return 'pending'
   if (getStandardTransitions(card.stage, role, previous).includes(to)) return 'standard'
-  return getOverrideTargets(card.stage, role, previous).includes(to) ? 'override' : 'blocked'
+  const ctx = { previousStage: previous, everOnboarded: card.ever_onboarded }
+  return getOverrideTargets(card.stage, role, ctx).includes(to) ? 'override' : 'blocked'
 }
 
 // Pointer drops use the column under the pointer; keyboard drops (no pointer) fall back to overlap.
@@ -147,7 +153,8 @@ export function PipelineBoard({ data, filters }: { data: PipelineResponse; filte
   const queryClient = useQueryClient()
   const mover = useStageMover()
   const [active, setActive] = useState<PipelineCard | null>(null)
-  const [previous, setPrevious] = useState<Stage | null>(null)
+  // The dragged On Hold card's previous stage: undefined while loading (or if the lookup failed), null when none.
+  const [previous, setPrevious] = useState<Stage | null | undefined>(null)
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>(loadCollapsed)
 
   const sensors = useSensors(
@@ -172,9 +179,13 @@ export function PipelineBoard({ data, filters }: { data: PipelineResponse; filte
   const onDragStart = ({ active: a }: DragStartEvent) => {
     const card = a.data.current?.card as PipelineCard
     setActive(card)
-    setPrevious(null)
-    // On-hold cards may resume to their previous stage; look it up while the card is in the air.
-    if (card.stage === 'on_hold') void fetchPreviousStage(card.id).then(setPrevious).catch(() => setPrevious(null))
+    // On-hold cards may resume to their previous stage; look it up while the card is in the air. Until it's back
+    // (or if it fails) it stays undefined: the board says "checking" and the drop looks it up again.
+    if (card.stage !== 'on_hold') return setPrevious(null)
+    setPrevious(undefined)
+    void fetchPreviousStage(card.id)
+      .then(setPrevious)
+      .catch(() => setPrevious(undefined))
   }
 
   const moveCardLocally = (card: PipelineCard, to: Stage) => {
@@ -202,7 +213,8 @@ export function PipelineBoard({ data, filters }: { data: PipelineResponse; filte
     setActive(null)
     if (!over || over.id === card.stage) return
     const to = over.id as Stage
-    const prev = card.stage === 'on_hold' ? (previous ?? (await fetchPreviousStage(card.id).catch(() => null))) : null
+    // The same previous stage the board showed while dragging; looked up now only if it hadn't come back yet.
+    const prev = card.stage !== 'on_hold' ? null : previous !== undefined ? previous : await fetchPreviousStage(card.id).catch(() => null)
     const kind = dropKind(card, to, role, prev)
     if (kind === 'blocked') {
       const allowed = getStandardTransitions(card.stage, role, prev).map((s) => STAGE_META[s].label)
@@ -231,7 +243,8 @@ export function PipelineBoard({ data, filters }: { data: PipelineResponse; filte
         return `Picked up ${card.name} in ${label(over.id)}. Use the left and right arrow keys to choose a stage, Space to drop, Escape to cancel.`
       }
       const kind = dropKind(card, over.id as Stage, role, previous)
-      const note = kind === 'blocked' ? ' Not allowed.' : kind === 'override' ? ' Admin override.' : ''
+      const note =
+        kind === 'blocked' ? ' Not allowed.' : kind === 'override' ? ' Admin override.' : kind === 'pending' ? ' Checking whether this move is allowed.' : ''
       return `${card.name} is over ${label(over.id)}.${note}`
     },
     onDragEnd: ({ active: a, over }) =>

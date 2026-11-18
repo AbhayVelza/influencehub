@@ -1,5 +1,5 @@
 import { http, HttpResponse } from 'msw'
-import { ALL_STAGES, STAGE_META } from '@/lib/constants'
+import { ALL_STAGES, CALL_OUTCOME_META, STAGE_META } from '@/lib/constants'
 import { can } from '@/lib/permissions'
 import { PLATFORM_META, PLATFORMS } from '@/lib/platforms'
 import type {
@@ -7,6 +7,7 @@ import type {
   BulkResult,
   BulkSyncResult,
   CallLog,
+  CallLogCreated,
   CallLogCreate,
   FilterOption,
   FilterOptions,
@@ -176,7 +177,7 @@ export const influencerHandlers = [
           notFoundRow(id)
           continue
         }
-        const res = changeStage(inf, body.value as Influencer['stage'], undefined, user)
+        const res = changeStage(inf, body.value as Influencer['stage'], undefined, user, { allowOverride: false })
         if (res.ok) result.succeeded.push(id)
         else result.failed.push({ id, code: res.code, message: res.message })
       }
@@ -395,20 +396,18 @@ export const influencerHandlers = [
     inf.updated_at = call.created_at
     logActivity(inf.id, 'call_logged', { call_id: call.id, outcome: call.outcome })
 
-    // Auto-transitions based on call outcome:
-    // - "not_interested": moved to rejected
-    // - "no_answer" or "wrong_number": added to on_hold section
-    if (body.outcome === 'not_interested') {
-      if (inf.stage !== 'rejected') {
-        changeStage(inf, 'rejected', 'Call outcome: Not interested', currentUser())
-      }
-    } else if (body.outcome === 'no_answer' || body.outcome === 'wrong_number') {
-      if (inf.stage !== 'on_hold') {
-        const reason = body.outcome === 'no_answer' ? 'Call outcome: No answer' : 'Call outcome: Wrong number'
-        changeStage(inf, 'on_hold', reason, currentUser())
-      }
+    // Automatic moves from the outcome: not interested → Rejected; no answer / wrong number → On Hold. Standard moves
+    // only (never an override, so never past the "no override once onboarded" rule); the response says whether it
+    // happened, so the caller can tell the user instead of claiming a move that didn't take place.
+    const autoTo: Stage | null =
+      body.outcome === 'not_interested' ? 'rejected' : body.outcome === 'no_answer' || body.outcome === 'wrong_number' ? 'on_hold' : null
+    let stage_change: CallLogCreated['stage_change'] = null
+    if (autoTo && inf.stage !== autoTo) {
+      const reason = `Call outcome: ${CALL_OUTCOME_META[body.outcome].label}`
+      const res = changeStage(inf, autoTo, reason, currentUser(), { allowOverride: false })
+      stage_change = { to: autoTo, moved: res.ok, message: res.ok ? null : res.message }
     }
 
-    return HttpResponse.json(call, { status: 201 })
+    return HttpResponse.json({ ...call, stage_change } satisfies CallLogCreated, { status: 201 })
   }),
 ]
