@@ -59,7 +59,7 @@ The server enforces all of this; the UI only hides what a role can't do. Code: `
 | **Influencer detail** | Stage stepper, social accounts with per-platform stats, calls, packages, documents, activity |
 | **Add / Import** | Manual entry (several platform accounts per creator) or CSV with preview and duplicate warnings |
 | **Unassigned Pool** | Creators with no owner. Executives claim; managers assign (also in bulk). Optional claim limit + auto-release |
-| **Possible duplicates** | Side-by-side pairs with confidence and reasons; merge or dismiss (manager/admin) |
+| **Possible duplicates** | Pairs that share an Instagram handle, side by side; merge or dismiss (manager/admin) |
 | **Pipeline** | Kanban board (drag and drop) |
 | **Calls & Follow-ups** | Today / overdue / upcoming / history |
 | **Welcome Kits** | All Welcome Kits (packages); status changes can move the creator's stage |

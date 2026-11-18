@@ -36,12 +36,9 @@ Record any new API decision here. Dates and documents: `dates-and-documents.md`.
   personal Instagram or Facebook profile —, `not_found`, `rate_limited`).
 - **Duplicate detection** (`POST /duplicates/check {name, email, phone, city, accounts[{platform, handle, bio?,
   links?}], exclude_id?}` → `{matches[{influencer_id, confidence, reasons[], access, influencer}]}`), strongest first.
-  Signals: same email or phone → high; an account's handle / URL found in another account's bio or links (either
-  direction) → high; the same platform + handle → high; the same handle on a different platform → medium; similar
-  name + same city (both trimmed, lowercased) → low. **Similar name** (exact rule, `similarNames` in
-  `src/backend/duplicates.ts`): trim and lowercase both names; empty never matches; `n` = length in characters of the
-  shorter one; match when Levenshtein distance (insert / delete / substitute, each cost 1) ≤ 1 if `n` ≤ 6, else ≤ 2.
-  A match's confidence = its strongest signal.
+  **Only signal: the same Instagram handle** (normalised) → high, reason "Same Instagram account @handle". Email,
+  phone, bio links, other platforms' handles and names are not compared (decided 18/11/2026); the request still
+  accepts those fields so callers don't change. Same rule for `GET /duplicates` pairs.
   `access`: `full` (you can see it), `pool` (unassigned), `restricted` (an executive's teammate owns it:
   `influencer_id`, `influencer` and `reasons` are empty — the UI says only "matches a creator assigned to a
   teammate"). The UI calls it before every add (manual, lookup, add account, CSV preview rows) and offers
@@ -243,8 +240,8 @@ Read-only access to onboarded creators, enforced by the handlers (not just hidde
 
 `Influencer.email` accepts free text (max 200), so a CSV or form can carry notes like "managed by @iplixmedia"
 when a creator has no public address. `normalizeEmailField` (`src/lib/schemas.ts`) lowercases real addresses and keeps
-anything else as typed. `EmailValue` shows a mailto link only for a real address. Duplicate detection matches on
-"Same email" only when both values are real addresses (`isEmailAddress`), so a shared agency note is not a match.
+anything else as typed. `EmailValue` shows a mailto link only for a real address. (Duplicate detection no longer compares emails at all;
+it matches on the same Instagram handle only.)
 
 ## Upgrading the old default categories
 
