@@ -22,7 +22,8 @@ export interface MoveOptions {
   /** Admin move outside the standard transitions: always asks for a reason. */
   override?: boolean
   /**
-   * Whether the target stage's requirement (interested call / tracked package / agreement + insights) is already met.
+   * Whether the target stage's requirement (interested call / tracked package / agreement + insights; for an override
+   * into Onboarded, just the agreement) is already met.
    * false opens the required modal straight away; undefined tries the move and opens it only if the API
    * answers `requirement_missing`.
    */
@@ -34,7 +35,16 @@ export interface MoveOptions {
 type MoverReasonState = { target: MoveTarget; to: Stage; mode: 'confirm' | 'override' } | null
 
 /** Onboarding documents still to upload (the first one is showing); the move to Onboarded follows the last. */
-type OnboardingState = { target: MoveTarget; uploadTarget: UploadTarget; queue: DocumentType[]; total: number; open: boolean; flowId: number }
+/** `override`: an admin override into Onboarded, which needs only the agreement and then asks for the reason. */
+type OnboardingState = {
+  target: MoveTarget
+  uploadTarget: UploadTarget
+  queue: DocumentType[]
+  total: number
+  open: boolean
+  flowId: number
+  mode: 'standard' | 'override'
+}
 
 /**
  * Stage moves with the same rules everywhere (detail page, pipeline): required modals, confirmations,
@@ -95,7 +105,7 @@ export function useStageMover(): {
           }
           return
         }
-        setOnboarding({ target, uploadTarget: influencer, queue, total: queue.length, open: true, flowId })
+        setOnboarding({ target, uploadTarget: influencer, queue, total: queue.length, open: true, flowId, mode: 'standard' })
       } catch (err) {
         if (onboardingFlowIdRef.current !== flowId) return
         toast.error('Couldn’t open the document upload', { description: getErrorMessage(err) })
@@ -116,8 +126,32 @@ export function useStageMover(): {
     }
   }
 
+  /**
+   * Admin override into Onboarded: the signed agreement is the one requirement an override can't skip. Upload it
+   * first when it's missing (fresh record), then ask for the override reason.
+   */
+  const openOverrideOnboarded = async (target: MoveTarget) => {
+    const flowId = ++onboardingFlowIdRef.current
+    try {
+      const influencer = await queryClient.fetchQuery({
+        queryKey: queryKeys.influencer(target.id),
+        queryFn: ({ signal }) => influencersApi.get(target.id, signal),
+        staleTime: 0,
+      })
+      if (onboardingFlowIdRef.current !== flowId) return
+      if (influencer.documents?.has_agreement) return setReasonState({ target, to: 'onboarded', mode: 'override' })
+      setOnboarding({ target, uploadTarget: influencer, queue: ['agreement'], total: 1, open: true, flowId, mode: 'override' })
+    } catch (err) {
+      if (onboardingFlowIdRef.current !== flowId) return
+      toast.error('Couldn’t open the agreement upload', { description: getErrorMessage(err) })
+    }
+  }
+
   const requestMove = async (target: MoveTarget, to: Stage, options: MoveOptions = {}) => {
-    if (options.override) return setReasonState({ target, to, mode: 'override' })
+    if (options.override) {
+      if (to === 'onboarded' && options.requirementMet !== true) return openOverrideOnboarded(target)
+      return setReasonState({ target, to, mode: 'override' })
+    }
     if (to === 'on_hold' || to === 'rejected') return setReasonState({ target, to, mode: 'confirm' })
     if ((to === 'contacted' || to === 'onboarded' || to === 'package_sent') && options.requirementMet === false) {
       return openRequirement(target, to)
@@ -133,7 +167,18 @@ export function useStageMover(): {
         onCancel={() => setReasonState(null)}
         onSubmit={async (reason) => {
           if (!reasonState) return
-          if ((await move(reasonState.target, reasonState.to, reason)) !== 'failed') setReasonState(null)
+          const { target, to, mode } = reasonState
+          const result = await move(target, to, reason)
+          if (result === 'failed') return
+          setReasonState(null)
+          if (result !== 'requirement') return
+          // Refused for a missing requirement (e.g. the agreement was deleted meanwhile): say so, never close silently.
+          if (mode === 'override' && to === 'onboarded') {
+            toast.error('Couldn’t move to Onboarded', { description: 'Upload the signed agreement first. Even an override needs it.' })
+            await openOverrideOnboarded(target)
+            return
+          }
+          toast.error(`Couldn’t move to ${STAGE_META[to].label}`, { description: 'A requirement for this stage is missing.' })
         }}
       />
       {call && (
@@ -149,9 +194,11 @@ export function useStageMover(): {
           influencer={onboarding.uploadTarget}
           type={onboarding.queue[0]}
           note={
-            onboarding.total > 1
-              ? `Step ${onboarding.total - onboarding.queue.length + 1} of ${onboarding.total}: Onboarded needs the agreement and an insights summary`
-              : 'needed to move to Onboarded'
+            onboarding.mode === 'override'
+              ? 'needed to move to Onboarded, even with an override'
+              : onboarding.total > 1
+                ? `Step ${onboarding.total - onboarding.queue.length + 1} of ${onboarding.total}: Onboarded needs the agreement and an insights summary`
+                : 'needed to move to Onboarded'
           }
           open={onboarding.open}
           // A user close (cancel, Esc, outside click) drops the flow. A successful upload doesn't close the dialog:
@@ -170,6 +217,8 @@ export function useStageMover(): {
             if (rest.length) return setOnboarding({ ...onboarding, queue: rest, open: true })
             const flowId = onboarding.flowId
             setOnboarding(null)
+            // Override: the agreement is on file now, so ask for the override reason (the move happens on submit).
+            if (onboarding.mode === 'override') return setReasonState({ target: onboarding.target, to: 'onboarded', mode: 'override' })
             // Still refused (e.g. a document was deleted meanwhile): rebuild the steps from fresh data.
             const result = await move(onboarding.target, 'onboarded')
             if (onboardingFlowIdRef.current !== flowId) return

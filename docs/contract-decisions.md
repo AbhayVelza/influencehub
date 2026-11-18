@@ -52,19 +52,23 @@ Record any new API decision here. Dates and documents: `dates-and-documents.md`.
   survivor's primary stays primary); calls, packages and activity move to the survivor; tags are joined;
   checklist items are kept if either has them; the more advanced stage wins (main pipeline order; on_hold/rejected
   rank below data_gathered; ties keep the survivor's). The duplicate is deleted; `merged` is logged on the survivor.
-- Logging a call (`POST /influencers/{id}/calls`) marks that influencer's open follow-ups as done, and triggers automated stage transitions based on outcome: `not_interested` moves to `rejected`; `no_answer` and `wrong_number` move to `on_hold`; `call_back` schedules a follow-up; `interested` enables moving to `contacted`.
+- Logging a call (`POST /influencers/{id}/calls`) marks that influencer's open follow-ups as done, and triggers automated stage transitions based on outcome: `not_interested` moves to `rejected`; `no_answer` and `wrong_number` move to `on_hold`; `call_back` schedules a follow-up; `interested` enables moving to `contacted`. The automatic moves are standard moves only; the 201 body is the call plus `stage_change: {to, moved, message} | null` so the UI reports a refused move instead of claiming it.
 - One call per time slot per executive (updated 14/11/2026): a `follow_up_date` on the same date and minute as
   another open follow-up for the same executive is refused with `409 time_taken` ("Another call is already scheduled for
   dd/MM/yyyy, hh:mm a. Pick a different time."). Different executives can schedule calls at the same time for different
   influencers. Done follow-ups free their slot; the same influencer's own open follow-up doesn't block, since logging
   the call completes it. The Log Call dialog shows the message on the follow-up field and stays open.
-- Admin override (a move outside the standard transitions; `getOverrideTargets` in `src/lib/stages.ts`) only reaches
-  data_gathered, contacted, onboarded, on_hold or rejected, and is not offered once a creator is onboarded or later (or on
-  hold from there): those get `422 invalid_transition` ("Overrides aren’t allowed once a creator is onboarded" / "Overrides
-  can only move a creator up to Onboarded"). It skips the call and insights requirements but an override into Onboarded
-  still needs a current agreement (`422 requirement_missing`). It needs a `reason`; without one → `422 reason_required`.
-  Activity payload: `{from, to, reason, override: true}`. (Decided 18/11/2026.)
-  Bulk `change_stage` has no reason field, so it can't override.
+- Admin override (a move outside the standard transitions). One rule, `overrideBlockReason` / `getOverrideTargets` in
+  `src/lib/stages.ts`, used by the server, the stage menu and the pipeline board. Targets: data_gathered, contacted,
+  onboarded, on_hold, rejected only. None once the creator has **ever** been onboarded: Onboarded / Welcome Kit /
+  Delivered now, or Rejected / On Hold after that (`ever_onboarded`, derived from the stage history on every read and
+  sent on influencers and pipeline cards). None from On Hold while the stage before it is unknown (no record, or not
+  loaded yet). Refusals are `422 invalid_transition` with the rule's own message. An override skips the call and
+  insights requirements, but an override into Onboarded still needs a current agreement (`422 requirement_missing`;
+  the UI uploads the agreement first, then asks for the reason). It needs a `reason`; without one → `422
+  reason_required`. Activity payload: `{from, to, reason, override: true}`. (Decided 18/11/2026.)
+  Bulk `change_stage` and every automatic move (call outcomes, Welcome Kit status) pass `allowOverride: false`:
+  standard moves only, refused with a plain "Can’t move from X to Y".
 - `POST /influencers/bulk` actions: `change_stage` (value = stage), `assign` (value = user id or null; manager/admin),
   `pool_assign` (value = an active user's id, else 422; manager/admin, else 403; assigns only rows that are still
   unassigned, checked per row like a claim, so a teammate's claim is never overwritten: per-row `not_in_pool` "No

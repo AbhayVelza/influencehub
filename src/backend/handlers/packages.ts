@@ -19,10 +19,10 @@ function withInfluencer(pkg: Package): PackageWithInfluencer | null {
  */
 function followPackage(inf: Influencer, status: PackageStatus) {
   if (status === 'delivered') {
-    if (inf.stage === 'onboarded') changeStage(inf, 'package_sent', 'Welcome Kit delivered', undefined, { skipRequirements: true })
-    if (inf.stage === 'package_sent') changeStage(inf, 'delivered', 'Welcome Kit delivered')
+    if (inf.stage === 'onboarded') changeStage(inf, 'package_sent', 'Welcome Kit delivered', undefined, { skipRequirements: true, allowOverride: false })
+    if (inf.stage === 'package_sent') changeStage(inf, 'delivered', 'Welcome Kit delivered', undefined, { allowOverride: false })
   }
-  if (status === 'returned' && inf.stage === 'package_sent') changeStage(inf, 'onboarded', 'Welcome Kit returned')
+  if (status === 'returned' && inf.stage === 'package_sent') changeStage(inf, 'onboarded', 'Welcome Kit returned', undefined, { allowOverride: false })
 }
 
 function validateItems(items: unknown): string | null {

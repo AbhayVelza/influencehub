@@ -6,6 +6,7 @@ import type {
   BulkResult,
   CallLog,
   CallLogCreate,
+  CallLogCreated,
   CheckHandleResponse,
   FilterOptions,
   InfluencerFilters,
@@ -63,5 +64,5 @@ export const influencersApi = {
   calls: (id: string, params: { page?: number; page_size?: number } = {}, signal?: AbortSignal) =>
     http.get<Paginated<CallLog>>(`${base}/${id}/calls`, params, signal),
 
-  logCall: (id: string, body: CallLogCreate) => http.post<CallLog>(`${base}/${id}/calls`, body),
+  logCall: (id: string, body: CallLogCreate) => http.post<CallLogCreated>(`${base}/${id}/calls`, body),
 }

@@ -27,7 +27,7 @@ LinkedIn, Snapchat), each with its own stats.
 | On Hold / Rejected | Side stages. On Hold resumes to the previous stage; reopening Rejected is manager/admin only |
 
 Call outcomes: no answer / call back create a follow-up, not interested rejects, interested moves to Contacted.
-Admins can override a stage move (with a required reason) up to Onboarded only, never once a creator is onboarded,
+Admins can override a stage move (with a required reason) up to Onboarded only, never once a creator has been onboarded,
 and an override into Onboarded still needs the signed agreement.
 
 ## Features

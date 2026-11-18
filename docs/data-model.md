@@ -12,7 +12,8 @@ Source of truth: `src/types/index.ts`. Update both together.
   onboarded → package_sent/on_hold/rejected; package_sent → delivered/onboarded (returned);
   on_hold → previous stage/rejected; rejected → data_gathered (manager/admin only). Admin can override up to Onboarded
   (targets: data_gathered, contacted, onboarded, on_hold, rejected; never package_sent or delivered), and not at all
-  once a creator is onboarded or later (or on hold from there). An override into Onboarded still needs a current agreement.
+  once a creator has ever been onboarded (also when Rejected or On Hold after that; `ever_onboarded`). An override into
+  Onboarded still needs a current agreement.
   → contacted requires a call log with outcome "interested"; → onboarded (from contacted) requires a current
   agreement and at least one insights summary; → package_sent requires a package with courier + tracking number.
 - **CallOutcome**: interested, not_interested, call_back, no_answer, wrong_number

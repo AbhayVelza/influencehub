@@ -155,6 +155,11 @@ export interface Influencer {
   onboarding_checklist: OnboardingChecklist
   /** Derived from the documents; null while the influencer is unassigned (documents are never shown for the pool). */
   documents: DocumentSummary | null
+  /**
+   * Derived on every read (never stored): has been Onboarded or later at some point. Once true, no admin override
+   * is allowed (`overrideBlockReason` in src/lib/stages.ts). Optional only because stored records don't carry it.
+   */
+  ever_onboarded?: boolean
   created_at: ISODateString
   updated_at: ISODateString
 }
@@ -169,6 +174,15 @@ export interface CallLog {
   follow_up_date: ISODateString | null
   follow_up_done: boolean
   created_at: ISODateString
+}
+
+/**
+ * `POST /influencers/{id}/calls` response: the call, plus what its outcome did to the stage (not interested →
+ * Rejected; no answer / wrong number → On Hold). Those moves are standard moves only, so they can be refused.
+ */
+export interface CallLogCreated extends CallLog {
+  /** null when the outcome moves nothing (or the creator is already in that stage). */
+  stage_change: { to: Stage; moved: boolean; message: string | null } | null
 }
 
 export interface PackageItem {
@@ -573,6 +587,8 @@ export interface PipelineCard {
   assigned_to: string | null
   stage: Stage
   days_in_stage: number
+  /** Has been Onboarded or later at some point (no admin override then). */
+  ever_onboarded: boolean
 }
 
 export interface PipelineColumn {

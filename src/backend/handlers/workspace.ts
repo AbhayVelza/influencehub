@@ -20,7 +20,7 @@ import type {
   TeamMemberUpdate,
   User,
 } from '@/types'
-import { currentUser, db, findInfluencer, nextId, nowIso, stageEnteredAt, toSummary, type StoredCategory } from '../db'
+import { currentUser, db, everOnboarded, findInfluencer, nextId, nowIso, stageEnteredAt, toSummary, type StoredCategory } from '../db'
 import { primaryAccount, toRef } from '@/lib/platforms'
 import { dashboardExtras, onboardedOnlyExtras } from '../dashboard'
 import { hasCurrentAgreement } from '../documents'
@@ -288,6 +288,7 @@ export const workspaceHandlers = [
             assigned_to: i.assigned_to,
             stage: i.stage,
             days_in_stage: Math.max(0, differenceInCalendarDays(now, new Date(stageEnteredAt(i)))),
+            ever_onboarded: everOnboarded(i),
           }))
           .sort((a, b) => b.days_in_stage - a.days_in_stage)
         return { stage, count: items.length, items }
