@@ -139,6 +139,16 @@ export function useStageMover(): {
         staleTime: 0,
       })
       if (onboardingFlowIdRef.current !== flowId) return
+      // Someone moved them meanwhile: follow the current stage instead of the one this screen loaded with.
+      if (influencer.stage !== target.stage) {
+        const now = { ...target, stage: influencer.stage }
+        if (influencer.stage === 'onboarded') return void toast.info(`${target.name} is already Onboarded`)
+        // From Contacted it's a standard move: the normal flow asks for the agreement and an insights summary.
+        if (influencer.stage === 'contacted') return openRequirement(now, 'onboarded')
+        return void toast.error(`${target.name} is now in ${STAGE_META[influencer.stage].label}`, {
+          description: 'Their stage changed while you were working. Pick the move again from the stage menu.',
+        })
+      }
       if (influencer.documents?.has_agreement) return setReasonState({ target, to: 'onboarded', mode: 'override' })
       setOnboarding({ target, uploadTarget: influencer, queue: ['agreement'], total: 1, open: true, flowId, mode: 'override' })
     } catch (err) {

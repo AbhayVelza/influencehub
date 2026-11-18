@@ -4,7 +4,7 @@ import { dayKey, formatDate, todayKey } from '@/lib/format'
 import { can } from '@/lib/permissions'
 import { audienceOf, instagramFollowers, normalizeHandle, PLATFORM_META, PLATFORMS, primaryAccount, toRef } from '@/lib/platforms'
 import { normalizeEmailField, normalizePhone } from '@/lib/schemas'
-import { getAllowedTransitions, isOverride, ONBOARDED_OR_LATER, overrideBlockReason } from '@/lib/stages'
+import { getAllowedTransitions, isOverride, ONBOARDED_OR_LATER, overrideBlockReason, STAGE_TRANSITIONS } from '@/lib/stages'
 import type {
   AccountCreate,
   CheckHandleResponse,
@@ -401,7 +401,8 @@ export function changeStage(
   const previous = inf.stage === 'on_hold' ? previousStageOf(inf.id) : null
   const ctx = { previousStage: previous, everOnboarded: everOnboarded(inf) }
   if (!getAllowedTransitions(inf.stage, user.role, ctx, allowOverride).includes(to)) {
-    if (inf.stage === 'rejected' && !can(user.role, 'stage:reopen')) {
+    // Only an actual reopen (Rejected → Data Gathered) is a matter of role; any other move out of Rejected is just not a move.
+    if (inf.stage === 'rejected' && STAGE_TRANSITIONS.rejected.includes(to) && !can(user.role, 'stage:reopen')) {
       return { ok: false, status: 403, code: 'forbidden', message: 'Only managers and admins can reopen rejected influencers' }
     }
     // The override rule's own reason (src/lib/stages.ts), only where an override was on the table.

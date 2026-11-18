@@ -59,9 +59,30 @@ export function attachDocumentSummary(inf: Influencer): Influencer {
  */
 export function everOnboarded(inf: Pick<Influencer, 'id' | 'stage'>): boolean {
   if (ONBOARDED_OR_LATER.includes(inf.stage)) return true
-  return db.activities.some(
-    (a) => a.influencer_id === inf.id && a.type === 'stage_changed' && ONBOARDED_OR_LATER.includes(a.payload.to as Stage),
-  )
+  return onboardedIndex().has(inf.id)
+}
+
+/**
+ * Ids with a recorded move onto Onboarded or later, built once from the activity log and reused (every response and
+ * every store flush serialises all influencers, so a scan per influencer would cost influencers × activities).
+ * Dropped at the start of each request (`setActingUid`), on every new activity (`logActivity`) and after a merge
+ * re-points activities (`invalidateEverOnboarded`).
+ */
+let onboardedIds: Set<string> | null = null
+
+function onboardedIndex(): Set<string> {
+  if (!onboardedIds) {
+    onboardedIds = new Set(
+      db.activities
+        .filter((a) => a.type === 'stage_changed' && ONBOARDED_OR_LATER.includes(a.payload.to as Stage))
+        .map((a) => a.influencer_id),
+    )
+  }
+  return onboardedIds
+}
+
+export function invalidateEverOnboarded() {
+  onboardedIds = null
 }
 
 /** What's on file for an influencer (null in the pool: documents aren't shown for unassigned influencers). */
@@ -156,6 +177,7 @@ export function resolveActingUid(uid: string | null): string | null {
 
 /** Set for each request (resolveActingUid). */
 export function setActingUid(uid: string | null) {
+  invalidateEverOnboarded()
   actingUid = uid
 }
 
@@ -215,6 +237,7 @@ export function logActivity(
     created_at: nowIso(),
   }
   db.activities.push(activity)
+  invalidateEverOnboarded()
   return activity
 }
 
