@@ -29,7 +29,9 @@ export function usePoolList(params: InfluencerListParams) {
 
 /** Sidebar badge and dashboard: how many influencers have no owner. */
 export function usePoolCount() {
+  const enabled = useCan('crm:access')
   const query = useQuery({
+    enabled,
     queryKey: queryKeys.poolList({ page: 1, page_size: 1 }),
     queryFn: ({ signal }) => poolApi.list({ page: 1, page_size: 1 }, signal),
     refetchInterval: 60_000,

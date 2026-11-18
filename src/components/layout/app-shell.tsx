@@ -55,7 +55,8 @@ export function AppShell() {
         <Sidebar />
         <div className="flex min-w-0 flex-1 flex-col">
           <TopBar />
-          <main className="flex-1 overflow-y-auto">
+          {/* relative: absolutely positioned content (e.g. sr-only labels) stays inside this scroller instead of stretching the page. */}
+          <main className="relative flex-1 overflow-y-auto">
             <Suspense fallback={<PageSkeleton />}>
               <Outlet />
             </Suspense>

@@ -168,6 +168,8 @@ const CHECKLIST: { key: keyof OnboardingChecklist; label: string }[] = [
 export function OverviewTab({ influencer }: { influencer: Influencer }) {
   const update = useUpdateInfluencer(influencer.id)
   const canEdit = useCan('influencer:edit')
+  // The checklist tracks calls and documents, which Brand Specialists don't see.
+  const crm = useCan('crm:access')
   const categories = useCategories()
   const [editingAddress, setEditingAddress] = useState(false)
 
@@ -274,6 +276,7 @@ export function OverviewTab({ influencer }: { influencer: Influencer }) {
         )}
       </Section>
 
+      {crm && (
       <Section title={`Onboarding checklist · ${done}/${CHECKLIST.length}`}>
         <ul className="space-y-2">
           {CHECKLIST.map(({ key, label }) => (
@@ -294,6 +297,7 @@ export function OverviewTab({ influencer }: { influencer: Influencer }) {
           ))}
         </ul>
       </Section>
+      )}
 
       <Section title="Tags">
         <TagsEditor tags={influencer.tags} disabled={!canEdit} onChange={(tags) => save({ tags })} />

@@ -68,7 +68,7 @@ export function GrowthChart({ snapshots, label = 'Followers', id }: { snapshots:
         <div className="h-32" role="img" aria-label={`${label} grew ${change.toFixed(1)}% from ${formatNumber(first)} to ${formatNumber(last)}`}>
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={snapshots} margin={{ top: 6, right: 6, bottom: 0, left: 0 }}>
-              <CartesianGrid vertical={false} stroke="var(--border)" strokeWidth={1} />
+              <CartesianGrid vertical={false} stroke="var(--chart-grid)" strokeWidth={1} />
               <XAxis
                 dataKey="captured_at"
                 tickFormatter={(v: string) => formatChartDate(v)}

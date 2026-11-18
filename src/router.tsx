@@ -22,9 +22,9 @@ export const router = createBrowserRouter([
     element: <AppShell />,
     children: [
       { index: true, element: <DashboardPage /> },
-      { path: 'influencers', element: <InfluencersPage /> },
+      { path: 'influencers', element: <RequirePermission permission="influencer:view"><InfluencersPage /></RequirePermission> },
       { path: 'influencers/:id', element: <InfluencerDetailPage /> },
-      { path: 'pool', element: <PoolPage /> },
+      { path: 'pool', element: <RequirePermission permission="crm:access"><PoolPage /></RequirePermission> },
       {
         path: 'duplicates',
         element: (
@@ -54,10 +54,10 @@ export const router = createBrowserRouter([
           },
         ],
       },
-      { path: 'pipeline', element: <PipelinePage /> },
-      { path: 'calls', element: <CallsPage /> },
-      { path: 'packages', element: <PackagesPage /> },
-      { path: 'documents', element: <DocumentsPage /> },
+      { path: 'pipeline', element: <RequirePermission permission="crm:access"><PipelinePage /></RequirePermission> },
+      { path: 'calls', element: <RequirePermission permission="crm:access"><CallsPage /></RequirePermission> },
+      { path: 'packages', element: <RequirePermission permission="crm:access"><PackagesPage /></RequirePermission> },
+      { path: 'documents', element: <RequirePermission permission="crm:access"><DocumentsPage /></RequirePermission> },
       {
         path: 'settings',
         element: (

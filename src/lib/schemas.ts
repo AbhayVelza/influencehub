@@ -287,7 +287,7 @@ export const memberLocationSchema = z
 export const teamMemberCreateSchema = z.object({
   name: requiredText(100, 'Name'),
   email: emailField,
-  role: z.enum(['admin', 'manager', 'executive']),
+  role: z.enum(['admin', 'manager', 'executive', 'brand_specialist']),
   location: memberLocationSchema,
 })
 

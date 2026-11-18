@@ -23,6 +23,7 @@ import NotFoundPage from './not-found-page'
 
 // Nothing is selectable here; bulk actions stay on the Influencers list.
 const NO_SELECTION = new Set<string>()
+const CRM_ONLY_COLUMNS = new Set(['stage', 'assigned_to', 'docs'])
 const ignoreSelection = () => {}
 
 export default function OnboardedPlatformPage() {
@@ -44,7 +45,12 @@ function OnboardedPlatformList({ platform }: { platform: Platform }) {
   const canReassign = useCan('influencer:reassign')
   const navigate = useNavigate()
   const team = useTeamMap()
-  const columns = useMemo(() => buildOnboardedColumns(team, platform), [team, platform])
+  // Brand Specialists don't see where a creator is in the pipeline, who owns them or their documents.
+  const crm = useCan('crm:access')
+  const columns = useMemo(
+    () => buildOnboardedColumns(team, platform).filter((c) => crm || !CRM_ONLY_COLUMNS.has(c.id ?? '')),
+    [team, platform, crm],
+  )
 
   const rows = useMemo(() => query.data?.items ?? [], [query.data])
   const total = query.data?.total ?? 0
@@ -95,7 +101,11 @@ function OnboardedPlatformList({ platform }: { platform: Platform }) {
               </span>
             </span>
           }
-          description={`Every onboarded creator with a ${meta.label} account, including those in Welcome Kit and Delivered. The Documents column shows what’s still missing.`}
+          description={
+            crm
+              ? `Every onboarded creator with a ${meta.label} account, including those in Welcome Kit and Delivered. The Documents column shows what’s still missing.`
+              : `Every onboarded creator with a ${meta.label} account.`
+          }
         />
 
         <ListSearch value={filters.q} onChange={(q) => list.setFilters({ q }, { replace: true })} />
@@ -107,6 +117,7 @@ function OnboardedPlatformList({ platform }: { platform: Platform }) {
           hideStage
           hidePlatform
           hideAssigned={!canReassign}
+          hideDocuments={!crm}
         />
         <ActiveFilters filters={filters} onChange={list.setFilters} onClear={list.clearFilters} />
 

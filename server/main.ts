@@ -155,9 +155,13 @@ app.all(`${API_BASE}/*`, (c) => handleApiRequest(c.req.raw))
 // Serves the built app too (`npm run build` → dist/), so one process is the whole deployment.
 const dist = path.resolve(process.env.STATIC_DIR ?? 'dist')
 if (existsSync(path.join(dist, 'index.html'))) {
-  const index = readFileSync(path.join(dist, 'index.html'), 'utf8')
   app.use('*', serveStatic({ root: path.relative(process.cwd(), dist) || '.' }))
-  app.get('*', (c) => c.html(index))
+  // Read on every request (it's ~2 KB): a copy kept from startup would point at old asset hashes after a rebuild,
+  // and every deep link or refresh would load a blank page. no-cache keeps browsers from holding a stale copy too.
+  app.get('*', (c) => {
+    c.header('Cache-Control', 'no-cache')
+    return c.html(readFileSync(path.join(dist, 'index.html'), 'utf8'))
+  })
 }
 
 try {

@@ -22,6 +22,7 @@ import type {
 } from '@/types'
 import { currentUser, db, findInfluencer, nextId, nowIso, stageEnteredAt, toSummary, type StoredCategory } from '../db'
 import { primaryAccount, toRef } from '@/lib/platforms'
+import { dashboardExtras, onboardedOnlyExtras } from '../dashboard'
 import { hasCurrentAgreement } from '../documents'
 import { canSee, filterInfluencers, poolInfluencers, visibleInfluencers } from '../domain'
 import { all, api, apiError, forbidden, notFound, readJson } from '../utils'
@@ -364,6 +365,34 @@ export const workspaceHandlers = [
           return inf ? [{ ...a, influencer: toSummary(inf) }] : []
         })
         .slice(0, 20),
+      ...dashboardExtras(
+        influencers,
+        activities,
+        calls,
+        db.packages.filter((p) => visible(p.influencer_id)),
+        can(user.role, 'influencer:reassign'),
+      ),
+    }
+    if (user.role === 'brand_specialist') {
+      // Onboarded numbers only (`influencers` is already limited to onboarded creators): no pool, pipeline,
+      // follow-ups, Welcome Kits, documents or activity.
+      return HttpResponse.json({
+        kpis: {
+          ...body.kpis,
+          pool: 0,
+          claimed_this_week: null,
+          contacted_this_week: 0,
+          packages_in_transit: 0,
+          follow_ups_today: 0,
+          onboarded_without_agreement: 0,
+        },
+        funnel: [],
+        by_category: body.by_category,
+        top_cities: body.top_cities,
+        my_follow_ups: [],
+        recent_activity: [],
+        ...onboardedOnlyExtras(body),
+      } satisfies DashboardSummary)
     }
     return HttpResponse.json(body)
   }),
