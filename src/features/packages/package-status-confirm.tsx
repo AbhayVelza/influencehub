@@ -27,8 +27,8 @@ export function PackageStatusConfirm({ status, influencerName, influencerStage, 
   const effect =
     influencerStage === undefined
       ? status === 'delivered'
-        ? `If ${influencerName} is in Onboarded or Package Sent, they’ll move to Delivered.`
-        : `If ${influencerName} is in Package Sent, they’ll move to Onboarded.`
+        ? `If ${influencerName} is in Onboarded or Welcome Kit, they’ll move to Delivered.`
+        : `If ${influencerName} is in Welcome Kit, they’ll move to Onboarded.`
       : movedTo
         ? `${influencerName} will move from ${STAGE_META[influencerStage].label} to ${STAGE_META[movedTo].label}.`
         : `${influencerName} is in ${STAGE_META[influencerStage].label}, so their stage won’t change.`

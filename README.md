@@ -22,8 +22,8 @@ LinkedIn, Snapchat), each with its own stats.
 | --- | --- |
 | Data Gathered → Contacted | Needs a call logged with outcome "Interested" |
 | Contacted → Onboarded | Creator agreed; needs a current agreement and an insights summary on file |
-| Onboarded → Package Sent | Needs a package with courier and tracking number |
-| Package Sent → Delivered | Package arrived (a returned package moves them back to Onboarded) |
+| Onboarded → Welcome Kit | Needs a package with courier and tracking number |
+| Welcome Kit → Delivered | Package arrived (a returned package moves them back to Onboarded) |
 | On Hold / Rejected | Side stages. On Hold resumes to the previous stage; reopening Rejected is manager/admin only |
 
 Call outcomes: no answer / call back create a follow-up, not interested rejects, interested moves to Contacted.

@@ -14,8 +14,8 @@ function withInfluencer(pkg: Package): PackageWithInfluencer | null {
 
 /**
  * Keeps the influencer's stage in step with their package. Delivered moves a creator who is waiting on it (Onboarded
- * or Package Sent) to Delivered, so they leave the Onboarded tabs; from Onboarded it goes through Package Sent, so the
- * pipeline history stays complete. Returned moves Package Sent back to Onboarded. Any other stage is left alone.
+ * or Welcome Kit) to Delivered, so they leave the Onboarded tabs; from Onboarded it goes through Welcome Kit, so the
+ * pipeline history stays complete. Returned moves Welcome Kit back to Onboarded. Any other stage is left alone.
  */
 function followPackage(inf: Influencer, status: PackageStatus) {
   if (status === 'delivered') {

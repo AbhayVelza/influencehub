@@ -23,7 +23,7 @@ interface StageControlProps {
   previousStage: Stage | null
   /** An "interested" call exists, so Contacted needs no modal. */
   hasInterestedCall: boolean
-  /** A package with courier + tracking exists, so Package Sent needs no modal. */
+  /** A package with courier + tracking exists, so Welcome Kit needs no modal. */
   hasTrackedPackage: boolean
 }
 

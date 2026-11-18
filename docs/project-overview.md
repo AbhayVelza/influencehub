@@ -21,7 +21,7 @@ and no sample data: a new workspace starts with one admin and the default catego
 | Data Gathered | slate | Added manually or by CSV |
 | Contacted | blue | A call logged with outcome **Interested** |
 | Onboarded | violet | A **current agreement** and at least one **insights summary** on file |
-| Package Sent | amber | A package with courier + tracking number |
+| Welcome Kit | amber | A package with courier + tracking number |
 | Delivered | green | The package arrived (a **returned** package moves them back to Onboarded) |
 | On Hold | gray | Side stage; resumes to the previous stage |
 | Rejected | red | Side stage; only managers/admins can reopen (→ Data Gathered) |
@@ -64,7 +64,7 @@ The server enforces all of this; the UI only hides what a role can't do. Code: `
 | **Calls & Follow-ups** | Today / overdue / upcoming / history |
 | **Packages** | All packages; status changes can move the creator's stage |
 | **Documents** | Insights summaries and agreements (current + version history). PDF/JPG/PNG/DOCX/XLSX up to 20 MB |
-| **Onboarded** | One tab per platform listing creators who are Onboarded / Package Sent / Delivered there |
+| **Onboarded** | One tab per platform listing creators who are Onboarded / Welcome Kit / Delivered there |
 | **Settings** (admin) | Team & roles, categories, pool guards, Instagram integration |
 
 **Platforms:** Instagram, YouTube, TikTok, Facebook, Threads, Pinterest, LinkedIn, Snapchat. One creator can have

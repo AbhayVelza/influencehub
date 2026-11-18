@@ -49,7 +49,7 @@ export const STAGE_META: Record<Stage, StageMeta> = {
     hex: '#8b5cf6',
   },
   package_sent: {
-    label: 'Package Sent',
+    label: 'Welcome Kit',
     color: 'amber',
     badge: 'bg-amber-50 text-amber-800 ring-amber-600/25 dark:bg-amber-400/10 dark:text-amber-300 dark:ring-amber-400/25',
     dot: 'bg-amber-500',
