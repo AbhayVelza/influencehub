@@ -37,7 +37,7 @@ export function PackageStatusConfirm({ status, influencerName, influencerStage, 
     <AlertDialog open={status !== null} onOpenChange={(open) => !open && !pending && onCancel()}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>{status === 'delivered' ? 'Mark package delivered?' : 'Mark package returned?'}</AlertDialogTitle>
+          <AlertDialogTitle>{status === 'delivered' ? 'Mark Welcome Kit delivered?' : 'Mark Welcome Kit returned?'}</AlertDialogTitle>
           <AlertDialogDescription>{effect}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
