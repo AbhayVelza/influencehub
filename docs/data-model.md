@@ -4,7 +4,7 @@ Must match the backend exactly.
 Source of truth: `src/types/index.ts`. Update both together.
 
 - **Stage** (value · label · color): data_gathered·Data Gathered·slate | contacted·Contacted·blue |
-  onboarded·Onboarded·violet | package_sent·Package Sent·amber | delivered·Delivered·green |
+  onboarded·Onboarded·violet | package_sent·Welcome Kit·amber | delivered·Delivered·green |
   on_hold·On Hold·gray | rejected·Rejected·red
 - **Transitions**: data_gathered → contacted/on_hold/rejected; contacted → onboarded/on_hold/rejected;
   onboarded → package_sent/on_hold/rejected; package_sent → delivered/onboarded (returned);

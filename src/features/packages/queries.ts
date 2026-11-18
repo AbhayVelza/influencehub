@@ -40,7 +40,7 @@ export type StageChangingStatus = Extract<PackageStatus, 'delivered' | 'returned
 
 /**
  * The stage the server moves an influencer to when their package changes to this status (mirrors `followPackage` in
- * the packages handler): delivered moves Onboarded / Package Sent to Delivered, returned moves Package Sent back to
+ * the packages handler): delivered moves Onboarded / Welcome Kit to Delivered, returned moves Welcome Kit back to
  * Onboarded. Null when the stage stays as it is.
  */
 export function stageAfterPackage(stage: Stage, status: PackageStatus): Stage | null {

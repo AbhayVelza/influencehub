@@ -14,7 +14,7 @@ export default function OnboardedPage() {
     <div className="space-y-4 p-4 sm:p-6">
       <PageHeader
         title="Onboarded"
-        description="Every onboarded creator (Onboarded, Package Sent or Delivered), by platform. Pick a platform to see its list."
+        description="Every onboarded creator (Onboarded, Welcome Kit or Delivered), by platform. Pick a platform to see its list."
       />
       <ul aria-label="Platforms" className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {PLATFORMS.map((platform, i) => {

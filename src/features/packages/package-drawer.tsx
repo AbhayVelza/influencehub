@@ -34,7 +34,7 @@ interface PackageDrawerProps {
   pkg?: Package | null
   open: boolean
   onOpenChange: (open: boolean) => void
-  /** Opened from Stage → Package Sent: ship now, then move the influencer. */
+  /** Opened from Stage → Welcome Kit: ship now, then move the influencer. */
   intent?: 'package_sent'
   onSaved?: (pkg: Package) => void
 }
@@ -153,11 +153,11 @@ export function PackageDrawer({ influencer, pkg, open, onOpenChange, intent, onS
         }
         return
       }
-      // Only a shipped package moves the creator to Package Sent (not preparing or returned).
+      // Only a shipped package moves the creator to Welcome Kit (not preparing or returned).
       if (intent === 'package_sent' && (saved.status === 'sent' || saved.status === 'in_transit')) {
         try {
           await changeStage.mutateAsync({ to: 'package_sent' })
-          toast.success(`Package created · ${influencer.name} moved to Package Sent`)
+          toast.success(`Package created · ${influencer.name} moved to Welcome Kit`)
         } catch (err) {
           toast.warning('Package created, but the stage didn’t change', { description: getErrorMessage(err) })
         }
@@ -178,7 +178,7 @@ export function PackageDrawer({ influencer, pkg, open, onOpenChange, intent, onS
             <SheetTitle>{isEdit ? 'Edit package' : intent === 'package_sent' ? 'Ship a package' : 'Create package'}</SheetTitle>
             <SheetDescription>
               {influencer.name}
-              {intent === 'package_sent' && ' · courier and tracking number are needed to move to Package Sent'}
+              {intent === 'package_sent' && ' · courier and tracking number are needed to move to Welcome Kit'}
             </SheetDescription>
           </SheetHeader>
 

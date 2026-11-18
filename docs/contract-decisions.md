@@ -78,7 +78,7 @@ Record any new API decision here. Dates and documents: `dates-and-documents.md`.
 - **Onboarded tabs** (no new endpoint, no stored `onboarded` flag): a platform's tab is `GET /influencers` with
   `stage=onboarded&stage=package_sent&stage=delivered&platform=<p>` plus the user's own filters (including
   `agreement` / `insights`); the counts on `/onboarded` are the same request with `page_size=1` (read `total`), one per
-  platform. "Onboarded" means onboarded or later: creators stay on the tabs after moving to Package Sent / Delivered
+  platform. "Onboarded" means onboarded or later: creators stay on the tabs after moving to Welcome Kit / Delivered
   (changed 05/11/2026; before, only the Onboarded stage counted), with a Stage column; documents aren't required (changed 03/11/2026: creators moved to
   Onboarded without them were missing from the tabs), the docs column shows what's missing. Executive scoping above
   applies unchanged. The backend must keep these filters

@@ -378,7 +378,7 @@ export type StageResult = { ok: true; influencer: Influencer } | { ok: false; st
 
 /**
  * `skipRequirements`: the caller has already proven the target stage's requirement some other way (a delivered
- * package moving an Onboarded creator through Package Sent). The transition rules still apply.
+ * package moving an Onboarded creator through Welcome Kit). The transition rules still apply.
  */
 export function changeStage(
   inf: Influencer,
@@ -419,7 +419,7 @@ export function changeStage(
         ok: false,
         status: 422,
         code: 'requirement_missing',
-        message: 'Create a package with courier and tracking number before moving to Package Sent',
+        message: 'Create a package with courier and tracking number before moving to Welcome Kit',
       }
     }
     // Entering Onboarded from Contacted needs a current agreement and an insights summary, collected together
