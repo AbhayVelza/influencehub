@@ -127,7 +127,7 @@ export function PackageDrawer({ influencer, pkg, open, onOpenChange, intent, onS
         ? await updatePackage.mutateAsync({ id: pkg.id, body })
         : await createPackage.mutateAsync({ influencer_id: influencer.id, ...body })
     } catch (err) {
-      toast.error(isEdit ? 'Couldn’t update the package' : 'Couldn’t create the package', {
+      toast.error(isEdit ? 'Couldn’t update the Welcome Kit' : 'Couldn’t create the Welcome Kit', {
         description: getErrorMessage(err),
       })
       savingRef.current = false
@@ -140,16 +140,16 @@ export function PackageDrawer({ influencer, pkg, open, onOpenChange, intent, onS
       try {
         onSaved?.(saved)
       } catch (err) {
-        toast.warning('Package saved, but a follow-up action failed', { description: getErrorMessage(err) })
+        toast.warning('Welcome Kit saved, but a follow-up action failed', { description: getErrorMessage(err) })
       }
       // The server may move the stage itself (delivered / returned).
-      const done = isEdit ? 'Package updated' : 'Package created'
+      const done = isEdit ? 'Welcome Kit updated' : 'Welcome Kit created'
       if (needsStatusConfirm(pkg?.status, saved.status)) {
         try {
           const stage = await movedStage(influencer.id, influencer.stage, pkg?.status, saved.status)
           toast.success(stage ? `${done} · ${influencer.name} is now in ${STAGE_META[stage].label}` : done)
         } catch (err) {
-          toast.warning('Package saved, but couldn’t verify the stage update', { description: getErrorMessage(err) })
+          toast.warning('Welcome Kit saved, but couldn’t verify the stage update', { description: getErrorMessage(err) })
         }
         return
       }
@@ -157,9 +157,9 @@ export function PackageDrawer({ influencer, pkg, open, onOpenChange, intent, onS
       if (intent === 'package_sent' && (saved.status === 'sent' || saved.status === 'in_transit')) {
         try {
           await changeStage.mutateAsync({ to: 'package_sent' })
-          toast.success(`Package created · ${influencer.name} moved to Welcome Kit`)
+          toast.success(`Welcome Kit created · ${influencer.name} moved to Welcome Kit`)
         } catch (err) {
-          toast.warning('Package created, but the stage didn’t change', { description: getErrorMessage(err) })
+          toast.warning('Welcome Kit created, but the stage didn’t change', { description: getErrorMessage(err) })
         }
         return
       }
@@ -175,7 +175,7 @@ export function PackageDrawer({ influencer, pkg, open, onOpenChange, intent, onS
       <SheetContent className="w-full gap-0 data-[side=right]:sm:max-w-lg">
         <form onSubmit={onSubmit} className="flex h-full flex-col" noValidate>
           <SheetHeader className="border-b">
-            <SheetTitle>{isEdit ? 'Edit package' : intent === 'package_sent' ? 'Ship a package' : 'Create package'}</SheetTitle>
+            <SheetTitle>{isEdit ? 'Edit Welcome Kit' : intent === 'package_sent' ? 'Ship a Welcome Kit' : 'Create Welcome Kit'}</SheetTitle>
             <SheetDescription>
               {influencer.name}
               {intent === 'package_sent' && ' · courier and tracking number are needed to move to Welcome Kit'}
@@ -240,7 +240,7 @@ export function PackageDrawer({ influencer, pkg, open, onOpenChange, intent, onS
                 )}
               </div>
               {!influencer.address && !isEdit && (
-                <p className="text-xs text-muted-foreground">No address on the profile yet. Enter one for this package.</p>
+                <p className="text-xs text-muted-foreground">No address on the profile yet. Enter one for this Welcome Kit.</p>
               )}
               <div className="grid grid-cols-2 gap-2">
                 {ADDRESS_FIELDS.map(({ name, label, span }) => (
@@ -324,7 +324,7 @@ export function PackageDrawer({ influencer, pkg, open, onOpenChange, intent, onS
               Cancel
             </Button>
             <Button type="submit" disabled={busy}>
-              {busy ? 'Saving…' : isEdit ? 'Save changes' : intent === 'package_sent' ? 'Create & mark sent' : 'Create package'}
+              {busy ? 'Saving…' : isEdit ? 'Save changes' : intent === 'package_sent' ? 'Create & mark sent' : 'Create Welcome Kit'}
             </Button>
           </SheetFooter>
         </form>
