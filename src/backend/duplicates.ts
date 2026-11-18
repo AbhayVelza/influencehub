@@ -1,39 +1,13 @@
 import { PIPELINE_STAGES } from '@/lib/constants'
-import { findLinkedAccounts, PLATFORM_META, primaryAccount, toRef } from '@/lib/platforms'
-import { isEmailAddress, normalizePhone } from '@/lib/schemas'
+import { primaryAccount, toRef } from '@/lib/platforms'
 import type { DuplicateCheckRequest, DuplicateMatch, DuplicatePair, Influencer, MatchConfidence, MergeField, MergeRequest, User } from '@/types'
 import { currentUser, db, logActivity, nowIso, refreshDerived } from './db'
 import { canSee } from './domain'
 import { moveDocuments } from './documents'
 
-// Cross-platform duplicate detection and merging (see "Duplicate detection" and "Merge" in docs/contract-decisions.md).
+// Duplicate detection (same Instagram handle only) and merging (see "Duplicate detection" and "Merge" in docs/contract-decisions.md).
 
 const RANK: Record<MatchConfidence, number> = { high: 3, medium: 2, low: 1 }
-
-function levenshtein(a: string, b: string): number {
-  const row = Array.from({ length: b.length + 1 }, (_, i) => i)
-  for (let i = 1; i <= a.length; i++) {
-    let prev = row[0]!
-    row[0] = i
-    for (let j = 1; j <= b.length; j++) {
-      const tmp = row[j]!
-      row[j] = Math.min(row[j]! + 1, row[j - 1]! + 1, prev + (a[i - 1] === b[j - 1] ? 0 : 1))
-      prev = tmp
-    }
-  }
-  return row[b.length]!
-}
-
-/**
- * Names compared trimmed and lowercased: at most 1 edit (Levenshtein) when the shorter one has ≤6 characters,
- * at most 2 otherwise. Empty names never match. The backend uses this exact rule (docs/contract-decisions.md, duplicate detection).
- */
-export function similarNames(a: string, b: string): boolean {
-  const x = a.trim().toLowerCase()
-  const y = b.trim().toLowerCase()
-  if (!x || !y) return false
-  return levenshtein(x, y) <= (Math.min(x.length, y.length) <= 6 ? 1 : 2)
-}
 
 type Candidate = DuplicateCheckRequest
 
@@ -45,50 +19,15 @@ const fromInfluencer = (inf: Influencer): Candidate => ({
   accounts: inf.accounts.map((a) => ({ platform: a.platform, handle: a.handle, bio: a.bio, links: a.links })),
 })
 
-/** Every signal between a candidate and one existing influencer, strongest confidence wins. */
+/**
+ * The only duplicate signal: the same Instagram handle (handles are stored normalised). Email, phone, bio links,
+ * other platforms' handles and names are deliberately not compared.
+ */
 function compare(c: Candidate, inf: Influencer): { confidence: MatchConfidence; reasons: string[] } | null {
-  const found: { confidence: MatchConfidence; reason: string }[] = []
-  const add = (confidence: MatchConfidence, reason: string) => {
-    if (!found.some((f) => f.reason === reason)) found.push({ confidence, reason })
-  }
-  const label = (p: keyof typeof PLATFORM_META) => PLATFORM_META[p].label
-
-  // Only real addresses: many creators share a note like "managed by @agency", which isn't a match.
-  if (isEmailAddress(c.email) && isEmailAddress(inf.email) && c.email.trim().toLowerCase() === inf.email) add('high', 'Same email')
-  const phone = normalizePhone(c.phone)
-  if (phone && inf.phone && phone === inf.phone) add('high', 'Same phone number')
-
-  // Handles / URLs mentioned in the other side's bio or links.
-  for (const ia of inf.accounts) {
-    for (const linked of findLinkedAccounts([ia.bio, ...ia.links])) {
-      if (c.accounts.some((ca) => ca.platform === linked.platform && ca.handle === linked.handle)) {
-        add('high', `Their ${label(ia.platform)} bio links to ${label(linked.platform)} @${linked.handle}`)
-      }
-    }
-  }
-  for (const ca of c.accounts) {
-    for (const linked of findLinkedAccounts([ca.bio, ...(ca.links ?? [])])) {
-      if (inf.accounts.some((ia) => ia.platform === linked.platform && ia.handle === linked.handle)) {
-        add('high', `The ${label(ca.platform)} bio links to their ${label(linked.platform)} @${linked.handle}`)
-      }
-    }
-  }
-
-  for (const ca of c.accounts) {
-    for (const ia of inf.accounts) {
-      if (ca.handle !== ia.handle) continue
-      if (ca.platform === ia.platform) add('high', `Same ${label(ia.platform)} account @${ia.handle}`)
-      else add('medium', `Same handle @${ia.handle} on ${label(ca.platform)} and ${label(ia.platform)}`)
-    }
-  }
-
-  if (c.name && c.city && inf.city && c.city.trim().toLowerCase() === inf.city.trim().toLowerCase() && similarNames(c.name, inf.name)) {
-    add('low', `Similar name in the same city (${inf.city})`)
-  }
-
-  if (!found.length) return null
-  found.sort((a, b) => RANK[b.confidence] - RANK[a.confidence])
-  return { confidence: found[0]!.confidence, reasons: found.map((f) => f.reason) }
+  const theirs = new Set(inf.accounts.filter((a) => a.platform === 'instagram').map((a) => a.handle))
+  const shared = c.accounts.filter((a) => a.platform === 'instagram' && theirs.has(a.handle)).map((a) => a.handle)
+  if (!shared.length) return null
+  return { confidence: 'high', reasons: [...new Set(shared)].map((h) => `Same Instagram account @${h}`) }
 }
 
 /**

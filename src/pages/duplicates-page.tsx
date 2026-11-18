@@ -108,7 +108,7 @@ export default function DuplicatesPage() {
             {pairs.data && <span className="font-normal text-muted-foreground tabular-nums">({formatNumber(pairs.data.total)})</span>}
           </>
         }
-        description="Creators that may be the same person across platforms. Merge them, or dismiss a pair that isn’t."
+        description="Creators that share the same Instagram handle. Merge them, or dismiss a pair that isn’t a duplicate."
       />
       {pairs.isPending ? (
         <div className="space-y-3" aria-busy="true" aria-label="Loading duplicates">
