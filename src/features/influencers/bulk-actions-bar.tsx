@@ -252,7 +252,7 @@ export function BulkActionsBar({ rows, onClear, onSettled }: BulkActionsBarProps
           <AlertDialogHeader>
             <AlertDialogTitle>Delete {plural(rows.length, 'influencer')}?</AlertDialogTitle>
             <AlertDialogDescription>
-              This also removes their calls, packages and activity history. It can’t be undone.
+              This also removes their calls, Welcome Kits and activity history. It can’t be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

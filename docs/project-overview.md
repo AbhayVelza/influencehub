@@ -62,7 +62,7 @@ The server enforces all of this; the UI only hides what a role can't do. Code: `
 | **Possible duplicates** | Side-by-side pairs with confidence and reasons; merge or dismiss (manager/admin) |
 | **Pipeline** | Kanban board (drag and drop) |
 | **Calls & Follow-ups** | Today / overdue / upcoming / history |
-| **Packages** | All packages; status changes can move the creator's stage |
+| **Welcome Kits** | All Welcome Kits (packages); status changes can move the creator's stage |
 | **Documents** | Insights summaries and agreements (current + version history). PDF/JPG/PNG/DOCX/XLSX up to 20 MB |
 | **Onboarded** | One tab per platform listing creators who are Onboarded / Welcome Kit / Delivered there |
 | **Settings** (admin) | Team & roles, categories, pool guards, Instagram integration |

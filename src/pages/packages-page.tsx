@@ -83,7 +83,7 @@ export default function PackagesPage() {
       const influencer = await influencersApi.get(influencerId)
       setDrawer({ influencer, pkg, open: true })
     } catch (err) {
-      toast.error('Couldn’t open the package', { description: getErrorMessage(err) })
+      toast.error('Couldn’t open the Welcome Kit', { description: getErrorMessage(err) })
     }
   }
 
@@ -100,11 +100,11 @@ export default function PackagesPage() {
     try {
       await updatePackage.mutateAsync({ id: pkg.id, body: { status } })
       const stage = await movedStage(pkg.influencer_id, pkg.influencer.stage, pkg.status, status)
-      toast.success(`Package marked ${PACKAGE_STATUS_META[status].label.toLowerCase()}`, {
+      toast.success(`Welcome Kit marked ${PACKAGE_STATUS_META[status].label.toLowerCase()}`, {
         description: stage ? `${pkg.influencer.name} is now in ${STAGE_META[stage].label}` : undefined,
       })
     } catch (err) {
-      toast.error('Couldn’t update the package', { description: getErrorMessage(err) })
+      toast.error('Couldn’t update the Welcome Kit', { description: getErrorMessage(err) })
     }
   }
 
@@ -113,14 +113,14 @@ export default function PackagesPage() {
       <PageHeader
         title={
           <>
-            Packages{' '}
+            Welcome Kits{' '}
             {query.data && <span className="font-normal text-muted-foreground tabular-nums">({formatNumber(query.data.total)})</span>}
           </>
         }
         actions={
           <Button onClick={() => setPickerOpen(true)}>
             <Plus />
-            Create package
+            Create Welcome Kit
           </Button>
         }
       />
@@ -130,7 +130,7 @@ export default function PackagesPage() {
           value={params.q}
           onChange={(q) => update({ q })}
           placeholder="Search name, handle, tracking…"
-          label="Search packages"
+          label="Search Welcome Kits"
           className="max-w-72"
         />
         <CollapsibleFilters
@@ -194,20 +194,20 @@ export default function PackagesPage() {
               ) : query.isError ? (
                 <TableRow>
                   <TableCell colSpan={8}>
-                    <ErrorState title="Couldn’t load packages" error={query.error} onRetry={() => query.refetch()} />
+                    <ErrorState title="Couldn’t load Welcome Kits" error={query.error} onRetry={() => query.refetch()} />
                   </TableCell>
                 </TableRow>
               ) : query.data.items.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={8}>
                     {filtered ? (
-                      <EmptyState icon={SearchX} title="No packages match these filters" />
+                      <EmptyState icon={SearchX} title="No Welcome Kits match these filters" />
                     ) : (
                       <EmptyState
                         icon={PackageIcon}
-                        title="No packages yet"
+                        title="No Welcome Kits yet"
                         description="Create one once an influencer is onboarded."
-                        action={<Button onClick={() => setPickerOpen(true)}>Create package</Button>}
+                        action={<Button onClick={() => setPickerOpen(true)}>Create Welcome Kit</Button>}
                       />
                     )}
                   </TableCell>
@@ -259,14 +259,14 @@ export default function PackagesPage() {
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon-sm" aria-label={`Actions for ${pkg.influencer.name}’s package`}>
+                          <Button variant="ghost" size="icon-sm" aria-label={`Actions for ${pkg.influencer.name}’s Welcome Kit`}>
                             <MoreHorizontal />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-48">
                           <DropdownMenuItem onSelect={() => openDrawer(pkg.influencer_id, pkg)}>
                             <Pencil />
-                            Edit package
+                            Edit Welcome Kit
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuLabel className="text-xs text-muted-foreground">Mark as</DropdownMenuLabel>

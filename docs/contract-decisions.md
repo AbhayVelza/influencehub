@@ -135,7 +135,7 @@ Record any new API decision here. Dates and documents: `dates-and-documents.md`.
 - `PATCH /packages/{id}` (when the status changes) and `POST /packages` (only when created as `delivered`) keep the stage in step: `delivered` moves an
   influencer in `onboarded` or `package_sent` to `delivered` (from `onboarded` via `package_sent`, the delivered package
   standing in for the courier + tracking requirement); `returned` moves
-  `package_sent` back to `onboarded`. Standard transitions, activity reason "Package delivered" / "Package returned".
+  `package_sent` back to `onboarded`. Standard transitions, activity reason "Welcome Kit delivered" / "Welcome Kit returned".
   Any other stage is untouched. The UI confirms first. (Changed 05/11/2026: delivered used to move only
   `package_sent`, leaving creators whose package was marked delivered stuck in Onboarded.)
 - Notifications have no endpoint of their own: they combine overdue + due-today follow-ups and `GET /pool/expiring`.

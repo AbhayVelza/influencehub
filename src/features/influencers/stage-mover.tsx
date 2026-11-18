@@ -111,7 +111,7 @@ export function useStageMover(): {
         })
         setPkg({ target: influencer, open: true })
       } catch (err) {
-        toast.error('Couldn’t open the package form', { description: getErrorMessage(err) })
+        toast.error('Couldn’t open the Welcome Kit form', { description: getErrorMessage(err) })
       }
     }
   }

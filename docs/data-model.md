@@ -6,6 +6,8 @@ Source of truth: `src/types/index.ts`. Update both together.
 - **Stage** (value · label · color): data_gathered·Data Gathered·slate | contacted·Contacted·blue |
   onboarded·Onboarded·violet | package_sent·Welcome Kit·amber | delivered·Delivered·green |
   on_hold·On Hold·gray | rejected·Rejected·red
+- **Naming**: the UI calls packages "Welcome Kit(s)" everywhere (nav, page, tabs, buttons, toasts, activity text,
+  API error messages). Code names, the `package_sent` key, the `/packages` URL and stored data keep "package".
 - **Transitions**: data_gathered → contacted/on_hold/rejected; contacted → onboarded/on_hold/rejected;
   onboarded → package_sent/on_hold/rejected; package_sent → delivered/onboarded (returned);
   on_hold → previous stage/rejected; rejected → data_gathered (manager/admin only). Admin can override.

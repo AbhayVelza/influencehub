@@ -295,7 +295,7 @@ export function TeamSettings() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete {deleting?.name}?</AlertDialogTitle>
             <AlertDialogDescription>
-              They’ll be removed from the team and can’t be reactivated. Calls, packages and activity they recorded keep
+              They’ll be removed from the team and can’t be reactivated. Calls, Welcome Kits and activity they recorded keep
               their name.
             </AlertDialogDescription>
           </AlertDialogHeader>

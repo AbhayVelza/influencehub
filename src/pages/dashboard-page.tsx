@@ -184,7 +184,7 @@ export default function DashboardPage() {
             />
             <Kpi label="Contacted this week" value={summary.data.kpis.contacted_this_week} hint="Moved to Contacted since Monday" />
             <Kpi label="Onboarded this month" value={summary.data.kpis.onboarded_this_month} />
-            <Kpi label="Packages in transit" value={summary.data.kpis.packages_in_transit} to="/packages?status=sent&status=in_transit" />
+            <Kpi label="Welcome Kits in transit" value={summary.data.kpis.packages_in_transit} to="/packages?status=sent&status=in_transit" />
             <Kpi label="Follow-ups today" value={summary.data.kpis.follow_ups_today} to="/calls" />
             <Kpi
               label="Onboarded without agreement"

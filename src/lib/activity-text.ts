@@ -34,12 +34,12 @@ export function describeActivity(activity: Activity, team: Map<string, User>): {
     case 'call_logged':
       return { text: `Logged a call · ${CALL_OUTCOME_META[p.outcome as CallOutcome]?.label ?? String(p.outcome)}` }
     case 'package_created':
-      return { text: `Created a package${p.courier ? ` (${String(p.courier)})` : ''}` }
+      return { text: `Created a Welcome Kit${p.courier ? ` (${String(p.courier)})` : ''}` }
     case 'package_updated':
       return {
         text: p.status
-          ? `Package marked ${PACKAGE_STATUS_META[p.status as PackageStatus]?.label.toLowerCase() ?? String(p.status)}`
-          : 'Package details updated',
+          ? `Welcome Kit marked ${PACKAGE_STATUS_META[p.status as PackageStatus]?.label.toLowerCase() ?? String(p.status)}`
+          : 'Welcome Kit details updated',
       }
     case 'account_synced': {
       const audience = PLATFORM_META[p.platform as Platform]?.audienceLabel.toLowerCase() ?? 'followers'

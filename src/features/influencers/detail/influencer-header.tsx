@@ -217,7 +217,7 @@ export function InfluencerHeader({
           {influencer.stage !== 'rejected' && (
             <Button variant="outline" onClick={() => onCreatePackage()}>
               <Package />
-              Create package
+              Create Welcome Kit
             </Button>
           )}
           <DropdownMenu>
@@ -277,7 +277,7 @@ export function InfluencerHeader({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete {influencer.name}?</AlertDialogTitle>
             <AlertDialogDescription>
-              This also removes their calls, packages and activity history. It can’t be undone.
+              This also removes their calls, Welcome Kits and activity history. It can’t be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

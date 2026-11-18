@@ -46,7 +46,7 @@ export function StageControl({ influencer, previousStage, hasInterestedCall, has
 
   const hint = (to: Stage) => {
     if (to === 'contacted' && !hasInterestedCall) return 'Log call…'
-    if (to === 'package_sent' && !hasTrackedPackage) return 'Create package…'
+    if (to === 'package_sent' && !hasTrackedPackage) return 'Create Welcome Kit…'
     if (needsDocuments(to) && !hasDocuments) {
       if (missingDocuments.length === 2) return 'Upload agreement + insights…'
       return missingDocuments[0] === 'agreement' ? 'Upload agreement…' : 'Upload insights…'
