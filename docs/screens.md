@@ -2,12 +2,12 @@
 
 Implementation is under `src/pages/`, `src/components/` and `src/services/`.
 
-**Filters are collapsed everywhere** (Influencers, Pipeline, Pool, Onboarded tabs, Documents, Packages): one "Filters" button
-(with the number of active filters, and "Clear all" beside it on Documents / Packages) opens them; search and the chips of
+**Filters are collapsed everywhere** (Influencers, Pipeline, Pool, Onboarded tabs, Documents, Welcome Kits): one "Filters" button
+(with the number of active filters, and "Clear all" beside it on Documents / Welcome Kits) opens them; search and the chips of
 active filters stay visible. `CollapsibleFilters` in `components/common/collapsible-filters.tsx`.
 
 1. **App shell**: sidebar (Dashboard, Influencers, Unassigned Pool w/ count, Possible duplicates w/ count
-   (manager/admin), Pipeline, Calls & Follow-ups w/ due-today badge, Packages, Documents, Onboarded (expands to a grid of platform logo links, 4 per row),
+   (manager/admin), Pipeline, Calls & Follow-ups w/ due-today badge, Welcome Kits, Documents, Onboarded (expands to a grid of platform logo links, 4 per row),
    Settings admin-only); top bar: global
    search, "+ Add Influencer", notifications, account menu ("Account menu"): theme, **Acting as** (pick a team member; there is no
    sign-in yet) and, in prototype mode, **Reset prototype data**.
@@ -21,16 +21,16 @@ active filters stay visible. `CollapsibleFilters` in `components/common/collapsi
    Category / Country / … counts, and the reverse); options with nothing left stay listed, dimmed at 0. Clear one filter
    ("Clear <filter>" in its menu, a chip's ×) or all ("Clear all").
 4. **Influencer detail**: header (avatar, name, primary account, category, platforms, total followers, location, Stage ▾,
-   Owner ▾, Log call, Create package (hidden for Rejected; the Packages page picker skips them too), ⋯) + stage stepper. Left: **Social accounts** — a list of accounts (tabs), each
+   Owner ▾, Log call, Create Welcome Kit (hidden for Rejected; the Welcome Kits page picker skips them too), ⋯) + stage stepper. Left: **Social accounts** — a list of accounts (tabs), each
    with its platform's stat cards (`PLATFORM_META` labels), method + status (Sync now / Send connect link (copy or
    email) / Edit stats), growth chart where snapshots exist, recent posts (Instagram, YouTube); + Add account (with
-   duplicate check). Right tabs: Overview, Calls, Packages, Documents, Activity.
+   duplicate check). Right tabs: Overview, Calls, Welcome Kits, Documents, Activity.
 5. **Add / Import modal**: Look up a profile (platform + username → job → preview with the platform's stats, "Also
    found" linked accounts → details → duplicate check → save); Manual (several accounts, personal-profile toggle,
    audience for manual accounts); CSV (per-platform columns, optional "Added on" date column, preview w/ errors +
    "Possible duplicate" column).
    "Possible same creator" warning: Add account to existing / Create anyway; teammates' matches stay anonymous.
-6. **Pipeline kanban** · 7. **Calls & Follow-ups** · 8. **Packages** (as before; handles show as primary account).
+6. **Pipeline kanban** · 7. **Calls & Follow-ups** · 8. **Welcome Kits** (as before; handles show as primary account).
 9. **Settings (admin)**: Instagram integration status + sync frequency, team & roles, categories, pool guards.
    **Team**: "Add member" → "Add a team member" dialog (Name, Email, Role, Location) → toast "Added <name> as <Role>";
    change role, edit location inline, deactivate / reactivate.
@@ -56,6 +56,6 @@ active filters stay visible. `CollapsibleFilters` in `components/common/collapsi
 
 ## Phases (all complete)
 1. Scaffold, theme, app shell, routing, types, API client, data layer. 2. Influencers list.
-3. Influencer detail. 4. Add / Import modal. 5. Pipeline, Calls, Packages. 6. Dashboard, Settings, polish.
+3. Influencer detail. 4. Add / Import modal. 5. Pipeline, Calls, Welcome Kits. 6. Dashboard, Settings, polish.
 Then: Unassigned Pool; multi-platform accounts, Facebook, connect links, duplicate detection and merge; Documents;
 Onboarded tabs; PostgreSQL behind the API server (Firebase removed; no sign-in yet).

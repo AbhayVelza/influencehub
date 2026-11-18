@@ -270,7 +270,7 @@ export function OverviewTab({ influencer }: { influencer: Influencer }) {
             {address.country}
           </address>
         ) : (
-          <p className="text-sm text-muted-foreground">No address yet. Needed before sending a package.</p>
+          <p className="text-sm text-muted-foreground">No address yet. Needed before sending a Welcome Kit.</p>
         )}
       </Section>
 

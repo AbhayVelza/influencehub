@@ -30,19 +30,19 @@ export function PackagesTab({ influencerId, onCreate, canCreate, onEdit }: Packa
     )
   }
   if (packages.isError) {
-    return <ErrorState title="Couldn’t load packages" error={packages.error} onRetry={() => packages.refetch()} />
+    return <ErrorState title="Couldn’t load Welcome Kits" error={packages.error} onRetry={() => packages.refetch()} />
   }
   if (packages.data.items.length === 0) {
     return (
       <EmptyState
         icon={PackageIcon}
-        title="No packages yet"
+        title="No Welcome Kits yet"
         description={
           canCreate
-            ? 'Create a package once the influencer is onboarded and the address is confirmed.'
-            : 'This influencer was rejected, so no packages can be created.'
+            ? 'Create a Welcome Kit once the influencer is onboarded and the address is confirmed.'
+            : 'This influencer was rejected, so no Welcome Kits can be created.'
         }
-        action={canCreate ? <Button onClick={onCreate}>Create package</Button> : undefined}
+        action={canCreate ? <Button onClick={onCreate}>Create Welcome Kit</Button> : undefined}
       />
     )
   }
@@ -53,7 +53,7 @@ export function PackagesTab({ influencerId, onCreate, canCreate, onEdit }: Packa
         <div className="flex justify-end">
           <Button variant="outline" size="sm" onClick={onCreate}>
             <Plus />
-            Create package
+            Create Welcome Kit
           </Button>
         </div>
       )}

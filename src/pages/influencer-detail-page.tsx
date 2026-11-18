@@ -168,7 +168,7 @@ export default function InfluencerDetailPage() {
           <TabsList className="max-w-full justify-start overflow-x-auto">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="calls">Calls{callCount ? ` (${callCount})` : ''}</TabsTrigger>
-            <TabsTrigger value="packages">Packages{packageCount ? ` (${packageCount})` : ''}</TabsTrigger>
+            <TabsTrigger value="packages">Welcome Kits{packageCount ? ` (${packageCount})` : ''}</TabsTrigger>
             <TabsTrigger value="documents">Documents</TabsTrigger>
             <TabsTrigger value="activity">Activity</TabsTrigger>
           </TabsList>

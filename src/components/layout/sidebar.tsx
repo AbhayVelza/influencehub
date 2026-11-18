@@ -136,7 +136,7 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
       : []),
     { to: '/pipeline', label: 'Pipeline', icon: SquareKanban },
     { to: '/calls', label: 'Calls & Follow-ups', icon: PhoneCall, badge: dueToday?.total, badgeLabel: 'due today' },
-    { to: '/packages', label: 'Packages', icon: Package },
+    { to: '/packages', label: 'Welcome Kits', icon: Package },
     { to: '/documents', label: 'Documents', icon: FileText },
   ]
 

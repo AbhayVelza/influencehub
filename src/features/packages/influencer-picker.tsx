@@ -10,12 +10,12 @@ import { useDebouncedValue } from '@/hooks/use-debounced-value'
 import { influencersApi } from '@/services'
 import type { Influencer } from '@/types'
 
-/** Search-as-you-type picker for "Create package" outside an influencer's page. */
+/** Search-as-you-type picker for "Create Welcome Kit" outside an influencer's page. */
 export function InfluencerPicker({
   open,
   onOpenChange,
   onPick,
-  title = 'Create package for…',
+  title = 'Create Welcome Kit for…',
   eligible,
 }: {
   open: boolean

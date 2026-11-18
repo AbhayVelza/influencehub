@@ -54,7 +54,7 @@ function Choice({ name, checked, onChange, children }: { name: string; checked: 
 }
 
 /**
- * Pick the surviving record and, where the two differ, which value to keep. Accounts, calls, packages and activity
+ * Pick the surviving record and, where the two differ, which value to keep. Accounts, calls, Welcome Kits and activity
  * are combined; tags are joined; the more advanced stage is kept.
  */
 export function MergeDialog({ pair, open, onOpenChange }: { pair: DuplicatePair; open: boolean; onOpenChange: (open: boolean) => void }) {
@@ -149,7 +149,7 @@ export function MergeDialog({ pair, open, onOpenChange }: { pair: DuplicatePair;
           <p className="flex flex-wrap items-center gap-2 text-muted-foreground">
             {combinedAccounts.length} social accounts <PlatformMarks platforms={combinedAccounts.map((a) => a.platform)} />
           </p>
-          <p className="text-muted-foreground">Calls, packages, activity and tags from both are combined.</p>
+          <p className="text-muted-foreground">Calls, Welcome Kits, activity and tags from both are combined.</p>
           <p className="flex items-center gap-2 text-muted-foreground">
             Stage: <StageBadge stage={stage} />
             {stage !== keep.stage && <span>(the more advanced of the two)</span>}

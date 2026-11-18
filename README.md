@@ -42,7 +42,7 @@ Admins can override any stage move, with a required reason.
 - **Documents**: insights summaries and agreements (current + version history). PDF / JPG / PNG / DOCX / XLSX up to
   20 MB, upload progress, preview, soft delete (manager/admin).
 - **Onboarded**: one tab per platform listing the creators onboarded there.
-- **Pipeline** kanban, **Calls & Follow-ups**, **Packages**.
+- **Pipeline** kanban, **Calls & Follow-ups**, **Welcome Kits**.
 - **Settings** (admin): Instagram integration, team (add members, roles, deactivate), categories, pool guards.
 - Light / dark theme, responsive from phones (360px) to desktop, skeleton / empty / error states. Dates are `dd/MM/yyyy` and date-times
   `dd/MM/yyyy, hh:mm a` in Asia/Kolkata (the API stays ISO 8601).

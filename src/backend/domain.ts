@@ -359,7 +359,7 @@ export function expiringClaims(user: User = currentUser()): ExpiringClaim[] {
     .sort((a, b) => a.release_at.localeCompare(b.release_at))
 }
 
-/** Removes an influencer with its calls, packages and activity. False if it doesn't exist. */
+/** Removes an influencer with its calls, Welcome Kits and activity. False if it doesn't exist. */
 export function deleteInfluencer(id: string): boolean {
   const index = db.influencers.findIndex((i) => i.id === id)
   if (index === -1) return false
@@ -419,7 +419,7 @@ export function changeStage(
         ok: false,
         status: 422,
         code: 'requirement_missing',
-        message: 'Create a package with courier and tracking number before moving to Welcome Kit',
+        message: 'Create a Welcome Kit with courier and tracking number before moving to Welcome Kit',
       }
     }
     // Entering Onboarded from Contacted needs a current agreement and an insights summary, collected together

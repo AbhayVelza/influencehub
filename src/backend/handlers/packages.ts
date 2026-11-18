@@ -19,10 +19,10 @@ function withInfluencer(pkg: Package): PackageWithInfluencer | null {
  */
 function followPackage(inf: Influencer, status: PackageStatus) {
   if (status === 'delivered') {
-    if (inf.stage === 'onboarded') changeStage(inf, 'package_sent', 'Package delivered', undefined, { skipRequirements: true })
-    if (inf.stage === 'package_sent') changeStage(inf, 'delivered', 'Package delivered')
+    if (inf.stage === 'onboarded') changeStage(inf, 'package_sent', 'Welcome Kit delivered', undefined, { skipRequirements: true })
+    if (inf.stage === 'package_sent') changeStage(inf, 'delivered', 'Welcome Kit delivered')
   }
-  if (status === 'returned' && inf.stage === 'package_sent') changeStage(inf, 'onboarded', 'Package returned')
+  if (status === 'returned' && inf.stage === 'package_sent') changeStage(inf, 'onboarded', 'Welcome Kit returned')
 }
 
 function validateItems(items: unknown): string | null {
@@ -74,7 +74,7 @@ export const packageHandlers = [
     if (itemsError) return apiError(422, 'validation_error', itemsError)
     if (!body.address?.line1 || !body.address.city) return apiError(422, 'validation_error', 'Address is required')
     const status = body.status ?? 'preparing'
-    if (!PACKAGE_STATUSES.includes(status)) return apiError(422, 'validation_error', 'Unknown package status')
+    if (!PACKAGE_STATUSES.includes(status)) return apiError(422, 'validation_error', 'Unknown Welcome Kit status')
 
     const pkg: Package = {
       id: nextId('pkg'),
@@ -97,14 +97,14 @@ export const packageHandlers = [
 
   http.patch(api('/packages/:id'), async ({ params, request }) => {
     const pkg = db.packages.find((p) => p.id === params.id)
-    if (!pkg || !findVisible(pkg.influencer_id)) return notFound('Package')
+    if (!pkg || !findVisible(pkg.influencer_id)) return notFound('Welcome Kit')
     const body = await readJson<PackageUpdate>(request)
     if (body.items !== undefined) {
       const itemsError = validateItems(body.items)
       if (itemsError) return apiError(422, 'validation_error', itemsError)
     }
     if (body.status !== undefined && !PACKAGE_STATUSES.includes(body.status)) {
-      return apiError(422, 'validation_error', 'Unknown package status')
+      return apiError(422, 'validation_error', 'Unknown Welcome Kit status')
     }
 
     const previousStatus = pkg.status
