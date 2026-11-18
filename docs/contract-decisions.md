@@ -58,8 +58,12 @@ Record any new API decision here. Dates and documents: `dates-and-documents.md`.
   dd/MM/yyyy, hh:mm a. Pick a different time."). Different executives can schedule calls at the same time for different
   influencers. Done follow-ups free their slot; the same influencer's own open follow-up doesn't block, since logging
   the call completes it. The Log Call dialog shows the message on the follow-up field and stays open.
-- Admin override (a move outside the standard transitions) skips the call/package/agreement requirements but needs a
-  `reason`; without one → `422 reason_required`. Activity payload: `{from, to, reason, override: true}`.
+- Admin override (a move outside the standard transitions; `getOverrideTargets` in `src/lib/stages.ts`) only reaches
+  data_gathered, contacted, onboarded, on_hold or rejected, and is not offered once a creator is onboarded or later (or on
+  hold from there): those get `422 invalid_transition` ("Overrides aren’t allowed once a creator is onboarded" / "Overrides
+  can only move a creator up to Onboarded"). It skips the call and insights requirements but an override into Onboarded
+  still needs a current agreement (`422 requirement_missing`). It needs a `reason`; without one → `422 reason_required`.
+  Activity payload: `{from, to, reason, override: true}`. (Decided 18/11/2026.)
   Bulk `change_stage` has no reason field, so it can't override.
 - `POST /influencers/bulk` actions: `change_stage` (value = stage), `assign` (value = user id or null; manager/admin),
   `pool_assign` (value = an active user's id, else 422; manager/admin, else 403; assigns only rows that are still

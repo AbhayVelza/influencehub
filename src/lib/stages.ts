@@ -37,10 +37,26 @@ export function getStandardTransitions(from: Stage, role: Role, previousStage?: 
   return STAGE_TRANSITIONS[from]
 }
 
-/** Transitions available to this role. Admins can override to any stage. */
+/** Where an admin override may move a creator: up to Onboarded, plus the side stages. Never Welcome Kit or Delivered. */
+export const OVERRIDE_TARGETS: Stage[] = ['data_gathered', 'contacted', 'onboarded', 'on_hold', 'rejected']
+
+/**
+ * Stages only an admin override can reach from here (beyond the standard moves). None once the creator is onboarded
+ * or later (or on hold from there): from Onboarded on, only the standard moves apply. An override into Onboarded
+ * still needs a current agreement (checked by the server).
+ */
+export function getOverrideTargets(from: Stage, role: Role, previousStage?: Stage | null): Stage[] {
+  if (role !== 'admin') return []
+  if (ONBOARDED_OR_LATER.includes(from)) return []
+  if (from === 'on_hold' && previousStage && ONBOARDED_OR_LATER.includes(previousStage)) return []
+  const standard = getStandardTransitions(from, role, previousStage)
+  return ALL_STAGES.filter((s) => s !== from && OVERRIDE_TARGETS.includes(s) && !standard.includes(s))
+}
+
+/** Transitions available to this role: the standard moves plus any admin override targets. */
 export function getAllowedTransitions(from: Stage, role: Role, previousStage?: Stage | null): Stage[] {
-  if (role === 'admin') return ALL_STAGES.filter((s) => s !== from)
-  return getStandardTransitions(from, role, previousStage)
+  const allowed = [...getStandardTransitions(from, role, previousStage), ...getOverrideTargets(from, role, previousStage)]
+  return ALL_STAGES.filter((s) => allowed.includes(s))
 }
 
 /**
