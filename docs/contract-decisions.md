@@ -266,8 +266,12 @@ workspace (settings row `migrations`), so it never undoes later admin edits.
 - Requests are answered one at a time and the server is the only writer, so the checks the handlers make (unique
   handle per platform, claim limits, one current agreement, follow-up slots) hold across the whole team. Run exactly
   one instance. Teammates' changes reach other browsers through the app's normal refetching, not a live push.
-- Storage format: one table per collection, one row per record (`id`, `seq`, `data` jsonb, `updated_at`); `seq`
-  keeps creation order, which the activity log relies on. Document files: the `files` table. Details: `server.md`.
+- Storage format (changed 19/11/2026): relational tables with primary and foreign keys, checks and indexes
+  (`server/schema.sql`; records ↔ rows in `server/relational.ts`). Ids stay the app's ids; `seq` keeps creation order
+  (the activity log relies on it; influencers load newest first, as the handlers keep them). Derived values the app
+  computes (`platforms`, `has_agreement`, `insights_count`, `ever_onboarded`, `claimed_at`, …) are also written as
+  kept columns for SQL use; the app never reads them back. Document files: the `files` table. A database on the old
+  jsonb layout is refused at start-up until migrated (`npm run db:migrate`). Details: `server.md`.
 - `POST /imports/csv/upload {key, text}` → 204 (manager / admin). Step 2 of a CSV import: the client posts the file's
   text under the key from the presign step. It waits in memory until `POST /imports/csv` reads it (at most 5 pending
   files; a restart drops them, and the import has to be started again). Jobs are in memory too.
