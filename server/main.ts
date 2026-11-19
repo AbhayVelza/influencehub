@@ -6,17 +6,18 @@ import { Hono } from 'hono'
 import { bodyLimit } from 'hono/body-limit'
 import { cors } from 'hono/cors'
 import { getResponse } from 'msw'
-import { db, isRead, readChangedData, resolveActingUid, setActingUid } from '@/backend/db'
+import { db, isRead, readChangedData, setActingUid } from '@/backend/db'
 import { handlers } from '@/backend/handlers'
 import { commitJobs, executeJob, revertJobs } from '@/backend/jobs'
 import { apiError } from '@/backend/utils'
 import { MAX_DOCUMENT_BYTES } from '@/lib/documents'
-import { ACTING_AS_HEADER, API_BASE } from '@/lib/env'
+import { API_BASE } from '@/lib/env'
+import { authRoutes, ensureFirstAdmin, sessionUid } from './auth'
 import * as pgStore from './pg-store'
 
 // The API server. It runs the same handlers the prototype runs in the browser (src/backend/handlers: stages, claims,
 // scoping, permissions) over a working copy of the workspace that pg-store.ts loads from and saves to PostgreSQL.
-// There is no sign-in yet: each request names the team member it acts as (ACTING_AS_HEADER).
+// Every request needs a signed-in, active team member (server/auth.ts: email + password, session cookie).
 
 /** Requests are answered one at a time: the handlers share one working copy and one "current user". */
 let queue: Promise<unknown> = Promise.resolve()
@@ -31,9 +32,13 @@ const failed = (what: string, err: unknown) => {
   return apiError(500, 'server_error', 'Something went wrong saving your data. Try again.')
 }
 
-function handleApiRequest(request: Request): Promise<Response> {
+function handleApiRequest(request: Request, uid: string | undefined): Promise<Response> {
   return inTurn(async () => {
-    setActingUid(resolveActingUid(request.headers.get(ACTING_AS_HEADER)))
+    if (!uid) return apiError(401, 'unauthenticated', 'Sign in to continue.')
+    if (!db.team.some((u) => u.id === uid && u.is_active)) {
+      return apiError(403, 'inactive', 'Your account has been deactivated. Ask an admin if this is a mistake.')
+    }
+    setActingUid(uid)
     try {
       const response = (await getResponse(handlers, request)) ?? apiError(404, 'not_found', 'Unknown endpoint')
       if (response.status === 202) {
@@ -67,7 +72,7 @@ app.get('/health', async (c) => {
 // Only needed when the app is served from another origin than this server (CORS_ORIGIN, comma-separated).
 const origins = (process.env.CORS_ORIGIN ?? '').split(',').map((o) => o.trim()).filter(Boolean)
 if (origins.length) {
-  app.use(`${API_BASE}/*`, cors({ origin: origins, allowHeaders: ['Content-Type', ACTING_AS_HEADER], allowMethods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'] }))
+  app.use(`${API_BASE}/*`, cors({ origin: origins, allowHeaders: ['Content-Type'], allowMethods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'], credentials: true }))
 }
 
 app.use(
@@ -108,7 +113,14 @@ function waitForFileTransfers(): Promise<void> {
   })
 }
 
+/** Files need a signed-in, active member too. */
+const signedIn = async (c: Parameters<typeof sessionUid>[0]) => {
+  const uid = await sessionUid(c)
+  return inTurn(async () => db.team.some((u) => u.id === uid && u.is_active))
+}
+
 app.put(`${FILES}*`, async (c) => {
+  if (!(await signedIn(c))) return apiError(401, 'unauthenticated', 'Sign in to continue.')
   fileTransferStarted()
   try {
     const key = fileKey(c.req.path)
@@ -144,6 +156,7 @@ app.put(`${FILES}*`, async (c) => {
 })
 
 app.get(`${FILES}*`, async (c) => {
+  if (!(await signedIn(c))) return apiError(401, 'unauthenticated', 'Sign in to continue.')
   fileTransferStarted()
   try {
     const file = await pgStore.readFile(fileKey(c.req.path))
@@ -154,7 +167,8 @@ app.get(`${FILES}*`, async (c) => {
   }
 })
 
-app.all(`${API_BASE}/*`, (c) => handleApiRequest(c.req.raw))
+app.route(API_BASE, authRoutes(inTurn, handleApiRequest))
+app.all(`${API_BASE}/*`, async (c) => handleApiRequest(c.req.raw, await sessionUid(c)))
 
 // Serves the built app too (`npm run build` → dist/), so one process is the whole deployment.
 const dist = path.resolve(process.env.STATIC_DIR ?? 'dist')
@@ -170,8 +184,9 @@ if (existsSync(path.join(dist, 'index.html'))) {
 
 try {
   await pgStore.start()
+  await ensureFirstAdmin()
 } catch (err) {
-  // e.g. PostgreSQL unreachable, a wrong DATABASE_URL, or a database still on the old layout.
+  // e.g. PostgreSQL unreachable, a wrong DATABASE_URL, a database still on the old layout, or ADMIN_PASSWORD too short.
   console.error('Could not start:', err instanceof Error ? err.message : err)
   process.exit(1)
 }

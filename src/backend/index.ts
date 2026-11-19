@@ -1,6 +1,5 @@
 import { getResponse } from 'msw'
 import { currentAuthUid } from '@/lib/auth'
-import { ACTING_AS_HEADER } from '@/lib/env'
 import { db, isRead, readChangedData, resolveActingUid, setActingUid } from './db'
 import { handlers } from './handlers'
 import { commitJobs, executeJob, revertJobs } from './jobs'
@@ -29,7 +28,8 @@ export function handleApiRequest(request: Request): Promise<Response> {
       console.error('Database error', err)
       return apiError(500, 'database_error', 'Something went wrong loading your data. Try again.')
     }
-    setActingUid(resolveActingUid(request.headers.get(ACTING_AS_HEADER) ?? currentAuthUid()))
+    // Prototype mode has no sign-in: requests act as the member picked in the account menu.
+    setActingUid(resolveActingUid(currentAuthUid()))
 
     try {
       const response = (await getResponse(handlers, request)) ?? apiError(404, 'not_found', 'Unknown endpoint')
