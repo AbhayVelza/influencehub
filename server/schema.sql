@@ -259,3 +259,20 @@ CREATE TABLE IF NOT EXISTS schema_migrations (
   version    text PRIMARY KEY,
   applied_at timestamptz NOT NULL DEFAULT now()
 );
+
+-- Finished jobs (CSV import, export, lookup, sync) of the last hour, so a poll still finds them after a restart.
+CREATE TABLE IF NOT EXISTS jobs (
+  id          text PRIMARY KEY,
+  seq         bigint GENERATED ALWAYS AS IDENTITY UNIQUE,
+  status      text NOT NULL CHECK (status IN ('succeeded', 'failed')),
+  result      jsonb,
+  error       jsonb,
+  created_at  timestamptz NOT NULL
+);
+
+-- CSV files uploaded and waiting to be imported (the latest 5), so a restart between upload and import keeps them.
+CREATE TABLE IF NOT EXISTS csv_uploads (
+  key   text PRIMARY KEY,
+  seq   bigint GENERATED ALWAYS AS IDENTITY UNIQUE,
+  text  text NOT NULL
+);

@@ -3,9 +3,10 @@ import { csvCell } from '@/lib/csv'
 import { dayKey, formatDate, todayKey } from '@/lib/format'
 import { can } from '@/lib/permissions'
 import { audienceOf, instagramFollowers, normalizeHandle, PLATFORM_META, PLATFORMS, primaryAccount, toRef } from '@/lib/platforms'
-import { normalizeEmailField, normalizePhone } from '@/lib/schemas'
+import { fieldSchemas, MAX_TAGS, normalizeEmailField, normalizePhone } from '@/lib/schemas'
 import { getAllowedTransitions, isOverride, ONBOARDED_OR_LATER, overrideBlockReason, STAGE_TRANSITIONS } from '@/lib/stages'
 import type {
+  Activity,
   AccountCreate,
   CheckHandleResponse,
   ExpiringClaim,
@@ -20,7 +21,7 @@ import {
   attachDocumentSummary,
   currentUser,
   db,
-  documentSummary,
+  documentSummaries,
   findInfluencer,
   logActivity,
   nextId,
@@ -78,6 +79,11 @@ export function compileFilters(params: URLSearchParams, { limitedSearch = false 
   const followersMax = params.get('followers_max')
   const agreement = params.get('agreement')
   const insights = params.get('insights')
+  // Worked out once per request, not per influencer (NFR-01: 100,000 influencers).
+  const active = Object.entries(sets)
+    .filter(([, values]) => values.length)
+    .map(([key, values]) => [key as keyof typeof sets, new Set(values)] as const)
+  const summaryOf = agreement || insights ? documentSummaries() : null
 
   return (inf) => {
     const failed: FilterKey[] = []
@@ -86,8 +92,8 @@ export function compileFilters(params: URLSearchParams, { limitedSearch = false 
       const fields = limitedSearch ? [inf.name, ...handles, inf.city] : [inf.name, ...handles, inf.email, inf.phone, inf.city]
       if (!fields.join(' ').toLowerCase().includes(q)) failed.push('q')
     }
-    for (const [key, values] of Object.entries(sets)) {
-      if (values.length && !values.includes(String(inf[key as keyof typeof sets] ?? ''))) failed.push(key as FilterKey)
+    for (const [key, values] of active) {
+      if (!values.has(String(inf[key] ?? ''))) failed.push(key)
     }
     if (platforms.length && !inf.accounts.some((a) => platforms.includes(a.platform))) failed.push('platform')
     if (min && (inf.total_reach == null || inf.total_reach < Number(min))) failed.push('reach')
@@ -101,9 +107,9 @@ export function compileFilters(params: URLSearchParams, { limitedSearch = false 
       })
       if (!inRange) failed.push('followers')
     }
-    if (agreement || insights) {
+    if (summaryOf) {
       // Unassigned influencers have no documents to judge: they match neither "signed" nor "missing".
-      const docs = documentSummary(inf)
+      const docs = summaryOf(inf)
       if (agreement && (!docs || docs.has_agreement !== (agreement === 'signed'))) failed.push('agreement')
       if (insights && (!docs || docs.insights_count > 0 !== (insights === 'received'))) failed.push('insights')
     }
@@ -111,11 +117,15 @@ export function compileFilters(params: URLSearchParams, { limitedSearch = false 
   }
 }
 
+/** The query parameters compileFilters reads: with none of them, nothing is filtered out. */
+const FILTER_PARAMS = ['q', 'category', 'country', 'state', 'city', 'stage', 'assigned_to', 'platform', 'reach_min', 'reach_max', 'followers_min', 'followers_max', 'agreement', 'insights']
+
 export function filterInfluencers(
   params: URLSearchParams,
   source: Influencer[] = db.influencers,
   options: { limitedSearch?: boolean } = {},
 ): Influencer[] {
+  if (!FILTER_PARAMS.some((p) => params.has(p))) return [...source]
   const failures = compileFilters(params, options)
   return source.filter((inf) => failures(inf).length === 0)
 }
@@ -136,16 +146,21 @@ export function sortInfluencers(list: Influencer[], sort: string | null, platfor
     const v = inf[key as keyof Influencer]
     return typeof v === 'number' || typeof v === 'string' ? v : null
   }
-  return [...list].sort((a, b) => {
-    const va = value(a)
-    const vb = value(b)
-    if (va == null && vb == null) return 0
-    if (va == null) return 1 // nulls last regardless of direction
-    if (vb == null) return -1
-    const cmp = typeof va === 'number' && typeof vb === 'number' ? va - vb : String(va).localeCompare(String(vb))
-    return desc ? -cmp : cmp
-  })
+  // Each value is worked out once, not on every comparison (NFR-01: lists of 100,000).
+  return list
+    .map((inf) => ({ inf, v: value(inf) }))
+    .sort(({ v: va }, { v: vb }) => {
+      if (va == null && vb == null) return 0
+      if (va == null) return 1 // nulls last regardless of direction
+      if (vb == null) return -1
+      const cmp = typeof va === 'number' && typeof vb === 'number' ? va - vb : collate(String(va), String(vb))
+      return desc ? -cmp : cmp
+    })
+    .map(({ inf }) => inf)
 }
+
+/** localeCompare's order, much faster over many strings. */
+const collate = new Intl.Collator().compare
 
 // ---------------------------------------------------------------------------
 // Create
@@ -173,6 +188,20 @@ export function validateAccounts(accounts: AccountCreate[] | undefined, ownerId?
   return { ok: true }
 }
 
+/** FR-INF-12: at most MAX_TAGS tags, each as the form takes it (trimmed, lower case, 1–30 characters); repeats dropped. */
+export function cleanTags(tags: unknown): { ok: true; tags: string[] } | Failure {
+  const fail = (message: string): Failure => ({ ok: false, status: 422, code: 'validation_error', message })
+  if (!Array.isArray(tags)) return fail('Tags must be a list')
+  const out: string[] = []
+  for (const tag of tags) {
+    const parsed = fieldSchemas.tag.safeParse(tag)
+    if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? 'Invalid tag')
+    if (!out.includes(parsed.data)) out.push(parsed.data)
+  }
+  if (out.length > MAX_TAGS) return fail(`At most ${MAX_TAGS} tags`)
+  return { ok: true, tags: out }
+}
+
 /** `createdAt`: a CSV row's "added on" date; defaults to now. */
 export function createInfluencer(body: InfluencerCreate, source: 'lookup' | 'manual' | 'csv', createdAt?: string): CreateResult {
   const name = body.name?.trim()
@@ -183,6 +212,8 @@ export function createInfluencer(body: InfluencerCreate, source: 'lookup' | 'man
   }
   const checked = validateAccounts(body.accounts)
   if (!checked.ok) return checked as Failure
+  const tags = cleanTags(body.tags ?? [])
+  if (!tags.ok) return tags
 
   const now = createdAt ?? nowIso()
   const address = body.address ?? null
@@ -202,7 +233,7 @@ export function createInfluencer(body: InfluencerCreate, source: 'lookup' | 'man
     total_reach: null,
     stage: 'data_gathered',
     assigned_to: body.assigned_to ?? null,
-    tags: body.tags ?? [],
+    tags: tags.tags,
     notes: body.notes ?? null,
     onboarding_checklist: { called: false, agreement_signed: false, insights_received: false, address_collected: address != null, ig_connected: false },
     documents: null,
@@ -317,47 +348,92 @@ export function releaseInfluencer(inf: Influencer, reason: string, actor: string
   logActivity(inf.id, 'released', auto ? { from, reason, auto: true } : { from, reason }, actor)
 }
 
-/** When the current owner claimed it, if their ownership came from a claim (not an assignment). */
-function claimedAt(inf: Influencer): string | null {
-  if (!inf.assigned_to) return null
-  for (let i = db.activities.length - 1; i >= 0; i--) {
-    const a = db.activities[i]!
-    if (a.influencer_id !== inf.id) continue
-    if (a.type === 'claimed') return a.actor === inf.assigned_to ? a.created_at : null
-    if (a.type === 'assigned' || a.type === 'released') return null
+/**
+ * What auto-release needs, from one pass over the activity log and the calls: each influencer's latest ownership
+ * change (claim, assignment or release) and latest call. A scan per influencer would run on every request and cost
+ * influencers × activities (NFR-01: 100,000 influencers).
+ */
+function buildClaimFacts() {
+  const ownership = new Map<string, Activity>()
+  for (const a of db.activities) {
+    if (a.type === 'claimed' || a.type === 'assigned' || a.type === 'released') ownership.set(a.influencer_id, a)
   }
-  return null
+  const lastCall = new Map<string, string>()
+  for (const c of db.calls) if ((lastCall.get(c.influencer_id) ?? '') < c.created_at) lastCall.set(c.influencer_id, c.created_at)
+  return { ownership, lastCall }
+}
+
+type ClaimFacts = ReturnType<typeof buildClaimFacts>
+
+/**
+ * Kept between requests (auto-release checks on every one): rebuilt when the activity log or the calls are replaced
+ * or grow, or when a merge re-points them (`invalidateEverOnboarded`, which also drops this).
+ */
+let claimCache: { activities: unknown[]; activityCount: number; calls: unknown[]; callCount: number; facts: ClaimFacts } | null = null
+
+export function invalidateClaimFacts() {
+  claimCache = null
+}
+
+function claimFacts(): ClaimFacts {
+  const c = claimCache
+  if (c && c.activities === db.activities && c.activityCount === db.activities.length && c.calls === db.calls && c.callCount === db.calls.length) {
+    return c.facts
+  }
+  const facts = buildClaimFacts()
+  claimCache = { activities: db.activities, activityCount: db.activities.length, calls: db.calls, callCount: db.calls.length, facts }
+  return facts
+}
+
+/** When the current owner claimed it, if their ownership came from a claim (not an assignment). */
+function claimedAt(inf: Influencer, facts: ClaimFacts): string | null {
+  if (!inf.assigned_to) return null
+  const a = facts.ownership.get(inf.id)
+  return a?.type === 'claimed' && a.actor === inf.assigned_to ? a.created_at : null
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000
 
 /** When auto-release returns a claim to the pool: N days after claiming, unless a call has been logged since. */
-function releaseAt(inf: Influencer): string | null {
+function releaseAt(inf: Influencer, facts: ClaimFacts): string | null {
   const days = db.poolSettings.auto_release_days
-  const claimed = days === null ? null : claimedAt(inf)
+  const claimed = days === null ? null : claimedAt(inf, facts)
   if (days === null || !claimed) return null
-  if (db.calls.some((c) => c.influencer_id === inf.id && c.created_at >= claimed)) return null
+  if ((facts.lastCall.get(inf.id) ?? '') >= claimed) return null
   return new Date(Date.parse(claimed) + days * DAY_MS).toISOString()
 }
 
-/** Auto-release (no scheduler without a server): runs before every request, in whoever's browser makes it. */
-export function runAutoRelease(now = Date.now()) {
+/**
+ * Auto-release (no scheduler without a server): runs before every request, in whoever's browser makes it. Returns how
+ * many influencers it released (the API server saves after a read only when this or link expiry changed something).
+ */
+export function runAutoRelease(now = Date.now()): number {
   const days = db.poolSettings.auto_release_days
-  if (days === null) return
+  if (days === null) return 0
+  const facts = claimFacts()
+  const window = days * DAY_MS
+  let released = 0
   for (const inf of db.influencers) {
-    const at = releaseAt(inf)
-    if (at && Date.parse(at) <= now) releaseInfluencer(inf, `No call logged within ${days} days of claiming`, null, true)
+    // releaseAt, without building a date string per claim (this runs on every request).
+    const claimed = claimedAt(inf, facts)
+    if (!claimed || (facts.lastCall.get(inf.id) ?? '') >= claimed) continue
+    if (Date.parse(claimed) + window <= now) {
+      releaseInfluencer(inf, `No call logged within ${days} days of claiming`, null, true)
+      released += 1
+    }
   }
+  return released
 }
 
 /** My claims that auto-release returns to the pool today or tomorrow (IST): the "one day before" warning. */
 export function expiringClaims(user: User = currentUser()): ExpiringClaim[] {
   const tomorrow = todayKey(new Date(Date.now() + DAY_MS))
+  const facts = claimFacts()
   return db.influencers
     .filter((i) => i.assigned_to === user.id)
     .flatMap((inf) => {
-      const release_at = releaseAt(inf)
-      const claimed_at = claimedAt(inf)
+      const release_at = releaseAt(inf, facts)
+      const claimed_at = claimedAt(inf, facts)
       return release_at && claimed_at && dayKey(release_at) <= tomorrow
         ? [{ influencer: toSummary(inf), claimed_at, release_at }]
         : []

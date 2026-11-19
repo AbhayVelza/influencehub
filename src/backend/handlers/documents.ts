@@ -79,7 +79,7 @@ export const documentHandlers = [
     if (owner.error) return owner.error
     const body = await readJson<Partial<DocumentCreate>>(request)
     const upload = body.key ? db.documentUploads.get(body.key) : undefined
-    if (!upload || upload.influencer_id !== owner.inf.id || upload.type !== body.type) {
+    if (!upload || !upload.uploaded || upload.influencer_id !== owner.inf.id || upload.type !== body.type) {
       return apiError(422, 'upload_missing', 'The file wasn’t uploaded. Choose it again.')
     }
     const invalid = validateDocumentBody(body)

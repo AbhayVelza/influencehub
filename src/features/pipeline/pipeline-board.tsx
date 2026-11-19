@@ -23,6 +23,7 @@ import { useStageMover } from '@/features/influencers/stage-mover'
 import { useMe } from '@/hooks/use-me'
 import { useTeamMap } from '@/hooks/use-team'
 import { ALL_STAGES, PIPELINE_STAGES, STAGE_META } from '@/lib/constants'
+import { formatNumber } from '@/lib/format'
 import { getOverrideTargets, getStandardTransitions } from '@/lib/stages'
 import { cn } from '@/lib/utils'
 import type { InfluencerFilters, PipelineCard, PipelineResponse, Role, Stage, User } from '@/types'
@@ -64,6 +65,7 @@ const collision: CollisionDetection = (args) => {
 function Column({
   stage,
   cards,
+  count,
   team,
   drag,
   collapsed,
@@ -71,6 +73,8 @@ function Column({
 }: {
   stage: Stage
   cards: PipelineCard[]
+  /** The whole column; `cards` holds at most PIPELINE_COLUMN_LIMIT of them. */
+  count: number
   team: Map<string, User>
   drag: DropKind | null
   collapsed: boolean
@@ -92,7 +96,7 @@ function Column({
     return (
       <section
         ref={setNodeRef}
-        aria-label={`${meta.label}, ${cards.length} influencers (collapsed)`}
+        aria-label={`${meta.label}, ${count} influencers (collapsed)`}
         className={cn(
           'flex w-14 shrink-0 flex-col items-center gap-2 rounded-xl border bg-muted/40 py-3 transition-shadow',
           dropStyle,
@@ -102,7 +106,7 @@ function Column({
         <Button variant="ghost" size="icon-xs" onClick={onToggle} aria-label={`Expand ${meta.label}`}>
           <ChevronLeft />
         </Button>
-        <span className="rounded-full bg-background px-1.5 text-xs font-medium tabular-nums">{cards.length}</span>
+        <span className="rounded-full bg-background px-1.5 text-xs font-medium tabular-nums">{formatNumber(count)}</span>
         <span className="flex items-center gap-1.5 text-xs font-medium [writing-mode:vertical-rl]">
           <StageDot stage={stage} />
           {meta.label}
@@ -114,7 +118,7 @@ function Column({
   return (
     <section
       ref={setNodeRef}
-      aria-label={`${meta.label}, ${cards.length} influencers`}
+      aria-label={`${meta.label}, ${count} influencers`}
       className={cn(
         // Flexible width: the five main columns share the space (min 12rem), so the whole board fits on
         // wide screens and scrolls horizontally on narrow ones.
@@ -126,7 +130,7 @@ function Column({
       <header className="flex items-center gap-2 px-3 py-2.5">
         <StageDot stage={stage} className="size-2" />
         <h2 className="text-sm font-medium">{meta.label}</h2>
-        <span className="rounded-full bg-background px-1.5 text-xs font-medium tabular-nums">{cards.length}</span>
+        <span className="rounded-full bg-background px-1.5 text-xs font-medium tabular-nums">{formatNumber(count)}</span>
         {drag === 'override' && <span className="ml-auto text-[11px] font-medium text-amber-700 dark:text-amber-400">Override</span>}
         {onToggle && (
           <Button variant="ghost" size="icon-xs" className="ml-auto" onClick={onToggle} aria-label={`Collapse ${meta.label}`}>
@@ -141,6 +145,11 @@ function Column({
             <DraggablePipelineCard card={card} owner={card.assigned_to ? team.get(card.assigned_to) : undefined} />
           </li>
         ))}
+        {count > cards.length && (
+          <li className="px-1 py-2 text-center text-xs text-muted-foreground">
+            Showing {cards.length} of {formatNumber(count)}, longest in this stage first. Filter to see the rest.
+          </li>
+        )}
       </ol>
     </section>
   )
@@ -173,7 +182,7 @@ export function PipelineBoard({ data, filters }: { data: PipelineResponse; filte
       return next
     })
 
-  const byStage = new Map(data.columns.map((c) => [c.stage, c.items]))
+  const byStage = new Map(data.columns.map((c) => [c.stage, c]))
   const label = (id: unknown) => STAGE_META[id as Stage]?.label ?? String(id)
 
   const onDragStart = ({ active: a }: DragStartEvent) => {
@@ -199,7 +208,8 @@ export function PipelineBoard({ data, filters }: { data: PipelineResponse; filte
                 columns: old.columns.map((col) => {
                   const items = col.items.filter((c) => c.id !== card.id)
                   if (col.stage === to) items.unshift({ ...card, stage: to, days_in_stage: 0 })
-                  return { ...col, items, count: items.length }
+                  const count = col.stage === to ? col.count + 1 : col.stage === card.stage ? col.count - 1 : col.count
+                  return { ...col, items, count }
                 }),
               }
             : old,
@@ -274,7 +284,8 @@ export function PipelineBoard({ data, filters }: { data: PipelineResponse; filte
             <Column
               key={stage}
               stage={stage}
-              cards={byStage.get(stage) ?? []}
+              cards={byStage.get(stage)?.items ?? []}
+              count={byStage.get(stage)?.count ?? 0}
               team={team}
               drag={active ? dropKind(active, stage, role, previous) : null}
               collapsed={side && !!collapsed[stage]}

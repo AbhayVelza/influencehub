@@ -1,6 +1,6 @@
 import { http } from 'msw'
 import { API_BASE } from '@/lib/env'
-import { currentUser } from '../db'
+import { currentUser, noteChangedOnRead } from '../db'
 import { runAutoRelease } from '../domain'
 import { expireConnectLinks } from '../social'
 import { api, forbidden } from '../utils'
@@ -41,8 +41,7 @@ export const handlers = [
   // Runs before every request (the caller is already checked by handleApiRequest): the scheduled rules that have
   // no server to run them, auto-release and connect-link expiry. Then falls through to the real handler.
   http.all(api('/*'), ({ request }) => {
-    runAutoRelease()
-    expireConnectLinks()
+    if (runAutoRelease() + expireConnectLinks() > 0) noteChangedOnRead()
     if (currentUser().role === 'brand_specialist' && !brandSpecialistMayCall(request)) return forbidden()
   }),
   ...duplicateHandlers,

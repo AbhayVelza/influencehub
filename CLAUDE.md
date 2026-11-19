@@ -4,7 +4,8 @@ Internal CRM for managing influencers. All six frontend phases, the Unassigned P
 (with duplicate detection), Documents (insights summaries, agreements), the dd/MM/yyyy date format and team
 management (admins add members) are built. There is no sign-in yet ("Acting as" in the account menu; Firebase removed). Data lives in PostgreSQL behind the API
 server in `server/` (prototype mode: in the browser); no sample data. Before calling any change done, run
-`npm run lint`, `npm run typecheck`, `npm run build`, `npm run server:build`.
+`npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `npm run server:build` (and `npm run test:perf`
+when a change touches lists, the pipeline or the dashboard: NFR-01 at 100,000 influencers).
 Docs: this file, README.md and `docs/`. Never add features beyond this spec without asking; record any API decision
 you make in `docs/contract-decisions.md` (dates and documents: `docs/dates-and-documents.md`).
 

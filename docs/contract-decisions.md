@@ -276,3 +276,19 @@ workspace (settings row `migrations`), so it never undoes later admin edits.
   text under the key from the presign step. It waits in memory until `POST /imports/csv` reads it (at most 5 pending
   files; a restart drops them, and the import has to be started again). Jobs are in memory too.
 - Auto-release and connect-link expiry still run at the start of every request (no scheduler yet).
+
+## Server-side checks and limits (P1 backlog, 19/11/2026)
+
+Rules the forms already applied are now also checked by the handlers, so every caller gets them (tests in `tests/`):
+
+- **Tags** (`cleanTags`, create and PATCH): at most 20, each trimmed, lower case, 1–30 letters, numbers, spaces, `-`, `_`;
+  repeats dropped. Otherwise 422 `validation_error`.
+- **Calls:** `call_back` needs `follow_up_date`, and any follow-up must be in the future (422 `validation_error`).
+- **Welcome Kits:** the address needs line 1, city, state, postal code and country; once the status is past
+  `preparing`, courier and tracking number are required (422). PATCH changes only `items`, `address`, `courier`,
+  `tracking_number`, `status`, `sent_at`, `delivered_at`; `id` and `influencer_id` in the body are ignored.
+- **Documents:** saving the metadata (`POST /influencers/{id}/documents`) needs the file stored first (the API
+  server's `PUT /files/…`, or the browser in prototype mode); otherwise 422 `upload_missing`.
+- **Pipeline:** each column returns at most `PIPELINE_COLUMN_LIMIT` (200) cards, longest in the stage first; `count`
+  is the whole column. Days in stage are calendar days in Asia/Kolkata on the server too.
+- **Jobs:** a finished job's outcome is saved for an hour, so `GET /jobs/{id}` still answers after a restart.

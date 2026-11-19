@@ -30,6 +30,18 @@ export type StoredDocument = InfluencerDocument & {
   storage_key: string
 }
 
+/**
+ * A finished job's outcome (import, export, lookup, sync), kept an hour so a poll still finds it after the API server
+ * restarts (a free Render instance sleeps after 15 idle minutes). Jobs still waiting to run live in jobs.ts.
+ */
+export interface StoredJob {
+  id: string
+  status: 'succeeded' | 'failed'
+  result: unknown
+  error: { code: string; message: string } | null
+  created_at: string
+}
+
 /** An upload the presign step prepared; `blob` arrives with the PUT. */
 export interface PendingUpload {
   influencer_id: string
@@ -37,7 +49,10 @@ export interface PendingUpload {
   file_name: string
   content_type: string
   size: number
+  /** The API server is receiving the file (PUT). */
   uploading?: boolean
+  /** The file is stored: only then can its metadata be saved (FR-DOC-02). */
+  uploaded?: boolean
 }
 
 /**
@@ -95,6 +110,20 @@ export function documentSummary(inf: Influencer): DocumentSummary | null {
   }
 }
 
+/** `documentSummary` for many influencers at once (one pass over the documents instead of one per influencer). */
+export function documentSummaries(): (inf: Influencer) => DocumentSummary | null {
+  const byInfluencer = new Map<string, DocumentSummary>()
+  for (const d of db.documents) {
+    if (d.deleted_at) continue
+    const summary = byInfluencer.get(d.influencer_id) ?? { insights_count: 0, has_agreement: false }
+    if (d.type === 'insights_summary') summary.insights_count += 1
+    else if (d.type === 'agreement' && d.is_current) summary.has_agreement = true
+    byInfluencer.set(d.influencer_id, summary)
+  }
+  const none: DocumentSummary = { insights_count: 0, has_agreement: false }
+  return (inf) => (inf.assigned_to === null ? null : (byInfluencer.get(inf.id) ?? none))
+}
+
 /** No business account connected yet: what a fresh workspace starts with. */
 export function disconnectedInstagramSettings(): InstagramSettings {
   return {
@@ -134,9 +163,11 @@ export const db = {
   migrations: { categories_upgraded: false } as WorkspaceMigrations,
   /** Duplicate pair ids a manager dismissed ("not the same creator"). */
   dismissedDuplicates: new Set<string>(),
+  /** Finished jobs of the last hour (jobs.ts), oldest first. */
+  jobs: [] as StoredJob[],
   /** Document uploads between presign and save, by Storage key (this tab only). */
   documentUploads: new Map<string, PendingUpload>(),
-  /** CSV files waiting to be imported, by key (read in this tab, never stored). */
+  /** CSV files waiting to be imported (the latest 5), by key, oldest first; saved, so a restart doesn't lose them. */
   uploads: new Map<string, string>(),
 }
 
@@ -167,6 +198,19 @@ export const nowIso = () => new Date().toISOString()
 let actingUid: string | null = null
 
 /**
+ * Set when a read (GET) changed data by itself: auto-release, link expiry or a job finishing. The stores save after a
+ * read only then (saving compares the whole workspace: ~seconds at 100,000 influencers). Cleared at each request start.
+ */
+let changedOnRead = false
+export const noteChangedOnRead = () => {
+  changedOnRead = true
+}
+export const readChangedData = () => changedOnRead
+
+/** Reads never change data apart from what `noteChangedOnRead` flags (tests/reads.test.ts checks every GET). */
+export const isRead = (request: Request) => request.method === 'GET' || request.method === 'HEAD'
+
+/**
  * There is no sign-in: requests act as the member the account menu picked, or as an active admin when that member is
  * gone or deactivated. Null only when the workspace has no active admin.
  */
@@ -177,7 +221,9 @@ export function resolveActingUid(uid: string | null): string | null {
 
 /** Set for each request (resolveActingUid). */
 export function setActingUid(uid: string | null) {
+  changedOnRead = false
   invalidateEverOnboarded()
+  stageEntered = null
   actingUid = uid
 }
 
@@ -188,8 +234,19 @@ export function currentUser(): User {
   return user
 }
 
+/**
+ * Position of each influencer in `db.influencers`, so lookups by id don't scan the list (NFR-01: 100,000 influencers).
+ * A hit is trusted only when that position still holds that id; anything else (added, deleted, reordered, list
+ * replaced) rebuilds the index.
+ */
+let positions = new Map<string, number>()
+
 export function findInfluencer(id: string): Influencer | undefined {
-  return db.influencers.find((i) => i.id === id)
+  const at = positions.get(id)
+  if (at !== undefined && db.influencers[at]?.id === id) return db.influencers[at]
+  positions = new Map(db.influencers.map((inf, i) => [inf.id, i]))
+  const now = positions.get(id)
+  return now === undefined ? undefined : db.influencers[now]
 }
 
 export function findAccount(id: string): { influencer: Influencer; account: SocialAccount } | undefined {
@@ -238,6 +295,7 @@ export function logActivity(
   }
   db.activities.push(activity)
   invalidateEverOnboarded()
+  stageEntered = null
   return activity
 }
 
@@ -252,12 +310,21 @@ export function previousStageOf(influencerId: string): Influencer['stage'] | nul
   return null
 }
 
+/**
+ * The latest move onto each (influencer, stage), built once from the activity log and dropped at the start of each
+ * request and on every new activity (the pipeline asks for every influencer's; a scan each would cost
+ * influencers × activities).
+ */
+let stageEntered: Map<string, string> | null = null
+
 /** When the influencer entered its current stage. */
 export function stageEnteredAt(inf: Influencer): string {
-  for (let i = db.activities.length - 1; i >= 0; i--) {
-    const a = db.activities[i]
-    if (a.influencer_id === inf.id && a.type === 'stage_changed' && a.payload.to === inf.stage) return a.created_at
+  if (!stageEntered) {
+    stageEntered = new Map()
+    for (const a of db.activities) {
+      if (a.type === 'stage_changed') stageEntered.set(`${a.influencer_id}:${String(a.payload.to)}`, a.created_at)
+    }
   }
-  return inf.created_at
+  return stageEntered.get(`${inf.id}:${inf.stage}`) ?? inf.created_at
 }
 

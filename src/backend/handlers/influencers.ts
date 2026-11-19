@@ -20,8 +20,9 @@ import type {
   StageChangeRequest,
 } from '@/types'
 import { formatDateTime } from '@/lib/format'
-import { currentUser, db, documentSummary, findInfluencer, logActivity, nextId, nowIso } from '../db'
+import { currentUser, db, documentSummaries, findInfluencer, logActivity, nextId, nowIso } from '../db'
 import {
+  cleanTags,
   assignedToOtherMessage,
   canSetOwnerOnCreate,
   changeStage,
@@ -66,6 +67,7 @@ type Facet = 'category' | 'country' | 'state' | 'city' | 'stage' | 'assigned_to'
  */
 export function filterOptionsFor(source: Influencer[], params: URLSearchParams, options: { limitedSearch?: boolean } = {}): FilterOptions {
   const failures = compileFilters(params, options)
+  const summaryOf = documentSummaries()
   const team = new Map(db.team.map((u) => [u.id, u.name]))
   const counts: Record<Facet, Map<string, number>> = {
     category: new Map(),
@@ -99,7 +101,7 @@ export function filterOptionsFor(source: Influencer[], params: URLSearchParams, 
     add('stage', inf.stage, counted('stage'))
     add('assigned_to', inf.assigned_to, counted('assigned_to'))
     for (const platform of new Set(inf.accounts.map((a) => a.platform))) add('platform', platform, counted('platform'))
-    const docs = documentSummary(inf)
+    const docs = summaryOf(inf)
     if (docs) {
       add('agreement', docs.has_agreement ? 'signed' : 'missing', counted('agreement'))
       add('insights', docs.insights_count > 0 ? 'received' : 'missing', counted('insights'))
@@ -304,6 +306,11 @@ export const influencerHandlers = [
       delete (body as Record<string, unknown>)[key]
     }
     if (body.phone !== undefined) body.phone = normalizePhone(body.phone)
+    if (body.tags !== undefined) {
+      const tags = cleanTags(body.tags)
+      if (!tags.ok) return apiError(tags.status, tags.code, tags.message)
+      body.tags = tags.tags
+    }
     if (body.assigned_to !== undefined && body.assigned_to !== inf.assigned_to) {
       if (!can(user.role, 'influencer:reassign')) return forbidden(OWNER_CHANGE_MESSAGE)
       logActivity(inf.id, 'assigned', { from: inf.assigned_to, to: body.assigned_to })
@@ -357,8 +364,11 @@ export const influencerHandlers = [
     // Two different executives can schedule calls at the same time for different influencers.
     // This influencer's own open follow-ups don't count (logging this call completes them, just below).
     // null / undefined = no follow-up; anything else (an empty string included) must be a full timestamp.
+    // FR-CALL-02 (the form checks the same): "call back" needs a follow-up, and a follow-up is in the future.
+    if (body.outcome === 'call_back' && body.follow_up_date == null) return apiError(422, 'validation_error', 'Pick when to call back')
     if (body.follow_up_date != null) {
       if (!isTimestamp(body.follow_up_date)) return apiError(422, 'validation_error', 'Enter a valid follow-up date and time')
+      if (Date.parse(body.follow_up_date) <= Date.now()) return apiError(422, 'validation_error', 'Pick a time in the future')
       const slot = minuteOf(body.follow_up_date)
       const executiveId = inf.assigned_to ?? currentUser().id
       const taken = db.calls.some((c) => {

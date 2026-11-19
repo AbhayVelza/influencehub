@@ -1,5 +1,5 @@
 import type { Job } from '@/types'
-import { nextId } from './db'
+import { db, nextId, noteChangedOnRead, nowIso } from './db'
 
 export class JobFailure extends Error {
   readonly code: string
@@ -23,11 +23,18 @@ interface LocalJob {
 
 const jobs = new Map<string, LocalJob>()
 
-/** Runs on its first poll (GET /jobs/{id}), inside that request, so whatever it changes is saved with it. */
+const HOUR_MS = 60 * 60 * 1000
+
+/**
+ * Runs on its first poll (GET /jobs/{id}), inside that request (the API server runs it in the request that starts
+ * it), so whatever it changes is saved with it, outcome included (`db.jobs`).
+ */
 export function createJob(run: () => unknown, durationMs = 0): string {
-  // On the API server this map lives as long as the process: forget jobs nobody polled for an hour.
-  const cutoff = Date.now() - 60 * 60 * 1000
+  // Forget jobs nobody polled for an hour, here and in the saved outcomes.
+  const cutoff = Date.now() - HOUR_MS
   for (const [key, job] of jobs) if (job.startedAt < cutoff) jobs.delete(key)
+  const cutoffIso = new Date(cutoff).toISOString()
+  if (db.jobs.some((j) => j.created_at < cutoffIso)) db.jobs = db.jobs.filter((j) => j.created_at >= cutoffIso)
   const id = nextId('job')
   jobs.set(id, { id, startedAt: Date.now(), durationMs, run, done: false, staged: false, result: null, error: null })
   return id
@@ -36,6 +43,8 @@ export function createJob(run: () => unknown, durationMs = 0): string {
 export function executeJob(id: string): void {
   const job = jobs.get(id)
   if (!job || job.done || job.staged) return
+  // A job may change data even when a read (GET /jobs/{id}) runs it.
+  noteChangedOnRead()
   try {
     job.result = job.run()
   } catch (err) {
@@ -45,6 +54,14 @@ export function executeJob(id: string): void {
         : { code: 'internal_error', message: err instanceof Error ? err.message : 'Job failed' }
   }
   job.staged = true
+  // Saved with the request; if the request fails, the store's revert drops it with everything else.
+  db.jobs.push({
+    id: job.id,
+    status: job.error ? 'failed' : 'succeeded',
+    result: job.error ? null : (job.result ?? null),
+    error: job.error,
+    created_at: nowIso(),
+  })
 }
 
 export function commitJobs(): void {
@@ -69,7 +86,11 @@ export function revertJobs(): void {
 
 export function readJob(id: string): Job | null {
   const job = jobs.get(id)
-  if (!job) return null
+  if (!job) {
+    // Started before a restart: only its saved outcome is left.
+    const saved = db.jobs.find((j) => j.id === id)
+    return saved ? { id: saved.id, status: saved.status, progress: 100, result: saved.result, error: saved.error } : null
+  }
   const elapsed = Date.now() - job.startedAt
 
   if (!job.done && !job.staged && elapsed >= job.durationMs) {

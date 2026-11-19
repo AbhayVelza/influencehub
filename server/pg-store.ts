@@ -1,6 +1,6 @@
 import postgres from 'postgres'
 import { db, newWorkspace } from '@/backend/db'
-import { canonical, fromRows, readTables, remove, TABLES, toRows, upsert, type Row, type Rows } from './relational'
+import { fromRows, readTables, remove, TABLES, sameRow, toRows, upsert, type Row, type Rows } from './relational'
 import schema from './schema.sql?raw'
 
 // Keeps `db` (the server's working copy of the workspace) in step with PostgreSQL's relational tables
@@ -51,16 +51,32 @@ export async function isLegacyLayout(pg: postgres.Sql | postgres.TransactionSql)
   return (row?.n ?? 0) > 0
 }
 
-/** PostgreSQL's rows as last seen: table → key → row and its canonical JSON. */
-let saved: Map<string, Map<string, { row: Row; json: string }>> = new Map()
+/** PostgreSQL's rows as last seen: table → key → row. Detached: they never share an array or object with `db`. */
+let saved: Rows = new Map()
+
+/**
+ * A copy of a row whose arrays and jsonb values are its own. toRows' rows share them with the working copy (an
+ * influencer's tags, an account's metrics), so a handler changing one in place would change the saved row too, and
+ * the change would never be written.
+ */
+function detach(row: Row): Row {
+  const out: Row = {}
+  for (const k in row) {
+    const v = row[k]
+    out[k] = v !== null && typeof v === 'object' ? structuredClone(v) : v
+  }
+  return out
+}
+
+const detachAll = (rows: Rows): Rows => new Map([...rows].map(([table, map]) => [table, new Map([...map].map(([k, row]) => [k, detach(row)]))]))
 
 function remember(rows: Rows) {
-  saved = new Map([...rows].map(([table, map]) => [table, new Map([...map].map(([k, row]) => [k, { row, json: canonical(row) }]))]))
+  saved = detachAll(rows)
 }
 
 /** Puts the working copy back to PostgreSQL's last known state (start-up, and after a request that failed). */
 export function revert() {
-  fromRows(new Map([...saved].map(([table, map]) => [table, new Map([...map].map(([k, v]) => [k, v.row]))])))
+  fromRows(detachAll(saved))
 }
 
 async function load() {
@@ -89,7 +105,6 @@ interface Op {
   table: string
   key: string
   row: Row
-  json: string | null
 }
 
 function pendingOps(): { upserts: Op[]; deletes: Op[] } {
@@ -97,17 +112,17 @@ function pendingOps(): { upserts: Op[]; deletes: Op[] } {
   const upserts: Op[] = []
   const deletes: Op[] = []
   for (const t of TABLES) {
-    const before = saved.get(t.name) ?? new Map<string, { row: Row; json: string }>()
+    const before = saved.get(t.name) ?? new Map<string, Row>()
     const rows = next.get(t.name)!
     const changed: Op[] = []
     for (const [key, row] of rows) {
-      const json = canonical(row)
-      if (before.get(key)?.json !== json) changed.push({ table: t.name, key, row, json })
+      const old = before.get(key)
+      if (!old || !sameRow(old, row)) changed.push({ table: t.name, key, row })
     }
     // At most one primary account / current agreement per parent: clear the old one before setting the new one.
     if (t.flag) changed.sort((a, b) => Number(Boolean(a.row[t.flag!])) - Number(Boolean(b.row[t.flag!])))
     upserts.push(...changed)
-    for (const [key, { row }] of before) if (!rows.has(key)) deletes.push({ table: t.name, key, row, json: null })
+    for (const [key, row] of before) if (!rows.has(key)) deletes.push({ table: t.name, key, row })
   }
   // Children before parents (a parent's delete also removes its children; deleting those first is harmless).
   deletes.reverse()
@@ -125,7 +140,7 @@ export async function flush(): Promise<void> {
   for (const op of upserts) {
     let table = saved.get(op.table)
     if (!table) saved.set(op.table, (table = new Map()))
-    table.set(op.key, { row: op.row, json: op.json! })
+    table.set(op.key, detach(op.row))
   }
   for (const op of deletes) saved.get(op.table)?.delete(op.key)
 }
