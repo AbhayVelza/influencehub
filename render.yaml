@@ -1,0 +1,21 @@
+# The API server on Render (Blueprint: Render dashboard → New → Blueprint → this repo). docs/server.md, "Deploying".
+# One instance only: the server keeps a working copy of the data in memory (never scale it out).
+services:
+  - type: web
+    name: influencehub-api
+    runtime: node
+    plan: free
+    region: singapore
+    buildCommand: npm ci && npm run server:build
+    startCommand: node dist-server/main.js
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      # Supabase → Connect → Session pooler (port 5432). Entered in the dashboard, never committed.
+      - key: DATABASE_URL
+        sync: false
+      # The Vercel address(es) the app is served from, comma-separated, e.g. https://influencehub.vercel.app
+      - key: CORS_ORIGIN
+        sync: false
