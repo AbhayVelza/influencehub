@@ -2,7 +2,7 @@ import { PIPELINE_STAGES } from '@/lib/constants'
 import { primaryAccount, toRef } from '@/lib/platforms'
 import type { DuplicateCheckRequest, DuplicateMatch, DuplicatePair, Influencer, MatchConfidence, MergeField, MergeRequest, User } from '@/types'
 import { currentUser, db, invalidateEverOnboarded, logActivity, nowIso, refreshDerived } from './db'
-import { canSee } from './domain'
+import { canSee, invalidateClaimFacts } from './domain'
 import { moveDocuments } from './documents'
 
 // Duplicate detection (same Instagram handle only) and merging (see "Duplicate detection" and "Merge" in docs/contract-decisions.md).
@@ -107,6 +107,7 @@ export function mergeInfluencers(keep: Influencer, merge: Influencer, choices: M
   for (const p of db.packages) if (p.influencer_id === merge.id) p.influencer_id = keep.id
   for (const a of db.activities) if (a.influencer_id === merge.id) a.influencer_id = keep.id
   invalidateEverOnboarded()
+  invalidateClaimFacts()
   moveDocuments(merge.id, keep.id)
   db.influencers = db.influencers.filter((i) => i.id !== merge.id)
 

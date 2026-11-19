@@ -33,6 +33,19 @@ function validateItems(items: unknown): string | null {
   return null
 }
 
+const EDITABLE: (keyof Package)[] = ['items', 'address', 'courier', 'tracking_number', 'status', 'sent_at', 'delivered_at']
+
+/** FR-PKG-01: every part of the address but the second line. */
+function fullAddress(a: Package['address'] | null | undefined): boolean {
+  return !!a && [a.line1, a.city, a.state, a.postal_code, a.country].every((v) => typeof v === 'string' && v.trim() !== '')
+}
+
+const SHIPPING_REQUIRED = 'Add the courier and tracking number once the Welcome Kit is sent'
+
+/** FR-PKG-02: courier and tracking number once the status is sent or later. */
+const shippable = (status: Package['status'], courier?: string | null, tracking?: string | null) =>
+  status === 'preparing' || (!!courier?.trim() && !!tracking?.trim())
+
 export const packageHandlers = [
   http.get(api('/packages'), async ({ request }) => {
     const params = new URL(request.url).searchParams
@@ -72,9 +85,10 @@ export const packageHandlers = [
     if (!inf) return apiError(422, 'validation_error', 'Choose an influencer')
     const itemsError = validateItems(body.items)
     if (itemsError) return apiError(422, 'validation_error', itemsError)
-    if (!body.address?.line1 || !body.address.city) return apiError(422, 'validation_error', 'Address is required')
+    if (!fullAddress(body.address)) return apiError(422, 'validation_error', 'Address is required')
     const status = body.status ?? 'preparing'
     if (!PACKAGE_STATUSES.includes(status)) return apiError(422, 'validation_error', 'Unknown Welcome Kit status')
+    if (!shippable(status, body.courier, body.tracking_number)) return apiError(422, 'validation_error', SHIPPING_REQUIRED)
 
     const pkg: Package = {
       id: nextId('pkg'),
@@ -107,13 +121,19 @@ export const packageHandlers = [
       return apiError(422, 'validation_error', 'Unknown Welcome Kit status')
     }
 
+    // Only these fields change: never the id or the influencer it belongs to.
+    const changes = Object.fromEntries(Object.entries(body).filter(([k]) => EDITABLE.includes(k as keyof Package))) as PackageUpdate
+    const next = { ...pkg, ...changes }
+    if (changes.address !== undefined && !fullAddress(next.address)) return apiError(422, 'validation_error', 'Address is required')
+    if (!shippable(next.status, next.courier, next.tracking_number)) return apiError(422, 'validation_error', SHIPPING_REQUIRED)
+
     const previousStatus = pkg.status
-    Object.assign(pkg, body)
+    Object.assign(pkg, changes)
     if (pkg.status !== 'preparing' && !pkg.sent_at) pkg.sent_at = nowIso()
     if (pkg.status === 'delivered' && !pkg.delivered_at) pkg.delivered_at = nowIso()
     logActivity(pkg.influencer_id, 'package_updated', {
       package_id: pkg.id,
-      ...(pkg.status !== previousStatus ? { status: pkg.status } : { fields: Object.keys(body) }),
+      ...(pkg.status !== previousStatus ? { status: pkg.status } : { fields: Object.keys(changes) }),
     })
 
     const inf = findInfluencer(pkg.influencer_id)

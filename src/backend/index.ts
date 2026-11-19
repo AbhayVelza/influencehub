@@ -1,7 +1,7 @@
 import { getResponse } from 'msw'
 import { currentAuthUid } from '@/lib/auth'
 import { ACTING_AS_HEADER } from '@/lib/env'
-import { resolveActingUid, setActingUid } from './db'
+import { db, isRead, readChangedData, resolveActingUid, setActingUid } from './db'
 import { handlers } from './handlers'
 import { commitJobs, executeJob, revertJobs } from './jobs'
 import { connect, flush, resetPrototypeData, revert, saveFile } from './local-store'
@@ -39,7 +39,7 @@ export function handleApiRequest(request: Request): Promise<Response> {
           executeJob(data.job_id)
         }
       }
-      await flush()
+      if (!isRead(request) || readChangedData()) await flush()
       commitJobs()
       return response
     } catch {
@@ -52,6 +52,14 @@ export function handleApiRequest(request: Request): Promise<Response> {
   })
 }
 
-/** Prototype mode: deletes this browser's workspace (data and files; the caller reloads the app), and keeps an
- * uploaded document file in this browser. */
-export { resetPrototypeData, saveFile as saveDocumentFile }
+/** Prototype mode: keeps an uploaded document file in this browser; its metadata can then be saved (FR-DOC-02). */
+export function saveDocumentFile(key: string, file: Blob): Promise<void> {
+  return inTurn(async () => {
+    await saveFile(key, file)
+    const upload = db.documentUploads.get(key)
+    if (upload) upload.uploaded = true
+  })
+}
+
+/** Prototype mode: deletes this browser's workspace (data and files; the caller reloads the app). */
+export { resetPrototypeData }

@@ -1,5 +1,5 @@
 import type postgres from 'postgres'
-import { attachDocumentSummary, db, defaultSettings, everOnboarded, type StoredCategory, type StoredDocument } from '@/backend/db'
+import { attachDocumentSummary, db, defaultSettings, everOnboarded, type StoredCategory, type StoredDocument, type StoredJob } from '@/backend/db'
 import { pairId } from '@/backend/duplicates'
 import { audienceOf } from '@/lib/platforms'
 import type { Activity, CallLog, Influencer, InstagramSettings, Package, SavedView, SocialAccount, Stage, User } from '@/types'
@@ -40,6 +40,8 @@ export const TABLES: TableSpec[] = [
   { name: 'instagram_settings', pk: ['id'], order: 'id' },
   { name: 'sync_runs', pk: ['started_at'], order: 'started_at DESC' },
   { name: 'schema_migrations', pk: ['version'], order: 'version' },
+  { name: 'jobs', pk: ['id'], json: ['result', 'error'], order: 'seq' },
+  { name: 'csv_uploads', pk: ['key'], order: 'seq' },
 ]
 
 export const spec = (table: string) => TABLES.find((t) => t.name === table)!
@@ -57,6 +59,33 @@ export function canonical(value: unknown): string {
       ? Object.fromEntries(Object.entries(v as Row).sort(([a], [b]) => a.localeCompare(b)))
       : v,
   )
+}
+
+/**
+ * Whether two rows of a table hold the same data: what the store checks for every row after each write. Compares
+ * column by column (`canonical` text for every row took ~9 s at 100,000 influencers): plain values with ===, arrays
+ * and jsonb values by their canonical JSON. A column missing on one side counts as NULL.
+ */
+export function sameRow(a: Row, b: Row): boolean {
+  for (const k in a) if (!sameValue(a[k], b[k])) return false
+  for (const k in b) if (!(k in a) && !sameValue(undefined, b[k])) return false
+  return true
+}
+
+function sameValue(x: unknown, y: unknown): boolean {
+  if (x === y) return true
+  if (x == null || y == null) return x == null && y == null
+  if (typeof x !== 'object' || typeof y !== 'object') return false
+  if (Array.isArray(x) || Array.isArray(y)) {
+    if (!Array.isArray(x) || !Array.isArray(y) || x.length !== y.length) return false
+    return x.every((v, i) => sameValue(v, y[i]))
+  }
+  // jsonb objects: same keys (in any order), same values; an undefined value is an absent key, as in JSON.
+  const a = x as Row
+  const b = y as Row
+  for (const k in a) if (a[k] !== undefined && !sameValue(a[k], b[k])) return false
+  for (const k in b) if (b[k] !== undefined && a[k] === undefined) return false
+  return true
 }
 
 /** A row as PostgreSQL returns it, in the shape toRows produces (ISO strings, yyyy-MM-dd dates, numbers). */
@@ -224,6 +253,8 @@ export function toRows(): Rows {
     put('sync_runs', { started_at: run.started_at, finished_at: run.finished_at, status: run.status, synced: run.synced, failed: run.failed })
   }
   if (db.migrations.categories_upgraded) put('schema_migrations', { version: 'categories_upgraded' })
+  for (const j of db.jobs) put('jobs', { id: j.id, status: j.status, result: j.result, error: j.error, created_at: j.created_at })
+  for (const [key, text] of db.uploads) put('csv_uploads', { key, text })
   return out
 }
 
@@ -339,6 +370,10 @@ export function fromRows(rows: Rows) {
     : defaults.instagramSettings
   const versions = new Set(list(rows, 'schema_migrations').map((r) => r.version))
   db.migrations = { categories_upgraded: versions.has('categories_upgraded') }
+  db.jobs = list(rows, 'jobs').map((r) => ({
+    id: r.id, status: r.status, result: r.result, error: r.error, created_at: r.created_at,
+  }) as StoredJob)
+  db.uploads = new Map(list(rows, 'csv_uploads').map((r) => [r.key as string, r.text as string]))
 
   // Documents summaries are attached once every collection (documents included) is in place.
   for (const inf of db.influencers) attachDocumentSummary(inf)

@@ -1,7 +1,6 @@
-import { TZDate } from '@date-fns/tz'
-import { addDays, addWeeks, startOfDay, startOfMonth, startOfWeek } from 'date-fns'
+import { TZDate, tzOffset } from '@date-fns/tz'
+import { startOfMonth, startOfWeek } from 'date-fns'
 import { APP_TIMEZONE, CALL_OUTCOMES, PACKAGE_STATUSES } from '@/lib/constants'
-import { dayKey } from '@/lib/format'
 import { PLATFORMS, primaryAccount, toRef } from '@/lib/platforms'
 import { ONBOARDED_OR_LATER } from '@/lib/stages'
 import type { Activity, CallLog, DashboardSummary, Influencer, Package } from '@/types'
@@ -16,6 +15,13 @@ export const FOLLOWER_BANDS: { label: string; min: number }[] = [
   { label: '500K+', min: 500_000 },
 ]
 
+/**
+ * An instant as stored timestamps are written (UTC, `…Z`), so the two compare as strings. A TZDate's own
+ * toISOString keeps its offset (`…+05:30`), which compares wrongly against stored times.
+ */
+export const utcIso = (d: Date) => new Date(d.getTime()).toISOString()
+
+const DAY_MS = 86_400_000
 const WEEKS = 12
 const DAYS = 30
 
@@ -46,25 +52,34 @@ export function dashboardExtras(
   const now = new TZDate(Date.now(), APP_TIMEZONE)
   const onboardedMoves = activities.filter((a) => a.type === 'stage_changed' && a.payload.to === 'onboarded')
 
+  // Calendar days in Asia/Kolkata, as day numbers: it has no daylight saving, so one offset holds, and plain arithmetic
+  // replaces a time-zone conversion per record (seconds at 100,000 influencers).
+  const offset = tzOffset(APP_TIMEZONE, now) * 60_000
+  const dayNo = (iso: string) => Math.floor((Date.parse(iso) + offset) / DAY_MS)
+  const keyOf = (day: number) => new Date(day * DAY_MS).toISOString().slice(0, 10)
+  // 1 Jan 1970 was a Thursday: Monday-based weekday = (day + 3) % 7.
+  const mondayOf = (day: number) => day - ((day + 3) % 7)
+  const today = dayNo(new Date().toISOString())
+
   // Onboarded per week: the last 12 weeks, oldest first, counting each move onto Onboarded.
-  const firstWeek = addWeeks(startOfWeek(now, { weekStartsOn: 1 }), -(WEEKS - 1))
-  const weekKeys = Array.from({ length: WEEKS }, (_, i) => dayKey(addWeeks(firstWeek, i).toISOString()))
-  const weekOf = (iso: string) => dayKey(startOfWeek(new TZDate(iso, APP_TIMEZONE), { weekStartsOn: 1 }).toISOString())
+  const firstWeek = mondayOf(today) - 7 * (WEEKS - 1)
+  const weekKeys = Array.from({ length: WEEKS }, (_, i) => keyOf(firstWeek + 7 * i))
   const perWeek = new Map(weekKeys.map((k) => [k, 0]))
   for (const a of onboardedMoves) {
-    const k = weekOf(a.created_at)
+    const k = keyOf(mondayOf(dayNo(a.created_at)))
     if (perWeek.has(k)) perWeek.set(k, perWeek.get(k)! + 1)
   }
 
   // Calls per day: the last 30 days, oldest first.
-  const firstDay = addDays(startOfDay(now), -(DAYS - 1))
-  const dayKeys = Array.from({ length: DAYS }, (_, i) => dayKey(addDays(firstDay, i).toISOString()))
+  const firstDay = today - (DAYS - 1)
+  const dayKeys = Array.from({ length: DAYS }, (_, i) => keyOf(firstDay + i))
   const perDay = new Map(dayKeys.map((k) => [k, 0]))
   for (const c of calls) {
-    const k = dayKey(c.created_at)
+    const k = keyOf(dayNo(c.created_at))
     if (perDay.has(k)) perDay.set(k, perDay.get(k)! + 1)
   }
-  const since30 = firstDay.toISOString()
+  const firstDayIso = new Date(firstDay * DAY_MS - offset).toISOString()
+  const since30 = firstDayIso
 
   const bandOf = (reach: number) => {
     let band = FOLLOWER_BANDS[0].label
@@ -76,9 +91,38 @@ export function dashboardExtras(
     if (inf.total_reach != null) bands.set(bandOf(inf.total_reach), bands.get(bandOf(inf.total_reach))! + 1)
   }
 
-  const monthStart = startOfMonth(now).toISOString()
-  const weekStart = startOfWeek(now, { weekStartsOn: 1 }).toISOString()
+  const monthStart = utcIso(startOfMonth(now))
+  const weekStart = utcIso(startOfWeek(now, { weekStartsOn: 1 }))
   const byId = new Map(influencers.map((i) => [i.id, i]))
+
+  // One pass over each list instead of one per platform or team member.
+  const perPlatform = new Map<string, number>()
+  for (const inf of influencers) {
+    const platforms = inf.accounts.length === 1 ? [inf.accounts[0]!.platform] : new Set(inf.accounts.map((a) => a.platform))
+    for (const platform of platforms) perPlatform.set(platform, (perPlatform.get(platform) ?? 0) + 1)
+  }
+  const members = new Map<string, { owned: number; calls: number; onboarded: number; kits: number }>()
+  const perMember = (id: string) => {
+    let m = members.get(id)
+    if (!m) members.set(id, (m = { owned: 0, calls: 0, onboarded: 0, kits: 0 }))
+    return m
+  }
+  const ownerOf = new Map<string, string>()
+  if (showTeam) {
+    for (const inf of db.influencers) {
+      if (!inf.assigned_to) continue
+      perMember(inf.assigned_to).owned += 1
+      ownerOf.set(inf.id, inf.assigned_to)
+    }
+    for (const c of db.calls) if (c.created_at >= weekStart) perMember(c.called_by).calls += 1
+    for (const a of db.activities) {
+      if (a.actor && a.type === 'stage_changed' && a.payload.to === 'onboarded' && a.created_at >= monthStart) perMember(a.actor).onboarded += 1
+    }
+    for (const p of db.packages) {
+      const owner = ownerOf.get(p.influencer_id)
+      if (owner && p.sent_at && p.sent_at >= monthStart) perMember(owner).kits += 1
+    }
+  }
 
   // Latest move onto Onboarded per creator still onboarded or later, newest first.
   const lastOnboarded = new Map<string, string>()
@@ -96,10 +140,7 @@ export function dashboardExtras(
   return {
     onboarded_by_week: weekKeys.map((week_start) => ({ week_start, count: perWeek.get(week_start)! })),
     calls_by_day: dayKeys.map((day) => ({ day, count: perDay.get(day)! })),
-    by_platform: PLATFORMS.map((platform) => ({
-      platform,
-      count: influencers.filter((i) => i.accounts.some((a) => a.platform === platform)).length,
-    }))
+    by_platform: PLATFORMS.map((platform) => ({ platform, count: perPlatform.get(platform) ?? 0 }))
       .filter((p) => p.count > 0)
       .sort((a, b) => b.count - a.count),
     follower_bands: FOLLOWER_BANDS.map((b) => ({ band: b.label, count: bands.get(b.label)! })),
@@ -111,21 +152,15 @@ export function dashboardExtras(
     team: showTeam
       ? db.team
           .filter((m) => m.is_active && m.role !== 'brand_specialist')
-          .map((m) => {
-            const owned = new Set(db.influencers.filter((i) => i.assigned_to === m.id).map((i) => i.id))
-            return {
-              user_id: m.id,
-              name: m.name,
-              role: m.role,
-              owned: owned.size,
-              calls_this_week: db.calls.filter((c) => c.called_by === m.id && c.created_at >= weekStart).length,
-              onboarded_this_month: db.activities.filter(
-                (a) => a.actor === m.id && a.type === 'stage_changed' && a.payload.to === 'onboarded' && a.created_at >= monthStart,
-              ).length,
-              kits_sent_this_month: db.packages.filter((p) => owned.has(p.influencer_id) && !!p.sent_at && p.sent_at >= monthStart)
-                .length,
-            }
-          })
+          .map((m) => ({
+            user_id: m.id,
+            name: m.name,
+            role: m.role,
+            owned: perMember(m.id).owned,
+            calls_this_week: perMember(m.id).calls,
+            onboarded_this_month: perMember(m.id).onboarded,
+            kits_sent_this_month: perMember(m.id).kits,
+          }))
           .sort((a, b) => b.onboarded_this_month - a.onboarded_this_month || b.calls_this_week - a.calls_this_week || a.name.localeCompare(b.name))
       : null,
     recently_onboarded: recently.map(({ inf, at }) => {

@@ -6,7 +6,7 @@ import { Hono } from 'hono'
 import { bodyLimit } from 'hono/body-limit'
 import { cors } from 'hono/cors'
 import { getResponse } from 'msw'
-import { db, resolveActingUid, setActingUid } from '@/backend/db'
+import { db, isRead, readChangedData, resolveActingUid, setActingUid } from '@/backend/db'
 import { handlers } from '@/backend/handlers'
 import { commitJobs, executeJob, revertJobs } from '@/backend/jobs'
 import { apiError } from '@/backend/utils'
@@ -42,7 +42,8 @@ function handleApiRequest(request: Request): Promise<Response> {
           executeJob(data.job_id)
         }
       }
-      await pgStore.flush()
+      // A read saves only when it changed something by itself (auto-release, link expiry, a job).
+      if (!isRead(request) || readChangedData()) await pgStore.flush()
       commitJobs()
       return response
     } catch (err) {
@@ -133,6 +134,9 @@ app.put(`${FILES}*`, async (c) => {
       })
       return failed('File upload', err)
     }
+    await inTurn(async () => {
+      upload.uploaded = true
+    })
     return c.body(null, 204)
   } finally {
     fileTransferEnded()

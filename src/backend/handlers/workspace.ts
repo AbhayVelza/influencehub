@@ -1,14 +1,16 @@
-import { TZDate } from '@date-fns/tz'
-import { differenceInCalendarDays, startOfMonth, startOfWeek } from 'date-fns'
+import { TZDate, tzOffset } from '@date-fns/tz'
+import { startOfMonth, startOfWeek } from 'date-fns'
 import { http, HttpResponse } from 'msw'
-import { ALL_STAGES, APP_TIMEZONE, DEFAULT_CATEGORIES, ROLE_LABEL, SYNC_INTERVAL_OPTIONS } from '@/lib/constants'
+import { ALL_STAGES, APP_TIMEZONE, PIPELINE_COLUMN_LIMIT, DEFAULT_CATEGORIES, ROLE_LABEL, SYNC_INTERVAL_OPTIONS } from '@/lib/constants'
 import { can } from '@/lib/permissions'
 import { ONBOARDED_OR_LATER } from '@/lib/stages'
 import type {
+  Activity,
   Category,
   CategoryCreate,
   CategoryUpdate,
   DashboardSummary,
+  Influencer,
   InstagramSettingsUpdate,
   PipelineResponse,
   PoolSettings,
@@ -20,11 +22,11 @@ import type {
   TeamMemberUpdate,
   User,
 } from '@/types'
-import { currentUser, db, everOnboarded, findInfluencer, nextId, nowIso, stageEnteredAt, toSummary, type StoredCategory } from '../db'
+import { currentUser, db, everOnboarded, findInfluencer, nextId, noteChangedOnRead, nowIso, stageEnteredAt, toSummary, type StoredCategory } from '../db'
 import { primaryAccount, toRef } from '@/lib/platforms'
-import { dashboardExtras, onboardedOnlyExtras } from '../dashboard'
-import { hasCurrentAgreement } from '../documents'
-import { canSee, filterInfluencers, poolInfluencers, visibleInfluencers } from '../domain'
+import { dashboardExtras, onboardedOnlyExtras, utcIso } from '../dashboard'
+import { liveDocuments } from '../documents'
+import { filterInfluencers, poolInfluencers, visibleInfluencers } from '../domain'
 import { all, api, apiError, forbidden, notFound, readJson } from '../utils'
 import { followUpBucket, isMine, withInfluencer } from './calls'
 
@@ -53,6 +55,8 @@ function upgradeLegacyCategories() {
   const removalPending = LEGACY_REMOVED.some((n) => db.categories.some((c) => c.name === n && c.is_active))
   if (renamePending || removalPending) moveLegacyCategories(has)
   db.migrations = { ...db.migrations, categories_upgraded: true }
+  // It runs inside a read (GET /categories): make sure the API server saves it.
+  noteChangedOnRead()
 }
 
 function moveLegacyCategories(has: (name: string) => StoredCategory | undefined) {
@@ -82,6 +86,19 @@ function cleanLocation(value: unknown): string | null | false {
   if (value == null) return null
   if (typeof value !== 'string' || value.trim().length > 80) return false
   return value.trim() || null
+}
+
+/** The `n` newest activities, newest first, without sorting the whole log (ISO timestamps compare as strings). */
+function newest(activities: Activity[], n: number): Activity[] {
+  const top: Activity[] = []
+  for (const a of activities) {
+    if (top.length === n && a.created_at <= top[n - 1]!.created_at) continue
+    let i = top.length
+    while (i > 0 && top[i - 1]!.created_at < a.created_at) i--
+    top.splice(i, 0, a)
+    if (top.length > n) top.pop()
+  }
+  return top
 }
 
 export const workspaceHandlers = [
@@ -273,25 +290,32 @@ export const workspaceHandlers = [
     const params = new URL(request.url).searchParams
     params.delete('stage') // every column is always returned
     const list = filterInfluencers(params, visibleInfluencers())
-    const now = new Date()
+    // Calendar days in Asia/Kolkata (no daylight saving, so one offset holds); date-fns per card costs ~1 s at 100k.
+    const offset = tzOffset(APP_TIMEZONE, new Date()) * 60_000
+    const dayOf = (ms: number) => Math.floor((ms + offset) / 86_400_000)
+    const today = dayOf(Date.now())
+    const byStage = new Map(ALL_STAGES.map((stage) => [stage, [] as { i: Influencer; days: number }[]]))
+    for (const i of list) byStage.get(i.stage)?.push({ i, days: Math.max(0, today - dayOf(Date.parse(stageEnteredAt(i)))) })
     const body: PipelineResponse = {
       columns: ALL_STAGES.map((stage) => {
-        const items = list
-          .filter((i) => i.stage === stage)
-          .map((i) => ({
+        const inStage = byStage.get(stage)!.sort((a, b) => b.days - a.days)
+        // A column shows its longest-waiting cards; `count` is the whole column (filters narrow it).
+        const items = inStage.slice(0, PIPELINE_COLUMN_LIMIT).map(({ i, days }) => {
+          const primary = primaryAccount(i)
+          return {
             id: i.id,
             name: i.name,
-            primary_account: primaryAccount(i) ? toRef(primaryAccount(i)!) : null,
+            primary_account: primary ? toRef(primary) : null,
             profile_pic_url: i.profile_pic_url,
             total_reach: i.total_reach,
             category: i.category,
             assigned_to: i.assigned_to,
             stage: i.stage,
-            days_in_stage: Math.max(0, differenceInCalendarDays(now, new Date(stageEnteredAt(i)))),
+            days_in_stage: days,
             ever_onboarded: everOnboarded(i),
-          }))
-          .sort((a, b) => b.days_in_stage - a.days_in_stage)
-        return { stage, count: items.length, items }
+          }
+        })
+        return { stage, count: inStage.length, items }
       }),
     }
     return HttpResponse.json(body)
@@ -302,21 +326,19 @@ export const workspaceHandlers = [
     const user = currentUser()
     const me = user.id
     const influencers = visibleInfluencers(user)
-    const visible = (influencerId: string) => {
-      const inf = findInfluencer(influencerId)
-      return !!inf && canSee(user, inf)
-    }
+    const visibleIds = new Set(influencers.map((i) => i.id))
+    const visible = (influencerId: string) => visibleIds.has(influencerId)
+    const withAgreement = new Set(liveDocuments().filter((d) => d.type === 'agreement' && d.is_current).map((d) => d.influencer_id))
     const activities = db.activities.filter((a) => visible(a.influencer_id))
     const calls = db.calls.filter((c) => visible(c.influencer_id))
     const now = new TZDate(Date.now(), APP_TIMEZONE)
-    const weekStart = startOfWeek(now, { weekStartsOn: 1 }).toISOString()
-    const monthStart = startOfMonth(now).toISOString()
-    const movedTo = (stage: string, since: string) =>
-      new Set(
-        activities
-          .filter((a) => a.type === 'stage_changed' && a.payload.to === stage && a.created_at >= since)
-          .map((a) => a.influencer_id),
-      ).size
+    const weekStart = utcIso(startOfWeek(now, { weekStartsOn: 1 }))
+    const monthStart = utcIso(startOfMonth(now))
+    // Stage moves this month (week starts can fall in the month before, so from whichever is earlier).
+    const since = weekStart < monthStart ? weekStart : monthStart
+    const recentMoves = activities.filter((a) => a.created_at >= since && a.type === 'stage_changed')
+    const movedTo = (stage: string, from: string) =>
+      new Set(recentMoves.filter((a) => a.payload.to === stage && a.created_at >= from).map((a) => a.influencer_id)).size
 
     const tally = (key: (i: (typeof db.influencers)[number]) => string | null) => {
       const counts = new Map<string, number>()
@@ -350,7 +372,7 @@ export const workspaceHandlers = [
         ).length,
         follow_ups_today: calls.filter((c) => followUpBucket(c) === 'today').length,
         onboarded_without_agreement: influencers.filter(
-          (i) => ONBOARDED_OR_LATER.includes(i.stage) && i.assigned_to !== null && !hasCurrentAgreement(i.id),
+          (i) => ONBOARDED_OR_LATER.includes(i.stage) && i.assigned_to !== null && !withAgreement.has(i.id),
         ).length,
       },
       funnel: ALL_STAGES.map((stage) => ({ stage, count: influencers.filter((i) => i.stage === stage).length })),
@@ -359,13 +381,9 @@ export const workspaceHandlers = [
         .slice(0, 10)
         .map(([city, count]) => ({ city, count })),
       my_follow_ups: withInfluencer(mine).slice(0, 10),
-      recent_activity: [...activities]
-        .sort((a, b) => b.created_at.localeCompare(a.created_at))
-        .flatMap((a) => {
-          const inf = findInfluencer(a.influencer_id)
-          return inf ? [{ ...a, influencer: toSummary(inf) }] : []
-        })
-        .slice(0, 20),
+      // `activities` holds only influencers that exist (`visible`), so the newest 20 are the 20 shown.
+      recent_activity: newest(activities, 20)
+        .map((a) => ({ ...a, influencer: toSummary(findInfluencer(a.influencer_id)!) })),
       ...dashboardExtras(
         influencers,
         activities,

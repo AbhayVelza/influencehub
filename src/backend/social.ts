@@ -74,14 +74,18 @@ export function syncAccount(accountId: string): SyncResult {
 }
 
 /** Connect links lapse after 7 days. Runs before every request (there is no scheduler without a server). */
-export function expireConnectLinks(now = Date.now()) {
+/** Returns how many links it expired (the API server saves after a read only when something changed). */
+export function expireConnectLinks(now = Date.now()): number {
+  let expired = 0
   for (const inf of db.influencers) {
     for (const a of inf.accounts) {
       if (a.connect_status === 'link_sent' && a.connect_link_expires_at && Date.parse(a.connect_link_expires_at) < now) {
         a.connect_status = 'expired'
+        expired += 1
       }
     }
   }
+  return expired
 }
 
 export const CONNECT_LINK_DAYS = 7

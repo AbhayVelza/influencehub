@@ -593,7 +593,9 @@ export interface PipelineCard {
 
 export interface PipelineColumn {
   stage: Stage
+  /** Every influencer in this stage (that matches the filters). */
   count: number
+  /** At most PIPELINE_COLUMN_LIMIT of them, longest in the stage first. */
   items: PipelineCard[]
 }
 

@@ -50,6 +50,9 @@ interface Snapshot {
   /** Absent in snapshots saved before migrations were tracked. */
   migrations?: typeof db.migrations
   dismissed: string[]
+  /** Absent in snapshots saved before jobs and pending CSV files were kept. */
+  jobs?: typeof db.jobs
+  uploads?: [string, string][]
 }
 
 function emptyWorkspace(): Snapshot {
@@ -82,6 +85,8 @@ function snapshot(): Snapshot {
     instagramSettings: db.instagramSettings,
     migrations: db.migrations,
     dismissed: [...db.dismissedDuplicates],
+    jobs: db.jobs,
+    uploads: [...db.uploads],
   }
 }
 
@@ -100,6 +105,8 @@ function load(data: Snapshot) {
     instagramSettings: { ...defaultSettings().instagramSettings, ...data.instagramSettings },
     migrations: { ...defaultSettings().migrations, ...data.migrations },
     dismissedDuplicates: new Set(data.dismissed),
+    jobs: data.jobs ?? [],
+    uploads: new Map(data.uploads ?? []),
   })
 }
 
