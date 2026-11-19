@@ -12,6 +12,7 @@ import type {
   DashboardSummary,
   Influencer,
   InstagramSettingsUpdate,
+  Integrations,
   PipelineResponse,
   PoolSettings,
   Role,
@@ -25,6 +26,7 @@ import type {
 import { currentUser, db, everOnboarded, findInfluencer, nextId, noteChangedOnRead, nowIso, stageEnteredAt, toSummary, type StoredCategory } from '../db'
 import { primaryAccount, toRef } from '@/lib/platforms'
 import { dashboardExtras, onboardedOnlyExtras, utcIso } from '../dashboard'
+import { connectedPlatforms } from '../social'
 import { liveDocuments } from '../documents'
 import { filterInfluencers, poolInfluencers, visibleInfluencers } from '../domain'
 import { all, api, apiError, forbidden, notFound, readJson } from '../utils'
@@ -215,6 +217,9 @@ export const workspaceHandlers = [
     if (body.is_active !== undefined) category.is_active = body.is_active
     return HttpResponse.json(withCount(category))
   }),
+
+  // ---- What the API server is connected to (everyone: it decides which options the screens offer) ----------
+  http.get(api('/integrations'), async () => HttpResponse.json({ profile_lookup: connectedPlatforms() } satisfies Integrations)),
 
   // ---- Instagram integration settings -------------------------------------
   http.get(api('/settings/instagram'), async () => {

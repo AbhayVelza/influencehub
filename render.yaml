@@ -19,3 +19,8 @@ services:
       # The Vercel address(es) the app is served from, comma-separated, e.g. https://influencehub.vercel.app
       - key: CORS_ORIGIN
         sync: false
+      # Instagram lookup and sync (docs/server.md, "Instagram"): the permanent Page token and our Instagram account's id.
+      - key: META_ACCESS_TOKEN
+        sync: false
+      - key: META_IG_USER_ID
+        sync: false

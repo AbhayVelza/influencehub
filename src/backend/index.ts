@@ -36,7 +36,7 @@ export function handleApiRequest(request: Request): Promise<Response> {
       if (response.status === 202) {
         const data = await response.clone().json().catch(() => null)
         if (data && typeof data === 'object' && 'job_id' in data && typeof data.job_id === 'string') {
-          executeJob(data.job_id)
+          await executeJob(data.job_id)
         }
       }
       if (!isRead(request) || readChangedData()) await flush()

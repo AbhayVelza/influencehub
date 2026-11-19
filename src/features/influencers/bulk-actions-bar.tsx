@@ -24,6 +24,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { useProfileLookup } from '@/hooks/use-integrations'
 import { useMe } from '@/hooks/use-me'
 import { useTeam } from '@/hooks/use-team'
 import { ALL_STAGES, STAGE_META } from '@/lib/constants'
@@ -68,6 +69,7 @@ export function BulkActionsBar({ rows, onClear, onSettled }: BulkActionsBarProps
   const queryClient = useQueryClient()
   const { exportInfluencers, isExporting } = useExportInfluencers()
   const [isSyncing, setIsSyncing] = useState(false)
+  const lookup = useProfileLookup()
   const [confirmDelete, setConfirmDelete] = useState(false)
 
   const ids = rows.map((r) => r.id)
@@ -128,6 +130,7 @@ export function BulkActionsBar({ rows, onClear, onSettled }: BulkActionsBarProps
     try {
       const res = await bulk.mutateAsync({ ids, action: 'sync' })
       let synced = 0
+      let queued = 0
       const failed: { id: string; message: string }[] = [...res.failed]
       if (res.job_id) {
         const job = await waitForJob<BulkSyncResult>(res.job_id, (j) =>
@@ -135,9 +138,18 @@ export function BulkActionsBar({ rows, onClear, onSettled }: BulkActionsBarProps
         )
         if (job.status === 'failed' || !job.result) throw new Error(job.error?.message ?? 'Sync failed')
         synced = job.result.synced
+        queued = job.result.queued ?? 0
         failed.push(...job.result.failed)
       }
       toast.dismiss(toastId)
+      if (queued) {
+        // Instagram connected: the server refreshes them in the background, paced by Meta's rate limit.
+        toast.success(`${plural(queued, 'account')} queued for Instagram sync`, {
+          description: 'Stats update over the next hours (about 90 accounts an hour).',
+        })
+        onSettled(failed.map((f) => f.id))
+        return
+      }
       report(synced, withName(failed), {
         all: `${plural(synced, 'account')} synced`,
         none: 'No accounts synced',
@@ -152,6 +164,18 @@ export function BulkActionsBar({ rows, onClear, onSettled }: BulkActionsBarProps
       // Sync status flips to "pending" immediately and to "synced" when the job ends.
       void queryClient.invalidateQueries({ queryKey: queryKeys.influencers })
     }
+  }
+
+  /** Typed-in Instagram accounts switch to auto-sync (when Instagram is connected). */
+  const autoSync = async () => {
+    const res = await run(() => bulk.mutateAsync({ ids, action: 'auto_sync' }))
+    if (!res) return
+    report(res.succeeded.length, withName(res.failed), {
+      all: `${plural(res.succeeded.length, 'influencer')} switched to auto-sync; stats update over the next hours`,
+      none: 'Nothing switched: no typed-in Instagram accounts in the selection',
+      partial: `${res.succeeded.length} switched to auto-sync, ${res.failed.length} unchanged`,
+    })
+    onSettled(res.failed.map((f) => f.id))
   }
 
   const remove = async () => {
@@ -232,6 +256,13 @@ export function BulkActionsBar({ rows, onClear, onSettled }: BulkActionsBarProps
         <RefreshCw className={isSyncing ? 'animate-spin' : undefined} />
         Sync IG
       </Button>
+
+      {lookup.includes('instagram') && (
+        <Button variant="outline" size="sm" disabled={busy} onClick={autoSync}>
+          <RefreshCw />
+          Auto-sync IG
+        </Button>
+      )}
 
       {can(role, 'data:export') && (
         <Button variant="outline" size="sm" disabled={busy} onClick={() => exportInfluencers({ ids })}>

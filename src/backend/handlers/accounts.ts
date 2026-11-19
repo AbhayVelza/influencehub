@@ -4,7 +4,7 @@ import type { AccountCreate, AccountUpdate, Platform } from '@/types'
 import { findAccount, logActivity, nowIso, refreshDerived } from '../db'
 import { findVisible, validateAccounts } from '../domain'
 import { createJob } from '../jobs'
-import { buildAccount, metricsFor, syncAccount } from '../social'
+import { buildAccount, metricsFor, switchToAutoSync, syncAccount } from '../social'
 import { all, api, apiError, notFound, readJson } from '../utils'
 import { accountConflict } from './influencers'
 
@@ -31,7 +31,7 @@ export const accountHandlers = [
     return HttpResponse.json(account, { status: 201 })
   }),
 
-  /** Manual accounts only: the stats are typed in. */
+  /** Manual accounts only: the stats are typed in, or `sync_method: 'lookup'` hands the account to auto-sync. */
   http.patch(api('/accounts/:id'), async ({ params, request }) => {
     const found = visibleAccount(String(params.id))
     if (!found) return notFound('Account')
@@ -40,6 +40,12 @@ export const accountHandlers = [
       return apiError(422, 'not_manual', 'Only manual accounts can be edited; the others come from the platform')
     }
     const body = await readJson<Partial<AccountUpdate>>(request)
+    if (body.sync_method === 'lookup') {
+      if (!switchToAutoSync(account)) return apiError(422, 'not_connected', 'Auto-sync isn’t connected for this platform')
+      influencer.updated_at = nowIso()
+      logActivity(influencer.id, 'updated', { fields: [`${PLATFORM_META[account.platform].label}: auto-sync on`] })
+      return HttpResponse.json(account)
+    }
     const merged = { ...account.metrics, ...(body.metrics ?? {}) } as Record<string, unknown>
     account.metrics = metricsFor(account.platform as Platform, merged) as typeof account.metrics
     influencer.updated_at = nowIso()

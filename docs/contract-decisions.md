@@ -128,7 +128,7 @@ Record any new API decision here. Dates and documents: `dates-and-documents.md`.
   validated with the same rules as the forms (`src/lib/csv-import.ts`); a missing or unknown category is a row error (no fallback category); a row
   repeating an account from earlier in the file is a duplicate; a row with any account already in the CRM is that
   creator: `skip` counts it as a duplicate, `update` overwrites mapped non-empty fields, merges tags and adds its
-  new accounts (never its `created_at`). `fetch_profiles` syncs the lookup accounts afterwards. Client limits: 2 MB, 5,000 rows.
+  new accounts (never its `created_at`). `fetch_profiles` turns the rows' accounts on connected platforms (GET /integrations) into lookup accounts and queues them for the background sync (`profiles.queued`); typed-in stats stay until the first sync. Client limits: 2 MB, 5,000 rows.
   Import/presign are manager/admin only. The preview flags rows matching existing creators (duplicates check).
 - Export CSV columns: name, category, total_reach, phone, email, city, state, country, stage, assigned_to, tags,
   created_at (dd/MM/yyyy), then one column per platform (handles joined with "; ").
@@ -303,3 +303,22 @@ Rules the forms already applied are now also checked by the handlers, so every c
 - **Pipeline:** each column returns at most `PIPELINE_COLUMN_LIMIT` (200) cards, longest in the stage first; `count`
   is the whole column. Days in stage are calendar days in Asia/Kolkata on the server too.
 - **Jobs:** a finished job's outcome is saved for an hour, so `GET /jobs/{id}` still answers after a restart.
+
+## Instagram lookup and sync (Meta Business Discovery, 19/11/2026)
+
+- `GET /integrations` → `{profile_lookup: Platform[]}`: platforms the API server can look up and sync now
+  (`['instagram']` when `META_ACCESS_TOKEN` and `META_IG_USER_ID` are set; `[]` in prototype mode). Screens show
+  "Fetch public profiles", **Auto-sync** and **Auto-sync IG** only for these.
+- `POST /lookup` and `POST /accounts/{id}/sync` fetch through `server/meta.ts`. Errors: `not_found` (no Business or
+  Creator account with that handle: personal profiles can't be looked up), `rate_limited`, `not_connected`
+  (token expired or missing a permission), `unavailable`. A failed sync sets `sync_status: 'error'` and keeps the stats.
+- Stats kept for Instagram: followers, following, posts, and from the last 12 posts `avg_likes`, `avg_comments`,
+  `engagement_rate` = (avg likes + avg comments) / followers × 100 (posts with hidden likes are left out). Also the
+  display name, picture, bio and website. `is_verified` and `account_type` aren't available.
+- Bulk `sync` on a connected platform queues instead of fetching (`BulkSyncResult.queued`).
+- `PATCH /accounts/{id} {sync_method: 'lookup'}` and bulk `auto_sync` switch typed-in (manual) accounts on a
+  connected platform to auto-sync and queue them; bulk rows with nothing to switch fail with `nothing_to_switch`.
+- Background sync (`server/sync-worker.ts`): one account about every 40 s, paused for 15 min when Meta reports 75% of
+  the hourly allowance used or rate-limits; order: queued, never synced, then older than Settings → Instagram's
+  interval. Accounts that fail wait one interval. Each hour with work is a row in Settings → Instagram → Recent runs.
+

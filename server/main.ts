@@ -8,12 +8,15 @@ import { cors } from 'hono/cors'
 import { getResponse } from 'msw'
 import { db, isRead, readChangedData, setActingUid } from '@/backend/db'
 import { handlers } from '@/backend/handlers'
+import { setProfileSource } from '@/backend/social'
 import { commitJobs, executeJob, revertJobs } from '@/backend/jobs'
 import { apiError } from '@/backend/utils'
 import { MAX_DOCUMENT_BYTES } from '@/lib/documents'
 import { API_BASE } from '@/lib/env'
 import { authRoutes, ensureFirstAdmin, sessionUid } from './auth'
+import { instagramSource } from './meta'
 import * as pgStore from './pg-store'
+import { startInstagramSync, stopInstagramSync } from './sync-worker'
 
 // The API server. It runs the same handlers the prototype runs in the browser (src/backend/handlers: stages, claims,
 // scoping, permissions) over a working copy of the workspace that pg-store.ts loads from and saves to PostgreSQL.
@@ -44,7 +47,7 @@ function handleApiRequest(request: Request, uid: string | undefined): Promise<Re
       if (response.status === 202) {
         const data = await response.clone().json().catch(() => null)
         if (data && typeof data === 'object' && 'job_id' in data && typeof data.job_id === 'string') {
-          executeJob(data.job_id)
+          await executeJob(data.job_id)
         }
       }
       // A read saves only when it changed something by itself (auto-release, link expiry, a job).
@@ -185,6 +188,16 @@ if (existsSync(path.join(dist, 'index.html'))) {
 try {
   await pgStore.start()
   await ensureFirstAdmin()
+  // Instagram lookup and the background sync, when META_ACCESS_TOKEN / META_IG_USER_ID are set (server/meta.ts).
+  const save = async () => {
+    try {
+      await pgStore.flush()
+    } catch (err) {
+      pgStore.revert()
+      throw err
+    }
+  }
+  if (await startInstagramSync(inTurn, save)) setProfileSource(instagramSource)
 } catch (err) {
   // e.g. PostgreSQL unreachable, a wrong DATABASE_URL, a database still on the old layout, or ADMIN_PASSWORD too short.
   console.error('Could not start:', err instanceof Error ? err.message : err)
@@ -202,6 +215,7 @@ for (const signal of ['SIGINT', 'SIGTERM'] as const) {
         queue,
         waitForFileTransfers(),
       ])
+      stopInstagramSync()
       await pgStore.stop()
       process.exit(0)
     })()

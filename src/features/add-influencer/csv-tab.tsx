@@ -1,4 +1,3 @@
-import { PROFILE_LOOKUP_CONNECTED } from '@/lib/mode'
 import { useQueries, useQueryClient } from '@tanstack/react-query'
 import { CircleAlert, Download, FileUp, Loader2, RotateCcw, TriangleAlert, Upload } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type DragEvent } from 'react'
@@ -10,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Progress } from '@/components/ui/progress'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useCategories } from '@/hooks/use-categories'
+import { useProfileLookup } from '@/hooks/use-integrations'
 import { useJob } from '@/hooks/use-job'
 import { downloadCsv, parseCsv, toCsvText } from '@/lib/csv'
 import {
@@ -23,6 +23,7 @@ import {
   type ValidatedImportRow,
 } from '@/lib/csv-import'
 import { formatNumber } from '@/lib/format'
+import { PLATFORM_META } from '@/lib/platforms'
 import { queryKeys } from '@/lib/query'
 import { cn } from '@/lib/utils'
 import { ConfidenceBadge } from '@/features/duplicates/duplicate-warning'
@@ -156,7 +157,10 @@ function MappingStep({
 }) {
   const categories = useCategories()
   const [mapping, setMapping] = useState<CsvColumnMapping>(() => autoMatchColumns(parsed.headers))
-  const [fetchProfiles, setFetchProfiles] = useState(PROFILE_LOOKUP_CONNECTED)
+  const lookup = useProfileLookup()
+  // On by default when the server says a platform is connected, until the user chooses.
+  const [fetchChoice, setFetchProfiles] = useState<boolean | null>(null)
+  const fetchProfiles = fetchChoice ?? lookup.length > 0
   const [onDuplicate, setOnDuplicate] = useState<CsvDuplicatePolicy>('skip')
   const categoryNames = useMemo(
     () => (categories.data?.items ?? []).filter((c) => c.is_active).map((c) => c.name),
@@ -306,13 +310,14 @@ function MappingStep({
       </section>
 
       <section className="space-y-3 rounded-md border p-3">
-        {PROFILE_LOOKUP_CONNECTED && (
+        {lookup.length > 0 && (
           <label className="flex items-start gap-2 text-sm">
             <Checkbox checked={fetchProfiles} onCheckedChange={(v) => setFetchProfiles(!!v)} className="mt-0.5" />
             <span>
               Fetch public profiles for imported rows
               <span className="block text-xs text-muted-foreground">
-                Instagram, YouTube, Threads and Facebook Page stats. TikTok and Pinterest wait for a connect link.
+                {lookup.map((p) => PLATFORM_META[p].label).join(', ')} accounts switch to auto-sync and are filled in
+                over the next hours (about 90 profiles an hour). Personal profiles can’t be fetched.
               </span>
             </span>
           </label>
@@ -385,8 +390,9 @@ function Summary({ result, onDone, onAgain }: { result: CsvImportResult; onDone:
       </div>
       {result.profiles && (
         <p className="text-sm text-muted-foreground">
-          Profiles: {formatNumber(result.profiles.synced)} accounts synced, {formatNumber(result.profiles.failed)} couldn’t be
-          fetched (personal, not found or rate limited).
+          {result.profiles.queued
+            ? `Profiles: ${formatNumber(result.profiles.queued)} accounts queued; their stats fill in over the next hours (about 90 an hour).`
+            : `Profiles: ${formatNumber(result.profiles.synced)} accounts synced, ${formatNumber(result.profiles.failed)} couldn’t be fetched (personal, not found or rate limited).`}
         </p>
       )}
       {result.errors.length > 0 && (

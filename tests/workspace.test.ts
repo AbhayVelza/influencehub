@@ -221,7 +221,7 @@ describe('P1: saved jobs and pending CSV files', () => {
     const rows = toRows()
     resetWorkspace()
     fromRows(rows)
-    expect(readJob(job.body.job_id)).toMatchObject({ status: 'succeeded', progress: 100 })
+    expect(await readJob(job.body.job_id)).toMatchObject({ status: 'succeeded', progress: 100 })
   })
 
   it('an uploaded CSV survives a restart before the import', async () => {

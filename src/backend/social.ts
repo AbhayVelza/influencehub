@@ -1,9 +1,9 @@
-import { emptyMetrics, LOOKUP_PLATFORMS, normalizeHandle, PLATFORM_META } from '@/lib/platforms'
+import { audienceOf, emptyMetrics, LOOKUP_PLATFORMS, normalizeHandle, PLATFORM_META } from '@/lib/platforms'
 import type { AccountCreate, Influencer, LookupProfile, Platform, PlatformMetrics, SocialAccount, SyncResult } from '@/types'
-import { db, findAccount, nextId, nowIso } from './db'
+import { db, findAccount, nextId, nowIso, refreshDerived } from './db'
 import { JobFailure } from './jobs'
 
-// Social accounts: building them, connect-link expiry, and the (not yet connected) lookup and sync.
+// Social accounts: building them, connect-link expiry, lookup and sync.
 
 /** Only the platform's own metric keys survive (anything else in the body is dropped). */
 function cleanMetrics(platform: Platform, metrics: Record<string, unknown> | undefined) {
@@ -54,23 +54,100 @@ export function buildAccount(inf: Pick<Influencer, 'id' | 'name'>, body: Account
   } as SocialAccount
 }
 
-// No social-platform API is connected yet, so nothing is looked up or synced: the accounts keep the stats people
-// type in. These fail the way a real integration would when it isn't available, instead of inventing numbers.
+// Lookup and sync go through a profile source: the API server registers one per connected platform (server/meta.ts:
+// Instagram via Meta's Business Discovery). Without one (prototype mode, other platforms) they fail the way a real
+// integration does when it isn't available, instead of inventing numbers.
+
+/** Fetches a public profile; throws JobFailure (`not_found`, `personal_account`, `rate_limited`, `not_connected`). */
+export interface ProfileSource {
+  platforms: Platform[]
+  fetch(platform: Platform, handle: string): Promise<LookupProfile>
+}
+
+let source: ProfileSource | null = null
+
+/** The API server's platform connection (null in prototype mode). */
+export function setProfileSource(next: ProfileSource | null) {
+  source = next
+}
+
+/** Platforms whose profiles can be looked up and synced right now. */
+export const connectedPlatforms = (): Platform[] => source?.platforms ?? []
 
 const NOT_CONNECTED = 'Profile lookup isn’t connected yet. Add the account and type in its stats instead.'
 
-/** Public profile lookup. Not available until a platform API is connected. */
-export function lookupProfile(platform: Platform, _username: string): LookupProfile {
+function sourceFor(platform: Platform): ProfileSource {
   if (!LOOKUP_PLATFORMS.includes(platform)) {
     throw new JobFailure('not_supported', `${PLATFORM_META[platform].label} can’t be looked up`)
   }
-  throw new JobFailure('not_connected', NOT_CONNECTED)
+  if (!source || !source.platforms.includes(platform)) throw new JobFailure('not_connected', NOT_CONNECTED)
+  return source
 }
 
-/** Refreshing an account's stats. Not available until a platform API is connected; the account is left as it is. */
-export function syncAccount(accountId: string): SyncResult {
-  if (!findAccount(accountId)) throw new JobFailure('not_found', 'Account no longer exists')
-  throw new JobFailure('not_connected', 'Syncing isn’t connected yet. Edit the account’s stats by hand for now.')
+/** Public profile lookup (Add influencer → Look up). */
+export async function lookupProfile(platform: Platform, username: string): Promise<LookupProfile> {
+  return sourceFor(platform).fetch(platform, normalizeHandle(username, platform))
+}
+
+/** Puts a fetched profile on an account: picture, name, bio, links and stats; marks it synced. */
+export function applyProfile(account: SocialAccount, profile: LookupProfile) {
+  account.display_name = profile.display_name || account.display_name
+  account.profile_pic_url = profile.profile_pic_url
+  account.bio = profile.bio
+  account.links = profile.links
+  account.is_verified = profile.is_verified || account.is_verified
+  // Stats the platform didn't return (null) keep their last known value.
+  const fresh = Object.fromEntries(Object.entries(profile.metrics).filter(([, v]) => v !== null && v !== undefined))
+  account.metrics = metricsFor(account.platform, { ...account.metrics, ...fresh }) as typeof account.metrics
+  account.sync_status = 'synced'
+  account.last_synced_at = nowIso()
+}
+
+/** Refreshes one account's stats now (Sync now). The account is left as it was when the platform refuses. */
+export async function syncAccount(accountId: string): Promise<SyncResult> {
+  const found = findAccount(accountId)
+  if (!found) throw new JobFailure('not_found', 'Account no longer exists')
+  const { account } = found
+  let profile: LookupProfile
+  try {
+    profile = await sourceFor(account.platform).fetch(account.platform, account.handle)
+  } catch (err) {
+    if (err instanceof JobFailure && err.code !== 'not_connected' && err.code !== 'not_supported' && err.code !== 'rate_limited') {
+      account.sync_status = 'error'
+    }
+    throw err
+  }
+  // The account may have been removed or changed while the platform answered.
+  const now = findAccount(accountId)
+  if (!now) throw new JobFailure('not_found', 'Account no longer exists')
+  applyProfile(now.account, profile)
+  refreshDerived(now.influencer)
+  return { account_id: accountId, audience: audienceOf(now.account) }
+}
+
+/**
+ * A manual account (stats typed in) handed to auto-sync: it becomes a lookup account, queued for the background sync;
+ * its typed-in stats stay until the platform's replace them. False when its platform isn't connected.
+ */
+export function switchToAutoSync(account: SocialAccount): boolean {
+  if (account.sync_method !== 'manual' || !connectedPlatforms().includes(account.platform)) return false
+  account.sync_method = 'lookup'
+  account.last_synced_at = null
+  return queueSync([account]) === 1
+}
+
+/**
+ * Marks accounts for the API server's background sync (bulk Sync now, CSV import with "Fetch public profiles"). Only
+ * accounts on a connected platform; returns how many were queued.
+ */
+export function queueSync(accounts: SocialAccount[]): number {
+  let queued = 0
+  for (const a of accounts) {
+    if (!connectedPlatforms().includes(a.platform) || a.sync_method !== 'lookup') continue
+    a.sync_status = 'pending'
+    queued += 1
+  }
+  return queued
 }
 
 /** Connect links lapse after 7 days. Runs before every request (there is no scheduler without a server). */
