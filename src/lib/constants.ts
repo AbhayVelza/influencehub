@@ -154,3 +154,5 @@ export const DEFAULT_CATEGORIES: CategoryName[] = [
 
 /** Cards a pipeline column holds (longest in the stage first); its count is still the whole column. */
 export const PIPELINE_COLUMN_LIMIT = 200
+/** Minimum length for passwords (initial, changed and admin-set). */
+export const MIN_PASSWORD_LENGTH = 8

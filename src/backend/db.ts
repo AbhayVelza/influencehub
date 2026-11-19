@@ -207,12 +207,12 @@ export const noteChangedOnRead = () => {
 }
 export const readChangedData = () => changedOnRead
 
-/** Reads never change data apart from what `noteChangedOnRead` flags (tests/reads.test.ts checks every GET). */
+/** Reads never change data apart from what `noteChangedOnRead` flags (tests/workspace.test.ts checks every GET). */
 export const isRead = (request: Request) => request.method === 'GET' || request.method === 'HEAD'
 
 /**
- * There is no sign-in: requests act as the member the account menu picked, or as an active admin when that member is
- * gone or deactivated. Null only when the workspace has no active admin.
+ * Prototype mode (no sign-in): requests act as the member the account menu picked, or as an active admin when that
+ * member is gone or deactivated. The API server takes the signed-in member instead (server/auth.ts). Null only when the workspace has no active admin.
  */
 export function resolveActingUid(uid: string | null): string | null {
   const active = db.team.filter((u) => u.is_active)

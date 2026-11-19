@@ -276,3 +276,8 @@ CREATE TABLE IF NOT EXISTS csv_uploads (
   seq   bigint GENERATED ALWAYS AS IDENTITY UNIQUE,
   text  text NOT NULL
 );
+
+-- Sign-in: password hashes (scrypt) and sessions, kept apart from the team records the API returns.
+CREATE TABLE IF NOT EXISTS credentials (user_id text PRIMARY KEY, password_hash text NOT NULL, updated_at timestamptz NOT NULL DEFAULT now());
+CREATE TABLE IF NOT EXISTS sessions (token_hash text PRIMARY KEY, user_id text NOT NULL, expires_at timestamptz NOT NULL, created_at timestamptz NOT NULL DEFAULT now());
+CREATE INDEX IF NOT EXISTS sessions_user_id ON sessions (user_id);

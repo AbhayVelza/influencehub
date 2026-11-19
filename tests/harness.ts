@@ -3,7 +3,7 @@ import { db, defaultSettings, newWorkspace, readChangedData, resolveActingUid, s
 import { handlers } from '@/backend/handlers'
 import { commitJobs, executeJob, readJob } from '@/backend/jobs'
 import { OWNER_ID } from '@/lib/mode'
-import { ACTING_AS_HEADER, API_BASE } from '@/lib/env'
+import { API_BASE } from '@/lib/env'
 import type { Role, User } from '@/types'
 
 /** A fresh workspace: the owner admin and the default categories, nothing else. */
@@ -37,10 +37,11 @@ export interface ApiResult<T = any> {
 export async function api<T = any>(method: string, path: string, opts: { as?: string; body?: unknown } = {}): Promise<ApiResult<T>> {
   const request = new Request(`http://test${API_BASE}${path}`, {
     method,
-    headers: { 'Content-Type': 'application/json', [ACTING_AS_HEADER]: opts.as ?? ADMIN },
+    headers: { 'Content-Type': 'application/json' },
     body: opts.body === undefined ? undefined : JSON.stringify(opts.body),
   })
-  setActingUid(resolveActingUid(request.headers.get(ACTING_AS_HEADER)))
+  // The API server takes the member from the session cookie (server/auth.ts); here the test names them.
+  setActingUid(resolveActingUid(opts.as ?? ADMIN))
   try {
     const response = (await getResponse(handlers, request)) ?? new Response(JSON.stringify({ error: { code: 'not_found' } }), { status: 404 })
     let body: any = null
