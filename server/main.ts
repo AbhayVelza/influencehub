@@ -167,7 +167,8 @@ if (existsSync(path.join(dist, 'index.html'))) {
 try {
   await pgStore.start()
 } catch (err) {
-  console.error('Could not start: PostgreSQL is not reachable or DATABASE_URL is wrong.', err)
+  // e.g. PostgreSQL unreachable, a wrong DATABASE_URL, or a database still on the old layout.
+  console.error('Could not start:', err instanceof Error ? err.message : err)
   process.exit(1)
 }
 

@@ -108,7 +108,7 @@ API server (server/main.ts, Hono, Node)
   3. run the business rules: src/backend/handlers (via MSW's getResponse router)
   4. save only what changed, in one transaction (server/pg-store.ts)
       ▼
-PostgreSQL (one table per collection, one JSONB row per record; files in `files`)
+PostgreSQL (relational tables, server/schema.sql; records ↔ rows in server/relational.ts; files in `files`)
 ```
 
 In **prototype mode** `http.ts` calls `handleApiRequest` (`src/backend/index.ts`) in the browser instead: the
@@ -182,12 +182,13 @@ Gaming & Esports, Finance, Art & Designs, Marketing & Business.
 
 ### PostgreSQL tables
 
-Each table has `id` (app id), `seq` (creation order), `data` (the record as JSON), `updated_at`.
+Relational tables with primary keys, foreign keys and indexes (`server/schema.sql`; details in `docs/server.md`):
+`team_members`, `categories`, `influencers`, `social_accounts`, `account_snapshots`, `calls`, `packages`,
+`package_items`, `documents`, `files`, `activities`, `saved_views`, `dismissed_duplicates`, `pool_settings`,
+`instagram_settings`, `sync_runs`, `schema_migrations`. An old jsonb-layout database is migrated with
+`npm run db:migrate` (`docs/server.md`).
 
-`team`, `categories`, `influencers`, `documents`, `calls`, `packages`, `activities`, `saved_views`,
-`settings` (rows: `pool`, `instagram`, `migrations`), `dismissed_duplicates`.
-
-Example: `select id, data->>'name' as name, data->>'stage' as stage from influencers;`
+Example: `select name, stage, total_reach from influencers order by total_reach desc nulls last;`
 Don't edit rows while the server runs (it holds its own copy): stop it, edit, start it.
 
 ---

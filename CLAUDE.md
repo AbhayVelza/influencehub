@@ -36,7 +36,7 @@ numbers 12.4K / 1.2M; dates dd/MM/yyyy; relative times; toasts; "/" focuses sear
 - All API calls only through `src/services` → `src/services/http.ts`, which calls the API server (`server/main.ts`) or,
   in prototype mode, `handleApiRequest` (`src/backend/index.ts`) in the browser. Both run the same handlers
   (`src/backend/handlers`: the business rules) over `db`, a working copy that a store loads and saves (only what
-  changed, after each request). Never query the database from components. New collections need `server/pg-store.ts`,
+  changed, after each request). Never query the database from components. New collections need `server/relational.ts`,
   `server/schema.sql` and `src/backend/local-store.ts`. No sample or invented data anywhere.
 - The server answers one request at a time and is the only writer to PostgreSQL: run a single instance. `src/backend`
   and what it imports must run in both the browser and Node (no `window`).

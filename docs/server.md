@@ -10,8 +10,9 @@ member you are. Without `VITE_API_SERVER` the app runs in **prototype mode** (no
   the `X-Acting-As` header. The server resolves the member (an active admin if that member is gone or deactivated),
   then runs the business rules in `src/backend/handlers` (stages, claims, pool, scoping, permissions, duplicates,
   imports) over a working copy of the data. Prototype mode runs the same handlers in the browser.
-- **Data (`server/pg-store.ts`):** the server loads every record from PostgreSQL at start-up and, after each request,
-  writes back only the records that changed, in one transaction. A request that fails part-way saves nothing.
+- **Data (`server/pg-store.ts`):** the server loads every row from PostgreSQL's relational tables at start-up and,
+  after each request, writes back only the rows that changed, in one transaction. A request that fails part-way
+  saves nothing. `server/relational.ts` maps the app's records to rows and back.
 - **Document files:** `PUT /api/v1/files/<key>` (only for a key handed out by `POST /documents/presign`) stores the
   file in the `files` table; `GET /api/v1/files/<key>` serves it.
 - **One request at a time, one server:** the server is the only writer, so the rules hold for the whole team (two
@@ -25,7 +26,8 @@ member you are. Without `VITE_API_SERVER` the app runs in **prototype mode** (no
 | Acting member (no sign-in) | `src/lib/auth/index.ts` (`currentAuthUid`, `switchUser`), `resolveActingUid` in `src/backend/db.ts` |
 | Business rules (shared by server and prototype) | `src/backend/` (`handlers/`, `domain.ts`, `db.ts`) |
 | API server | `server/main.ts` (HTTP, request queue, files, static app), `vite.server.config.ts` (build) |
-| PostgreSQL store and tables | `server/pg-store.ts`, `server/schema.sql` |
+| PostgreSQL store and tables | `server/pg-store.ts`, `server/relational.ts` (records ↔ rows), `server/schema.sql` |
+| Migration from the old layout | `server/migrate.ts` (`npm run db:migrate`) |
 | Prototype store (browser) | `src/backend/index.ts`, `src/backend/local-store.ts` |
 
 ## Set up (once)
@@ -51,7 +53,28 @@ member you are. Without `VITE_API_SERVER` the app runs in **prototype mode** (no
 | `npm run build` then `npm run server` | Production: the server also serves the built app from `dist/`, one process on one port. |
 | `npm start` | Starts an already-built server. |
 | `npm run server:supabase` | Same server, but over Supabase (`SUPABASE_DATABASE_URL`) instead of local PostgreSQL. |
-| `npm run db:copy` | Copies all data + files local → Supabase (`-- --from supabase` for Supabase → local). Refuses a target that has data unless `-- --replace`. Stop the server first. |
+| `npm run db:copy` | Copies all data + files local → Supabase (`-- --from supabase` for Supabase → local). Refuses a target that has data unless `-- --replace`, and either database on the old layout. Stop the server first. |
+| `npm run db:migrate -- --env <VAR>` | Moves a database from the old layout to the relational tables (see Migrating below). |
+
+## Migrating a database from the old layout
+
+Before Nov 2026 every table held one jsonb `data` row per record. The server now refuses to start on such a database
+("This database still uses the old layout"). To migrate it:
+
+1. Stop the server and back the database up: `pg_dump "$DATABASE_URL" -Fc -f influencehub-before-migration.dump`.
+2. Try it first on a copy: restore the dump into a test database, then
+   `npm run db:migrate -- --env TEST_DATABASE_URL --dry-run` (the variable holding the test connection string).
+3. Run it for real on the copy (no `--dry-run`), start a server against it and check the app.
+4. Then the real database: `npm run db:migrate -- --env DATABASE_URL --i-have-a-backup`.
+
+`--env` is required, so the target is always chosen on purpose; `DATABASE_URL` and `SUPABASE_DATABASE_URL` also need
+`--i-have-a-backup`. Everything runs in one transaction: the old tables move, untouched, to a `legacy` schema; the new
+tables are created and filled; then every record is rebuilt from the new tables and compared with the original. Any
+difference rolls everything back. It prints old and new row counts.
+
+**Rollback:** `npm run db:migrate -- --env <VAR> --rollback --confirm` drops the new tables and moves the old ones back
+(anything written since the migration is lost; restoring the backup does the same). Once the new layout has run
+without problems for a release, drop the old tables: `DROP SCHEMA legacy CASCADE`.
 
 **Supabase (shared test database).** PostgreSQL stays the database; Supabase is just a hosted PostgreSQL that the
 team tests on. Put its connection string (Project → Connect → Session pooler, port 5432) in `.env.local` as
@@ -71,27 +94,28 @@ machine or a private network until sign-in is added.
 
 ## PostgreSQL layout
 
-One table per collection, one row per record (`server/schema.sql`):
-
-| Column | Contents |
-|---|---|
-| `id` | The app's id (`inf_…`, `call_…`, `usr_…`) |
-| `seq` | Creation order (the activity log is read in this order) |
-| `data` | The record as the app's TypeScript type (`src/types/index.ts`), as JSON, without the id |
-| `updated_at` | When the row was last written |
+Relational tables with primary keys, foreign keys, checks and indexes (`server/schema.sql`; the full design is in the
+SDLC specification, section 9). Ids are the app's ids (`inf_…`, `call_…`, `usr_…`); `seq` keeps creation order.
 
 | Table | Contents |
 |---|---|
-| `team` | `User`: name, email, role, is_active, created_at |
-| `categories` | name, is_active |
-| `influencers` | `Influencer` (accounts embedded; the documents summary is derived, not stored) |
-| `calls`, `packages`, `activities`, `saved_views` | `CallLog`, `Package`, `Activity`, `SavedView` |
-| `documents` | `InfluencerDocument` + `deleted_at` (soft delete) + `storage_key` (the file's key) |
-| `settings` | rows `pool` (pool guards), `instagram` (integration settings), `migrations` (one-time upgrades done) |
-| `dismissed_duplicates` | duplicate pairs a manager marked "not the same creator" |
-| `files` | document files: `key`, `content_type`, `data` (bytea), `created_at` — never loaded into memory |
+| `team_members` | `User`; soft delete via `deleted_at`; email unique among undeleted members |
+| `categories` | name (unique, case-insensitive), is_active |
+| `influencers` | `Influencer` with the address and checklist as columns; `category_id` → categories, `assigned_to` → team_members. Kept columns (`platforms`, `has_agreement`, `insights_count`, `ever_onboarded`, `claimed_at`, `stage_before_hold`, `stage_changed_at`, `search_text`) are written by the server for SQL use; the app never reads them back |
+| `social_accounts` | `SocialAccount`; unique (`platform`, `handle`); one primary per influencer; `metrics` jsonb; kept `audience` |
+| `account_snapshots` | audience history (empty until platform sync exists) |
+| `calls`, `activities`, `saved_views` | `CallLog`, `Activity` (`payload` jsonb), `SavedView` (`filters` jsonb) |
+| `packages`, `package_items` | `Package` (address as columns) and its items |
+| `documents` | `InfluencerDocument` + `deleted_at` (soft delete) + `storage_key` → files; one current agreement per influencer |
+| `files` | document files: `key`, `content_type`, `size`, `data` (bytea), `created_at` — never loaded into memory |
+| `dismissed_duplicates` | pairs (`influencer_a`, `influencer_b`) a manager marked "not the same creator" |
+| `pool_settings`, `instagram_settings`, `sync_runs` | single-row settings and the integration's recent runs |
+| `schema_migrations` | one-time data upgrades done (e.g. `categories_upgraded`) |
 
-To read it in SQL: `select id, data->>'name' as name, data->>'stage' as stage from influencers;`
+Deleting an influencer removes its accounts, calls, packages, documents, activity and dismissed pairs (cascade).
+Team members are only soft-deleted, so rows that name them always resolve.
+
+To read it in SQL: `select name, stage, total_reach from influencers order by total_reach desc nulls last;`
 
 Back it up with `pg_dump` (files included). Don't edit rows while the server is running: it holds its own copy and
 would overwrite or ignore your change. Stop it, edit, start it.

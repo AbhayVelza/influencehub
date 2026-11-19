@@ -13,7 +13,8 @@
     "server": "npm run server:build && npm run start",
     "start": "node --env-file-if-exists=.env.local dist-server/main.js",
     "server:supabase": "npm run server:build && npm run start -- --supabase",
-    "db:copy": "node --env-file-if-exists=.env.local scripts/db-copy.mjs"
+    "db:copy": "node --env-file-if-exists=.env.local scripts/db-copy.mjs",
+    "db:migrate": "npm run server:build && node --env-file-if-exists=.env.local dist-server/migrate.js"
   },
   "dependencies": {
     "@date-fns/tz": "^1.5.0",
