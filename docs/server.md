@@ -82,6 +82,22 @@ team tests on. Put its connection string (Project → Connect → Session pooler
 (prepared statements off). Only **one** server may run against a database (it keeps a working copy in memory), so
 testers share one running server rather than each starting their own against Supabase.
 
+## Deploying (Vercel + Render + Supabase)
+
+Vercel serves only the built app; it can't run the API server (one long-running process with the data in memory).
+The server runs on Render, over the Supabase database.
+
+1. **Render:** New → Blueprint → this repo (`render.yaml`). Enter `DATABASE_URL` (Supabase session pooler) and
+   `CORS_ORIGIN` (the Vercel address, e.g. `https://influencehub.vercel.app`). Check `https://<service>.onrender.com/health`.
+2. **Vercel** → Project → Settings → Environment Variables (Production): `VITE_API_SERVER=true`,
+   `VITE_API_URL=https://<service>.onrender.com`, then redeploy (they are read at build time).
+3. **Vercel** → Settings → Deployment Protection: protect production too, so only invited people open the app.
+
+`vercel.json` sends every path to `index.html`, so deep links and refreshes work. Render's free plan sleeps after
+15 minutes idle (the first request then takes about a minute) and briefly runs two instances during a deploy, so
+deploy when nobody is editing. The API address itself is not protected: anyone who finds it can call it until
+sign-in is back.
+
 Server environment: `DATABASE_URL` (required), `PORT` (default 3001), `STATIC_DIR` (default `dist`), `CORS_ORIGIN`
 (comma-separated origins; only when the app is served from elsewhere, together with `VITE_API_URL` in the app's
 build). `GET /health` answers 200 when PostgreSQL is reachable.
