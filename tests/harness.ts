@@ -47,7 +47,7 @@ export async function api<T = any>(method: string, path: string, opts: { as?: st
     let body: any = null
     const text = await response.text()
     if (text) body = JSON.parse(text)
-    if (response.status === 202 && typeof body?.job_id === 'string') executeJob(body.job_id)
+    if (response.status === 202 && typeof body?.job_id === 'string') await executeJob(body.job_id)
     commitJobs()
     return { status: response.status, body, changedOnRead: readChangedData() }
   } finally {
@@ -59,7 +59,7 @@ export async function api<T = any>(method: string, path: string, opts: { as?: st
 export async function runJob<T = any>(method: string, path: string, opts: { as?: string; body?: unknown } = {}) {
   const started = await api(method, path, opts)
   if (started.status !== 202) throw new Error(`Expected 202, got ${started.status}: ${JSON.stringify(started.body)}`)
-  const job = readJob(started.body.job_id)!
+  const job = (await readJob(started.body.job_id))!
   return job as { status: string; result: T; error: { code: string; message: string } | null }
 }
 

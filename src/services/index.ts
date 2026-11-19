@@ -14,4 +14,5 @@ export {
   categoriesApi,
   savedViewsApi,
   settingsApi,
+  integrationsApi,
 } from '@/services/workspace'

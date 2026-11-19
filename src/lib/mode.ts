@@ -9,9 +9,3 @@ export const PROTOTYPE = import.meta.env.VITE_API_SERVER?.trim() !== 'true' && !
 
 /** The admin a new workspace starts with (there is no other data until you add it). */
 export const OWNER_ID = 'usr_owner'
-
-/**
- * No social-platform API is connected yet, so profile lookup and sync can't fetch stats (they say so). Options that
- * only make sense with it, like "Fetch public profiles" on CSV import, stay hidden until this is true.
- */
-export const PROFILE_LOOKUP_CONNECTED = false

@@ -20,7 +20,7 @@ import type {
   StageChangeRequest,
 } from '@/types'
 import { formatDateTime } from '@/lib/format'
-import { currentUser, db, documentSummaries, findInfluencer, logActivity, nextId, nowIso } from '../db'
+import { currentUser, db, documentSummaries, findAccount, findInfluencer, logActivity, nextId, nowIso } from '../db'
 import {
   cleanTags,
   assignedToOtherMessage,
@@ -42,7 +42,7 @@ import {
   visibleInfluencers,
 } from '../domain'
 import { createJob } from '../jobs'
-import { syncAccount } from '../social'
+import { connectedPlatforms, queueSync, switchToAutoSync, syncAccount } from '../social'
 import { api, apiError, forbidden, notFound, paginate, readJson } from '../utils'
 
 /** The minute a date-time falls in, so two follow-ups at 05:00 PM clash whatever their seconds. */
@@ -236,11 +236,18 @@ export const influencerHandlers = [
       const accounts = found.flatMap((inf) => syncableAccounts(inf).map((a) => ({ influencerId: inf.id, accountId: a.id, platform: a.platform })))
       result.succeeded = found.map((i) => i.id)
       ids.filter((id) => !result.succeeded.includes(id)).forEach(notFoundRow)
-      result.job_id = createJob((): BulkSyncResult => {
-        const sync: BulkSyncResult = { synced: 0, failed: [] }
+      result.job_id = createJob(async (): Promise<BulkSyncResult> => {
+        const sync: BulkSyncResult = { synced: 0, failed: [], queued: 0 }
+        const connected = connectedPlatforms()
         for (const target of accounts) {
+          // Connected platforms: queued for the API server's background sync, paced by the platform's rate limit.
+          const found = findAccount(target.accountId)
+          if (found && connected.includes(target.platform) && found.account.sync_method === 'lookup') {
+            sync.queued! += queueSync([found.account])
+            continue
+          }
           try {
-            syncAccount(target.accountId)
+            await syncAccount(target.accountId)
             sync.synced++
           } catch (err) {
             const message = err instanceof Error ? err.message : 'Sync failed'
@@ -249,6 +256,23 @@ export const influencerHandlers = [
         }
         return sync
       })
+    } else if (body.action === 'auto_sync') {
+      // Manual accounts on connected platforms switch to auto-sync and are queued; the rest are left as they are.
+      for (const id of ids) {
+        const inf = findVisible(id, user)
+        if (!inf) {
+          notFoundRow(id)
+          continue
+        }
+        const switched = inf.accounts.filter((a) => switchToAutoSync(a)).length
+        if (switched) {
+          inf.updated_at = nowIso()
+          logActivity(inf.id, 'updated', { fields: ['auto-sync on'] })
+          result.succeeded.push(id)
+        } else {
+          result.failed.push({ id, code: 'nothing_to_switch', message: 'No typed-in account on a connected platform' })
+        }
+      }
     } else if (body.action === 'delete') {
       if (!can(user.role, 'influencer:delete')) return forbidden('Only managers and admins can delete influencers')
       for (const id of ids) {

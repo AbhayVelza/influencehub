@@ -18,6 +18,7 @@ export const queryKeys = {
   me: ['me'] as const,
   team: ['team'] as const,
   categories: ['categories'] as const,
+  integrations: ['integrations'] as const,
   savedViews: ['saved-views'] as const,
   /** Prefix for everything derived from influencers (lists, filter options). */
   influencers: ['influencers'] as const,

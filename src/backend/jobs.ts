@@ -13,7 +13,7 @@ interface LocalJob {
   id: string
   startedAt: number
   durationMs: number
-  /** Runs once when the job finishes. Throw JobFailure to fail the job. */
+  /** Runs once when the job finishes (it may wait, e.g. on a platform API). Throw JobFailure to fail the job. */
   run: () => unknown
   done: boolean
   staged: boolean
@@ -40,13 +40,13 @@ export function createJob(run: () => unknown, durationMs = 0): string {
   return id
 }
 
-export function executeJob(id: string): void {
+export async function executeJob(id: string): Promise<void> {
   const job = jobs.get(id)
   if (!job || job.done || job.staged) return
   // A job may change data even when a read (GET /jobs/{id}) runs it.
   noteChangedOnRead()
   try {
-    job.result = job.run()
+    job.result = await job.run()
   } catch (err) {
     job.error =
       err instanceof JobFailure
@@ -84,7 +84,7 @@ export function revertJobs(): void {
   }
 }
 
-export function readJob(id: string): Job | null {
+export async function readJob(id: string): Promise<Job | null> {
   const job = jobs.get(id)
   if (!job) {
     // Started before a restart: only its saved outcome is left.
@@ -94,7 +94,7 @@ export function readJob(id: string): Job | null {
   const elapsed = Date.now() - job.startedAt
 
   if (!job.done && !job.staged && elapsed >= job.durationMs) {
-    executeJob(id)
+    await executeJob(id)
   }
 
   if (job.done || job.staged) {

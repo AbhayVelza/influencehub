@@ -4,7 +4,7 @@ import { mapImportRow, validateImportRow } from '@/lib/csv-import'
 import { can } from '@/lib/permissions'
 import { LOOKUP_PLATFORMS, PLATFORM_META } from '@/lib/platforms'
 import { toSearchParams } from '@/services/http'
-import type { CsvImportRequest, CsvImportResult, ExportRequest, ExportResult, Influencer, InfluencerCreate, LookupRequest } from '@/types'
+import type { CsvImportRequest, CsvImportResult, ExportRequest, ExportResult, Influencer, InfluencerCreate, LookupRequest, SocialAccount } from '@/types'
 import { currentUser, db, logActivity, nowIso, refreshDerived } from '../db'
 import {
   assignedToOtherMessage,
@@ -18,7 +18,7 @@ import {
   toCsv,
 } from '../domain'
 import { createJob, readJob } from '../jobs'
-import { buildAccount, lookupProfile, syncAccount } from '../social'
+import { buildAccount, connectedPlatforms, lookupProfile, queueSync, syncAccount } from '../social'
 import { api, apiError, forbidden, notFound, readJson } from '../utils'
 import { syncableAccounts } from './influencers'
 
@@ -26,7 +26,7 @@ const HANDLE = /^[a-z0-9._-]{1,60}$/
 
 export const asyncHandlers = [
   http.get(api('/jobs/:id'), async ({ params }) => {
-    const job = readJob(String(params.id))
+    const job = await readJob(String(params.id))
     return job ? HttpResponse.json(job) : notFound('Job')
   }),
 
@@ -79,7 +79,7 @@ export const asyncHandlers = [
       return apiError(422, 'validation_error', 'Map the name column and at least one platform handle column')
     }
 
-    const run = (): CsvImportResult => {
+    const run = async (): Promise<CsvImportResult> => {
       const [rawHeader = [], ...rows] = parseCsv(text)
       const headers = rawHeader.map((h) => h.trim())
       const categoryNames = db.categories.filter((c) => c.is_active).map((c) => c.name)
@@ -151,16 +151,27 @@ export const asyncHandlers = [
       })
 
       if (result.profiles) {
+        // Connected platforms: their accounts become lookups (typed-in stats stay until the first sync) and are queued
+        // for the background sync. Anything else is tried now, and fails the way an unconnected platform does.
+        const connected = connectedPlatforms()
+        const queue: SocialAccount[] = []
         for (const inf of touched) {
-          for (const account of syncableAccounts(inf)) {
+          for (const account of inf.accounts) {
+            if (!connected.includes(account.platform) || account.sync_method === 'connect') continue
+            account.sync_method = 'lookup'
+            account.last_synced_at = null
+            queue.push(account)
+          }
+          for (const account of syncableAccounts(inf).filter((a) => !connected.includes(a.platform))) {
             try {
-              syncAccount(account.id)
+              await syncAccount(account.id)
               result.profiles.synced++
             } catch {
               result.profiles.failed++
             }
           }
         }
+        if (queue.length) result.profiles.queued = queueSync(queue)
       }
       db.uploads.delete(body.key)
       return result

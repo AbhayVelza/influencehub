@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Progress } from '@/components/ui/progress'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useProfileLookup } from '@/hooks/use-integrations'
 import { useCan } from '@/hooks/use-me'
 import { copyToClipboard } from '@/lib/clipboard'
 import { RelativeTime } from '@/components/common/relative-time'
@@ -192,6 +193,24 @@ function AccountView({ influencer, account }: { influencer: Influencer; account:
   const hasData = meta.metrics.some((m) => metricValue(account, m.key) !== null)
   const tracked = account.last_synced_at !== null && account.sync_method !== 'manual'
   const snapshots = useAccountSnapshots(influencer.id, account.id, tracked)
+  const lookup = useProfileLookup()
+  const canAutoSync = account.sync_method === 'manual' && lookup.includes(account.platform)
+  const [switching, setSwitching] = useState(false)
+
+  /** A typed-in account hands over to auto-sync: the server fetches it in the background. */
+  const switchToAutoSync = async () => {
+    setSwitching(true)
+    try {
+      await accountsApi.update(account.id, { sync_method: 'lookup' })
+      toast.success(`${meta.label} auto-sync on`, { description: 'Its stats update within the next hour or so.' })
+    } catch (err) {
+      if (!isSessionChanged(err)) toast.error('Couldn’t switch to auto-sync', { description: getErrorMessage(err) })
+    } finally {
+      setSwitching(false)
+      void invalidateInfluencer(queryClient, influencer.id)
+      void queryClient.invalidateQueries({ queryKey: ['influencers', 'detail', influencer.id] })
+    }
+  }
 
   /** POST /accounts/{id}/sync → poll GET /jobs/{id} every 2 s → refresh however the job ends. */
   const sync = async () => {
@@ -245,6 +264,12 @@ function AccountView({ influencer, account }: { influencer: Influencer; account:
               Sync now
             </Button>
           )}
+          {canAutoSync && canEdit && (
+            <Button variant="outline" size="sm" onClick={switchToAutoSync} disabled={switching}>
+              {switching ? <Loader2 className="animate-spin" /> : <RefreshCw />}
+              Auto-sync
+            </Button>
+          )}
           {account.sync_method === 'manual' && canEdit && (
             <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
               <Pencil />
@@ -264,9 +289,11 @@ function AccountView({ influencer, account }: { influencer: Influencer; account:
 
       {account.sync_method === 'manual' && (
         <Notice tone="info" title="Entered manually">
-          {account.platform === 'instagram' || account.platform === 'facebook'
-            ? `A personal ${meta.label} profile, which can’t be looked up. Its stats are typed in.`
-            : `${meta.label} doesn’t share stats with us, so they’re typed in.`}
+          {canAutoSync
+            ? `Its stats are typed in. Auto-sync fetches them from ${meta.label} instead (Business and Creator accounts only).`
+            : account.platform === 'instagram' || account.platform === 'facebook'
+              ? `A personal ${meta.label} profile, which can’t be looked up. Its stats are typed in.`
+              : `${meta.label} doesn’t share stats with us, so they’re typed in.`}
         </Notice>
       )}
       {account.sync_method === 'connect' && account.connect_status !== 'connected' && (

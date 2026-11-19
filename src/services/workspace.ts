@@ -7,6 +7,7 @@ import type {
   InfluencerFilters,
   InstagramSettings,
   InstagramSettingsUpdate,
+  Integrations,
   Paginated,
   PipelineResponse,
   PoolSettings,
@@ -44,6 +45,11 @@ export const categoriesApi = {
   update: (id: string, body: CategoryUpdate) => http.patch<Category>(`/categories/${id}`, body),
   /** 409 `in_use` while any influencer has this category. */
   remove: (id: string) => http.delete(`/categories/${id}`),
+}
+
+/** What the API server is connected to (profile lookup per platform). */
+export const integrationsApi = {
+  get: (signal?: AbortSignal) => http.get<Integrations>('/integrations', undefined, signal),
 }
 
 export const settingsApi = {

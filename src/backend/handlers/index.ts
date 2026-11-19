@@ -22,6 +22,7 @@ const BRAND_SPECIALIST_READS = [
   /^\/me$/,
   /^\/team$/,
   /^\/categories$/,
+  /^\/integrations$/,
   /^\/dashboard\/summary$/,
   /^\/influencers$/,
   /^\/influencers\/filter-options$/,

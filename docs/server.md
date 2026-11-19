@@ -26,8 +26,9 @@ With `VITE_API_SERVER=true`, InfluenceHub has two parts: **PostgreSQL** for all 
 - **First admin:** on start, `ADMIN_EMAIL` / `ADMIN_PASSWORD` (/ `ADMIN_NAME`) become an admin's sign-in (a new
   workspace's owner takes that email). The password is only set while that admin has none, so later changes stick.
   A new workspace also gets the default categories.
-- **Not connected yet:** public profile lookup, **Sync now**, connect links and growth history need the social
-  platforms' APIs. Accounts keep the stats people type in.
+- **Instagram:** with `META_ACCESS_TOKEN` and `META_IG_USER_ID` set, the server looks creators up and keeps their stats
+  fresh in the background (see "Instagram" below). Other platforms, connect links and growth history aren't connected:
+  their accounts keep the stats people type in.
 
 | Piece | Where |
 |---|---|
@@ -120,6 +121,27 @@ build). `GET /health` answers 200 when PostgreSQL is reachable.
 
 **Security:** put the server behind HTTPS (e.g. Caddy) before anyone outside your machine uses it: passwords and the
 session cookie travel over the network.
+
+## Instagram (Meta Business Discovery)
+
+The server looks up Instagram creators by handle through our own Instagram professional account (`@velzaglobalin`,
+linked to the Velza Global India Facebook Page), using Meta's Business Discovery API (`server/meta.ts`). Only
+Business and Creator accounts can be looked up; personal profiles answer "not found".
+
+- **Environment (secret):** `META_ACCESS_TOKEN` (a Page token, which never expires) and `META_IG_USER_ID` (our Instagram
+  account's id). On Render: Dashboard → influencehub-api → Environment. The log says `Instagram connected: @…` on start.
+- **Making the token:** Graph API Explorer, app influencerhub, **Get User Access Token** with `instagram_basic`,
+  `instagram_manage_insights`, `pages_show_list`, `pages_read_engagement`, `business_management`, `ads_read`. Then swap
+  it for a 60-day token (`/oauth/access_token?grant_type=fb_exchange_token`, needs `META_APP_ID` / `META_APP_SECRET`)
+  and read the Page's token from `/me/accounts`: that one doesn't expire. Meta still cuts data access if nobody
+  re-approves the app for about 90 days; Settings → Instagram then shows the connection as expired.
+- **What it fills in:** name, picture, bio, website, followers, following, posts, and from the last 12 posts average
+  likes, average comments and engagement rate.
+- **Background sync (`server/sync-worker.ts`):** one creator about every 40 s (~90 an hour, under Meta's hourly
+  allowance), paused while Meta reports 75% used. Order: accounts queued by Sync now / CSV import / **Auto-sync**, then
+  never-synced ones, then any not synced within Settings → Instagram's interval (3–24 h).
+- **Typed-in accounts:** CSV imports with a followers column create manual accounts. **Auto-sync IG** (bulk bar) or
+  **Auto-sync** (influencer → account) switches them; their numbers stay until Instagram's arrive.
 
 ## PostgreSQL layout
 

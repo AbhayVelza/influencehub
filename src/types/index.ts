@@ -495,7 +495,15 @@ export type InfluencerUpdate = Partial<
 
 /** Manual accounts only: type the stats in. */
 export interface AccountUpdate {
-  metrics: Partial<PlatformMetrics[Platform]>
+  metrics?: Partial<PlatformMetrics[Platform]>
+  /** 'lookup': a manual account switches to auto-sync (its platform must be connected, see GET /integrations). */
+  sync_method?: 'lookup'
+}
+
+/** GET /integrations: what the API server is connected to right now. */
+export interface Integrations {
+  /** Platforms whose public profiles can be looked up and synced. */
+  profile_lookup: Platform[]
 }
 
 export interface ConnectLinkRequest {
@@ -531,7 +539,7 @@ export interface StageChangeRequest {
 
 /** `delete` requires manager or admin. `claim` takes no value (owner = me). `sync` syncs every syncable account. */
 /** `pool_assign`: assign to `value` only while unassigned (per-row `not_in_pool`), for bulk assigning from the pool. */
-export type BulkAction = 'change_stage' | 'assign' | 'pool_assign' | 'sync' | 'delete' | 'claim'
+export type BulkAction = 'change_stage' | 'assign' | 'pool_assign' | 'sync' | 'auto_sync' | 'delete' | 'claim'
 
 export interface BulkRequest {
   ids: string[]
@@ -762,8 +770,11 @@ export interface CsvImportResult {
   failed: number
   /** Failed rows only. `row` is the 1-based line number in the file (header = 1). `handle` = the row's first handle. */
   errors: { row: number; handle: string | null; message: string }[]
-  /** Present when fetch_profiles was requested. */
-  profiles: { synced: number; failed: number } | null
+  /**
+   * Present when fetch_profiles was requested. On the API server the accounts are queued for its background sync
+   * (`queued`, paced by the platform's rate limit) instead of fetched during the import.
+   */
+  profiles: { synced: number; failed: number; queued?: number } | null
 }
 
 export interface ExportRequest {
@@ -785,6 +796,8 @@ export interface SyncResult {
 export interface BulkSyncResult {
   synced: number
   failed: { id: string; message: string }[]
+  /** Accounts handed to the API server's background sync (connected platforms), refreshed over the next hours. */
+  queued?: number
 }
 
 // ---------------------------------------------------------------------------

@@ -13,7 +13,7 @@ you make in `docs/contract-decisions.md` (dates and documents: `docs/dates-and-d
 ## Business flow
 Gather data → call → onboard → send package.
 Stages: data_gathered → contacted → onboarded → package_sent → delivered. Side stages: on_hold, rejected.
-Add manually / by CSV (lookup and sync aren't connected to a platform API yet); one creator can have accounts on several platforms. Calls: no answer /
+Add manually / by CSV / by Instagram lookup (API server with Meta connected: `server/meta.ts`, background sync in `server/sync-worker.ts`; other platforms not connected); one creator can have accounts on several platforms. Calls: no answer /
 call back → follow-up; not interested → rejected; interested → contacted. Package returned → back to onboarded.
 
 ## Detail lives in docs/ (read only what the task touches)
