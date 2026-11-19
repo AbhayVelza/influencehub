@@ -82,24 +82,24 @@ export function ActiveFilters({ filters, onChange, onClear }: ActiveFiltersProps
 
   return (
     <div className="flex flex-wrap items-center gap-1.5" aria-label="Active filters">
-      <span className="mr-1 text-xs text-muted-foreground">Active:</span>
+      <span className="mr-1 text-label-sm tracking-wider text-muted-foreground uppercase">Active:</span>
       {chips.map((chip) => (
         <span
           key={chip.key}
-          className="inline-flex h-6 items-center gap-1 rounded-full border bg-muted/60 pr-0.5 pl-2.5 text-xs font-medium"
+          className="inline-flex h-7 items-center gap-1 rounded-full bg-surface-container-lowest/70 pr-1 pl-3 text-label-md font-medium text-on-surface shadow-sm backdrop-blur-md dark:bg-surface-container-high/70"
         >
           {chip.label}
           <button
             type="button"
             onClick={chip.remove}
-            className="flex size-5 items-center justify-center rounded-full text-muted-foreground hover:bg-background hover:text-foreground"
+            className="flex size-5 items-center justify-center rounded-full text-outline transition-colors hover:bg-surface-container-high hover:text-on-surface"
             aria-label={`Remove filter ${chip.label}`}
           >
             <X className="size-3" />
           </button>
         </span>
       ))}
-      <Button variant="link" size="sm" className="h-6 px-1.5 text-xs" onClick={onClear}>
+      <Button variant="link" size="sm" className="h-7 px-1.5 text-label-md" onClick={onClear}>
         Clear all
       </Button>
     </div>

@@ -106,37 +106,32 @@ export default function InfluencersPage() {
 
   return (
     <div className="flex min-h-full flex-col">
-      <div className="flex-1 space-y-4 p-4 sm:p-6 pb-4">
+      <div className="flex-1 space-y-space-lg px-4 py-6 sm:px-6 lg:px-space-xl lg:py-space-lg">
         <PageHeader
-          title={
-            <>
-              Influencers{' '}
-              {query.data && (
-                <span className="font-normal text-muted-foreground tabular-nums">({formatNumber(total)})</span>
-              )}
-            </>
-          }
+          title="Influencers"
+          count={query.data ? formatNumber(total) : undefined}
           actions={
             <>
               {canImport && (
-                <Button variant="outline" onClick={() => addInfluencer.open({ tab: 'csv' })}>
-                  <Upload />
+                <Button variant="outline" className="gap-1" onClick={() => addInfluencer.open({ tab: 'csv' })}>
+                  <Upload className="size-[17px] text-muted-foreground transition-colors group-hover/button:text-primary" />
                   Import CSV
                 </Button>
               )}
               {canExport && (
                 <Button
                   variant="outline"
+                  className="gap-1 disabled:bg-surface-container-lowest/40 disabled:shadow-none"
                   disabled={isExporting || total === 0}
                   onClick={() => exportInfluencers({ filters })}
                 >
-                  <Download />
+                  <Download className="size-[17px] text-muted-foreground transition-colors group-hover/button:text-primary" />
                   Export
                 </Button>
               )}
               {canCreate && (
-                <Button onClick={() => addInfluencer.open()}>
-                  <Plus />
+                <Button className="gap-1" onClick={() => addInfluencer.open()}>
+                  <Plus className="size-[18px]" />
                   Add Influencer
                 </Button>
               )}
@@ -144,42 +139,58 @@ export default function InfluencersPage() {
           }
         />
 
-        <div className="flex items-center justify-between gap-3">
-          <ListSearch value={filters.q} onChange={(q) => list.setFilters({ q }, { replace: true })} />
-          <SavedViewsMenu
-            filters={filters}
+        <div className="space-y-space-md">
+          <div className="flex flex-wrap items-center gap-space-sm">
+            <ListSearch
+              value={filters.q}
+              onChange={(q) => list.setFilters({ q }, { replace: true })}
+              className="w-full sm:w-auto sm:max-w-md sm:min-w-64 sm:flex-1"
+            />
+            <InfluencerFilterBar
+              filters={filters}
+              onChange={list.setFilters}
+              hideAssigned={!canReassign}
+              className="contents"
+              actions={
+                <div className="ml-auto">
+                  <SavedViewsMenu
+                    filters={filters}
+                    sort={sort}
+                    onApply={(view) =>
+                      list.replaceAll({ ...view.filters, sort: view.sort ?? undefined, page_size: pageSize })
+                    }
+                  />
+                </div>
+              }
+            />
+          </div>
+          <ActiveFilters filters={filters} onChange={list.setFilters} onClear={list.clearFilters} />
+
+          <InfluencersTable
+            rows={rows}
+            columns={columns}
+            visibilityKey="influencehub-influencer-columns-v2"
+            onOpenRow={(row) => navigate(`/influencers/${row.id}`)}
+            isLoading={query.isPending}
+            isStale={query.isPlaceholderData}
             sort={sort}
-            onApply={(view) => list.replaceAll({ ...view.filters, sort: view.sort ?? undefined, page_size: pageSize })}
+            onSortChange={list.setSort}
+            selectedIds={new Set(selected.keys())}
+            onSelectionChange={({ selected: added, deselected }) =>
+              setSelected((prev) => {
+                const next = new Map(prev)
+                for (const r of added) next.set(r.id, r)
+                for (const r of deselected) next.delete(r.id)
+                return next
+              })
+            }
+            emptyContent={emptyContent}
           />
         </div>
-
-        <InfluencerFilterBar filters={filters} onChange={list.setFilters} hideAssigned={!canReassign} />
-        <ActiveFilters filters={filters} onChange={list.setFilters} onClear={list.clearFilters} />
-
-        <InfluencersTable
-          rows={rows}
-          columns={columns}
-          visibilityKey="influencehub-influencer-columns-v2"
-          onOpenRow={(row) => navigate(`/influencers/${row.id}`)}
-          isLoading={query.isPending}
-          isStale={query.isPlaceholderData}
-          sort={sort}
-          onSortChange={list.setSort}
-          selectedIds={new Set(selected.keys())}
-          onSelectionChange={({ selected: added, deselected }) =>
-            setSelected((prev) => {
-              const next = new Map(prev)
-              for (const r of added) next.set(r.id, r)
-              for (const r of deselected) next.delete(r.id)
-              return next
-            })
-          }
-          emptyContent={emptyContent}
-        />
       </div>
 
       {(selectedRows.length > 0 || total > 0) && (
-        <div className="sticky bottom-0 flex min-h-14 flex-wrap items-center justify-between gap-3 border-t bg-background/95 px-6 py-2.5 backdrop-blur">
+        <div className="sticky bottom-0 z-10 flex min-h-14 flex-wrap items-center justify-between gap-3 bg-surface-container-lowest/80 px-4 py-2.5 shadow-[0_-1px_8px_rgba(0,0,0,0.03)] backdrop-blur-2xl sm:px-6 lg:px-space-xl">
           <div>
             {selectedRows.length > 0 && (
               <BulkActionsBar

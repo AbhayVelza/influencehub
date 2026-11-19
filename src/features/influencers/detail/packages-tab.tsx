@@ -24,26 +24,32 @@ export function PackagesTab({ influencerId, onCreate, canCreate, onEdit }: Packa
     return (
       <div className="space-y-3">
         {Array.from({ length: 2 }, (_, i) => (
-          <Skeleton key={i} className="h-28 w-full" />
+          <Skeleton key={i} className="h-28 w-full rounded-2xl" />
         ))}
       </div>
     )
   }
   if (packages.isError) {
-    return <ErrorState title="Couldn’t load packages" error={packages.error} onRetry={() => packages.refetch()} />
+    return (
+      <div className="rounded-2xl bg-surface-container-lowest/70 shadow-glass backdrop-blur-2xl dark:ring-1 dark:ring-white/5">
+        <ErrorState title="Couldn’t load packages" error={packages.error} onRetry={() => packages.refetch()} />
+      </div>
+    )
   }
   if (packages.data.items.length === 0) {
     return (
-      <EmptyState
-        icon={PackageIcon}
-        title="No packages yet"
-        description={
-          canCreate
-            ? 'Create a package once the influencer is onboarded and the address is confirmed.'
-            : 'This influencer was rejected, so no packages can be created.'
-        }
-        action={canCreate ? <Button onClick={onCreate}>Create package</Button> : undefined}
-      />
+      <div className="rounded-2xl bg-surface-container-lowest/70 shadow-glass backdrop-blur-2xl dark:ring-1 dark:ring-white/5">
+        <EmptyState
+          icon={PackageIcon}
+          title="No packages yet"
+          description={
+            canCreate
+              ? 'Create a package once the influencer is onboarded and the address is confirmed.'
+              : 'This influencer was rejected, so no packages can be created.'
+          }
+          action={canCreate ? <Button onClick={onCreate}>Create package</Button> : undefined}
+        />
+      </div>
     )
   }
 
@@ -57,29 +63,29 @@ export function PackagesTab({ influencerId, onCreate, canCreate, onEdit }: Packa
           </Button>
         </div>
       )}
-      <ul className="space-y-2">
+      <ul className="space-y-3">
         {packages.data.items.map((pkg) => (
-          <li key={pkg.id} className="rounded-lg border bg-card p-3 text-sm">
+          <li key={pkg.id} className="rounded-2xl bg-surface-container-lowest/70 shadow-glass backdrop-blur-2xl dark:ring-1 dark:ring-white/5 p-space-md text-body-md sm:p-5">
             <div className="flex items-start justify-between gap-2">
-              <div className="space-y-1">
-                <span className={cn('rounded-full px-2 py-0.5 text-xs font-medium', PACKAGE_STATUS_META[pkg.status].badge)}>
+              <div className="space-y-2">
+                <span className={cn('inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-medium', PACKAGE_STATUS_META[pkg.status].badge)}>
                   {PACKAGE_STATUS_META[pkg.status].label}
                 </span>
-                <p>{pkg.items.map((i) => `${i.name} × ${i.qty}`).join(', ')}</p>
+                <p className="font-medium text-primary">{pkg.items.map((i) => `${i.name} × ${i.qty}`).join(', ')}</p>
               </div>
-              <Button variant="ghost" size="xs" onClick={() => onEdit(pkg)}>
+              <Button variant="outline" size="sm" onClick={() => onEdit(pkg)}>
                 <Pencil />
                 Edit
               </Button>
             </div>
-            <dl className="mt-2 grid grid-cols-[6rem_1fr] gap-x-3 gap-y-1 text-xs">
-              <dt className="text-muted-foreground">Courier</dt>
+            <dl className="mt-3 grid grid-cols-[6rem_1fr] gap-x-3 gap-y-1.5 rounded-xl bg-surface-container-low/60 p-3 text-body-sm">
+              <dt className="text-label-sm tracking-wider text-muted-foreground uppercase">Courier</dt>
               <dd>{pkg.courier ?? '—'}</dd>
-              <dt className="text-muted-foreground">Tracking</dt>
+              <dt className="text-label-sm tracking-wider text-muted-foreground uppercase">Tracking</dt>
               <dd className="flex items-center gap-1">
                 {pkg.tracking_number ? (
                   <>
-                    <span className="font-mono">{pkg.tracking_number}</span>
+                    <span className="font-code text-on-surface">{pkg.tracking_number}</span>
                     <Button
                       variant="ghost"
                       size="icon-xs"
@@ -93,11 +99,11 @@ export function PackagesTab({ influencerId, onCreate, canCreate, onEdit }: Packa
                   '—'
                 )}
               </dd>
-              <dt className="text-muted-foreground">Sent</dt>
+              <dt className="text-label-sm tracking-wider text-muted-foreground uppercase">Sent</dt>
               <dd>{formatDate(pkg.sent_at)}</dd>
-              <dt className="text-muted-foreground">Delivered</dt>
+              <dt className="text-label-sm tracking-wider text-muted-foreground uppercase">Delivered</dt>
               <dd>{formatDate(pkg.delivered_at)}</dd>
-              <dt className="text-muted-foreground">Ship to</dt>
+              <dt className="text-label-sm tracking-wider text-muted-foreground uppercase">Ship to</dt>
               <dd>
                 {pkg.address.line1}, {pkg.address.city}, {pkg.address.state} {pkg.address.postal_code}
               </dd>

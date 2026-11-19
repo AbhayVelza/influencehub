@@ -72,9 +72,9 @@ function OwnerControl({ influencer, onRelease }: { influencer: Influencer; onRel
     return (
       <Tooltip>
         <TooltipTrigger asChild>
-          <span tabIndex={0} className="inline-flex h-8 items-center gap-1.5 rounded-lg px-2 text-sm text-muted-foreground">
-            <UserRound className="size-4" />
-            Owner: <span className="text-foreground">{label}</span>
+          <span tabIndex={0} className="inline-flex h-9 items-center gap-1.5 rounded-full bg-surface-container-low/60 px-3.5 text-label-md text-muted-foreground">
+            <UserRound className="size-4" strokeWidth={1.75} />
+            Owner: <span className="font-medium text-primary">{label}</span>
           </span>
         </TooltipTrigger>
         <TooltipContent>Only managers and admins can reassign. You can release it to the pool from the ⋯ menu.</TooltipContent>
@@ -85,14 +85,14 @@ function OwnerControl({ influencer, onRelease }: { influencer: Influencer; onRel
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" disabled={update.isPending} aria-label={`Owner: ${label}. Change owner`}>
-          <UserRound />
+        <Button variant="ghost" className="bg-surface-container-low/60 hover:bg-surface-container-low" disabled={update.isPending} aria-label={`Owner: ${label}. Change owner`}>
+          <UserRound strokeWidth={1.75} />
           <span className="text-muted-foreground">Owner:</span> {label}
           <ChevronDown className="opacity-60" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-56">
-        <DropdownMenuLabel className="text-xs text-muted-foreground">Assign to</DropdownMenuLabel>
+        <DropdownMenuLabel className="text-label-sm tracking-wider text-muted-foreground uppercase">Assign to</DropdownMenuLabel>
         {team.data?.items
           .filter((u) => u.is_active)
           .map((user) => (
@@ -165,99 +165,105 @@ export function InfluencerHeader({
     })
 
   return (
-    <header className="space-y-4">
-      <Button asChild variant="ghost" size="sm" className="-ml-2 text-muted-foreground">
+    <header className="space-y-space-md">
+      <Button asChild variant="ghost" size="sm" className="-ml-2 text-muted-foreground hover:text-primary">
         <Link to={listReturnPath()}>
           <ArrowLeft />
           Influencers
         </Link>
       </Button>
 
-      <div className="flex flex-wrap items-start gap-4">
-        <PersonAvatar name={influencer.name} src={influencer.profile_pic_url} className="size-14 text-base" />
-        <div className="min-w-0 flex-1 space-y-1">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <h1 className="flex items-center gap-1.5 font-heading text-xl font-semibold tracking-tight">
-              {influencer.name}
-              {influencer.is_verified && <BadgeCheck className="size-5 text-sky-500" aria-label="Verified account" />}
-            </h1>
-            <AccountLabel account={primary && toRef(primary)} link className="text-sm text-muted-foreground" />
-          </div>
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
-            <span className="rounded-full border px-2 py-0.5 text-xs text-foreground">{influencer.category}</span>
-            <PlatformMarks platforms={influencer.accounts.map((a) => a.platform)} />
-            {influencer.total_reach != null && (
-              <span title={formatNumber(influencer.total_reach)}>
-                <span className="font-medium text-foreground tabular-nums">{formatCompact(influencer.total_reach)}</span> total followers
+      <div className="space-y-space-lg rounded-2xl bg-surface-container-lowest/70 p-space-md shadow-glass backdrop-blur-2xl sm:p-space-lg dark:ring-1 dark:ring-white/5">
+        <div className="flex flex-wrap items-start gap-4">
+          <PersonAvatar name={influencer.name} src={influencer.profile_pic_url} className="size-16 text-lg shadow-sm" />
+          <div className="min-w-0 flex-1 space-y-1.5">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <h1 className="flex min-w-0 items-center gap-1.5 text-headline-md font-semibold tracking-tight text-primary sm:text-headline-xl">
+                <span className="min-w-0 break-words">{influencer.name}</span>
+                {influencer.is_verified && (
+                  <BadgeCheck className="size-5 shrink-0 fill-on-tertiary-container text-surface-container-lowest" aria-label="Verified account" />
+                )}
+              </h1>
+              <AccountLabel account={primary && toRef(primary)} link className="text-body-md text-muted-foreground" />
+            </div>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-body-sm text-muted-foreground">
+              <span className="inline-flex items-center rounded-full bg-surface-container-high px-2.5 py-0.5 text-[11px] font-medium text-on-surface">
+                {influencer.category}
               </span>
-            )}
-            {location !== '—' && (
-              <span className="inline-flex items-center gap-1">
-                <MapPin className="size-3.5" />
-                {location}
-              </span>
-            )}
+              <PlatformMarks platforms={influencer.accounts.map((a) => a.platform)} />
+              {influencer.total_reach != null && (
+                <span title={formatNumber(influencer.total_reach)}>
+                  <span className="font-code font-semibold text-primary tabular-nums">{formatCompact(influencer.total_reach)}</span> total followers
+                </span>
+              )}
+              {location !== '—' && (
+                <span className="inline-flex items-center gap-1">
+                  <MapPin className="size-3.5" strokeWidth={1.75} />
+                  {location}
+                </span>
+              )}
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <StageControl
-          influencer={influencer}
-          previousStage={previousStage}
-          hasInterestedCall={hasInterestedCall}
-          hasTrackedPackage={hasTrackedPackage}
-        />
-        <OwnerControl influencer={influencer} onRelease={() => setReleasing(true)} />
-        <div className="ml-auto flex items-center gap-2">
-          <Button variant="outline" onClick={() => onLogCall()}>
-            <PhoneCall />
-            Log call
-          </Button>
-          {influencer.stage !== 'rejected' && (
-            <Button variant="outline" onClick={() => onCreatePackage()}>
-              <Package />
-              Create package
+        <div className="flex flex-wrap items-center gap-2 border-t border-surface-container pt-space-md">
+          <StageControl
+            influencer={influencer}
+            previousStage={previousStage}
+            hasInterestedCall={hasInterestedCall}
+            hasTrackedPackage={hasTrackedPackage}
+          />
+          <OwnerControl influencer={influencer} onRelease={() => setReleasing(true)} />
+          <div className="ml-auto flex flex-wrap items-center gap-2">
+            <Button variant="outline" onClick={() => onLogCall()}>
+              <PhoneCall />
+              Log call
             </Button>
-          )}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" aria-label="More actions">
-                <MoreHorizontal />
+            {influencer.stage !== 'rejected' && (
+              <Button variant="outline" onClick={() => onCreatePackage()}>
+                <Package />
+                Create package
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-52">
-              {primary && (
-                <>
-                  <DropdownMenuItem asChild>
-                    <a href={primary.profile_url} target="_blank" rel="noreferrer">
-                      <ExternalLink />
-                      Open on {PLATFORM_META[primary.platform].label}
-                    </a>
+            )}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon" aria-label="More actions">
+                  <MoreHorizontal />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-52">
+                {primary && (
+                  <>
+                    <DropdownMenuItem asChild>
+                      <a href={primary.profile_url} target="_blank" rel="noreferrer">
+                        <ExternalLink />
+                        Open on {PLATFORM_META[primary.platform].label}
+                      </a>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => copyToClipboard(primary.profile_url, 'Profile link copied')}>
+                      <Copy />
+                      Copy profile link
+                    </DropdownMenuItem>
+                  </>
+                )}
+                {canRelease && (
+                  <DropdownMenuItem onSelect={() => setReleasing(true)}>
+                    <Inbox />
+                    Release to pool…
                   </DropdownMenuItem>
-                  <DropdownMenuItem onSelect={() => copyToClipboard(primary.profile_url, 'Profile link copied')}>
-                    <Copy />
-                    Copy profile link
-                  </DropdownMenuItem>
-                </>
-              )}
-              {canRelease && (
-                <DropdownMenuItem onSelect={() => setReleasing(true)}>
-                  <Inbox />
-                  Release to pool…
-                </DropdownMenuItem>
-              )}
-              {canDelete && (
-                <>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem variant="destructive" onSelect={() => setConfirmDelete(true)}>
-                    <Trash2 />
-                    Delete influencer
-                  </DropdownMenuItem>
-                </>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+                )}
+                {canDelete && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem variant="destructive" onSelect={() => setConfirmDelete(true)}>
+                      <Trash2 />
+                      Delete influencer
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       </div>
 

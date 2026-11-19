@@ -80,15 +80,19 @@ export function UserMenu() {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           {/* Named by hidden text rather than aria-label, so the visible initials don't conflict with the name. */}
-          <Button variant="ghost" size="icon" className="rounded-full">
-            <PersonAvatar name={me.name} aria-hidden />
+          <Button variant="ghost" size="icon" className="size-8 rounded-full p-0 hover:bg-transparent">
+            <PersonAvatar
+              name={me.name}
+              aria-hidden
+              className="size-8 [&_[data-slot=avatar-fallback]]:bg-primary [&_[data-slot=avatar-fallback]]:text-on-primary"
+            />
             <span className="sr-only">Account menu</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-60">
           <DropdownMenuLabel className="font-normal">
-            <p className="truncate text-sm font-medium text-foreground">{me.name}</p>
-            <p className="truncate text-xs text-muted-foreground">{me.email}</p>
+            <p className="truncate text-label-md font-semibold text-foreground">{me.name}</p>
+            <p className="truncate text-body-sm text-muted-foreground">{me.email}</p>
             <p className="mt-1 text-xs text-muted-foreground">{ROLE_LABEL[me.role]}</p>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />

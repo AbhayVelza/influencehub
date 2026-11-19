@@ -42,9 +42,9 @@ export function AddInfluencerProvider({ children }: { children: ReactNode }) {
             value={tab}
             onValueChange={(next) => !busy && setState((s) => ({ ...s, tab: next as AddTab }))}
             // min-w-0: the dialog is a grid; without it a wide CSV preview stretches the dialog past its edges.
-            className="min-w-0 gap-4"
+            className="min-w-0 max-w-full gap-4"
           >
-            <TabsList>
+            <TabsList className="min-w-0 max-w-full">
               <TabsTrigger value="lookup">Look up a profile</TabsTrigger>
               <TabsTrigger value="manual">Manual</TabsTrigger>
               {canImport && <TabsTrigger value="csv">CSV import</TabsTrigger>}

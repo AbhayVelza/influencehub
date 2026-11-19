@@ -58,16 +58,19 @@ export function MultiSelectFilter({
         <Button
           variant="outline"
           size="sm"
-          className={cn('max-w-56 gap-1.5', selected.length > 0 && 'border-primary/40 bg-primary/5 dark:bg-primary/10')}
+          className={cn(
+            'max-w-56 gap-1.5 px-3.5',
+            selected.length > 0 && 'bg-tertiary-fixed/40 hover:bg-tertiary-fixed/60 aria-expanded:bg-tertiary-fixed/60 dark:bg-tertiary-fixed/40',
+          )}
         >
-          <span className={cn(selected.length > 0 && 'text-muted-foreground')}>{label}</span>
-          {selected.length === 1 && <span className="truncate">{firstLabel}</span>}
+          <span className={cn(selected.length > 0 ? 'text-muted-foreground' : 'text-on-surface')}>{label}</span>
+          {selected.length === 1 && <span className="truncate font-semibold text-primary">{firstLabel}</span>}
           {selected.length > 1 && (
-            <span className="rounded-full bg-primary px-1.5 text-[11px] font-semibold text-primary-foreground tabular-nums">
+            <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 font-code text-[10px] font-bold text-on-primary tabular-nums">
               {selected.length}
             </span>
           )}
-          <ChevronDown className="opacity-60" />
+          <ChevronDown className="size-[15px] text-outline" />
         </Button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-64 p-0">

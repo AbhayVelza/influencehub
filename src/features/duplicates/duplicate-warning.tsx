@@ -7,16 +7,18 @@ import { usePoolActions } from '@/features/pool/use-pool-actions'
 import { cn } from '@/lib/utils'
 import type { DuplicateMatch, MatchConfidence } from '@/types'
 
-const CONFIDENCE_META: Record<MatchConfidence, { label: string; badge: string }> = {
-  high: { label: 'High', badge: 'bg-red-50 text-red-700 ring-red-600/20 dark:bg-red-400/10 dark:text-red-300 dark:ring-red-400/25' },
-  medium: { label: 'Medium', badge: 'bg-amber-50 text-amber-800 ring-amber-600/25 dark:bg-amber-400/10 dark:text-amber-300 dark:ring-amber-400/25' },
-  low: { label: 'Low', badge: 'bg-slate-100 text-slate-700 ring-slate-600/20 dark:bg-slate-400/10 dark:text-slate-300 dark:ring-slate-400/25' },
+/** Stitch status pill: a neutral chip whose dot carries the level. */
+const CONFIDENCE_META: Record<MatchConfidence, { label: string; dot: string }> = {
+  high: { label: 'High', dot: 'bg-red-500' },
+  medium: { label: 'Medium', dot: 'bg-amber-500' },
+  low: { label: 'Low', dot: 'bg-outline' },
 }
 
 export function ConfidenceBadge({ confidence }: { confidence: MatchConfidence }) {
   const meta = CONFIDENCE_META[confidence]
   return (
-    <span className={cn('rounded-full px-2 py-0.5 text-[11px] font-medium whitespace-nowrap ring-1 ring-inset', meta.badge)}>
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-container px-2.5 py-0.5 text-label-sm font-medium whitespace-nowrap text-on-surface">
+      <span aria-hidden className={cn('size-1.5 rounded-full', meta.dot)} />
       {meta.label} confidence
     </span>
   )
@@ -42,9 +44,11 @@ export function DuplicateWarning({ matches, onUseExisting, onProceed, proceedLab
   const restricted = matches.length - visible.length
 
   return (
-    <div role="alert" className="space-y-3 rounded-md border border-amber-500/40 bg-amber-50 p-3 text-sm dark:bg-amber-400/10">
-      <p className="flex items-center gap-2 font-medium">
-        <TriangleAlert className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
+    <div role="alert" className="space-y-3 rounded-2xl bg-amber-50/90 p-4 text-body-md shadow-sm ring-1 ring-amber-500/25 backdrop-blur-xl dark:bg-amber-400/10 dark:ring-amber-400/25">
+      <p className="flex items-center gap-2 text-label-md font-semibold text-on-surface">
+        <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-amber-500/15">
+          <TriangleAlert className="size-4 text-amber-600 dark:text-amber-400" strokeWidth={1.75} />
+        </span>
         Possible same creator
       </p>
       {visible.length > 0 && (
@@ -52,21 +56,21 @@ export function DuplicateWarning({ matches, onUseExisting, onProceed, proceedLab
           {visible.map((m) => {
             const inf = m.influencer!
             return (
-              <li key={inf.id} className="flex flex-wrap items-start gap-2.5 rounded-md bg-background/70 p-2">
-                <PersonAvatar name={inf.name} src={inf.profile_pic_url} className="size-8" />
+              <li key={inf.id} className="flex flex-wrap items-start gap-2.5 rounded-xl bg-surface-container-lowest/80 p-3 shadow-sm">
+                <PersonAvatar name={inf.name} src={inf.profile_pic_url} className="size-8 shadow-sm" />
                 <div className="min-w-0 flex-1 space-y-1">
                   <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                    <Link to={`/influencers/${inf.id}`} onClick={onLeave} className="font-medium hover:underline">
+                    <Link to={`/influencers/${inf.id}`} onClick={onLeave} className="text-label-md font-semibold text-primary hover:underline">
                       {inf.name}
                     </Link>
                     <ConfidenceBadge confidence={m.confidence} />
-                    {m.access === 'pool' && <span className="text-xs text-muted-foreground">In the Unassigned Pool</span>}
+                    {m.access === 'pool' && <span className="text-body-sm text-muted-foreground">In the Unassigned Pool</span>}
                   </div>
-                  <div className="flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
+                  <div className="flex flex-wrap items-center gap-x-2 text-body-sm text-muted-foreground">
                     <AccountLabel account={inf.primary_account} />
                     {inf.city && <span>· {inf.city}</span>}
                   </div>
-                  <ul className="list-disc pl-4 text-xs text-muted-foreground">
+                  <ul className="list-disc pl-4 text-body-sm text-muted-foreground marker:text-outline">
                     {m.reasons.map((r) => (
                       <li key={r}>{r}</li>
                     ))}

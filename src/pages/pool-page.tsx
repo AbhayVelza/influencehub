@@ -104,14 +104,10 @@ export default function PoolPage() {
 
   return (
     <div className="flex min-h-full flex-col">
-      <div className="flex-1 space-y-4 p-4 sm:p-6 pb-4">
+      <div className="flex-1 space-y-space-lg px-4 py-6 sm:px-6 lg:px-space-xl lg:py-space-lg">
         <PageHeader
-          title={
-            <>
-              Unassigned Pool{' '}
-              {query.data && <span className="font-normal text-muted-foreground tabular-nums">({formatNumber(total)})</span>}
-            </>
-          }
+          title="Unassigned Pool"
+          count={query.data ? formatNumber(total) : undefined}
           description={
             canReassign
               ? 'Influencers with no owner. Assign them, or let the team claim them.'
@@ -119,46 +115,68 @@ export default function PoolPage() {
           }
         />
 
-        <ListSearch
-          value={filters.q}
-          onChange={(q) => list.setFilters({ q }, { replace: true })}
-          placeholder={canReassign ? undefined : 'Search name, handle, city…'}
-          label="Search the pool"
-        />
-        <InfluencerFilterBar filters={filters} onChange={list.setFilters} source="pool" hideAssigned hideDocuments />
-        <ActiveFilters filters={filters} onChange={list.setFilters} onClear={list.clearFilters} />
+        <div className="space-y-space-md">
+          {/* Glass dock: search pill + Filters pill (the filter panel opens inside it). */}
+          <div className="flex flex-wrap items-center gap-space-sm rounded-2xl bg-surface-container-lowest/70 p-2 shadow-sm backdrop-blur-2xl">
+            <ListSearch
+              value={filters.q}
+              onChange={(q) => list.setFilters({ q }, { replace: true })}
+              placeholder={canReassign ? undefined : 'Search name, handle, city…'}
+              label="Search the pool"
+              className="w-full sm:w-auto sm:max-w-md sm:min-w-64 sm:flex-1"
+            />
+            <InfluencerFilterBar
+              filters={filters}
+              onChange={list.setFilters}
+              source="pool"
+              hideAssigned
+              hideDocuments
+              className="contents"
+            />
+          </div>
+          <ActiveFilters filters={filters} onChange={list.setFilters} onClear={list.clearFilters} />
 
-        <InfluencersTable
-          rows={rows}
-          columns={columns}
-          visibilityKey={canReassign ? 'influencehub-pool-columns' : 'influencehub-pool-columns-limited'}
-          onOpenRow={(item) => setPreview({ item, open: true })}
-          isLoading={query.isPending}
-          isStale={query.isPlaceholderData}
-          sort={sort}
-          onSortChange={list.setSort}
-          selectedIds={new Set(selected.keys())}
-          onSelectionChange={({ selected: added, deselected }) =>
-            setSelected((prev) => {
-              const next = new Map(prev)
-              for (const r of added) next.set(r.id, r)
-              for (const r of deselected) next.delete(r.id)
-              return next
-            })
-          }
-          emptyContent={emptyContent}
-        />
+          <InfluencersTable
+            className="rounded-[20px]"
+            rows={rows}
+            columns={columns}
+            visibilityKey={canReassign ? 'influencehub-pool-columns' : 'influencehub-pool-columns-limited'}
+            onOpenRow={(item) => setPreview({ item, open: true })}
+            isLoading={query.isPending}
+            isStale={query.isPlaceholderData}
+            sort={sort}
+            onSortChange={list.setSort}
+            selectedIds={new Set(selected.keys())}
+            onSelectionChange={({ selected: added, deselected }) =>
+              setSelected((prev) => {
+                const next = new Map(prev)
+                for (const r of added) next.set(r.id, r)
+                for (const r of deselected) next.delete(r.id)
+                return next
+              })
+            }
+            emptyContent={emptyContent}
+          />
+        </div>
       </div>
 
       {(selectedRows.length > 0 || total > 0) && (
-        <div className="sticky bottom-0 flex min-h-14 flex-wrap items-center justify-between gap-3 border-t bg-background/95 px-6 py-2.5 backdrop-blur">
-          <div className="flex flex-wrap items-center gap-2">
+        <div className="sticky bottom-0 z-10 flex min-h-14 flex-wrap items-center justify-between gap-3 bg-surface-container-lowest/80 px-4 py-2.5 shadow-[0_-1px_8px_rgba(0,0,0,0.03)] backdrop-blur-2xl sm:px-6 lg:px-space-xl">
+          <div className="flex flex-wrap items-center gap-space-sm">
             {selectedRows.length > 0 && (
               <>
-                <span className="text-sm font-medium tabular-nums">{selectedRows.length} selected</span>
-                <Button variant="ghost" size="icon-xs" onClick={() => setSelected(new Map())} aria-label="Clear selection">
-                  <X />
-                </Button>
+                <span className="inline-flex items-center gap-1 rounded-full bg-primary py-1 pr-1 pl-3 text-label-md font-semibold text-on-primary tabular-nums shadow-sm">
+                  {selectedRows.length} selected
+                  <Button
+                    variant="ghost"
+                    size="icon-xs"
+                    className="size-5 rounded-full text-on-primary/70 hover:bg-on-primary/15 hover:text-on-primary"
+                    onClick={() => setSelected(new Map())}
+                    aria-label="Clear selection"
+                  >
+                    <X />
+                  </Button>
+                </span>
                 {canReassign ? (
                   <Button size="sm" disabled={actions.busy} onClick={() => setBulkAssign({ rows: selectedRows, open: true, pending: false })}>
                     <UserRound />

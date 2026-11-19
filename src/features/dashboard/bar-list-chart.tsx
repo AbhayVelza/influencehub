@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { ArrowRight } from 'lucide-react'
+import { useState, type ReactNode } from 'react'
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, type TooltipContentProps } from 'recharts'
 import { Button } from '@/components/ui/button'
 import { formatNumber } from '@/lib/format'
@@ -16,7 +17,7 @@ function BarTooltip({ active, payload, unit }: Pick<TooltipContentProps, 'active
   const datum = payload?.[0]?.payload as Datum | undefined
   if (!active || !datum) return null
   return (
-    <div className="rounded-md border bg-popover px-2.5 py-1.5 text-xs shadow-md">
+    <div className="rounded-xl bg-popover/90 px-2.5 py-1.5 text-body-sm shadow-glass-hover backdrop-blur-2xl">
       <div className="font-semibold text-popover-foreground tabular-nums">{formatNumber(datum.value)}</div>
       <div className="text-muted-foreground">
         {unit} · {datum.label}
@@ -27,27 +28,55 @@ function BarTooltip({ active, payload, unit }: Pick<TooltipContentProps, 'active
 
 /**
  * Single-series horizontal bars (one measure across categories), with a table view so values never depend
- * on hovering. The card title names the series, so there's no legend.
+ * on hovering. The card title names the series, so there's no legend. The header holds the title, an optional
+ * subtitle and the chart/table toggle (the Stitch "Show as table →" text action).
  */
-export function BarListChart({ data, unit, labelHeader }: { data: Datum[]; unit: string; labelHeader: string }) {
+export function BarListChart({
+  title,
+  description,
+  data,
+  unit,
+  labelHeader,
+}: {
+  title: ReactNode
+  description?: ReactNode
+  data: Datum[]
+  unit: string
+  labelHeader: string
+}) {
   const [showTable, setShowTable] = useState(false)
   const height = data.length * ROW_HEIGHT + 24
 
   return (
-    <div className="space-y-2">
+    <div>
+      <div className="mb-space-md flex items-start justify-between gap-space-sm">
+        <div className="min-w-0">
+          <h2 className="text-headline-sm font-semibold tracking-tight text-primary">{title}</h2>
+          {description && <p className="mt-0.5 text-body-sm text-muted-foreground">{description}</p>}
+        </div>
+        <Button
+          variant="link"
+          size="xs"
+          className="group/toggle h-auto min-h-7 shrink-0 gap-1 px-0 py-1 text-label-md hover:no-underline"
+          onClick={() => setShowTable((v) => !v)}
+        >
+          {showTable ? 'Show chart' : 'Show as table'}
+          <ArrowRight aria-hidden className="size-4 transition-transform group-hover/toggle:translate-x-0.5" />
+        </Button>
+      </div>
       {showTable ? (
-        <table className="w-full text-sm">
+        <table className="w-full text-body-md">
           <thead>
-            <tr className="text-xs text-muted-foreground">
-              <th className="py-1 text-left font-normal">{labelHeader}</th>
-              <th className="py-1 text-right font-normal">{unit}</th>
+            <tr className="text-[11px] tracking-wider text-muted-foreground uppercase">
+              <th className="py-1.5 text-left font-semibold">{labelHeader}</th>
+              <th className="py-1.5 text-right font-semibold">{unit}</th>
             </tr>
           </thead>
           <tbody>
             {data.map((d) => (
-              <tr key={d.label} className="border-t">
-                <td className="py-1">{d.label}</td>
-                <td className="py-1 text-right tabular-nums">{formatNumber(d.value)}</td>
+              <tr key={d.label} className="border-t border-surface-container">
+                <td className="py-2 text-on-surface">{d.label}</td>
+                <td className="py-2 text-right font-medium text-primary tabular-nums">{formatNumber(d.value)}</td>
               </tr>
             ))}
           </tbody>
@@ -56,7 +85,7 @@ export function BarListChart({ data, unit, labelHeader }: { data: Datum[]; unit:
         <div style={{ height }} role="img" aria-label={`${unit} by ${labelHeader.toLowerCase()}: ${data.map((d) => `${d.label} ${d.value}`).join(', ')}`}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data} layout="vertical" margin={{ top: 0, right: 12, bottom: 0, left: 0 }} barCategoryGap={4}>
-              <CartesianGrid horizontal={false} stroke="var(--border)" strokeWidth={1} />
+              <CartesianGrid horizontal={false} stroke="var(--border)" strokeWidth={1} strokeDasharray="3 4" />
               <XAxis
                 type="number"
                 allowDecimals={false}
@@ -79,9 +108,6 @@ export function BarListChart({ data, unit, labelHeader }: { data: Datum[]; unit:
           </ResponsiveContainer>
         </div>
       )}
-      <Button variant="link" size="xs" className="h-auto px-0 text-xs" onClick={() => setShowTable((v) => !v)}>
-        {showTable ? 'Show chart' : 'Show as table'}
-      </Button>
     </div>
   )
 }

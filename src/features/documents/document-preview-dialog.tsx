@@ -25,11 +25,11 @@ export function DocumentPreviewDialog({ doc, onClose, onDownload }: { doc: Influ
           <DialogTitle>{doc?.title}</DialogTitle>
           <DialogDescription>{doc ? `${DOCUMENT_TYPE_META[doc.type].label} · ${doc.file_name}` : ''}</DialogDescription>
         </DialogHeader>
-        <div className="flex h-[65vh] items-center justify-center overflow-hidden rounded-md border bg-muted/30">
+        <div className="flex h-[65vh] items-center justify-center overflow-hidden rounded-2xl bg-surface-container-low/60 shadow-inner">
           {link.isPending ? (
             <Skeleton className="size-full" />
           ) : link.isError ? (
-            <p role="alert" className="px-6 text-center text-sm text-destructive">
+            <p role="alert" className="px-6 text-center text-body-md text-error">
               Couldn’t load the preview. {getErrorMessage(link.error)}
             </p>
           ) : isImage ? (

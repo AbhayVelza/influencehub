@@ -26,17 +26,16 @@ export function CollapsibleFilters({ activeCount, actions, children, className }
       <div className={cn('flex items-center gap-2', className)}>
         <Button
           variant="outline"
-          size="sm"
-          className={cn('gap-1.5', activeCount > 0 && 'border-primary/40 bg-primary/5 dark:bg-primary/10')}
+          className="gap-1.5"
           aria-expanded={open}
           aria-controls={panelId}
           onClick={() => setOpen((value) => !value)}
         >
-          <SlidersHorizontal />
+          <SlidersHorizontal className="text-muted-foreground" />
           Filters
           {activeCount > 0 && (
             <span
-              className="rounded-full bg-primary px-1.5 text-[11px] font-semibold text-primary-foreground tabular-nums"
+              className="flex size-4 items-center justify-center rounded-full bg-primary text-[10px] font-semibold text-primary-foreground tabular-nums"
               aria-label={`${activeCount} active`}
             >
               {activeCount}

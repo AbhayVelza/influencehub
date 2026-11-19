@@ -43,11 +43,13 @@ function Choice({ name, checked, onChange, children }: { name: string; checked: 
   return (
     <label
       className={cn(
-        'flex min-w-0 cursor-pointer items-start gap-2 rounded-md border p-2 text-sm',
-        checked ? 'border-primary/50 bg-primary/5' : 'hover:bg-muted/50',
+        'flex min-w-0 cursor-pointer items-start gap-2.5 rounded-xl p-3 text-body-md transition-colors has-focus-visible:ring-2 has-focus-visible:ring-on-tertiary-container/60',
+        checked
+          ? 'bg-tertiary-fixed/30 ring-1 ring-on-tertiary-container/40'
+          : 'bg-surface-container-lowest/70 shadow-sm hover:bg-surface-container-low/80',
       )}
     >
-      <input type="radio" name={name} checked={checked} onChange={onChange} className="mt-1 accent-primary" />
+      <input type="radio" name={name} checked={checked} onChange={onChange} className="mt-0.5 size-4 shrink-0 accent-on-tertiary-container" />
       <span className="min-w-0 break-words">{children}</span>
     </label>
   )
@@ -97,7 +99,7 @@ export function MergeDialog({ pair, open, onOpenChange }: { pair: DuplicatePair;
         </DialogHeader>
 
         <fieldset className="space-y-2">
-          <legend className="text-sm font-medium">Keep which record?</legend>
+          <legend className="mb-2 text-label-sm tracking-wider text-muted-foreground uppercase">Keep which record?</legend>
           <div className="grid grid-cols-2 gap-2">
             {pair.influencers.map((inf, i) => (
               <Choice
@@ -109,8 +111,8 @@ export function MergeDialog({ pair, open, onOpenChange }: { pair: DuplicatePair;
                   setChoices({})
                 }}
               >
-                <span className="block font-medium">{inf.name}</span>
-                <span className="block text-xs text-muted-foreground">
+                <span className="block text-label-md font-semibold text-on-surface">{inf.name}</span>
+                <span className="block text-body-sm text-muted-foreground">
                   {inf.accounts.length} account{inf.accounts.length === 1 ? '' : 's'} · added {formatDate(inf.created_at)}
                 </span>
               </Choice>
@@ -120,10 +122,10 @@ export function MergeDialog({ pair, open, onOpenChange }: { pair: DuplicatePair;
 
         {differing.length > 0 && (
           <fieldset className="space-y-3">
-            <legend className="text-sm font-medium">Where they differ, keep…</legend>
+            <legend className="mb-2 text-label-sm tracking-wider text-muted-foreground uppercase">Where they differ, keep…</legend>
             {differing.map((f) => (
               <div key={f.key} className="space-y-1" role="radiogroup" aria-label={f.label}>
-                <p className="text-xs text-muted-foreground">{f.label}</p>
+                <p className="text-label-md font-medium text-on-surface-variant">{f.label}</p>
                 <div className="grid grid-cols-2 gap-2">
                   {(['keep', 'merge'] as const).map((from) => {
                     const value = f.value(from === 'keep' ? keep : other, team)
@@ -144,8 +146,8 @@ export function MergeDialog({ pair, open, onOpenChange }: { pair: DuplicatePair;
           </fieldset>
         )}
 
-        <div className="space-y-1.5 rounded-md border bg-muted/30 p-3 text-sm">
-          <p className="font-medium">After the merge</p>
+        <div className="space-y-1.5 rounded-xl bg-surface-container-low/50 p-4 text-body-md">
+          <p className="text-label-md font-semibold text-on-surface">After the merge</p>
           <p className="flex flex-wrap items-center gap-2 text-muted-foreground">
             {combinedAccounts.length} social accounts <PlatformMarks platforms={combinedAccounts.map((a) => a.platform)} />
           </p>

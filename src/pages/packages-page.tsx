@@ -1,5 +1,5 @@
 import { useQuery, keepPreviousData } from '@tanstack/react-query'
-import { Copy, MoreHorizontal, Package as PackageIcon, Pencil, Plus, SearchX } from 'lucide-react'
+import { Copy, MoreHorizontal, Package as PackageIcon, Pencil, Plus, SearchX, Truck } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -109,13 +109,18 @@ export default function PackagesPage() {
   }
 
   return (
-    <div className="space-y-4 p-4 sm:p-6">
+    <div className="space-y-space-lg px-4 py-6 sm:px-6 lg:px-space-xl lg:py-space-lg">
       <PageHeader
-        title={
-          <>
-            Packages{' '}
-            {query.data && <span className="font-normal text-muted-foreground tabular-nums">({formatNumber(query.data.total)})</span>}
-          </>
+        title="Packages"
+        className="md:items-center"
+        count={
+          query.data && (
+            <>
+              <span className="sr-only">(</span>
+              {formatNumber(query.data.total)}
+              <span className="sr-only">)</span>
+            </>
+          )
         }
         actions={
           <Button onClick={() => setPickerOpen(true)}>
@@ -125,13 +130,13 @@ export default function PackagesPage() {
         }
       />
 
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center gap-space-sm">
         <ListSearch
           value={params.q}
           onChange={(q) => update({ q })}
           placeholder="Search name, handle, tracking…"
           label="Search packages"
-          className="max-w-72"
+          className="max-w-md min-w-48 flex-1 [&_input]:bg-surface-container-lowest/70 [&_input]:shadow-sm [&_input]:backdrop-blur-xl"
         />
         <CollapsibleFilters
           activeCount={(params.status?.length ? 1 : 0) + (params.courier?.length ? 1 : 0) + (params.sent_from || params.sent_to ? 1 : 0)}
@@ -163,19 +168,19 @@ export default function PackagesPage() {
         </CollapsibleFilters>
       </div>
 
-      <div className="overflow-hidden rounded-lg border bg-card">
-        <div className="overflow-x-auto">
+      <div className="overflow-hidden rounded-[20px] bg-surface-container-lowest/70 shadow-glass backdrop-blur-2xl">
+        <div className="@container overflow-x-auto">
           <Table className={cn(query.isPlaceholderData && 'opacity-60')}>
             <TableHeader>
-              <TableRow className="bg-muted/40 hover:bg-muted/40">
-                <TableHead>Influencer</TableHead>
-                <TableHead>Items</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Courier</TableHead>
-                <TableHead>Tracking</TableHead>
-                <TableHead>Sent</TableHead>
-                <TableHead>Delivered</TableHead>
-                <TableHead className="w-10">
+              <TableRow>
+                <TableHead className="py-3.5 pl-space-md">Influencer</TableHead>
+                <TableHead className="px-4 py-3.5">Items</TableHead>
+                <TableHead className="px-4 py-3.5">Status</TableHead>
+                <TableHead className="px-4 py-3.5">Courier</TableHead>
+                <TableHead className="px-4 py-3.5">Tracking</TableHead>
+                <TableHead className="px-4 py-3.5">Sent</TableHead>
+                <TableHead className="px-4 py-3.5">Delivered</TableHead>
+                <TableHead className="w-10 py-3.5 pr-space-md">
                   <span className="sr-only">Actions</span>
                 </TableHead>
               </TableRow>
@@ -185,7 +190,7 @@ export default function PackagesPage() {
                 Array.from({ length: 6 }, (_, i) => (
                   <TableRow key={i}>
                     {Array.from({ length: 8 }, (_, j) => (
-                      <TableCell key={j}>
+                      <TableCell key={j} className="px-4">
                         <Skeleton className="h-5 w-20" />
                       </TableCell>
                     ))}
@@ -193,13 +198,18 @@ export default function PackagesPage() {
                 ))
               ) : query.isError ? (
                 <TableRow>
-                  <TableCell colSpan={8}>
+                  <TableCell colSpan={8} className="p-0">
+                    {/* Pinned to the visible width so the message stays on screen when the table scrolls sideways. */}
+                    <div className="sticky left-0 w-[100cqw]">
                     <ErrorState title="Couldn’t load packages" error={query.error} onRetry={() => query.refetch()} />
+                    </div>
                   </TableCell>
                 </TableRow>
               ) : query.data.items.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8}>
+                  <TableCell colSpan={8} className="p-0">
+                    {/* Pinned to the visible width so the message stays on screen when the table scrolls sideways. */}
+                    <div className="sticky left-0 w-[100cqw]">
                     {filtered ? (
                       <EmptyState icon={SearchX} title="No packages match these filters" />
                     ) : (
@@ -210,87 +220,119 @@ export default function PackagesPage() {
                         action={<Button onClick={() => setPickerOpen(true)}>Create package</Button>}
                       />
                     )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ) : (
-                query.data.items.map((pkg) => (
-                  <TableRow key={pkg.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-2.5">
-                        <PersonAvatar name={pkg.influencer.name} src={pkg.influencer.profile_pic_url} />
-                        <div className="min-w-0">
-                          <Link to={`/influencers/${pkg.influencer_id}?tab=packages`} className="block truncate font-medium hover:underline">
-                            {pkg.influencer.name}
-                          </Link>
-                          <AccountLabel account={pkg.influencer.primary_account} block className="text-xs text-muted-foreground" />
+                query.data.items.map((pkg) => {
+                  const itemLabels = pkg.items.map((i) => `${i.name} × ${i.qty}`)
+                  return (
+                    <TableRow key={pkg.id} className="group">
+                      <TableCell className="py-3 pl-space-md">
+                        <div className="flex items-center gap-3">
+                          <PersonAvatar name={pkg.influencer.name} src={pkg.influencer.profile_pic_url} className="size-9 shadow-sm" />
+                          <div className="min-w-0">
+                            <Link
+                              to={`/influencers/${pkg.influencer_id}?tab=packages`}
+                              className="block truncate text-label-md font-semibold text-on-surface group-hover:text-primary hover:underline"
+                            >
+                              {pkg.influencer.name}
+                            </Link>
+                            <AccountLabel account={pkg.influencer.primary_account} block className="text-body-sm text-muted-foreground" />
+                          </div>
                         </div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="max-w-56">
-                      <span className="block truncate" title={pkg.items.map((i) => `${i.name} × ${i.qty}`).join(', ')}>
-                        {pkg.items.map((i) => `${i.name} × ${i.qty}`).join(', ')}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <span className={cn('rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap', PACKAGE_STATUS_META[pkg.status].badge)}>
-                        {PACKAGE_STATUS_META[pkg.status].label}
-                      </span>
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap">{pkg.courier ?? <span className="text-muted-foreground">—</span>}</TableCell>
-                    <TableCell>
-                      {pkg.tracking_number ? (
-                        <span className="inline-flex items-center gap-1">
-                          <span className="font-mono text-xs">{pkg.tracking_number}</span>
-                          <Button
-                            variant="ghost"
-                            size="icon-xs"
-                            aria-label={`Copy tracking number ${pkg.tracking_number}`}
-                            onClick={() => copyToClipboard(pkg.tracking_number!, 'Tracking number copied')}
-                          >
-                            <Copy />
-                          </Button>
+                      </TableCell>
+                      <TableCell className="max-w-56 px-4 py-3">
+                        <div className="min-w-0" title={itemLabels.join(', ')}>
+                          <span className="block truncate font-medium text-on-surface">{itemLabels[0]}</span>
+                          {itemLabels.length > 1 && (
+                            <span className="block truncate text-[11px] text-muted-foreground">{itemLabels.slice(1).join(' + ')}</span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="px-4 py-3">
+                        <span
+                          className={cn(
+                            'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-label-sm font-medium whitespace-nowrap',
+                            PACKAGE_STATUS_META[pkg.status].badge,
+                          )}
+                        >
+                          <span aria-hidden className="size-1.5 rounded-full bg-current" />
+                          {PACKAGE_STATUS_META[pkg.status].label}
                         </span>
-                      ) : (
-                        <span className="text-muted-foreground">—</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap">{formatDate(pkg.sent_at)}</TableCell>
-                    <TableCell className="whitespace-nowrap">{formatDate(pkg.delivered_at)}</TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon-sm" aria-label={`Actions for ${pkg.influencer.name}’s package`}>
-                            <MoreHorizontal />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48">
-                          <DropdownMenuItem onSelect={() => openDrawer(pkg.influencer_id, pkg)}>
-                            <Pencil />
-                            Edit package
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuLabel className="text-xs text-muted-foreground">Mark as</DropdownMenuLabel>
-                          {PACKAGE_STATUSES.filter((s) => s !== pkg.status && s !== 'preparing').map((s) => (
-                            <DropdownMenuItem key={s} onSelect={() => setStatus(pkg, s)}>
-                              {PACKAGE_STATUS_META[s].label}
+                      </TableCell>
+                      <TableCell className="px-4 py-3 whitespace-nowrap">
+                        {pkg.courier ? (
+                          <span className="flex items-center gap-1.5 font-medium text-on-surface">
+                            <Truck aria-hidden className="size-4 shrink-0 text-muted-foreground" strokeWidth={1.75} />
+                            {pkg.courier}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="px-4 py-3">
+                        {pkg.tracking_number ? (
+                          <span className="inline-flex items-center gap-1">
+                            <span className="rounded-md bg-surface-container-low px-1.5 py-0.5 font-code text-code whitespace-nowrap text-muted-foreground select-all">
+                              {pkg.tracking_number}
+                            </span>
+                            <Button
+                              variant="ghost"
+                              size="icon-xs"
+                              className="text-muted-foreground hover:text-primary"
+                              aria-label={`Copy tracking number ${pkg.tracking_number}`}
+                              onClick={() => copyToClipboard(pkg.tracking_number!, 'Tracking number copied')}
+                            >
+                              <Copy />
+                            </Button>
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="px-4 py-3 whitespace-nowrap text-muted-foreground tabular-nums">{formatDate(pkg.sent_at)}</TableCell>
+                      <TableCell className="px-4 py-3 whitespace-nowrap text-on-surface tabular-nums">{formatDate(pkg.delivered_at)}</TableCell>
+                      <TableCell className="py-3 pr-space-md text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon-sm"
+                              className="rounded-lg text-muted-foreground hover:bg-surface-container hover:text-primary"
+                              aria-label={`Actions for ${pkg.influencer.name}’s package`}
+                            >
+                              <MoreHorizontal />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-48 p-1.5">
+                            <DropdownMenuItem onSelect={() => openDrawer(pkg.influencer_id, pkg)} className="rounded-xl px-3 py-2">
+                              <Pencil />
+                              Edit package
                             </DropdownMenuItem>
-                          ))}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))
+                            <DropdownMenuSeparator />
+                            <DropdownMenuLabel className="px-3 text-label-sm tracking-wider text-muted-foreground uppercase">Mark as</DropdownMenuLabel>
+                            {PACKAGE_STATUSES.filter((s) => s !== pkg.status && s !== 'preparing').map((s) => (
+                              <DropdownMenuItem key={s} onSelect={() => setStatus(pkg, s)} className="rounded-xl px-3 py-2">
+                                {PACKAGE_STATUS_META[s].label}
+                              </DropdownMenuItem>
+                            ))}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })
               )}
             </TableBody>
           </Table>
         </div>
+        {query.data && query.data.total > PAGE_SIZE && (
+          <div className="flex justify-end px-4 py-3 sm:px-space-lg">
+            <Pagination page={params.page} pageSize={PAGE_SIZE} total={query.data.total} onPageChange={(page) => update({ page })} />
+          </div>
+        )}
       </div>
-
-      {query.data && query.data.total > PAGE_SIZE && (
-        <div className="flex justify-end">
-          <Pagination page={params.page} pageSize={PAGE_SIZE} total={query.data.total} onPageChange={(page) => update({ page })} />
-        </div>
-      )}
 
       <InfluencerPicker
         open={pickerOpen}

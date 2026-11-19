@@ -67,8 +67,8 @@ function RenameDialog({ category, onClose }: { category: Category | null; onClos
           <div className="grid gap-1.5">
             <Label htmlFor="category-name">Name</Label>
             <Input id="category-name" value={name} autoFocus aria-invalid={!!error} onChange={(e) => setName(e.target.value)} />
-            {error && <p className="text-xs text-destructive">{error}</p>}
-            <p className="text-xs text-muted-foreground">Influencers in this category move with it.</p>
+            {error && <p className="text-body-sm text-error">{error}</p>}
+            <p className="text-body-sm text-muted-foreground">Influencers in this category move with it.</p>
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>
@@ -111,12 +111,12 @@ export function CategorySettings() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Categories</CardTitle>
+        <CardTitle>Categories</CardTitle>
         <CardDescription>Inactive categories stay on existing influencers but can’t be picked for new ones.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <form onSubmit={add} className="flex items-start gap-2" noValidate aria-label="Add category">
-          <div className="grid gap-1">
+        <form onSubmit={add} className="flex flex-wrap items-start gap-2" noValidate aria-label="Add category">
+          <div className="grid min-w-0 gap-1">
             <Input
               value={name}
               onChange={(e) => {
@@ -126,9 +126,9 @@ export function CategorySettings() {
               placeholder="New category"
               aria-label="New category name"
               aria-invalid={!!error}
-              className="w-64"
+              className="w-64 max-w-full"
             />
-            {error && <p className="text-xs text-destructive">{error}</p>}
+            {error && <p className="text-body-sm text-error">{error}</p>}
           </div>
           <Button type="submit" variant="outline" disabled={create.isPending}>
             <Plus />
@@ -139,69 +139,71 @@ export function CategorySettings() {
         {categories.isPending ? (
           <div className="space-y-2">
             {Array.from({ length: 6 }, (_, i) => (
-              <Skeleton key={i} className="h-9 w-full" />
+              <Skeleton key={i} className="h-10 w-full rounded-xl" />
             ))}
           </div>
         ) : categories.isError ? (
           <ErrorState title="Couldn’t load categories" error={categories.error} onRetry={() => categories.refetch()} />
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead className="text-right">Influencers</TableHead>
-                <TableHead>Active</TableHead>
-                <TableHead className="text-right">
-                  <span className="sr-only">Actions</span>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {categories.data.items.map((c) => (
-                <TableRow key={c.id} className={cn(!c.is_active && 'text-muted-foreground')}>
-                  <TableCell className="font-medium">{c.name}</TableCell>
-                  <TableCell className="text-right tabular-nums">{formatNumber(c.influencer_count)}</TableCell>
-                  <TableCell>
-                    <Switch
-                      checked={c.is_active}
-                      aria-label={`${c.name} active`}
-                      disabled={update.isPending}
-                      onCheckedChange={(is_active) =>
-                        update.mutate(
-                          { id: c.id, body: { is_active } },
-                          {
-                            onSuccess: () => toast.success(`${c.name} ${is_active ? 'activated' : 'deactivated'}`),
-                            onError: (err) => toast.error('Couldn’t update the category', { description: getErrorMessage(err) }),
-                          },
-                        )
-                      }
-                    />
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="icon-sm" aria-label={`Rename ${c.name}`} onClick={() => setRenaming(c)}>
-                      <Pencil />
-                    </Button>
-                    {c.influencer_count > 0 ? (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span tabIndex={0} aria-label={`Can’t delete ${c.name}: in use`}>
-                            <Button variant="ghost" size="icon-sm" disabled aria-hidden>
-                              <Trash2 />
-                            </Button>
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent>In use by {formatNumber(c.influencer_count)} influencers — deactivate it instead</TooltipContent>
-                      </Tooltip>
-                    ) : (
-                      <Button variant="ghost" size="icon-sm" aria-label={`Delete ${c.name}`} onClick={() => setDeleting(c)}>
-                        <Trash2 />
-                      </Button>
-                    )}
-                  </TableCell>
+          <div className="overflow-hidden rounded-xl bg-surface-container-lowest/60 ring-1 ring-surface-container">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead className="text-right">Influencers</TableHead>
+                  <TableHead>Active</TableHead>
+                  <TableHead className="text-right">
+                    <span className="sr-only">Actions</span>
+                  </TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {categories.data.items.map((c) => (
+                  <TableRow key={c.id} className={cn(!c.is_active && 'text-muted-foreground')}>
+                    <TableCell className={cn('font-medium', c.is_active && 'text-primary')}>{c.name}</TableCell>
+                    <TableCell className="text-right font-code tabular-nums">{formatNumber(c.influencer_count)}</TableCell>
+                    <TableCell>
+                      <Switch
+                        checked={c.is_active}
+                        aria-label={`${c.name} active`}
+                        disabled={update.isPending}
+                        onCheckedChange={(is_active) =>
+                          update.mutate(
+                            { id: c.id, body: { is_active } },
+                            {
+                              onSuccess: () => toast.success(`${c.name} ${is_active ? 'activated' : 'deactivated'}`),
+                              onError: (err) => toast.error('Couldn’t update the category', { description: getErrorMessage(err) }),
+                            },
+                          )
+                        }
+                      />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button variant="ghost" size="icon-sm" aria-label={`Rename ${c.name}`} onClick={() => setRenaming(c)}>
+                        <Pencil />
+                      </Button>
+                      {c.influencer_count > 0 ? (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span tabIndex={0} aria-label={`Can’t delete ${c.name}: in use`}>
+                              <Button variant="ghost" size="icon-sm" disabled aria-hidden>
+                                <Trash2 />
+                              </Button>
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>In use by {formatNumber(c.influencer_count)} influencers — deactivate it instead</TooltipContent>
+                        </Tooltip>
+                      ) : (
+                        <Button variant="ghost" size="icon-sm" aria-label={`Delete ${c.name}`} onClick={() => setDeleting(c)}>
+                          <Trash2 />
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         )}
       </CardContent>
 

@@ -19,9 +19,9 @@ import { useUpdateInfluencer } from '../detail-queries'
 
 function Section({ title, action, children }: { title: string; action?: ReactNode; children: ReactNode }) {
   return (
-    <Card size="sm">
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-sm">{title}</CardTitle>
+    <Card className="gap-4 [--card-spacing:--spacing(5)]">
+      <CardHeader className="flex min-h-7 flex-row items-center justify-between">
+        <CardTitle>{title}</CardTitle>
         {action}
       </CardHeader>
       <CardContent>{children}</CardContent>
@@ -64,17 +64,17 @@ function AddressEditor({
   })
 
   return (
-    <form onSubmit={onSubmit} className="grid grid-cols-1 gap-2 sm:grid-cols-2" noValidate aria-label="Edit address">
+    <form onSubmit={onSubmit} className="grid grid-cols-1 gap-3 sm:grid-cols-2" noValidate aria-label="Edit address">
       {ADDRESS_FIELDS.map(({ name, label, span }) => (
         <div key={name} className={span === 2 ? 'grid gap-1 sm:col-span-2' : 'grid gap-1'}>
-          <Label htmlFor={`addr-${name}`} className="text-xs">
+          <Label htmlFor={`addr-${name}`} className="text-label-sm tracking-wider text-muted-foreground uppercase">
             {label}
           </Label>
           <Input id={`addr-${name}`} aria-invalid={!!formState.errors[name]} {...register(name)} />
-          {formState.errors[name] && <p className="text-xs text-destructive">{formState.errors[name]?.message}</p>}
+          {formState.errors[name] && <p className="text-body-sm text-error">{formState.errors[name]?.message}</p>}
         </div>
       ))}
-      <div className="flex justify-end gap-2 pt-1 sm:col-span-2">
+      <div className="flex justify-end gap-2 pt-2 sm:col-span-2">
         <Button type="button" variant="outline" size="sm" onClick={onCancel}>
           Cancel
         </Button>
@@ -116,14 +116,14 @@ function TagsEditor({
   return (
     <div className="space-y-2">
       <ul className="flex flex-wrap gap-1.5" aria-label="Tags">
-        {tags.length === 0 && <li className="text-sm text-muted-foreground">No tags yet</li>}
+        {tags.length === 0 && <li className="text-body-md text-muted-foreground">No tags yet</li>}
         {tags.map((tag) => (
-          <li key={tag} className="inline-flex h-6 items-center gap-1 rounded-full border bg-muted/60 pr-0.5 pl-2.5 text-xs">
+          <li key={tag} className="inline-flex h-6 items-center gap-1 rounded-full bg-tertiary-fixed/40 pr-0.5 pl-2.5 text-[11px] font-medium text-on-surface">
             {tag}
             {!disabled && (
               <button
                 type="button"
-                className="flex size-5 items-center justify-center rounded-full text-muted-foreground hover:bg-background hover:text-foreground"
+                className="flex size-5 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-surface-container-lowest hover:text-primary"
                 aria-label={`Remove tag ${tag}`}
                 onClick={() => onChange(tags.filter((t) => t !== tag)).catch((err) => setError(getErrorMessage(err)))}
               >
@@ -144,7 +144,7 @@ function TagsEditor({
             placeholder="Add a tag"
             aria-label="New tag"
             aria-invalid={!!error}
-            className="h-7 max-w-48 text-xs"
+            className="h-8 max-w-48 text-body-sm"
           />
           <Button type="submit" variant="outline" size="sm" disabled={!draft.trim()}>
             <Plus />
@@ -152,7 +152,7 @@ function TagsEditor({
           </Button>
         </form>
       )}
-      {error && <p className="text-xs text-destructive">{error}</p>}
+      {error && <p className="text-body-sm text-error">{error}</p>}
     </div>
   )
 }
@@ -179,7 +179,7 @@ export function OverviewTab({ influencer }: { influencer: Influencer }) {
   const address = influencer.address
 
   return (
-    <div className="grid gap-4 xl:grid-cols-2">
+    <div className="grid gap-gutter-sm xl:grid-cols-2">
       <Section title="Contact">
         <dl>
           <InlineTextField label="Name" value={influencer.name} schema={fieldSchemas.name} onSave={(name) => save({ name })} disabled={!canEdit} />
@@ -238,7 +238,7 @@ export function OverviewTab({ influencer }: { influencer: Influencer }) {
         action={
           canEdit &&
           !editingAddress && (
-            <Button variant="ghost" size="xs" onClick={() => setEditingAddress(true)}>
+            <Button variant="link" size="xs" className="px-1" onClick={() => setEditingAddress(true)}>
               <Pencil />
               {address ? 'Edit' : 'Add'}
             </Button>
@@ -256,7 +256,7 @@ export function OverviewTab({ influencer }: { influencer: Influencer }) {
             }}
           />
         ) : address ? (
-          <address className="text-sm leading-relaxed not-italic">
+          <address className="text-body-md leading-relaxed text-on-surface not-italic">
             {address.line1}
             {address.line2 && (
               <>
@@ -270,15 +270,15 @@ export function OverviewTab({ influencer }: { influencer: Influencer }) {
             {address.country}
           </address>
         ) : (
-          <p className="text-sm text-muted-foreground">No address yet. Needed before sending a package.</p>
+          <p className="text-body-md text-muted-foreground">No address yet. Needed before sending a package.</p>
         )}
       </Section>
 
       <Section title={`Onboarding checklist · ${done}/${CHECKLIST.length}`}>
-        <ul className="space-y-2">
+        <ul className="divide-y divide-surface-container overflow-hidden rounded-xl bg-surface-container-low/50">
           {CHECKLIST.map(({ key, label }) => (
             <li key={key}>
-              <label className="flex items-center gap-2 text-sm">
+              <label className="flex items-center gap-2.5 px-3 py-2.5 text-body-md text-on-surface">
                 <Checkbox
                   checked={influencer.onboarding_checklist[key]}
                   disabled={!canEdit || update.isPending}

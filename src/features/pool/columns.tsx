@@ -1,11 +1,11 @@
 import type { ColumnDef } from '@tanstack/react-table'
-import { BadgeCheck, UserRound } from 'lucide-react'
+import { UserRound } from 'lucide-react'
 import { EmailValue } from '@/components/common/email-value'
 import { PersonAvatar } from '@/components/common/person-avatar'
 import { AccountLabel, PlatformMarks } from '@/components/common/platform-badge'
 import { StageBadge } from '@/components/common/stage-badge'
 import { Button } from '@/components/ui/button'
-import { selectColumn } from '@/features/influencers/columns'
+import { categoryPill, selectColumn, verifiedMark } from '@/features/influencers/columns'
 import { RelativeTime } from '@/components/common/relative-time'
 import { formatCompact, formatNumber } from '@/lib/format'
 import type { PoolItem } from '@/types'
@@ -33,7 +33,10 @@ export function buildPoolColumns({ canReassign, busy, onOpen, onClaim, onAssign 
           cell: ({ row }) => {
             const phone = isFullInfluencer(row.original) ? row.original.phone : null
             return phone ? (
-              <a href={`tel:${phone}`} className="whitespace-nowrap hover:underline">
+              <a
+                href={`tel:${phone}`}
+                className="font-code text-[11px] whitespace-nowrap text-muted-foreground hover:text-on-surface hover:underline"
+              >
                 {phone}
               </a>
             ) : (
@@ -48,7 +51,7 @@ export function buildPoolColumns({ canReassign, busy, onOpen, onClaim, onAssign 
           cell: ({ row }) => {
             const email = isFullInfluencer(row.original) ? row.original.email : null
             return email ? (
-              <EmailValue value={email} className="block max-w-52 truncate" />
+              <EmailValue value={email} className="block max-w-44 truncate text-muted-foreground" />
             ) : (
               muted
             )
@@ -66,18 +69,24 @@ export function buildPoolColumns({ canReassign, busy, onOpen, onClaim, onAssign 
       meta: { label: 'Influencer', sortKey: 'name', className: 'min-w-52' },
       cell: ({ row }) => {
         const item = row.original
+        const handle = poolPrimary(item)?.handle
         return (
-          <div className="flex items-center gap-2.5">
-            <PersonAvatar name={item.name} src={item.profile_pic_url} />
-            {/* Opens the preview drawer, not the profile: pool rows aren't anyone's yet. */}
-            <button type="button" onClick={() => onOpen(item)} className="truncate text-left font-medium hover:underline">
-              {item.name}
-            </button>
-            {item.is_verified && (
-              <span title="Verified" className="shrink-0">
-                <BadgeCheck className="size-4 text-sky-500" aria-label="Verified account" />
-              </span>
-            )}
+          <div className="flex items-center gap-3">
+            <PersonAvatar name={item.name} src={item.profile_pic_url} className="size-10 shadow-sm" />
+            <div className="flex min-w-0 flex-col">
+              <div className="flex min-w-0 items-center gap-1.5">
+                {/* Opens the preview drawer, not the profile: pool rows aren't anyone's yet. */}
+                <button
+                  type="button"
+                  onClick={() => onOpen(item)}
+                  className="truncate text-left text-body-md leading-tight font-semibold text-primary hover:underline"
+                >
+                  {item.name}
+                </button>
+                {item.is_verified && verifiedMark()}
+              </div>
+              {handle && <span className="truncate font-code text-[11px] text-muted-foreground">@{handle}</span>}
+            </div>
           </div>
         )
       },
@@ -86,7 +95,7 @@ export function buildPoolColumns({ canReassign, busy, onOpen, onClaim, onAssign 
       id: 'category',
       header: 'Category',
       meta: { label: 'Category' },
-      cell: ({ row }) => row.original.category,
+      cell: ({ row }) => categoryPill(row.original.category),
     },
     {
       id: 'account',
@@ -106,7 +115,13 @@ export function buildPoolColumns({ canReassign, busy, onOpen, onClaim, onAssign 
       meta: { label: 'Total followers', sortKey: 'total_reach', sortDescFirst: true, align: 'right' },
       cell: ({ row }) => {
         const n = row.original.total_reach
-        return n == null ? muted : <span title={formatNumber(n)}>{formatCompact(n)}</span>
+        return n == null ? (
+          muted
+        ) : (
+          <span title={formatNumber(n)} className="font-semibold tracking-tight text-on-surface">
+            {formatCompact(n)}
+          </span>
+        )
       },
     },
     ...contact,
@@ -146,7 +161,7 @@ export function buildPoolColumns({ canReassign, busy, onOpen, onClaim, onAssign 
       id: 'actions',
       enableHiding: false,
       header: () => <span className="sr-only">Actions</span>,
-      meta: { align: 'right' },
+      meta: { align: 'right', className: 'pl-3 pr-2' },
       cell: ({ row }) =>
         canReassign ? (
           <AssignMenu
@@ -164,7 +179,7 @@ export function buildPoolColumns({ canReassign, busy, onOpen, onClaim, onAssign 
             onClick={() => onClaim(row.original)}
             aria-label={`Claim ${row.original.name}`}
           >
-            <UserRound />
+            <UserRound className="text-muted-foreground" />
             Claim
           </Button>
         ),

@@ -75,7 +75,7 @@ export function BulkAssignDialog({
             </DialogHeader>
             <fieldset className="min-w-0">
               <legend className="sr-only">Assign to</legend>
-              <ul className="-mx-1 max-h-72 space-y-0.5 overflow-y-auto px-1 py-0.5">
+              <ul className="-mx-1 max-h-72 space-y-0.5 overflow-y-auto rounded-2xl bg-surface-container-low/50 p-1">
                 {members.map((user) => {
                   const id = `bulk-assign-${user.id}`
                   const share = shareOf.get(user.id)
@@ -83,16 +83,18 @@ export function BulkAssignDialog({
                     <li key={user.id}>
                       <label
                         htmlFor={id}
-                        className="flex cursor-pointer items-center gap-3 rounded-md px-2 py-1.5 hover:bg-muted has-[:focus-visible]:bg-muted"
+                        className="flex cursor-pointer items-center gap-3 rounded-xl px-2.5 py-2 transition-colors hover:bg-surface-container-lowest/80 has-[:focus-visible]:bg-surface-container-lowest/80 has-[[data-state=checked]]:bg-tertiary-fixed/30"
                       >
                         <Checkbox id={id} checked={chosenIds.has(user.id)} onCheckedChange={(on) => toggle(user.id, on === true)} />
-                        <PersonAvatar name={user.name} className="size-6 text-[10px]" aria-hidden />
+                        <PersonAvatar name={user.name} className="size-7 text-[10px]" aria-hidden />
                         <span className="min-w-0 flex-1">
-                          <span className="block truncate text-sm">{nameOf(user)}</span>
-                          <span className="block text-xs text-muted-foreground">{ROLE_LABEL[user.role]}</span>
+                          <span className="block truncate text-label-md font-medium text-on-surface">{nameOf(user)}</span>
+                          <span className="block text-body-sm text-muted-foreground">{ROLE_LABEL[user.role]}</span>
                         </span>
                         {share !== undefined && (
-                          <span className="text-xs text-muted-foreground tabular-nums">{plural(share)}</span>
+                          <span className="rounded-full bg-surface-container-lowest px-2 py-0.5 text-[11px] font-medium text-on-surface tabular-nums shadow-sm">
+                            {plural(share)}
+                          </span>
                         )}
                       </label>
                     </li>
@@ -120,9 +122,12 @@ export function BulkAssignDialog({
               </DialogDescription>
             </DialogHeader>
             {chosen.length > 1 && (
-              <ul className="space-y-1 text-sm" aria-label="How they’re shared out">
+              <ul
+                className="divide-y divide-surface-container rounded-2xl bg-surface-container-low/50 px-space-md text-body-md"
+                aria-label="How they’re shared out"
+              >
                 {chosen.map((user, i) => (
-                  <li key={user.id} className="flex items-center justify-between gap-3">
+                  <li key={user.id} className="flex items-center justify-between gap-3 py-2">
                     <span className="truncate">{nameOf(user)}</span>
                     <span className="text-muted-foreground tabular-nums">{plural(shares[i])}</span>
                   </li>

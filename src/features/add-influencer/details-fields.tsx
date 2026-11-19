@@ -27,17 +27,17 @@ export function Field({
   children: ReactNode
 }) {
   return (
-    <div className={cn('grid content-start gap-1', className)}>
-      <Label htmlFor={id} className="text-xs">
+    <div className={cn('grid content-start gap-1.5', className)}>
+      <Label htmlFor={id} className="text-label-md font-medium text-on-surface">
         {label}
       </Label>
       {children}
       {error?.message ? (
-        <p id={`${id}-error`} className="text-xs text-destructive">
+        <p id={`${id}-error`} className="text-body-sm text-error">
           {error.message}
         </p>
       ) : (
-        hint && <div className="text-xs text-muted-foreground">{hint}</div>
+        hint && <div className="text-body-sm text-muted-foreground">{hint}</div>
       )}
     </div>
   )

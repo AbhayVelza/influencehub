@@ -66,7 +66,7 @@ function UploadStep({ onParsed }: { onParsed: (parsed: ParsedFile) => void }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3 rounded-md border bg-muted/30 p-3 text-sm">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-tertiary-fixed/25 p-3 text-body-md">
         <span className="text-muted-foreground">Start from the template so columns match automatically.</span>
         <Button variant="outline" size="sm" onClick={() => downloadCsv('influencehub-import-template.csv', templateCsv())}>
           <Download />
@@ -81,13 +81,15 @@ function UploadStep({ onParsed }: { onParsed: (parsed: ParsedFile) => void }) {
         onDragLeave={() => setDragging(false)}
         onDrop={onDrop}
         className={cn(
-          'flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed px-6 py-10 text-center',
-          dragging && 'border-primary bg-primary/5',
+          'flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-outline-variant/70 bg-surface-container-low/40 px-6 py-10 text-center transition-colors duration-150',
+          dragging && 'border-on-tertiary-container bg-tertiary-fixed/30',
         )}
       >
-        <FileUp className="size-8 text-muted-foreground" />
-        <p className="text-sm font-medium">Drop a CSV file here</p>
-        <p className="text-xs text-muted-foreground">Up to 2 MB and {formatNumber(MAX_ROWS)} rows</p>
+        <span className="mb-1 flex size-14 items-center justify-center rounded-full bg-surface-container-lowest shadow-sm">
+          <FileUp className="size-6 text-on-tertiary-container" strokeWidth={1.75} />
+        </span>
+        <p className="text-headline-sm font-semibold tracking-tight text-primary">Drop a CSV file here</p>
+        <p className="text-body-sm text-muted-foreground">Up to 2 MB and {formatNumber(MAX_ROWS)} rows</p>
         <Button variant="outline" size="sm" onClick={() => inputRef.current?.click()}>
           <Upload />
           Choose file
@@ -105,7 +107,7 @@ function UploadStep({ onParsed }: { onParsed: (parsed: ParsedFile) => void }) {
         />
       </div>
       {error && (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="text-body-md text-error">
           {error}
         </p>
       )}
@@ -187,15 +189,15 @@ function MappingStep({
   return (
     <div className="space-y-5">
       <section className="space-y-2">
-        <h3 className="text-sm font-medium">
+        <h3 className="text-headline-sm font-semibold tracking-tight text-primary">
           Match columns · <span className="font-normal text-muted-foreground">{parsed.file.name}</span>
         </h3>
-        <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+        <div className="grid grid-cols-1 gap-x-4 gap-y-2 rounded-2xl bg-surface-container-low/50 p-3 sm:grid-cols-2">
           {IMPORT_FIELDS.map((field) => (
             <div key={field.key} className="grid grid-cols-[8rem_1fr] items-center gap-2">
-              <Label htmlFor={`map-${field.key}`} className="text-xs">
+              <Label htmlFor={`map-${field.key}`} className="text-label-md font-medium text-on-surface">
                 {field.label}
-                {field.required && <span className="text-destructive"> *</span>}
+                {field.required && <span className="text-error"> *</span>}
                 {field.handle && <span className="sr-only"> handle</span>}
               </Label>
               <Select
@@ -217,53 +219,53 @@ function MappingStep({
             </div>
           ))}
         </div>
-        <p className="text-xs text-muted-foreground">One column per platform; map at least one of them.</p>
+        <p className="text-body-sm text-muted-foreground">One column per platform; map at least one of them.</p>
         {missingRequired.length > 0 && (
-          <p role="alert" className="text-xs text-destructive">
+          <p role="alert" className="text-body-sm text-error">
             Match a column for {missingRequired.join(' and ')}.
           </p>
         )}
       </section>
 
       <section className="space-y-2">
-        <div className="flex items-baseline justify-between">
-          <h3 className="text-sm font-medium">Preview · first {Math.min(PREVIEW_ROWS, parsed.rows.length)} rows</h3>
-          <p className="text-xs text-muted-foreground tabular-nums">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+          <h3 className="text-headline-sm font-semibold tracking-tight text-primary">Preview · first {Math.min(PREVIEW_ROWS, parsed.rows.length)} rows</h3>
+          <p className="text-body-sm text-muted-foreground tabular-nums">
             {formatNumber(parsed.rows.length)} rows ·{' '}
-            <span className={cn(invalidRows > 0 && 'font-medium text-destructive')}>
+            <span className={cn(invalidRows > 0 && 'font-medium text-error')}>
               {formatNumber(invalidRows)} with errors (won’t import)
             </span>
             {flagged > 0 && <> · {formatNumber(flagged)} may match existing creators</>}
           </p>
         </div>
-        <div className="max-h-64 overflow-auto rounded-md border">
-          <table className="w-full text-xs">
-            <thead className="sticky top-0 bg-muted">
+        <div className="max-h-64 overflow-auto rounded-2xl bg-surface-container-lowest/75 shadow-glass backdrop-blur-2xl dark:ring-1 dark:ring-white/5">
+          <table className="w-full text-body-sm">
+            <thead className="sticky top-0 bg-surface-container-low">
               <tr>
-                <th className="px-2 py-1.5 text-left font-medium">Row</th>
+                <th className="px-3 py-2 text-left text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">Row</th>
                 {shownFields.map((f) => (
-                  <th key={f.key} className="px-2 py-1.5 text-left font-medium whitespace-nowrap">
+                  <th key={f.key} className="px-3 py-2 text-left text-[11px] font-semibold tracking-wider text-muted-foreground uppercase whitespace-nowrap">
                     {f.label}
                   </th>
                 ))}
-                <th className="px-2 py-1.5 text-left font-medium whitespace-nowrap">Possible duplicate</th>
+                <th className="px-3 py-2 text-left text-[11px] font-semibold tracking-wider text-muted-foreground uppercase whitespace-nowrap">Possible duplicate</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-surface-container">
               {parsed.rows.slice(0, PREVIEW_ROWS).map((row, i) => {
                 const raw = mapImportRow(row, parsed.headers, mapping)
                 const { errors, warnings } = validated[i]!
                 return (
-                  <tr key={i} className="border-t">
-                    <td className="px-2 py-1 align-top text-muted-foreground tabular-nums">
+                  <tr key={i} className="transition-colors duration-150 hover:bg-tertiary-fixed/20">
+                    <td className="px-3 py-2 align-top text-muted-foreground tabular-nums">
                       {i + 2}
                       {repeated[i] && (
-                        <span className="ml-1 rounded bg-muted px-1" title="Same account earlier in the file">
+                        <span className="ml-1 rounded-full bg-surface-container-high px-1.5 py-0.5 text-[10px]" title="Same account earlier in the file">
                           dup
                         </span>
                       )}
                       {errors.accounts && (
-                        <span className="mt-0.5 flex items-start gap-1 text-[11px] leading-tight text-destructive">
+                        <span className="mt-0.5 flex items-start gap-1 text-[11px] leading-tight text-error">
                           <CircleAlert className="mt-px size-3 shrink-0" />
                           {errors.accounts}
                         </span>
@@ -277,8 +279,8 @@ function MappingStep({
                         <td
                           key={f.key}
                           className={cn(
-                            'max-w-40 px-2 py-1 align-top',
-                            error && 'bg-destructive/10 text-destructive',
+                            'max-w-40 px-3 py-2 align-top',
+                            error && 'bg-error-container/50 text-error',
                             !error && warning && 'bg-amber-50 dark:bg-amber-400/10',
                           )}
                         >
@@ -294,7 +296,7 @@ function MappingStep({
                         </td>
                       )
                     })}
-                    <td className="max-w-44 px-2 py-1 align-top">
+                    <td className="max-w-44 px-3 py-2 align-top">
                       <MatchCell matches={rowMatches[i]?.data} />
                     </td>
                   </tr>
@@ -305,21 +307,21 @@ function MappingStep({
         </div>
       </section>
 
-      <section className="space-y-3 rounded-md border p-3">
+      <section className="space-y-3 rounded-2xl bg-surface-container-low/50 p-space-md">
         {PROFILE_LOOKUP_CONNECTED && (
-          <label className="flex items-start gap-2 text-sm">
+          <label className="flex items-start gap-2 text-body-md">
             <Checkbox checked={fetchProfiles} onCheckedChange={(v) => setFetchProfiles(!!v)} className="mt-0.5" />
             <span>
               Fetch public profiles for imported rows
-              <span className="block text-xs text-muted-foreground">
+              <span className="block text-body-sm text-muted-foreground">
                 Instagram, YouTube, Threads and Facebook Page stats. TikTok and Pinterest wait for a connect link.
               </span>
             </span>
           </label>
         )}
         <fieldset className="space-y-1">
-          <legend className="text-sm">If an account is already in the CRM</legend>
-          <div role="radiogroup" className="flex gap-4 text-sm">
+          <legend className="text-label-sm tracking-wider text-muted-foreground uppercase">If an account is already in the CRM</legend>
+          <div role="radiogroup" className="flex flex-wrap gap-x-4 gap-y-2 pt-1 text-body-md">
             {(['skip', 'update'] as const).map((policy) => (
               <label key={policy} className="flex items-center gap-2">
                 <input
@@ -337,8 +339,8 @@ function MappingStep({
         </fieldset>
       </section>
 
-      <div className="flex justify-between">
-        <Button variant="ghost" onClick={onBack}>
+      <div className="flex flex-wrap justify-between gap-2">
+        <Button variant="outline" onClick={onBack}>
           Choose another file
         </Button>
         <Button
@@ -354,11 +356,11 @@ function MappingStep({
 
 function Stat({ label, value, tone }: { label: string; value: number; tone?: 'bad' }) {
   return (
-    <div className="rounded-md border p-3">
-      <div className={cn('text-xl font-semibold tabular-nums', tone === 'bad' && value > 0 && 'text-destructive')}>
+    <div className="flex flex-col-reverse gap-1 rounded-2xl bg-surface-container-lowest/75 shadow-glass backdrop-blur-2xl dark:ring-1 dark:ring-white/5 p-space-md">
+      <div className={cn('text-headline-md font-semibold tracking-tight text-primary tabular-nums', tone === 'bad' && value > 0 && 'text-error')}>
         {formatNumber(value)}
       </div>
-      <div className="text-xs text-muted-foreground">{label}</div>
+      <div className="text-label-sm tracking-wider text-muted-foreground uppercase">{label}</div>
     </div>
   )
 }
@@ -376,7 +378,7 @@ function Summary({ result, onDone, onAgain }: { result: CsvImportResult; onDone:
 
   return (
     <div className="space-y-4" aria-live="polite">
-      <p className="font-medium">Import finished · {formatNumber(result.total_rows)} rows</p>
+      <p className="text-headline-sm font-semibold tracking-tight text-primary">Import finished · {formatNumber(result.total_rows)} rows</p>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         <Stat label="Created" value={result.created} />
         <Stat label="Updated" value={result.updated} />
@@ -384,28 +386,28 @@ function Summary({ result, onDone, onAgain }: { result: CsvImportResult; onDone:
         <Stat label="Failed" value={result.failed} tone="bad" />
       </div>
       {result.profiles && (
-        <p className="text-sm text-muted-foreground">
+        <p className="text-body-md text-muted-foreground">
           Profiles: {formatNumber(result.profiles.synced)} accounts synced, {formatNumber(result.profiles.failed)} couldn’t be
           fetched (personal, not found or rate limited).
         </p>
       )}
       {result.errors.length > 0 && (
         <div className="space-y-2">
-          <div className="max-h-40 overflow-auto rounded-md border text-xs">
+          <div className="max-h-40 overflow-auto rounded-2xl bg-surface-container-lowest/75 shadow-glass backdrop-blur-2xl dark:ring-1 dark:ring-white/5 text-body-sm">
             <table className="w-full">
-              <thead className="sticky top-0 bg-muted">
+              <thead className="sticky top-0 bg-surface-container-low">
                 <tr>
-                  <th className="px-2 py-1 text-left font-medium">Row</th>
-                  <th className="px-2 py-1 text-left font-medium">Handle</th>
-                  <th className="px-2 py-1 text-left font-medium">Error</th>
+                  <th className="px-3 py-2 text-left text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">Row</th>
+                  <th className="px-3 py-2 text-left text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">Handle</th>
+                  <th className="px-3 py-2 text-left text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">Error</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-surface-container">
                 {result.errors.slice(0, 50).map((e) => (
-                  <tr key={e.row} className="border-t">
-                    <td className="px-2 py-1 tabular-nums">{e.row}</td>
-                    <td className="px-2 py-1">{e.handle ?? '—'}</td>
-                    <td className="px-2 py-1">{e.message}</td>
+                  <tr key={e.row}>
+                    <td className="px-3 py-2 tabular-nums">{e.row}</td>
+                    <td className="px-3 py-2">{e.handle ?? '—'}</td>
+                    <td className="px-3 py-2 text-error">{e.message}</td>
                   </tr>
                 ))}
               </tbody>
@@ -417,8 +419,8 @@ function Summary({ result, onDone, onAgain }: { result: CsvImportResult; onDone:
           </Button>
         </div>
       )}
-      <div className="flex justify-between">
-        <Button variant="ghost" onClick={onAgain}>
+      <div className="flex flex-wrap justify-between gap-2">
+        <Button variant="outline" onClick={onAgain}>
           <RotateCcw />
           Import another file
         </Button>
@@ -483,9 +485,9 @@ export function CsvTab({ onDone, onBusyChange }: { onDone: () => void; onBusyCha
   if (status === 'succeeded' && job.data?.result) return <Summary result={job.data.result} onDone={onDone} onAgain={again} />
   if (status === 'failed') {
     return (
-      <div role="alert" className="space-y-3">
-        <p className="font-medium text-destructive">The import failed</p>
-        <p className="text-sm text-muted-foreground">{job.data?.error?.message ?? 'Something went wrong.'} Nothing was imported.</p>
+      <div role="alert" className="space-y-3 rounded-2xl bg-error-container/40 p-space-md">
+        <p className="font-semibold text-error">The import failed</p>
+        <p className="text-body-md text-muted-foreground">{job.data?.error?.message ?? 'Something went wrong.'} Nothing was imported.</p>
         <Button variant="outline" onClick={again}>
           Try again
         </Button>
@@ -495,12 +497,12 @@ export function CsvTab({ onDone, onBusyChange }: { onDone: () => void; onBusyCha
   if (running) {
     return (
       <div className="space-y-2 py-6" aria-live="polite">
-        <div className="flex items-center gap-2 text-sm">
-          <Loader2 className="size-4 animate-spin" />
+        <div className="flex items-center gap-2 text-body-md font-medium text-primary">
+          <Loader2 className="size-4 animate-spin text-on-tertiary-container" />
           {starting ? 'Uploading the file…' : `Importing ${parsed ? formatNumber(parsed.rows.length) : ''} rows… ${job.data?.progress ?? 0}%`}
         </div>
         <Progress value={starting ? 5 : (job.data?.progress ?? 0)} aria-label="Import progress" />
-        <p className="text-xs text-muted-foreground">Keep this window open until the import finishes.</p>
+        <p className="text-body-sm text-muted-foreground">Keep this window open until the import finishes.</p>
       </div>
     )
   }

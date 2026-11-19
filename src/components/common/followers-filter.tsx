@@ -66,11 +66,14 @@ export function FollowersFilter({ label = 'Followers', min, max, onChange }: Fol
         <Button
           variant="outline"
           size="sm"
-          className={cn('gap-1.5', active && 'border-primary/40 bg-primary/5 dark:bg-primary/10')}
+          className={cn(
+            'gap-1.5 px-3.5',
+            active && 'bg-tertiary-fixed/40 hover:bg-tertiary-fixed/60 aria-expanded:bg-tertiary-fixed/60 dark:bg-tertiary-fixed/40',
+          )}
         >
-          <span className={cn(active && 'text-muted-foreground')}>{label}</span>
-          {active && <span>{formatFollowerRange({ min, max })}</span>}
-          <ChevronDown className="opacity-60" />
+          <span className={cn(active ? 'text-muted-foreground' : 'text-on-surface')}>{label}</span>
+          {active && <span className="font-semibold text-primary tabular-nums">{formatFollowerRange({ min, max })}</span>}
+          <ChevronDown className="size-[15px] text-outline" />
         </Button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-64 space-y-3">

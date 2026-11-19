@@ -78,8 +78,8 @@ export function EditStatsDialog({
           </DialogHeader>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {defs.map((def) => (
-              <div key={def.key} className="grid gap-1">
-                <Label htmlFor={`stat-${def.key}`} className="text-xs">
+              <div key={def.key} className="grid gap-1.5">
+                <Label htmlFor={`stat-${def.key}`} className="text-label-sm tracking-wider text-muted-foreground uppercase">
                   {def.label}
                 </Label>
                 <Input
@@ -89,7 +89,7 @@ export function EditStatsDialog({
                   aria-invalid={!!errors[def.key]}
                   onChange={(e) => setValues((v) => ({ ...v, [def.key]: e.target.value }))}
                 />
-                {errors[def.key] && <p className="text-xs text-destructive">{errors[def.key]}</p>}
+                {errors[def.key] && <p className="text-body-sm text-error">{errors[def.key]}</p>}
               </div>
             ))}
           </div>
