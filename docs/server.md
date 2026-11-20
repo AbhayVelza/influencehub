@@ -220,3 +220,9 @@ PostgreSQL 17 client tools (`pg_dump`, `pg_restore`, `psql`; on Windows it finds
   "No one can sign in yet"). Set them in `.env.local` and restart, or run `npm run set-password` (Deploying, step 3).
 - **Data you entered isn't on the server:** `VITE_API_SERVER` isn't `true`, so the app is in prototype mode (data in
   the browser). Restart `npm run dev` after editing env files.
+
+## Scheduler
+
+`server/scheduler.ts` runs every 5 minutes (first run 30 s after start): pool auto-release, connect-link expiry,
+the purge of documents deleted more than 30 days ago, then `deleteOrphanFiles()` (files no document points to, older
+than a day). It saves only when something changed and logs `Scheduler: …` when it did.

@@ -894,6 +894,14 @@ export interface InstagramSettingsUpdate {
   sync_interval_hours: SyncIntervalHours
 }
 
+/** A row of the Rejected tab (`GET /influencers/rejected`). */
+export interface RejectedInfluencer {
+  id: string
+  name: string
+  /** Instagram handle, without @; null when they have no Instagram account. */
+  instagram: string | null
+}
+
 /** `POST /settings/instagram/sync-all`: every Instagram account queued for the background sync. */
 export interface InstagramSyncAllResult {
   /** Accounts queued (typed-in ones included, switched to auto-sync). */

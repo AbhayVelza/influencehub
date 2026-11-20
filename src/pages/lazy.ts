@@ -7,6 +7,7 @@ export const InfluencerDetailPage = lazy(() => import('@/pages/influencer-detail
 export const OnboardedPage = lazy(() => import('@/pages/onboarded-page'))
 export const OnboardedPlatformPage = lazy(() => import('@/pages/onboarded-platform-page'))
 export const PoolPage = lazy(() => import('@/pages/pool-page'))
+export const RejectedPage = lazy(() => import('@/pages/rejected-page'))
 export const DuplicatesPage = lazy(() => import('@/pages/duplicates-page'))
 export const PipelinePage = lazy(() => import('@/pages/pipeline-page'))
 export const CallsPage = lazy(() => import('@/pages/calls-page'))

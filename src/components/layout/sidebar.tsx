@@ -5,6 +5,7 @@ import {
   CopyCheck,
   FileText,
   Inbox,
+  UserX,
   LayoutDashboard,
   Menu,
   Package,
@@ -142,6 +143,7 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
     { to: '/calls', label: 'Calls & Follow-ups', icon: PhoneCall, badge: dueToday?.total, badgeLabel: 'due today' },
     { to: '/packages', label: 'Welcome Kits', icon: Package },
     { to: '/documents', label: 'Documents', icon: FileText },
+    { to: '/rejected', label: 'Rejected', icon: UserX },
   ]
 
   return (

@@ -140,6 +140,19 @@ export function moveDocuments(fromId: string, toId: string) {
   promoteLatestAgreement(toId)
 }
 
+/** Deleted documents stay restorable this long; then the record goes and the server removes the file. */
+export const DELETED_DOCUMENT_DAYS = 30
+
+/** Removes documents deleted more than DELETED_DOCUMENT_DAYS ago. Returns how many. */
+export function purgeDeletedDocuments(now = Date.now()): number {
+  const cutoff = now - DELETED_DOCUMENT_DAYS * 86_400_000
+  const expired = (d: (typeof db.documents)[number]) => !!d.deleted_at && Date.parse(d.deleted_at) <= cutoff
+  if (!db.documents.some(expired)) return 0
+  const before = db.documents.length
+  db.documents = db.documents.filter((d) => !expired(d))
+  return before - db.documents.length
+}
+
 export function purgeDocuments(influencerId: string) {
   db.documents = db.documents.filter((d) => d.influencer_id !== influencerId)
 }

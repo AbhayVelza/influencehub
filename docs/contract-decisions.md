@@ -328,3 +328,15 @@ Rules the forms already applied are now also checked by the handlers, so every c
   nonexisting field`). A sync fills the influencer's `email` from an address written in the bio, only when the email
   is empty; category and city stay typed in.
 
+## Retention, the Rejected tab and data requests (P2, 20/11/2026)
+
+- Rejected influencers are kept forever. `GET /influencers` leaves them out unless a `stage` filter is sent;
+  `GET /influencers/rejected` (CRM access, not Brand Specialists) → every visible rejected influencer as
+  `{id, name, instagram}`, newest first. The Rejected tab shows that list and downloads it as .xlsx (`src/lib/xlsx.ts`).
+- Deleted documents stay restorable 30 days (`DELETED_DOCUMENT_DAYS`), then `purgeDeletedDocuments` drops the record
+  and the API server deletes files no document points to (also those of deleted influencers), only when older than a day.
+- `GET /influencers/{id}/export` (admins) → JSON of the influencer, calls, Welcome Kits, documents (metadata) and
+  activity: a creator's data request. Erasing is Delete influencer (its files go with the next scheduler run).
+- The API server's scheduler (`server/scheduler.ts`, every 5 min) runs auto-release, connect-link expiry and the
+  purge even when nobody is using the app; the first two still run before every request too (prototype mode has no
+  scheduler).
