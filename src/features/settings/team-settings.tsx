@@ -322,6 +322,7 @@ export function TeamSettings() {
                       <TableCell>
                         <InlineTextField
                           label={`Location for ${user.name}`}
+                          hideLabel
                           value={user.location ?? ''}
                           placeholder="Add location"
                           schema={memberLocationSchema}
