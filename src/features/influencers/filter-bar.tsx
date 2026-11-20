@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { CollapsibleFilters } from '@/components/common/collapsible-filters'
 import { FollowersFilter } from '@/components/common/followers-filter'
 import { MultiSelectFilter } from '@/components/common/multi-select-filter'
 import { PlatformMark } from '@/components/common/platform-badge'
 import { StageDot } from '@/components/common/stage-badge'
+import { cn } from '@/lib/utils'
 import type { InfluencerFilters, Platform, Stage } from '@/types'
 import { countActiveFilters } from './list-params'
 import { useFilterOptions, type FilterSource } from './queries'
@@ -33,6 +34,10 @@ interface InfluencerFilterBarProps {
   showFollowers?: boolean
   /** Filters the page sets itself (the Onboarded tabs' rule): counted, but not shown as choices. */
   baseFilters?: InfluencerFilters
+  /** Layout only: classes for the row (e.g. `contents`, to join a page toolbar). */
+  className?: string
+  /** Layout only: shown beside the Filters button (e.g. a page's Saved views). */
+  actions?: ReactNode
 }
 
 /** Category / Platform / Country → State → City / Stage / Assigned / Total reach. Shared by the list, pipeline, pool and Onboarded tabs. */
@@ -46,6 +51,8 @@ export function InfluencerFilterBar({
   source = 'influencers',
   baseFilters,
   showFollowers,
+  className,
+  actions,
 }: InfluencerFilterBarProps) {
   const country = filters.country ?? NONE
   const state = filters.state ?? NONE
@@ -76,8 +83,12 @@ export function InfluencerFilterBar({
   }, [options, isPlaceholderData, state, city, onChange])
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <CollapsibleFilters activeCount={countActiveFilters(filters)}>
+    <div className={cn('flex flex-wrap items-center gap-2', className)}>
+      <CollapsibleFilters
+        activeCount={countActiveFilters(filters)}
+        actions={actions}
+        className={actions ? 'min-w-0 flex-1' : undefined}
+      >
         <MultiSelectFilter
           label="Category"
           options={options?.categories}

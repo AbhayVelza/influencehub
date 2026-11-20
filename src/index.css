@@ -1,80 +1,215 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "@fontsource-variable/geist";
+@import "@fontsource-variable/inter";
 
 @custom-variant dark (&:is(.dark *));
 
+/*
+ * Design tokens follow the approved Stitch designs (design-references: stitch_influencehub_ui_visual_enhancement).
+ * The Stitch colour roles, type scale and spacing keys are registered under their Stitch names so screens can use the
+ * reference classes directly (bg-surface-container-lowest/70, text-headline-xl, p-space-md…). Two deliberate fixes:
+ * Stitch `text-secondary` (#54606c) is `text-muted-foreground` here, because `secondary` is a shadcn button fill; and
+ * `on-tertiary-container` text is #0077a0 (5:1) instead of the reference #008ebe (3.7:1, fails WCAG AA).
+ * Radius uses Tailwind v4's default scale, which equals the Stitch config (rounded 4px, lg 8px, xl 12px, 2xl 16px).
+ * Stage, platform and status colours stay in src/lib/constants.ts and src/lib/platforms.ts.
+ */
 @theme inline {
+    --font-sans: 'Inter Variable', Inter, ui-sans-serif, system-ui, sans-serif;
     --font-heading: var(--font-sans);
-    --font-sans: 'Geist Variable', sans-serif;
-    --color-sidebar-ring: var(--sidebar-ring);
-    --color-sidebar-border: var(--sidebar-border);
-    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-    --color-sidebar-accent: var(--sidebar-accent);
-    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-    --color-sidebar-primary: var(--sidebar-primary);
-    --color-sidebar-foreground: var(--sidebar-foreground);
-    --color-sidebar: var(--sidebar);
-    --color-chart-5: var(--chart-5);
-    --color-chart-4: var(--chart-4);
-    --color-chart-3: var(--chart-3);
-    --color-chart-2: var(--chart-2);
-    --color-chart-series-1: var(--chart-series-1);
-    --color-chart-1: var(--chart-1);
-    --color-ring: var(--ring);
-    --color-input: var(--input);
-    --color-border: var(--border);
-    --color-destructive: var(--destructive);
-    --color-accent-foreground: var(--accent-foreground);
-    --color-accent: var(--accent);
-    --color-muted-foreground: var(--muted-foreground);
-    --color-muted: var(--muted);
-    --color-secondary-foreground: var(--secondary-foreground);
-    --color-secondary: var(--secondary);
-    --color-primary-foreground: var(--primary-foreground);
-    --color-primary: var(--primary);
-    --color-popover-foreground: var(--popover-foreground);
-    --color-popover: var(--popover);
-    --color-card-foreground: var(--card-foreground);
-    --color-card: var(--card);
-    --color-foreground: var(--foreground);
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --font-code: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+    /* shadcn roles */
     --color-background: var(--background);
-    --radius-sm: calc(var(--radius) * 0.6);
-    --radius-md: calc(var(--radius) * 0.8);
-    --radius-lg: var(--radius);
-    --radius-xl: calc(var(--radius) * 1.4);
-    --radius-2xl: calc(var(--radius) * 1.8);
-    --radius-3xl: calc(var(--radius) * 2.2);
-    --radius-4xl: calc(var(--radius) * 2.6);
+    --color-foreground: var(--foreground);
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+    --color-chart-1: var(--chart-1);
+    --color-chart-2: var(--chart-2);
+    --color-chart-3: var(--chart-3);
+    --color-chart-4: var(--chart-4);
+    --color-chart-5: var(--chart-5);
+    --color-chart-series-1: var(--chart-series-1);
+    --color-sidebar: var(--sidebar);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-ring: var(--sidebar-ring);
+
+    /* Stitch roles */
+    --color-surface: var(--surface);
+    --color-surface-bright: var(--surface-bright);
+    --color-surface-dim: var(--surface-dim);
+    --color-surface-container-lowest: var(--surface-container-lowest);
+    --color-surface-container-low: var(--surface-container-low);
+    --color-surface-container: var(--surface-container);
+    --color-surface-container-high: var(--surface-container-high);
+    --color-surface-container-highest: var(--surface-container-highest);
+    --color-on-surface: var(--on-surface);
+    --color-on-surface-variant: var(--on-surface-variant);
+    --color-outline: var(--outline);
+    --color-outline-variant: var(--outline-variant);
+    --color-primary-container: var(--primary-container);
+    --color-on-primary: var(--on-primary);
+    --color-secondary-container: var(--secondary-container);
+    --color-on-secondary-container: var(--on-secondary-container);
+    --color-secondary-fixed: var(--secondary-fixed);
+    --color-secondary-fixed-dim: var(--secondary-fixed-dim);
+    --color-on-secondary-fixed: var(--on-secondary-fixed);
+    --color-on-secondary-fixed-variant: var(--on-secondary-fixed-variant);
+    --color-tertiary-container: var(--tertiary-container);
+    --color-on-tertiary-container: var(--on-tertiary-container);
+    --color-tertiary-fixed: var(--tertiary-fixed);
+    --color-tertiary-fixed-dim: var(--tertiary-fixed-dim);
+    --color-on-tertiary-fixed: var(--on-tertiary-fixed);
+    --color-on-tertiary-fixed-variant: var(--on-tertiary-fixed-variant);
+    --color-error: var(--error);
+    --color-error-container: var(--error-container);
+    --color-on-error-container: var(--on-error-container);
+    --color-inverse-surface: var(--inverse-surface);
+    --color-inverse-on-surface: var(--inverse-on-surface);
+
+    /* Stitch type scale (size / line-height / tracking / weight) */
+    --text-display-lg: 48px;
+    --text-display-lg--line-height: 56px;
+    --text-display-lg--letter-spacing: -0.03em;
+    --text-display-lg--font-weight: 700;
+    --text-display-lg-mobile: 34px;
+    --text-display-lg-mobile--line-height: 40px;
+    --text-display-lg-mobile--letter-spacing: -0.025em;
+    --text-display-lg-mobile--font-weight: 700;
+    --text-headline-xl: 32px;
+    --text-headline-xl--line-height: 38px;
+    --text-headline-xl--letter-spacing: -0.025em;
+    --text-headline-xl--font-weight: 600;
+    --text-headline-xl-mobile: 26px;
+    --text-headline-xl-mobile--line-height: 32px;
+    --text-headline-xl-mobile--letter-spacing: -0.02em;
+    --text-headline-xl-mobile--font-weight: 600;
+    --text-headline-md: 22px;
+    --text-headline-md--line-height: 28px;
+    --text-headline-md--letter-spacing: -0.02em;
+    --text-headline-md--font-weight: 600;
+    --text-headline-sm: 17px;
+    --text-headline-sm--line-height: 22px;
+    --text-headline-sm--letter-spacing: -0.015em;
+    --text-headline-sm--font-weight: 600;
+    --text-body-lg: 16px;
+    --text-body-lg--line-height: 24px;
+    --text-body-lg--letter-spacing: -0.01em;
+    --text-body-md: 14px;
+    --text-body-md--line-height: 20px;
+    --text-body-md--letter-spacing: -0.005em;
+    --text-body-sm: 12px;
+    --text-body-sm--line-height: 16px;
+    --text-label-md: 13px;
+    --text-label-md--line-height: 18px;
+    --text-label-md--letter-spacing: -0.005em;
+    --text-label-md--font-weight: 500;
+    --text-label-sm: 11px;
+    --text-label-sm--line-height: 14px;
+    --text-label-sm--letter-spacing: 0.04em;
+    --text-label-sm--font-weight: 600;
+    --text-code: 12px;
+    --text-code--line-height: 16px;
+    --text-code--font-weight: 500;
+
+    /* Stitch spacing keys */
+    --spacing-space-xs: 0.25rem;
+    --spacing-space-sm: 0.5rem;
+    --spacing-space-md: 1rem;
+    --spacing-space-lg: 1.5rem;
+    --spacing-space-xl: 2rem;
+    --spacing-gutter: 1.5rem;
+    --spacing-gutter-sm: 1rem;
+    --spacing-margin: 2rem;
+    --spacing-margin-mobile: 1rem;
+
+    /* Stitch elevation */
+    --shadow-glass: 0 8px 32px 0 rgba(14, 26, 36, 0.04);
+    --shadow-glass-hover: 0 12px 36px 0 rgba(14, 26, 36, 0.08);
+    --shadow-glass-glow: 0 16px 40px 0 rgba(0, 180, 240, 0.12);
+    --shadow-bar: 0 1px 8px rgba(0, 0, 0, 0.03);
 }
 
 :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.82 0 0);
-    /* Chart gridlines stay faint (recessive), separate from the darker outlines. */
-    --chart-grid: oklch(0.922 0 0);
-    --input: oklch(0.82 0 0);
-    --ring: oklch(0.708 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
+    /* Stitch palette (light, as in the approved designs) */
+    --surface: #f9f9f9;
+    --surface-bright: #f9f9f9;
+    --surface-dim: #dadada;
+    --surface-container-lowest: #ffffff;
+    --surface-container-low: #f3f3f4;
+    --surface-container: #eeeeee;
+    --surface-container-high: #e8e8e8;
+    --surface-container-highest: #e2e2e2;
+    --on-surface: #1a1c1c;
+    --on-surface-variant: #44474a;
+    --outline: #75777a;
+    --outline-variant: #c5c6ca;
+    --primary-container: #181c1f;
+    --on-primary: #ffffff;
+    --secondary-container: #d7e4f2;
+    --on-secondary-container: #5a6672;
+    --secondary-fixed: #d7e4f2;
+    --secondary-fixed-dim: #bbc8d6;
+    --on-secondary-fixed: #111d27;
+    --on-secondary-fixed-variant: #3c4853;
+    --tertiary-container: #001e2c;
+    --on-tertiary-container: #0077a0;
+    --tertiary-fixed: #c3e8ff;
+    --tertiary-fixed-dim: #79d1ff;
+    --on-tertiary-fixed: #001e2c;
+    --on-tertiary-fixed-variant: #004c68;
+    --error: #ba1a1a;
+    --error-container: #ffdad6;
+    --on-error-container: #93000a;
+    --inverse-surface: #2f3131;
+    --inverse-on-surface: #f0f1f1;
+
+    /* shadcn roles mapped onto the Stitch palette */
+    --background: var(--surface);
+    --foreground: var(--on-surface);
+    --card: var(--surface-container-lowest);
+    --card-foreground: var(--on-surface);
+    --popover: var(--surface-container-lowest);
+    --popover-foreground: var(--on-surface);
+    --primary: #000000;
+    --primary-foreground: #ffffff;
+    --secondary: var(--surface-container);
+    --secondary-foreground: var(--on-surface);
+    --muted: var(--surface-container-low);
+    --muted-foreground: #54606c;
+    --accent: var(--surface-container-low);
+    --accent-foreground: var(--on-surface);
+    --destructive: var(--error);
+    --destructive-foreground: #ffffff;
+    --border: var(--surface-container-high);
+    --input: var(--surface-container-highest);
+    --ring: var(--on-tertiary-container);
+    --chart-1: #c4c7cb;
+    --chart-2: #75777a;
+    --chart-3: #54606c;
+    --chart-4: #2f3131;
+    --chart-5: #1a1c1c;
     /* Single-series data colour (dataviz reference slot 1), validated on the light card surface. */
     --chart-series-1: #2a78d6;
     /* Categorical slots for part-to-whole bars, fixed order (validated: dataviz reference palette, slots 1–5). */
@@ -83,42 +218,58 @@
     --chart-cat-3: #1baf7a;
     --chart-cat-4: #eda100;
     --chart-cat-5: #e87ba4;
-    --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.82 0 0);
-    --sidebar-ring: oklch(0.708 0 0);
+    /* Chart gridlines stay faint (recessive). */
+    --chart-grid: oklch(0.922 0 0);
+    --sidebar: var(--surface-container-lowest);
+    --sidebar-foreground: var(--on-surface);
+    --sidebar-primary: #000000;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: var(--surface-container-low);
+    --sidebar-accent-foreground: var(--on-surface);
+    --sidebar-border: var(--surface-container);
+    --sidebar-ring: var(--on-tertiary-container);
 }
 
+/* Dark theme: the Stitch roles carried to a dark canvas (the designs are light-only; the app supports both). */
 .dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 22%);
-    --chart-grid: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 26%);
-    --ring: oklch(0.556 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
+    --surface: #0b0f14;
+    --surface-bright: #151b22;
+    --surface-dim: #070a0d;
+    --surface-container-lowest: #141a20;
+    --surface-container-low: #192028;
+    --surface-container: #1e252d;
+    --surface-container-high: #242c35;
+    --surface-container-highest: #2b343e;
+    --on-surface: #f0f1f1;
+    --on-surface-variant: #c5c9ce;
+    --outline: #8a949e;
+    --outline-variant: #3c4650;
+    --primary-container: #e0e3e7;
+    --on-primary: #05080b;
+    --secondary-container: #26333f;
+    --on-secondary-container: #c4d0dc;
+    --secondary-fixed: #2a3846;
+    --secondary-fixed-dim: #3c4853;
+    --on-secondary-fixed: #d7e4f2;
+    --on-secondary-fixed-variant: #bbc8d6;
+    --tertiary-container: #c3e8ff;
+    --on-tertiary-container: #79d1ff;
+    --tertiary-fixed: #0f3a50;
+    --tertiary-fixed-dim: #1d5e7d;
+    --on-tertiary-fixed: #c3e8ff;
+    --on-tertiary-fixed-variant: #a6dafa;
+    --error: #ffb4ab;
+    --error-container: #5c1915;
+    --on-error-container: #ffdad6;
+    --inverse-surface: #e2e2e2;
+    --inverse-on-surface: #1a1c1c;
+
+    --primary: #f0f1f1;
+    --primary-foreground: #05080b;
+    --muted-foreground: #a9b3bd;
+    --destructive-foreground: #690005;
+    --border: var(--surface-container-high);
+    --input: var(--surface-container-highest);
     /* Dark step of the same hue, validated on the dark card surface. */
     --chart-series-1: #3987e5;
     --chart-cat-1: #3987e5;
@@ -126,24 +277,32 @@
     --chart-cat-3: #199e70;
     --chart-cat-4: #c98500;
     --chart-cat-5: #d55181;
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 22%);
-    --sidebar-ring: oklch(0.556 0 0);
+    --chart-grid: oklch(1 0 0 / 10%);
+    --chart-1: #c4c7cb;
+    --chart-2: #8a949e;
+    --chart-3: #5f6a75;
+    --chart-4: #3c4650;
+    --chart-5: #242c35;
+    --sidebar-primary: #f0f1f1;
+    --sidebar-primary-foreground: #05080b;
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
-    }
-  body {
-    @apply bg-background text-foreground;
-    }
+  }
   html {
     @apply font-sans;
-    }
+  }
+  body {
+    @apply bg-surface text-on-surface antialiased selection:bg-tertiary-fixed selection:text-on-tertiary-fixed;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

@@ -36,11 +36,11 @@ function UsageMeter({ value }: { value: number }) {
   return (
     <div className="space-y-1.5">
       <div className="flex items-baseline justify-between">
-        <span className="text-sm font-medium" id="usage-label">
+        <span className="text-label-sm tracking-wider text-muted-foreground uppercase" id="usage-label">
           API usage
         </span>
-        <span className="text-sm tabular-nums">
-          <span className="font-semibold">{value}%</span>
+        <span className="text-body-md tabular-nums">
+          <span className="text-headline-sm font-semibold tracking-tight text-primary">{value}%</span>
           <span className="text-muted-foreground"> of the rate limit</span>
         </span>
       </div>
@@ -51,13 +51,13 @@ function UsageMeter({ value }: { value: number }) {
         aria-valuemax={100}
         aria-valuenow={value}
         aria-valuetext={`${value}% used${level === 'normal' ? '' : `, ${level}`}`}
-        className={cn('h-2.5 overflow-hidden rounded-full', track)}
+        className={cn('h-2 overflow-hidden rounded-full', track)}
       >
         <div className={cn('h-full rounded-full', fill)} style={{ width: `${Math.min(100, value)}%` }} />
       </div>
       {level !== 'normal' && (
-        <p className="flex items-center gap-1 text-xs text-muted-foreground">
-          <CircleAlert className="size-3.5" />
+        <p className="flex items-center gap-1 text-body-sm text-muted-foreground">
+          <CircleAlert className="size-3.5" strokeWidth={1.75} />
           {level === 'critical' ? 'Close to the limit — syncs may be rate limited.' : 'Usage is high.'}
         </p>
       )}
@@ -75,13 +75,17 @@ export function InstagramSettings() {
   if (settings.isPending) {
     return (
       <div className="space-y-4">
-        <Skeleton className="h-40 w-full" />
-        <Skeleton className="h-72 w-full" />
+        <Skeleton className="h-40 w-full rounded-2xl" />
+        <Skeleton className="h-72 w-full rounded-2xl" />
       </div>
     )
   }
   if (settings.isError) {
-    return <ErrorState title="Couldn’t load Instagram settings" error={settings.error} onRetry={() => settings.refetch()} />
+    return (
+      <div className="rounded-2xl bg-surface-container-lowest/70 shadow-glass backdrop-blur-2xl dark:ring-1 dark:ring-white/5">
+        <ErrorState title="Couldn’t load Instagram settings" error={settings.error} onRetry={() => settings.refetch()} />
+      </div>
+    )
   }
   const s = settings.data
 
@@ -95,10 +99,10 @@ export function InstagramSettings() {
     )
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-gutter">
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Instagram integration</CardTitle>
+          <CardTitle>Instagram integration</CardTitle>
           <CardDescription>
             Syncs profile, followers and engagement for Business and Creator accounts, and an email written in the bio.
             Instagram doesn’t share email, category or city otherwise.
@@ -108,17 +112,17 @@ export function InstagramSettings() {
           </div>
         </CardHeader>
         <CardContent className="grid gap-6 md:grid-cols-2">
-          <dl className="grid grid-cols-[8rem_1fr] gap-x-3 gap-y-2 text-sm">
+          <dl className="grid grid-cols-[8rem_minmax(0,1fr)] content-start gap-x-3 gap-y-3 rounded-xl bg-surface-container-low/50 p-space-md text-body-md">
             <dt className="text-muted-foreground">Connection</dt>
             <dd className="flex items-center gap-1.5">
               {s.connected ? (
                 <>
-                  <BadgeCheck className="size-4 text-green-600 dark:text-green-400" />
+                  <BadgeCheck className="size-4 text-green-600 dark:text-green-400" strokeWidth={1.75} />
                   Connected
                 </>
               ) : (
                 <>
-                  <Link2Off className="size-4 text-destructive" />
+                  <Link2Off className="size-4 text-error" strokeWidth={1.75} />
                   Not connected
                 </>
               )}
@@ -128,7 +132,7 @@ export function InstagramSettings() {
               {s.business_account ? (
                 <>
                   @{s.business_account.username}
-                  <span className="block font-mono text-xs text-muted-foreground">ID {s.business_account.ig_user_id}</span>
+                  <span className="block font-code text-[11px] text-muted-foreground">ID {s.business_account.ig_user_id}</span>
                 </>
               ) : (
                 '—'
@@ -136,11 +140,12 @@ export function InstagramSettings() {
             </dd>
             <dt className="text-muted-foreground">Access token</dt>
             <dd>
-              <span className={cn('rounded-full px-2 py-0.5 text-xs font-medium', TOKEN[s.token_status].className)}>
+              <span className={cn('inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-medium', TOKEN[s.token_status].className)}>
+                <span aria-hidden className="size-1.5 rounded-full bg-current" />
                 {TOKEN[s.token_status].label}
               </span>
               {s.token_expires_at && (
-                <span className="block text-xs text-muted-foreground">
+                <span className="mt-1 block text-body-sm text-muted-foreground">
                   {s.token_status === 'expired' ? 'Expired' : 'Expires'} <RelativeTime iso={s.token_expires_at} /> ({formatDate(s.token_expires_at)})
                 </span>
               )}
@@ -148,7 +153,7 @@ export function InstagramSettings() {
           </dl>
           <div className="space-y-5">
             <div className="grid gap-1.5">
-              <Label htmlFor="sync-interval">Sync frequency</Label>
+              <Label htmlFor="sync-interval" className="text-label-sm tracking-wider text-muted-foreground uppercase">Sync frequency</Label>
               <Select value={String(s.sync_interval_hours)} onValueChange={setInterval} disabled={update.isPending}>
                 <SelectTrigger id="sync-interval" className="w-48">
                   <SelectValue />
@@ -167,34 +172,37 @@ export function InstagramSettings() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="pb-0">
         <CardHeader>
-          <CardTitle className="text-base">Last {s.last_runs.length} sync runs</CardTitle>
+          <CardTitle>Last {s.last_runs.length} sync runs</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-0">
           {s.last_runs.length === 0 ? (
-            <p className="py-6 text-center text-sm text-muted-foreground">No sync runs yet.</p>
+            <p className="py-6 pb-8 text-center text-body-md text-muted-foreground">No sync runs yet.</p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Started (IST)</TableHead>
+                  <TableHead className="pl-(--card-spacing)">Started (IST)</TableHead>
                   <TableHead>Duration</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Synced</TableHead>
-                  <TableHead className="text-right">Failed</TableHead>
+                  <TableHead className="pr-(--card-spacing) text-right">Failed</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {s.last_runs.map((run) => (
                   <TableRow key={run.started_at}>
-                    <TableCell className="whitespace-nowrap">{formatDateTime(run.started_at)}</TableCell>
+                    <TableCell className="pl-(--card-spacing) font-medium whitespace-nowrap text-on-surface">{formatDateTime(run.started_at)}</TableCell>
                     <TableCell>{minutes(run.started_at, run.finished_at)}</TableCell>
                     <TableCell>
-                      <span className={cn('rounded-full px-2 py-0.5 text-xs font-medium', RUN[run.status].className)}>{RUN[run.status].label}</span>
+                      <span className={cn('inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-medium', RUN[run.status].className)}>
+                        <span aria-hidden className="size-1.5 rounded-full bg-current" />
+                        {RUN[run.status].label}
+                      </span>
                     </TableCell>
-                    <TableCell className="text-right tabular-nums">{formatNumber(run.synced)}</TableCell>
-                    <TableCell className={cn('text-right tabular-nums', run.failed > 0 && 'font-medium text-destructive')}>
+                    <TableCell className="text-right font-code tabular-nums">{formatNumber(run.synced)}</TableCell>
+                    <TableCell className={cn('pr-(--card-spacing) text-right font-code tabular-nums', run.failed > 0 && 'font-medium text-error')}>
                       {formatNumber(run.failed)}
                     </TableCell>
                   </TableRow>

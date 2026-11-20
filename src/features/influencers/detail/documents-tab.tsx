@@ -15,15 +15,15 @@ import type { AgreementDocument, DocumentType, Influencer, InfluencerDocument } 
 
 function Row({ doc, actions, uploader }: { doc: InfluencerDocument; actions: DocumentActions; uploader: string }) {
   return (
-    <li className="flex items-start justify-between gap-3 rounded-lg border bg-card p-3 text-sm">
+    <li className="flex items-start justify-between gap-3 p-3 text-body-md transition-colors duration-150 hover:bg-tertiary-fixed/20">
       <div className="min-w-0 space-y-0.5">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="font-medium">{doc.title}</span>
+          <span className="font-semibold text-primary">{doc.title}</span>
           <AgreementBadges doc={doc} />
         </div>
         <p className="text-muted-foreground">{documentDetail(doc)}</p>
         {doc.notes && <p className="text-muted-foreground">“{doc.notes}”</p>}
-        <p className="truncate text-xs text-muted-foreground">
+        <p className="truncate text-body-sm text-muted-foreground">
           {doc.file_name} · {formatFileSize(doc.size)} · {uploader} · <RelativeTime iso={doc.uploaded_at} />
         </p>
       </div>
@@ -34,9 +34,9 @@ function Row({ doc, actions, uploader }: { doc: InfluencerDocument; actions: Doc
 
 function Section({ title, action, children }: { title: string; action?: ReactNode; children: ReactNode }) {
   return (
-    <section className="space-y-2">
-      <div className="flex items-center justify-between gap-2">
-        <h3 className="text-sm font-semibold">{title}</h3>
+    <section className="space-y-4 rounded-2xl bg-surface-container-lowest/70 shadow-glass backdrop-blur-2xl dark:ring-1 dark:ring-white/5 p-space-md sm:p-5">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h3 className="text-headline-sm font-semibold tracking-tight text-primary">{title}</h3>
         {action}
       </div>
       {children}
@@ -56,24 +56,30 @@ export function DocumentsTab({ influencer }: { influencer: Influencer }) {
 
   if (inPool) {
     return (
-      <EmptyState
-        icon={FileText}
-        title="Documents aren’t kept for the Unassigned Pool"
-        description="Assign an owner to this influencer to upload and see their documents."
-      />
+      <div className="rounded-2xl bg-surface-container-lowest/70 shadow-glass backdrop-blur-2xl dark:ring-1 dark:ring-white/5">
+        <EmptyState
+          icon={FileText}
+          title="Documents aren’t kept for the Unassigned Pool"
+          description="Assign an owner to this influencer to upload and see their documents."
+        />
+      </div>
     )
   }
   if (documents.isPending) {
     return (
       <div className="space-y-3">
         {Array.from({ length: 3 }, (_, i) => (
-          <Skeleton key={i} className="h-20 w-full" />
+          <Skeleton key={i} className="h-20 w-full rounded-2xl" />
         ))}
       </div>
     )
   }
   if (documents.isError) {
-    return <ErrorState title="Couldn’t load documents" error={documents.error} onRetry={() => documents.refetch()} />
+    return (
+      <div className="rounded-2xl bg-surface-container-lowest/70 shadow-glass backdrop-blur-2xl dark:ring-1 dark:ring-white/5">
+        <ErrorState title="Couldn’t load documents" error={documents.error} onRetry={() => documents.refetch()} />
+      </div>
+    )
   }
 
   const all = documents.data.items
@@ -84,7 +90,7 @@ export function DocumentsTab({ influencer }: { influencer: Influencer }) {
   const open = (type: DocumentType) => setUpload({ type, open: true })
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-gutter-sm">
       <Section
         title="Insights summaries"
         action={
@@ -97,9 +103,9 @@ export function DocumentsTab({ influencer }: { influencer: Influencer }) {
         }
       >
         {insights.length === 0 ? (
-          <p className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">No insights summaries yet.</p>
+          <p className="rounded-xl bg-surface-container-low/50 p-4 text-body-md text-muted-foreground">No insights summaries yet.</p>
         ) : (
-          <ul className="space-y-2" aria-label="Insights summaries">
+          <ul className="divide-y divide-surface-container overflow-hidden rounded-xl bg-surface-container-low/50" aria-label="Insights summaries">
             {insights.map((doc) => (
               <Row key={doc.id} doc={doc} actions={actions} uploader={uploader(doc)} />
             ))}
@@ -119,19 +125,19 @@ export function DocumentsTab({ influencer }: { influencer: Influencer }) {
         }
       >
         {current ? (
-          <ul aria-label="Current agreement">
+          <ul className="divide-y divide-surface-container overflow-hidden rounded-xl bg-surface-container-low/50" aria-label="Current agreement">
             <Row doc={current} actions={actions} uploader={uploader(current)} />
           </ul>
         ) : (
-          <p className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">No agreement on file.</p>
+          <p className="rounded-xl bg-surface-container-low/50 p-4 text-body-md text-muted-foreground">No agreement on file.</p>
         )}
         {history.length > 0 && (
           <div className="space-y-2 pt-2">
-            <h4 className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-              <History className="size-3.5" />
+            <h4 className="flex items-center gap-1.5 text-label-sm tracking-wider text-muted-foreground uppercase">
+              <History className="size-3.5" strokeWidth={1.75} />
               Version history
             </h4>
-            <ul className="space-y-2" aria-label="Agreement version history">
+            <ul className="divide-y divide-surface-container overflow-hidden rounded-xl bg-surface-container-low/50" aria-label="Agreement version history">
               {history.map((doc) => (
                 <Row key={doc.id} doc={doc} actions={actions} uploader={uploader(doc)} />
               ))}

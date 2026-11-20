@@ -76,7 +76,7 @@ export function AccountRow({
                 Checking…
               </span>
             ) : check.available ? (
-              <span className="inline-flex items-center gap-1 text-green-700 dark:text-green-400">
+              <span className="inline-flex items-center gap-1 text-on-tertiary-container">
                 <Check className="size-3" />
                 Not in the CRM yet
               </span>
@@ -105,7 +105,7 @@ export function AccountRow({
             control={control}
             name={`${name}.personal`}
             render={({ field }) => (
-              <label className="flex items-center gap-2 text-xs">
+              <label className="flex items-center gap-2 text-body-sm text-on-surface">
                 <Checkbox checked={!!field.value} onCheckedChange={(v) => field.onChange(!!v)} />
                 Personal profile (can’t be looked up; enter stats by hand)
               </label>
@@ -118,7 +118,7 @@ export function AccountRow({
           </Field>
         )}
         {!manual && meta.defaultSyncMethod === 'connect' && (
-          <p className="text-xs text-muted-foreground">Stats arrive once the creator connects it (send a connect link from their profile).</p>
+          <p className="text-body-sm text-muted-foreground">Stats arrive once the creator connects it (send a connect link from their profile).</p>
         )}
       </div>
       {check.taken && <AlreadyInCrm {...check.taken} onDone={onDone} />}

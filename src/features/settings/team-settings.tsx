@@ -44,7 +44,7 @@ function TextInput({ id, label, error, hint, ...props }: ComponentProps<typeof I
       <Label htmlFor={id}>{label}</Label>
       <Input id={id} aria-invalid={!!error} aria-describedby={error ? `${id}-error` : undefined} {...props} />
       {error && (
-        <p id={`${id}-error`} className="text-xs text-destructive">
+        <p id={`${id}-error`} className="text-body-sm text-error">
           {error}
         </p>
       )}
@@ -143,7 +143,7 @@ function AddMemberDialog({ open, onOpenChange }: { open: boolean; onOpenChange: 
             />
           )}
           {formError && (
-            <p role="alert" className="text-sm text-destructive">
+            <p role="alert" className="rounded-xl bg-error-container/50 px-3 py-2 text-body-md text-error">
               {formError}
             </p>
           )}
@@ -247,9 +247,9 @@ export function TeamSettings() {
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-start justify-between gap-4">
-        <div className="space-y-1.5">
-          <CardTitle className="text-base">Team & roles</CardTitle>
+      <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-4">
+        <div className="min-w-0 flex-1 basis-64 space-y-1.5">
+          <CardTitle>Team & roles</CardTitle>
           <CardDescription>
             {PROTOTYPE
               ? 'Add people to try each role (switch from the account menu). '
@@ -266,106 +266,109 @@ export function TeamSettings() {
         {team.isPending ? (
           <div className="space-y-2">
             {Array.from({ length: 4 }, (_, i) => (
-              <Skeleton key={i} className="h-10 w-full" />
+              <Skeleton key={i} className="h-12 w-full rounded-xl" />
             ))}
           </div>
         ) : team.isError ? (
           <ErrorState title="Couldn’t load the team" error={team.error} onRetry={() => team.refetch()} />
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Member</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Location</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">
-                  <span className="sr-only">Actions</span>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {team.data.items.filter((user) => !user.deleted_at).map((user) => {
-                const self = user.id === me?.id
-                return (
-                  <TableRow key={user.id} className={cn(!user.is_active && 'text-muted-foreground')}>
-                    <TableCell>
-                      <div className="flex items-center gap-2.5">
-                        <PersonAvatar name={user.name} />
-                        <div>
-                          <p className="font-medium">
-                            {user.name} {self && <span className="text-xs font-normal text-muted-foreground">(you)</span>}
-                          </p>
-                          <p className="text-xs text-muted-foreground">{user.email}</p>
+          <div className="overflow-hidden rounded-xl bg-surface-container-lowest/60 ring-1 ring-surface-container">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Member</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead>Location</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">
+                    <span className="sr-only">Actions</span>
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {team.data.items.filter((user) => !user.deleted_at).map((user) => {
+                  const self = user.id === me?.id
+                  return (
+                    <TableRow key={user.id} className={cn(!user.is_active && 'text-muted-foreground')}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <PersonAvatar name={user.name} className="shadow-sm" />
+                          <div className="min-w-0">
+                            <p className={cn('text-label-md font-semibold', user.is_active && 'text-primary')}>
+                              {user.name} {self && <span className="text-body-sm font-normal text-muted-foreground">(you)</span>}
+                            </p>
+                            <p className="font-code text-[11px] text-muted-foreground">{user.email}</p>
+                          </div>
                         </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Select
-                        value={user.role}
-                        disabled={self || !user.is_active || update.isPending}
-                        onValueChange={(role) => change(user, { role: role as Role }, `${user.name} is now ${ROLE_LABEL[role as Role]}`)}
-                      >
-                        <SelectTrigger size="sm" className="w-36" aria-label={`Role for ${user.name}`}>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {ROLES.map((r) => (
-                            <SelectItem key={r} value={r}>
-                              {ROLE_LABEL[r]}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </TableCell>
-                    <TableCell>
-                      <InlineTextField
-                        label={`Location for ${user.name}`}
-                        value={user.location ?? ''}
-                        placeholder="Add location"
-                        schema={memberLocationSchema}
-                        onSave={(location) => update.mutateAsync({ id: user.id, body: { location } })}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <span
-                        className={cn(
-                          'rounded-full px-2 py-0.5 text-xs font-medium',
-                          user.is_active ? 'bg-green-50 text-green-700 dark:bg-green-400/10 dark:text-green-300' : 'bg-muted text-muted-foreground',
-                        )}
-                      >
-                        {user.is_active ? 'Active' : 'Deactivated'}
-                      </span>
-                    </TableCell>
-                    <TableCell className="space-x-1 text-right">
-                      {!PROTOTYPE && user.is_active && (
-                        <Button variant="ghost" size="sm" onClick={() => setPasswordFor(user)}>
-                          Set password
-                        </Button>
-                      )}
-                      {!self && (
-                        <Button
-                          variant={user.is_active ? 'ghost' : 'outline'}
-                          size="sm"
-                          disabled={update.isPending}
-                          onClick={() =>
-                            change(user, { is_active: !user.is_active }, user.is_active ? `${user.name} deactivated` : `${user.name} reactivated`)
-                          }
+                      </TableCell>
+                      <TableCell>
+                        <Select
+                          value={user.role}
+                          disabled={self || !user.is_active || update.isPending}
+                          onValueChange={(role) => change(user, { role: role as Role }, `${user.name} is now ${ROLE_LABEL[role as Role]}`)}
                         >
-                          {user.is_active ? 'Deactivate' : 'Reactivate'}
-                        </Button>
-                      )}
-                      {!self && !user.is_active && (
-                        <Button variant="destructive" size="sm" disabled={remove.isPending} onClick={() => setDeleting(user)}>
-                          Delete
-                        </Button>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
-            </TableBody>
-          </Table>
+                          <SelectTrigger size="sm" className="w-36" aria-label={`Role for ${user.name}`}>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {ROLES.map((r) => (
+                              <SelectItem key={r} value={r}>
+                                {ROLE_LABEL[r]}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell>
+                        <InlineTextField
+                          label={`Location for ${user.name}`}
+                          value={user.location ?? ''}
+                          placeholder="Add location"
+                          schema={memberLocationSchema}
+                          onSave={(location) => update.mutateAsync({ id: user.id, body: { location } })}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <span
+                          className={cn(
+                            'inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-medium whitespace-nowrap',
+                            user.is_active ? 'bg-green-50 text-green-700 dark:bg-green-400/10 dark:text-green-300' : 'bg-surface-container-high text-muted-foreground',
+                          )}
+                        >
+                          <span aria-hidden className="size-1.5 rounded-full bg-current" />
+                          {user.is_active ? 'Active' : 'Deactivated'}
+                        </span>
+                      </TableCell>
+                      <TableCell className="space-x-1 text-right whitespace-nowrap">
+                        {!PROTOTYPE && user.is_active && (
+                          <Button variant="ghost" size="sm" onClick={() => setPasswordFor(user)}>
+                            Set password
+                          </Button>
+                        )}
+                        {!self && (
+                          <Button
+                            variant={user.is_active ? 'ghost' : 'outline'}
+                            size="sm"
+                            disabled={update.isPending}
+                            onClick={() =>
+                              change(user, { is_active: !user.is_active }, user.is_active ? `${user.name} deactivated` : `${user.name} reactivated`)
+                            }
+                          >
+                            {user.is_active ? 'Deactivate' : 'Reactivate'}
+                          </Button>
+                        )}
+                        {!self && !user.is_active && (
+                          <Button variant="destructive" size="sm" disabled={remove.isPending} onClick={() => setDeleting(user)}>
+                            Delete
+                          </Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
+              </TableBody>
+            </Table>
+          </div>
         )}
       </CardContent>
       <AddMemberDialog open={addOpen} onOpenChange={setAddOpen} />

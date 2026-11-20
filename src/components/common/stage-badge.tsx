@@ -11,7 +11,7 @@ export function StageBadge({ stage, className }: { stage: Stage; className?: str
   return (
     <span
       className={cn(
-        'inline-flex h-5 items-center gap-1.5 rounded-full px-2 text-xs font-medium whitespace-nowrap ring-1 ring-inset',
+        'inline-flex h-[22px] items-center gap-1.5 rounded-full px-2.5 text-[11px] font-semibold whitespace-nowrap shadow-sm ring-1 ring-inset',
         meta.badge,
         className,
       )}

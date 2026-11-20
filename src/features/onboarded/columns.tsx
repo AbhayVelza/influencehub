@@ -35,7 +35,11 @@ export function buildOnboardedColumns(team: Map<string, User>, platform: Platfor
         const account = accountOn(row.original, platform)
         const n = account && audienceOf(account)
         if (n == null) return muted
-        return <span title={`${formatNumber(n)} ${meta.audienceLabel.toLowerCase()}`}>{formatCompact(n)}</span>
+        return (
+          <span title={`${formatNumber(n)} ${meta.audienceLabel.toLowerCase()}`} className="font-code font-semibold tracking-tight text-on-surface">
+            {formatCompact(n)}
+          </span>
+        )
       },
     },
     totalReachColumn,
@@ -56,7 +60,7 @@ export function buildOnboardedColumns(team: Map<string, User>, platform: Platfor
       meta: { label: 'Last synced', hiddenByDefault: true },
       cell: ({ row }) => {
         const at = accountOn(row.original, platform)?.last_synced_at
-        return at ? <RelativeTime iso={at} className="whitespace-nowrap" /> : muted
+        return at ? <RelativeTime iso={at} className="whitespace-nowrap text-muted-foreground" /> : muted
       },
     },
   ]

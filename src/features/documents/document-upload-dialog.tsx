@@ -86,7 +86,7 @@ function FileField({
 }) {
   const { file, fileError, progress, busy, choose } = uploader
   return (
-    <div className="grid gap-1.5">
+    <div className="grid gap-1.5 rounded-xl bg-surface-container-low/50 p-3">
       <Label htmlFor="document-file">File</Label>
       <Input
         id="document-file"
@@ -102,18 +102,18 @@ function FileField({
           else e.target.value = ''
         }}
       />
-      <p id="document-file-hint" className="text-xs text-muted-foreground">
+      <p id="document-file-hint" className="text-body-sm text-muted-foreground">
         {file ? `${file.name} · ${formatFileSize(file.size)}` : DOCUMENT_FILE_HINT}
       </p>
       {fileError && (
-        <p role="alert" className="text-xs text-destructive">
+        <p role="alert" className="text-body-sm text-error">
           {fileError}
         </p>
       )}
       {busy && (
         <div className="space-y-1" aria-live="polite">
           <Progress value={progress} aria-label="Upload progress" />
-          <p className="text-xs text-muted-foreground">{progress < 100 ? `Uploading… ${progress}%` : 'Saving…'}</p>
+          <p className="text-body-sm text-muted-foreground tabular-nums">{progress < 100 ? `Uploading… ${progress}%` : 'Saving…'}</p>
         </div>
       )}
     </div>
@@ -128,7 +128,7 @@ function Field({ id, label, hint, error, children }: { id: string; label: string
         {hint && <span className="font-normal text-muted-foreground"> {hint}</span>}
       </Label>
       {children}
-      {error && <p className="text-xs text-destructive">{error}</p>}
+      {error && <p className="text-body-sm text-error">{error}</p>}
     </div>
   )
 }
@@ -244,7 +244,7 @@ function AgreementForm({ influencer, onDone, onCancel }: { influencer: UploadTar
       <Field id="doc-notes" label="Notes" hint="(optional)" error={errors.notes?.message}>
         <Textarea id="doc-notes" rows={2} {...register('notes')} />
       </Field>
-      <p className="text-xs text-muted-foreground">This becomes the current agreement. Earlier versions are kept as history.</p>
+      <p className="rounded-xl bg-tertiary-fixed/30 px-3 py-2 text-body-sm text-on-surface-variant">This becomes the current agreement. Earlier versions are kept as history.</p>
       <Footer busy={uploader.busy} onCancel={onCancel} />
     </form>
   )

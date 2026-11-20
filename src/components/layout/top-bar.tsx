@@ -1,5 +1,4 @@
 import { Plus } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { useAddInfluencer } from '@/features/add-influencer/context'
 import { useCan } from '@/hooks/use-me'
 import { GlobalSearch } from './global-search'
@@ -13,15 +12,22 @@ export function TopBar() {
   // Brand Specialists have no follow-ups or claims to be told about. Their search covers onboarded creators only.
   const crm = useCan('crm:access')
   return (
-    <header className="flex h-14 shrink-0 items-center gap-2 border-b sm:gap-3 bg-background px-2 sm:px-4 lg:px-6">
-      <MobileNav />
-      <GlobalSearch />
-      <div className="ml-auto flex shrink-0 items-center gap-1.5">
+    <header className="relative z-30 flex h-16 shrink-0 items-center justify-between gap-2 bg-surface-container-lowest/70 px-3 shadow-bar backdrop-blur-2xl sm:gap-space-lg sm:px-6 lg:px-space-xl">
+      <div className="flex min-w-0 flex-1 items-center gap-2">
+        <MobileNav />
+        <GlobalSearch />
+      </div>
+      <div className="flex shrink-0 items-center gap-2 sm:gap-space-md">
         {canCreate && (
-          <Button onClick={() => open()} aria-label="Add Influencer">
-            <Plus />
+          <button
+            type="button"
+            onClick={() => open()}
+            aria-label="Add Influencer"
+            className="flex items-center gap-space-xs rounded-full bg-primary px-3 py-2.5 text-body-md font-semibold text-on-primary shadow-sm transition-all duration-150 outline-none hover:-translate-y-px hover:bg-primary/85 hover:shadow-[0_6px_18px_rgba(5,8,11,0.28)] focus-visible:ring-3 focus-visible:ring-ring/50 active:translate-y-0 active:scale-[0.98] sm:px-5"
+          >
+            <Plus className="size-4" />
             <span className="hidden sm:inline">Add Influencer</span>
-          </Button>
+          </button>
         )}
         {crm && <NotificationsMenu />}
         <UserMenu />

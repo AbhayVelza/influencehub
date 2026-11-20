@@ -16,18 +16,31 @@ export function PipelineFunnel({ funnel }: { funnel: { stage: Stage; count: numb
       <li key={stage}>
         <Link
           to={`/influencers?stage=${stage}`}
-          className="group grid grid-cols-[7.5rem_1fr_4.5rem] items-center gap-3 rounded-md px-2 py-1 hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+          className={cn(
+            'group -mx-2 flex items-center gap-3 rounded-xl px-2 py-1.5 transition-colors hover:bg-surface-container-low/80 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none sm:gap-4',
+            secondary && 'opacity-85',
+          )}
         >
-          <span className={cn('truncate text-sm', secondary && 'text-muted-foreground')}>{STAGE_META[stage].label}</span>
-          <span className="h-5 rounded-sm bg-muted/60">
+          <span className="flex w-28 shrink-0 items-center gap-2 sm:w-36">
+            <span aria-hidden className={cn('size-2 shrink-0 rounded-full', STAGE_META[stage].dot)} />
+            <span className={cn('truncate text-body-md font-medium', secondary ? 'text-muted-foreground' : 'text-on-surface')}>
+              {STAGE_META[stage].label}
+            </span>
+          </span>
+          <span
+            className={cn(
+              'min-w-0 flex-1 overflow-hidden rounded-full',
+              secondary ? 'h-2 bg-surface-container' : 'h-2.5 bg-surface-container-highest',
+            )}
+          >
             <span
-              className={cn('block h-full rounded-r-[4px] transition-[width]', STAGE_META[stage].dot, secondary && 'opacity-70')}
+              className={cn('block h-full rounded-full transition-[width] duration-500', STAGE_META[stage].dot, secondary && 'opacity-70')}
               style={{ width: `${(count / max) * 100}%`, minWidth: count ? 4 : 0 }}
             />
           </span>
-          <span className="text-right text-sm tabular-nums">
-            <span className="font-medium">{formatNumber(count)}</span>
-            <span className="ml-1 text-xs text-muted-foreground">{total ? Math.round((count / total) * 100) : 0}%</span>
+          <span className={cn('w-20 shrink-0 text-right font-code text-body-sm tabular-nums', secondary ? 'text-muted-foreground' : 'text-primary')}>
+            <span className={secondary ? 'font-medium' : 'font-semibold'}>{formatNumber(count)}</span>{' '}
+            <span className="text-[11px] text-muted-foreground">({total ? Math.round((count / total) * 100) : 0}%)</span>
             <span className="sr-only"> influencers — open the list filtered to this stage</span>
           </span>
         </Link>
@@ -36,9 +49,10 @@ export function PipelineFunnel({ funnel }: { funnel: { stage: Stage; count: numb
   }
 
   return (
-    <div className="space-y-3">
-      <ol className="space-y-0.5">{PIPELINE_STAGES.map((s) => row(s))}</ol>
-      <ul className="space-y-0.5 border-t pt-2">{SIDE_STAGES.map((s) => row(s, true))}</ul>
+    <div>
+      <ol className="space-y-1">{PIPELINE_STAGES.map((s) => row(s))}</ol>
+      <div aria-hidden className="my-space-md h-px w-full bg-surface-container-highest" />
+      <ul className="space-y-1">{SIDE_STAGES.map((s) => row(s, true))}</ul>
     </div>
   )
 }

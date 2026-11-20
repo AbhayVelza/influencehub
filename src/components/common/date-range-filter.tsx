@@ -63,15 +63,22 @@ export function DateRangeFilter({ label, value, onChange }: { label: string; val
       }}
     >
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className={cn('gap-1.5', active && 'border-primary/40 bg-primary/5 dark:bg-primary/10')}>
-          <CalendarRange />
-          <span className={cn(active && 'text-muted-foreground')}>{label}</span>
+        <Button
+          variant="outline"
+          size="sm"
+          className={cn(
+            'gap-1.5 px-3.5',
+            active && 'bg-tertiary-fixed/40 hover:bg-tertiary-fixed/60 aria-expanded:bg-tertiary-fixed/60 dark:bg-tertiary-fixed/40',
+          )}
+        >
+          <CalendarRange className="text-muted-foreground" />
+          <span className={cn(active ? 'text-muted-foreground' : 'text-on-surface')}>{label}</span>
           {active && (
-            <span>
+            <span className="font-semibold text-primary tabular-nums">
               {value.from ? short(value.from) : '…'} – {value.to ? short(value.to) : '…'}
             </span>
           )}
-          <ChevronDown className="opacity-60" />
+          <ChevronDown className="size-[15px] text-outline" />
         </Button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-72 space-y-3">

@@ -17,7 +17,6 @@ import { useQueryClient } from '@tanstack/react-query'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { StageDot } from '@/components/common/stage-badge'
 import { Button } from '@/components/ui/button'
 import { useStageMover } from '@/features/influencers/stage-mover'
 import { useMe } from '@/hooks/use-me'
@@ -83,14 +82,17 @@ function Column({
   const { setNodeRef, isOver } = useDroppable({ id: stage })
   const meta = STAGE_META[stage]
 
+  // Three distinguishable drop states: standard = cyan ring, override = dashed amber ring, blocked = dimmed.
   const dropStyle =
     drag === 'standard'
-      ? 'ring-2 ring-primary/40'
+      ? 'ring-2 ring-on-tertiary-container/45'
       : drag === 'override'
         ? 'ring-2 ring-dashed ring-amber-500/60'
         : drag === 'blocked'
           ? 'opacity-45'
           : ''
+  // A soft glow in the stage's own colour around its 10px dot.
+  const glow = { boxShadow: `0 0 8px ${meta.hex}66` }
 
   if (collapsed) {
     return (
@@ -98,19 +100,29 @@ function Column({
         ref={setNodeRef}
         aria-label={`${meta.label}, ${count} influencers (collapsed)`}
         className={cn(
-          'flex w-14 shrink-0 flex-col items-center gap-2 rounded-xl border bg-muted/40 py-3 transition-shadow',
+          'group/strip flex w-14 shrink-0 flex-col items-center justify-between gap-3 rounded-2xl bg-surface-container-lowest/50 p-2.5 shadow-[0_8px_32px_0_rgba(14,26,36,0.03)] backdrop-blur-2xl transition-all duration-200 hover:bg-surface-container-lowest/80',
           dropStyle,
-          isOver && drag !== 'blocked' && 'bg-primary/10',
+          isOver && drag !== 'blocked' && 'bg-tertiary-fixed/40',
         )}
       >
-        <Button variant="ghost" size="icon-xs" onClick={onToggle} aria-label={`Expand ${meta.label}`}>
-          <ChevronLeft />
-        </Button>
-        <span className="rounded-full bg-background px-1.5 text-xs font-medium tabular-nums">{formatNumber(count)}</span>
-        <span className="flex items-center gap-1.5 text-xs font-medium [writing-mode:vertical-rl]">
-          <StageDot stage={stage} />
+        <div className="flex flex-col items-center gap-2 pt-1">
+          <span aria-hidden className={cn('size-2.5 shrink-0 rounded-full', meta.dot)} style={glow} />
+          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-surface-container px-1 text-label-sm text-muted-foreground tabular-nums">
+            {formatNumber(count)}
+          </span>
+        </div>
+        <span className="flex rotate-180 items-center gap-2 py-4 text-headline-sm font-medium tracking-tight text-muted-foreground transition-colors [writing-mode:vertical-rl] group-hover/strip:text-primary">
           {meta.label}
         </span>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          className="bg-surface-container-low/70 text-outline group-hover/strip:bg-surface-container group-hover/strip:text-primary"
+          onClick={onToggle}
+          aria-label={`Expand ${meta.label}`}
+        >
+          <ChevronLeft className="size-[18px]" />
+        </Button>
       </section>
     )
   }
@@ -122,24 +134,33 @@ function Column({
       className={cn(
         // Flexible width: the five main columns share the space (min 12rem), so the whole board fits on
         // wide screens and scrolls horizontally on narrow ones.
-        'flex min-w-48 flex-1 basis-0 flex-col rounded-xl border bg-muted/40 transition-shadow',
+        'flex min-w-60 flex-1 basis-0 flex-col rounded-2xl bg-surface-container-lowest/65 p-space-sm shadow-glass backdrop-blur-2xl transition-all',
         dropStyle,
-        isOver && drag !== 'blocked' && drag !== 'current' && 'bg-primary/5',
+        isOver && drag !== 'blocked' && drag !== 'current' && 'bg-tertiary-fixed/30',
       )}
     >
-      <header className="flex items-center gap-2 px-3 py-2.5">
-        <StageDot stage={stage} className="size-2" />
-        <h2 className="text-sm font-medium">{meta.label}</h2>
-        <span className="rounded-full bg-background px-1.5 text-xs font-medium tabular-nums">{formatNumber(count)}</span>
-        {drag === 'override' && <span className="ml-auto text-[11px] font-medium text-amber-700 dark:text-amber-400">Override</span>}
-        {onToggle && (
-          <Button variant="ghost" size="icon-xs" className="ml-auto" onClick={onToggle} aria-label={`Collapse ${meta.label}`}>
-            <ChevronRight />
-          </Button>
-        )}
+      {/* Keep this header ~40px: keyboard moves land 56px below the column's top (see keyboard.ts). */}
+      <header className="mb-space-xs flex h-10 items-center gap-2 px-space-xs">
+        <span aria-hidden className={cn('size-2.5 shrink-0 rounded-full', meta.dot)} style={glow} />
+        <h2 className="min-w-0 truncate text-headline-sm font-semibold tracking-tight text-primary">{meta.label}</h2>
+        <span className="ml-auto flex items-center gap-1.5">
+          {drag === 'override' && <span className="text-[11px] font-medium text-amber-700 dark:text-amber-400">Override</span>}
+          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-surface-container-highest px-1 text-label-sm text-muted-foreground tabular-nums">
+            {formatNumber(count)}
+          </span>
+          {onToggle && (
+            <Button variant="ghost" size="icon-xs" className="text-outline hover:text-primary" onClick={onToggle} aria-label={`Collapse ${meta.label}`}>
+              <ChevronRight />
+            </Button>
+          )}
+        </span>
       </header>
-      <ol className="flex max-h-[calc(100svh-17rem)] min-h-24 flex-col gap-2 overflow-y-auto px-2 pb-2">
-        {cards.length === 0 && <li className="px-1 py-4 text-center text-xs text-muted-foreground">No influencers</li>}
+      <ol className="-mx-1 flex max-h-[calc(100svh-17rem)] min-h-24 flex-col gap-space-sm overflow-y-auto px-1 pt-0.5 pb-1">
+        {cards.length === 0 && (
+          <li className="rounded-2xl border border-dashed border-outline-variant/40 bg-surface-container-low/30 px-3 py-6 text-center text-label-md text-muted-foreground">
+            No influencers
+          </li>
+        )}
         {cards.map((card) => (
           <li key={card.id}>
             <DraggablePipelineCard card={card} owner={card.assigned_to ? team.get(card.assigned_to) : undefined} />
@@ -277,7 +298,7 @@ export function PipelineBoard({ data, filters }: { data: PipelineResponse; filte
         },
       }}
     >
-      <div className="flex gap-3 overflow-x-auto pb-3" role="region" aria-label="Pipeline board">
+      <div className="flex gap-space-md overflow-x-auto pt-1 pb-3" role="region" aria-label="Pipeline board">
         {ALL_STAGES.map((stage) => {
           const side = !PIPELINE_STAGES.includes(stage)
           return (

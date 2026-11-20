@@ -12,7 +12,7 @@ function GrowthTooltip({ active, payload, label }: Pick<TooltipContentProps, 'ac
   if (!active || !point) return null
   // Value leads, label follows; a short line key carries the series identity.
   return (
-    <div className="rounded-md border bg-popover px-2.5 py-1.5 text-xs shadow-md">
+    <div className="rounded-xl bg-popover/90 px-2.5 py-1.5 text-body-sm shadow-glass-hover backdrop-blur-xl">
       <div className="flex items-center gap-1.5">
         <span aria-hidden className="h-0.5 w-3 rounded-full" style={{ background: SERIES }} />
         <span className="font-semibold text-popover-foreground tabular-nums">{formatNumber(point.audience)}</span>
@@ -35,29 +35,29 @@ export function GrowthChart({ snapshots, label = 'Followers', id }: { snapshots:
   const change = first ? ((last - first) / first) * 100 : 0
 
   return (
-    <section aria-labelledby={headingId} className="space-y-2">
+    <section aria-labelledby={headingId} className="space-y-2 rounded-xl bg-surface-container-low/50 p-3">
       <div className="flex items-baseline justify-between gap-2">
-        <h4 id={headingId} className="text-xs font-medium text-muted-foreground">
+        <h4 id={headingId} className="text-label-sm tracking-wider text-muted-foreground uppercase">
           {label}, last {snapshots.length} weeks
         </h4>
-        <span className="text-xs text-muted-foreground tabular-nums">
+        <span className="font-code text-[11px] text-on-tertiary-container tabular-nums">
           {change >= 0 ? '+' : ''}
           {change.toFixed(1)}%
         </span>
       </div>
 
       {showTable ? (
-        <table className="w-full text-xs">
+        <table className="w-full text-body-sm">
           <caption className="sr-only">Weekly {label.toLowerCase()}</caption>
           <thead>
-            <tr className="text-muted-foreground">
+            <tr className="text-label-sm tracking-wider text-muted-foreground uppercase">
               <th className="py-1 text-left font-normal">Week of</th>
               <th className="py-1 text-right font-normal">{label}</th>
             </tr>
           </thead>
           <tbody>
             {snapshots.map((s) => (
-              <tr key={s.captured_at} className="border-t">
+              <tr key={s.captured_at} className="border-t border-surface-container">
                 <td className="py-1">{formatDate(s.captured_at)}</td>
                 <td className="py-1 text-right tabular-nums">{formatNumber(s.audience)}</td>
               </tr>
@@ -118,7 +118,7 @@ export function GrowthChart({ snapshots, label = 'Followers', id }: { snapshots:
         </div>
       )}
 
-      <Button variant="link" size="xs" className="h-auto px-0 text-xs" onClick={() => setShowTable((v) => !v)}>
+      <Button variant="link" size="xs" className="h-auto min-h-7 px-0 py-1 text-xs" onClick={() => setShowTable((v) => !v)}>
         {showTable ? 'Show chart' : 'Show as table'}
       </Button>
     </section>
