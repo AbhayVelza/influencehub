@@ -15,14 +15,14 @@ export default function SettingsPage() {
   const tab: Tab = param && TABS.includes(param) ? param : 'instagram'
 
   return (
-    <div className="space-y-4 p-4 sm:p-6">
+    <div className="min-w-0 space-y-space-lg px-4 py-6 sm:px-6 lg:px-space-xl lg:py-space-lg">
       <PageHeader title="Settings" description="Admin only." />
       <Tabs
         value={tab}
         onValueChange={(next) => setSearchParams(next === 'instagram' ? {} : { tab: next }, { replace: true })}
-        className="gap-4"
+        className="min-w-0 max-w-full gap-space-lg"
       >
-        <TabsList>
+        <TabsList className="min-w-0 max-w-full">
           <TabsTrigger value="instagram">Instagram</TabsTrigger>
           <TabsTrigger value="team">Team & roles</TabsTrigger>
           <TabsTrigger value="categories">Categories</TabsTrigger>

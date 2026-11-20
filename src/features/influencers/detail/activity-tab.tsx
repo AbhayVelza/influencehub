@@ -54,34 +54,46 @@ export function ActivityTab({ activity }: ActivityTabProps) {
     return (
       <div className="space-y-3">
         {Array.from({ length: 5 }, (_, i) => (
-          <Skeleton key={i} className="h-10 w-full" />
+          <Skeleton key={i} className="h-12 w-full rounded-xl" />
         ))}
       </div>
     )
   }
   if (activity.isError) {
-    return <ErrorState title="Couldn’t load activity" error={activity.error} onRetry={() => activity.refetch()} />
+    return (
+      <div className="rounded-2xl bg-surface-container-lowest/70 shadow-glass backdrop-blur-2xl dark:ring-1 dark:ring-white/5">
+        <ErrorState title="Couldn’t load activity" error={activity.error} onRetry={() => activity.refetch()} />
+      </div>
+    )
   }
   const items = activity.data.pages.flatMap((p) => p.items)
-  if (items.length === 0) return <EmptyState icon={History} title="No activity yet" />
+  if (items.length === 0) {
+    return (
+      <div className="rounded-2xl bg-surface-container-lowest/70 shadow-glass backdrop-blur-2xl dark:ring-1 dark:ring-white/5">
+        <EmptyState icon={History} title="No activity yet" />
+      </div>
+    )
+  }
 
   return (
-    <div className="space-y-4">
-      <ol className="relative space-y-4 border-l pl-6">
+    <div className="space-y-4 rounded-2xl bg-surface-container-lowest/70 shadow-glass backdrop-blur-2xl dark:ring-1 dark:ring-white/5 p-space-md sm:p-5">
+      <ol className="divide-y divide-surface-container overflow-hidden rounded-xl bg-surface-container-low/50">
         {items.map((entry) => {
           const Icon = ICONS[entry.type]
           const { text, detail } = describeActivity(entry, team)
           return (
-            <li key={entry.id} className="relative">
-              <span className="absolute top-0.5 -left-[2.0625rem] flex size-6 items-center justify-center rounded-full border bg-background text-muted-foreground">
-                <Icon className="size-3.5" />
+            <li key={entry.id} className="flex items-start gap-3 px-3 py-3 transition-colors duration-150 hover:bg-tertiary-fixed/20">
+              <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-surface-container-lowest text-on-tertiary-container shadow-sm">
+                <Icon className="size-4" strokeWidth={1.75} />
               </span>
-              <p className="text-sm">{text}</p>
-              {detail && <p className="mt-0.5 text-sm text-muted-foreground">“{detail}”</p>}
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                {entry.actor ? name(entry.actor, team) : 'System'} ·{' '}
-                <RelativeTime iso={entry.created_at} />
-              </p>
+              <div className="min-w-0 flex-1">
+                <p className="text-body-md text-on-surface">{text}</p>
+                {detail && <p className="mt-0.5 text-body-md text-muted-foreground">“{detail}”</p>}
+                <p className="mt-0.5 text-body-sm text-muted-foreground">
+                  {entry.actor ? name(entry.actor, team) : 'System'} ·{' '}
+                  <RelativeTime iso={entry.created_at} />
+                </p>
+              </div>
             </li>
           )
         })}

@@ -50,17 +50,17 @@ export function InfluencerPicker({
                 ))}
               </div>
             ) : results.isError ? (
-              <p className="px-3 py-6 text-center text-sm text-muted-foreground">Couldn’t search. Try again.</p>
+              <p className="px-3 py-6 text-center text-body-md text-muted-foreground">Couldn’t search. Try again.</p>
             ) : (
               <>
                 <CommandEmpty>No influencers match.</CommandEmpty>
                 <CommandGroup>
                   {results.data.items.filter((inf) => eligible?.(inf) ?? true).map((inf) => (
-                    <CommandItem key={inf.id} value={inf.id} onSelect={() => onPick(inf)} className="[&>svg:last-child]:hidden">
-                      <PersonAvatar name={inf.name} src={inf.profile_pic_url} className="size-7" />
+                    <CommandItem key={inf.id} value={inf.id} onSelect={() => onPick(inf)} className="gap-space-sm px-3 py-2 data-selected:bg-tertiary-fixed/30 [&>svg:last-child]:hidden">
+                      <PersonAvatar name={inf.name} src={inf.profile_pic_url} className="size-8 shadow-sm" />
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate font-medium">{inf.name}</span>
-                        <span className="block truncate text-xs text-muted-foreground">{formatHandle(primaryAccount(inf))}</span>
+                        <span className="block truncate text-label-md font-semibold text-on-surface">{inf.name}</span>
+                        <span className="block truncate text-body-sm text-muted-foreground">{formatHandle(primaryAccount(inf))}</span>
                       </span>
                       <StageBadge stage={inf.stage} />
                     </CommandItem>

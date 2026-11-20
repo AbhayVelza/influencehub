@@ -81,44 +81,42 @@ function OnboardedPlatformList({ platform }: { platform: Platform }) {
 
   return (
     <div className="flex min-h-full flex-col">
-      <div className="flex-1 space-y-4 p-4 sm:p-6 pb-4">
-        <Button asChild variant="ghost" size="sm" className="-ml-2 text-muted-foreground">
-          <Link to="/onboarded">
-            <ArrowLeft />
-            All platforms
-          </Link>
-        </Button>
-        <PageHeader
-          title={
-            <span className="inline-flex items-center gap-2">
-              {/* The title already names the platform. */}
-              <span aria-hidden>
-                <PlatformIcon platform={platform} className="size-7 rounded-md" />
-              </span>
-              <span>
-                Onboarded on {meta.label}{' '}
-                {query.data && <span className="font-normal text-muted-foreground tabular-nums">({formatNumber(total)})</span>}
-              </span>
-            </span>
-          }
-          description={
-            crm
-              ? `Every onboarded creator with a ${meta.label} account, including those in Welcome Kit and Delivered. The Documents column shows what’s still missing.`
-              : `Every onboarded creator with a ${meta.label} account.`
-          }
-        />
+      <div className="flex-1 space-y-space-md px-4 py-6 sm:px-6 lg:px-space-xl lg:py-space-lg">
+        <div className="space-y-space-xs pb-space-sm">
+          <Button asChild variant="ghost" size="sm" className="-ml-3 text-muted-foreground">
+            <Link to="/onboarded">
+              <ArrowLeft />
+              All platforms
+            </Link>
+          </Button>
+          <PageHeader
+            // The title already names the platform, so the tile is decorative.
+            icon={<PlatformIcon platform={platform} className="size-9 rounded-[10px] shadow-md" />}
+            title={`Onboarded on ${meta.label}`}
+            count={query.data ? formatNumber(total) : undefined}
+            description={
+              crm
+                ? `Every onboarded creator with a ${meta.label} account, including those in Welcome Kit and Delivered. The Documents column shows what’s still missing.`
+                : `Every onboarded creator with a ${meta.label} account.`
+            }
+            className="[&_p]:max-w-3xl"
+          />
+        </div>
 
-        <ListSearch value={filters.q} onChange={(q) => list.setFilters({ q }, { replace: true })} />
-        <InfluencerFilterBar
-          filters={filters}
-          onChange={list.setFilters}
-          baseFilters={locked}
-          showFollowers
-          hideStage
-          hidePlatform
-          hideAssigned={!canReassign}
-          hideDocuments={!crm}
-        />
+        {/* Search beside the Filters pill; the filter panel (and chips) wrap onto their own lines. */}
+        <div className="flex flex-wrap items-center gap-space-sm [&>div:last-child]:contents">
+          <ListSearch value={filters.q} onChange={(q) => list.setFilters({ q }, { replace: true })} className="w-full sm:max-w-md sm:flex-1" />
+          <InfluencerFilterBar
+            filters={filters}
+            onChange={list.setFilters}
+            baseFilters={locked}
+            showFollowers
+            hideStage
+            hidePlatform
+            hideAssigned={!canReassign}
+            hideDocuments={!crm}
+          />
+        </div>
         <ActiveFilters filters={filters} onChange={list.setFilters} onClear={list.clearFilters} />
 
         <InfluencersTable
@@ -137,7 +135,7 @@ function OnboardedPlatformList({ platform }: { platform: Platform }) {
       </div>
 
       {total > 0 && (
-        <div className="sticky bottom-0 flex min-h-14 items-center justify-end border-t bg-background/95 px-6 py-2.5 backdrop-blur">
+        <div className="sticky bottom-0 flex min-h-14 items-center justify-end bg-surface-container-lowest/80 px-4 py-2.5 shadow-[0_-1px_8px_rgba(0,0,0,0.03)] backdrop-blur-2xl sm:px-6 lg:px-space-xl">
           <Pagination
             page={page}
             pageSize={pageSize}

@@ -76,7 +76,7 @@ const ADDRESS_FIELDS = [
 type SubmitValues = z.output<typeof packageSchema>
 
 function FieldMessage({ error }: { error?: FieldError | { message?: string } }) {
-  return error?.message ? <p className="text-xs text-destructive">{error.message}</p> : null
+  return error?.message ? <p className="text-body-sm text-error">{error.message}</p> : null
 }
 
 export function PackageDrawer({ influencer, pkg, open, onOpenChange, intent, onSaved }: PackageDrawerProps) {
@@ -174,7 +174,7 @@ export function PackageDrawer({ influencer, pkg, open, onOpenChange, intent, onS
     <Sheet open={open} onOpenChange={(next) => !busy && onOpenChange(next)}>
       <SheetContent className="w-full gap-0 data-[side=right]:sm:max-w-lg">
         <form onSubmit={onSubmit} className="flex h-full flex-col" noValidate>
-          <SheetHeader className="border-b">
+          <SheetHeader className="bg-surface-container-lowest/40 shadow-[0_1px_8px_rgba(0,0,0,0.03)]">
             <SheetTitle>{isEdit ? 'Edit Welcome Kit' : intent === 'package_sent' ? 'Ship a Welcome Kit' : 'Create Welcome Kit'}</SheetTitle>
             <SheetDescription>
               {influencer.name}
@@ -182,9 +182,9 @@ export function PackageDrawer({ influencer, pkg, open, onOpenChange, intent, onS
             </SheetDescription>
           </SheetHeader>
 
-          <div className="flex-1 space-y-6 overflow-y-auto p-4">
-            <section className="space-y-2">
-              <h3 className="text-sm font-medium">Items</h3>
+          <div className="flex-1 space-y-space-md overflow-y-auto p-4">
+            <section className="space-y-2 rounded-xl bg-surface-container-low/50 p-4">
+              <h3 className="text-label-sm tracking-wider text-muted-foreground uppercase">Items</h3>
               {items.fields.map((field, index) => (
                 <div key={field.id} className="flex items-start gap-2">
                   <div className="flex-1">
@@ -225,9 +225,9 @@ export function PackageDrawer({ influencer, pkg, open, onOpenChange, intent, onS
               </Button>
             </section>
 
-            <section className="space-y-2">
+            <section className="space-y-2 rounded-xl bg-surface-container-low/50 p-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-medium">Ship to</h3>
+                <h3 className="text-label-sm tracking-wider text-muted-foreground uppercase">Ship to</h3>
                 {influencer.address && (
                   <Button
                     type="button"
@@ -240,7 +240,7 @@ export function PackageDrawer({ influencer, pkg, open, onOpenChange, intent, onS
                 )}
               </div>
               {!influencer.address && !isEdit && (
-                <p className="text-xs text-muted-foreground">No address on the profile yet. Enter one for this Welcome Kit.</p>
+                <p className="text-body-sm text-muted-foreground">No address on the profile yet. Enter one for this Welcome Kit.</p>
               )}
               <div className="grid grid-cols-2 gap-2">
                 {ADDRESS_FIELDS.map(({ name, label, span }) => (
@@ -255,8 +255,8 @@ export function PackageDrawer({ influencer, pkg, open, onOpenChange, intent, onS
               </div>
             </section>
 
-            <section className="grid grid-cols-2 gap-2">
-              <h3 className="col-span-2 text-sm font-medium">Shipping</h3>
+            <section className="grid grid-cols-2 gap-2 rounded-xl bg-surface-container-low/50 p-4">
+              <h3 className="col-span-2 text-label-sm tracking-wider text-muted-foreground uppercase">Shipping</h3>
               <div className="grid gap-1">
                 <Label htmlFor="pkg-status" className="text-xs">
                   Status
@@ -299,7 +299,7 @@ export function PackageDrawer({ influencer, pkg, open, onOpenChange, intent, onS
                 <div className="flex gap-2">
                   <Input
                     id="pkg-tracking"
-                    className="font-mono"
+                    className="font-code"
                     aria-invalid={!!errors.tracking_number}
                     {...register('tracking_number')}
                   />
@@ -319,7 +319,7 @@ export function PackageDrawer({ influencer, pkg, open, onOpenChange, intent, onS
             </section>
           </div>
 
-          <SheetFooter className="flex-row justify-end border-t">
+          <SheetFooter className="flex-row justify-end bg-surface-container-lowest/80 shadow-[0_-1px_8px_rgba(0,0,0,0.03)] backdrop-blur-2xl">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={busy}>
               Cancel
             </Button>

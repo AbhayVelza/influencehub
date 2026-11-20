@@ -16,12 +16,17 @@ import type { InfluencerFilters } from '@/types'
 
 function BoardSkeleton() {
   return (
-    <div className="flex gap-3 overflow-hidden" aria-busy="true" aria-label="Loading pipeline">
+    <div className="flex gap-space-md overflow-hidden pt-1" aria-busy="true" aria-label="Loading pipeline">
       {Array.from({ length: 5 }, (_, i) => (
-        <div key={i} className="min-w-48 flex-1 basis-0 space-y-2 rounded-xl border bg-muted/40 p-2">
-          <Skeleton className="h-6 w-32" />
+        <div
+          key={i}
+          className="min-w-48 flex-1 basis-0 space-y-space-sm rounded-2xl bg-surface-container-lowest/65 p-space-sm shadow-glass backdrop-blur-2xl"
+        >
+          <div className="flex h-10 items-center px-space-xs">
+            <Skeleton className="h-5 w-32" />
+          </div>
           {Array.from({ length: 3 }, (_, j) => (
-            <Skeleton key={j} className="h-24 w-full" />
+            <Skeleton key={j} className="h-32 w-full rounded-2xl" />
           ))}
         </div>
       ))}
@@ -38,18 +43,23 @@ export default function PipelinePage() {
   const canReassign = useCan('influencer:reassign')
 
   return (
-    <div className="space-y-4 p-4 sm:p-6">
+    <div className="min-w-0 space-y-space-lg px-4 py-6 sm:px-6 lg:px-space-xl lg:py-space-lg">
       <PageHeader
-        title={
-          <>
-            Pipeline{' '}
-            {pipeline.data && <span className="font-normal text-muted-foreground tabular-nums">({formatNumber(total)})</span>}
-          </>
-        }
+        title="Pipeline"
+        count={pipeline.data ? formatNumber(total) : undefined}
         description="Drag a card to another stage, or focus it and press Space, then use the arrow keys."
       />
-      <ListSearch value={filters.q} onChange={(q) => list.setFilters({ q }, { replace: true })} />
-      <InfluencerFilterBar filters={filters} onChange={list.setFilters} hideStage hideAssigned={!canReassign} />
+      {/* Glass dock: search + Filters; the filter bar's own wrapper is flattened so its panel wraps onto a full row. */}
+      <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-surface-container-lowest/70 p-2 shadow-glass backdrop-blur-2xl">
+        <ListSearch
+          value={filters.q}
+          onChange={(q) => list.setFilters({ q }, { replace: true })}
+          className="max-w-md min-w-0 flex-1 basis-56"
+        />
+        <div className="contents *:contents">
+          <InfluencerFilterBar filters={filters} onChange={list.setFilters} hideStage hideAssigned={!canReassign} />
+        </div>
+      </div>
       <ActiveFilters filters={filters} onChange={list.setFilters} onClear={list.clearFilters} />
 
       {pipeline.isPending ? (

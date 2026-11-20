@@ -14,7 +14,7 @@ export function App() {
       <QueryClientProvider client={queryClient}>
         <TooltipProvider delayDuration={300}>
           <RouterProvider key={session} router={router} />
-          <Toaster position="bottom-right" richColors closeButton />
+          <Toaster position="bottom-right" closeButton />
         </TooltipProvider>
       </QueryClientProvider>
     </ThemeProvider>

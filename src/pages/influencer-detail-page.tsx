@@ -35,19 +35,19 @@ type Tab = (typeof TABS)[number]
 
 function DetailSkeleton() {
   return (
-    <div className="space-y-6 p-4 sm:p-6" aria-busy="true" aria-label="Loading influencer">
+    <div className="space-y-space-lg px-4 py-6 sm:px-6 lg:px-space-xl lg:py-space-lg" aria-busy="true" aria-label="Loading influencer">
       <Skeleton className="h-6 w-28" />
-      <div className="flex items-center gap-4">
-        <Skeleton className="size-14 rounded-full" />
+      <div className="flex items-center gap-4 rounded-2xl bg-surface-container-lowest/70 p-space-lg shadow-glass backdrop-blur-2xl">
+        <Skeleton className="size-16 rounded-full" />
         <div className="space-y-2">
-          <Skeleton className="h-6 w-56" />
+          <Skeleton className="h-7 w-56" />
           <Skeleton className="h-4 w-72" />
         </div>
       </div>
-      <Skeleton className="h-8 w-full" />
-      <div className="grid gap-6 lg:grid-cols-[20rem_1fr]">
-        <Skeleton className="h-96" />
-        <Skeleton className="h-96" />
+      <Skeleton className="h-16 w-full rounded-2xl" />
+      <div className="grid gap-gutter lg:grid-cols-[20rem_1fr]">
+        <Skeleton className="h-96 rounded-2xl" />
+        <Skeleton className="h-96 rounded-2xl" />
       </div>
     </div>
   )
@@ -57,15 +57,15 @@ function DetailSkeleton() {
 function PoolPreviewPage({ item }: { item: PoolItem }) {
   const { claim, busy } = usePoolActions()
   return (
-    <div className="mx-auto max-w-xl space-y-4 p-4 sm:p-6">
+    <div className="mx-auto max-w-xl space-y-space-md px-4 py-6 sm:px-6 lg:py-space-lg">
       <Button asChild variant="ghost" size="sm" className="-ml-2 text-muted-foreground">
         <Link to="/pool">
           <ArrowLeft />
           Unassigned Pool
         </Link>
       </Button>
-      <div className="space-y-4 rounded-xl border bg-card p-5">
-        <p className="text-sm text-muted-foreground">This influencer is in the Unassigned Pool. Claim them to see everything.</p>
+      <div className="space-y-4 rounded-2xl bg-surface-container-lowest/70 p-space-lg shadow-glass backdrop-blur-2xl dark:ring-1 dark:ring-white/5">
+        <p className="text-body-md text-muted-foreground">This influencer is in the Unassigned Pool. Claim them to see everything.</p>
         <PoolPreview item={item} />
         <div className="flex justify-end gap-2">
           <PoolActions item={item} busy={busy} onClaim={() => void claim(item)} onAssign={() => {}} />
@@ -194,7 +194,7 @@ function FullInfluencerDetail() {
   const openPackage = (intent?: 'package_sent', pkg?: Package) => setPackageDrawer({ open: true, intent, pkg })
 
   return (
-    <div className="space-y-6 p-4 sm:p-6">
+    <div className="space-y-space-lg px-4 py-6 sm:px-6 lg:px-space-xl lg:py-space-lg">
       <InfluencerHeader
         influencer={data}
         previousStage={previousStage}
@@ -205,11 +205,11 @@ function FullInfluencerDetail() {
         onCreatePackage={() => openPackage()}
       />
 
-      <div className="grid items-start gap-6 lg:grid-cols-[19rem_minmax(0,1fr)]">
+      <div className="grid items-start gap-gutter lg:grid-cols-[19rem_minmax(0,1fr)]">
         <SocialAccountsPanel influencer={data} />
 
-        <Tabs value={tab} onValueChange={setTab} className="min-w-0 gap-4">
-          <TabsList className="max-w-full justify-start overflow-x-auto">
+        <Tabs value={tab} onValueChange={setTab} className="min-w-0 max-w-full gap-space-md">
+          <TabsList className="min-w-0 max-w-full justify-start overflow-x-auto">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="calls">Calls{callCount ? ` (${callCount})` : ''}</TabsTrigger>
             <TabsTrigger value="packages">Welcome Kits{packageCount ? ` (${packageCount})` : ''}</TabsTrigger>

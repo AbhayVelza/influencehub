@@ -71,10 +71,15 @@ export function SavedViewsMenu({ filters, sort, onApply }: SavedViewsMenuProps) 
     <>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button variant="outline" className="max-w-60">
-            <Bookmark />
-            <span className="truncate">{activeView ? activeView.name : 'Saved views'}</span>
-            <ChevronDown className="opacity-60" />
+          <Button variant="outline" className="max-w-72 gap-1 px-3.5">
+            <Bookmark className="size-[17px] text-muted-foreground" strokeWidth={1.75} />
+            <span className="shrink-0">Saved views</span>
+            {activeView && (
+              <span className="ml-0.5 min-w-0 truncate rounded bg-secondary-fixed/50 px-1.5 py-px font-code text-[10px] font-medium text-muted-foreground">
+                {activeView.name}
+              </span>
+            )}
+            <ChevronDown className="size-4 text-outline" />
           </Button>
         </PopoverTrigger>
         <PopoverContent align="end" className="w-72 p-1">
@@ -84,16 +89,16 @@ export function SavedViewsMenu({ filters, sort, onApply }: SavedViewsMenuProps) 
               <Skeleton className="h-6 w-full" />
             </div>
           ) : views.isError ? (
-            <p className="px-2 py-4 text-center text-sm text-muted-foreground">Couldn’t load saved views.</p>
+            <p className="px-2 py-4 text-center text-body-sm text-muted-foreground">Couldn’t load saved views.</p>
           ) : views.data?.items.length === 0 ? (
-            <p className="px-2 py-4 text-center text-sm text-muted-foreground">No saved views yet.</p>
+            <p className="px-2 py-4 text-center text-body-sm text-muted-foreground">No saved views yet.</p>
           ) : (
             <ul className="max-h-72 overflow-y-auto">
               {views.data?.items.map((view) => (
-                <li key={view.id} className="group flex items-center gap-1 rounded-md hover:bg-muted">
+                <li key={view.id} className="group flex items-center gap-1 rounded-xl hover:bg-surface-container-low">
                   <button
                     type="button"
-                    className="flex min-w-0 flex-1 items-center gap-2 px-2 py-1.5 text-left text-sm"
+                    className="flex min-w-0 flex-1 items-center gap-2 px-2.5 py-2 text-left text-label-md"
                     onClick={() => {
                       onApply(view)
                       setOpen(false)
@@ -118,7 +123,7 @@ export function SavedViewsMenu({ filters, sort, onApply }: SavedViewsMenuProps) 
               ))}
             </ul>
           )}
-          <div className="mt-1 border-t pt-1">
+          <div className="mt-1 border-t border-surface-container pt-1">
             <Button
               variant="ghost"
               size="sm"

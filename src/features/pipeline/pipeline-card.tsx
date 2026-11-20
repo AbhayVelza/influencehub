@@ -1,5 +1,5 @@
 import { useDraggable } from '@dnd-kit/core'
-import { Clock } from 'lucide-react'
+import { Clock, Users } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { PersonAvatar } from '@/components/common/person-avatar'
 import { AccountLabel } from '@/components/common/platform-badge'
@@ -24,35 +24,46 @@ export function PipelineCardView({
   return (
     <div
       className={cn(
-        'space-y-2 rounded-lg border bg-card p-2.5 text-sm shadow-xs',
-        overlay && 'rotate-2 shadow-lg ring-2 ring-primary/30',
+        'group/card relative flex flex-col gap-2.5 rounded-2xl bg-surface-container-lowest/90 p-3.5 text-body-sm shadow-[0_4px_20px_rgba(0,180,240,0.06)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-surface-container-lowest hover:shadow-[0_8px_28px_rgba(0,180,240,0.12)]',
+        overlay && 'rotate-2 shadow-glass-glow ring-2 ring-on-tertiary-container/30',
         className,
       )}
     >
-      <div className="flex items-start gap-2">
-        <PersonAvatar name={card.name} src={card.profile_pic_url} className="size-8" />
+      <div className="flex items-center gap-2.5">
+        <PersonAvatar
+          name={card.name}
+          src={card.profile_pic_url}
+          className="size-10 rounded-xl bg-surface-container shadow-sm *:rounded-xl after:rounded-xl"
+        />
         <div className="min-w-0 flex-1">
           <Link
             id={`pipeline-card-${card.id}`}
             to={`/influencers/${card.id}`}
-            className="block truncate font-medium hover:underline"
+            className="block truncate text-label-md font-semibold text-primary transition-colors group-hover/card:text-on-tertiary-container hover:underline"
             // A plain click opens the profile (drags need 6px of movement); no native link dragging.
             draggable={false}
           >
             {card.name}
           </Link>
-          <AccountLabel account={card.primary_account} block className="text-xs text-muted-foreground" />
+          <AccountLabel account={card.primary_account} block className="font-code text-[11px] text-muted-foreground" />
         </div>
       </div>
-      <p className="text-xs text-muted-foreground">
-        <span className="font-medium text-foreground tabular-nums">{formatCompact(card.total_reach)}</span> followers ·{' '}
-        {card.category}
+      <p className="flex items-center justify-between gap-2 rounded-xl bg-surface-container-low/50 p-2 text-label-sm font-medium tracking-normal text-muted-foreground">
+        <span className="flex shrink-0 items-center gap-1.5">
+          <Users aria-hidden className="size-[15px]" strokeWidth={1.75} />
+          <span className="font-semibold text-primary tabular-nums">{formatCompact(card.total_reach)}</span> followers
+        </span>
+        {card.category && (
+          <span className="min-w-0 truncate rounded-full bg-secondary-fixed/50 px-2 py-0.5 text-on-secondary-fixed-variant">
+            {card.category}
+          </span>
+        )}
       </p>
-      <div className="flex items-center justify-between gap-2 text-xs">
+      <div className="flex items-center justify-between gap-2 pt-0.5 text-body-sm">
         <span className="flex min-w-0 items-center gap-1.5 text-muted-foreground">
           {owner ? (
             <>
-              <PersonAvatar name={owner.name} className="size-5 text-[9px]" />
+              <PersonAvatar name={owner.name} className="size-5 text-[9px] ring-1 ring-surface-container-lowest" />
               <span className="truncate">{owner.name}</span>
             </>
           ) : (
@@ -61,8 +72,10 @@ export function PipelineCardView({
         </span>
         <span
           className={cn(
-            'inline-flex shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 tabular-nums',
-            stale ? 'bg-amber-100 font-medium text-amber-800 dark:bg-amber-400/15 dark:text-amber-300' : 'text-muted-foreground',
+            'inline-flex shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 font-code text-code tabular-nums',
+            stale
+              ? 'bg-amber-100 font-semibold text-amber-800 dark:bg-amber-400/15 dark:text-amber-300'
+              : 'text-muted-foreground/80',
           )}
           title={stale ? `Over ${STALE_DAYS} days in this stage` : 'Days in this stage'}
         >
@@ -90,7 +103,7 @@ export function DraggablePipelineCard({ card, owner }: { card: PipelineCardData;
       {...listeners}
       aria-labelledby={`pipeline-card-${card.id}`}
       className={cn(
-        'cursor-grab rounded-lg outline-none focus-visible:ring-3 focus-visible:ring-ring/50 active:cursor-grabbing',
+        'cursor-grab rounded-2xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50 active:cursor-grabbing',
         isDragging && 'opacity-40',
       )}
     >

@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import { Check } from 'lucide-react'
 import { useEffect } from 'react'
 import { Controller, useForm, useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -118,13 +119,13 @@ export function LogCallDialog({ influencer, open, onOpenChange, intent }: LogCal
           </DialogHeader>
 
           <fieldset className="space-y-2">
-            <legend className="mb-2 text-sm font-medium">Outcome</legend>
+            <legend className="mb-2 text-label-md font-semibold text-primary">Outcome</legend>
             <Controller
               control={control}
               name="outcome"
               render={({ field, fieldState }) => (
                 <>
-                  <div role="radiogroup" aria-label="Outcome" className="flex flex-wrap gap-1.5">
+                  <div role="radiogroup" aria-label="Outcome" className="flex flex-wrap gap-2">
                     {CALL_OUTCOMES.map((value) => (
                       <button
                         key={value}
@@ -133,12 +134,18 @@ export function LogCallDialog({ influencer, open, onOpenChange, intent }: LogCal
                         aria-checked={field.value === value}
                         onClick={() => field.onChange(value)}
                         className={cn(
-                          'h-7 rounded-full border px-3 text-xs font-medium transition-colors',
+                          'inline-flex h-8 items-center gap-1.5 rounded-full px-3.5 text-label-md font-medium transition-all duration-150 outline-none focus-visible:ring-3 focus-visible:ring-ring/50 active:scale-95',
+                          CALL_OUTCOME_META[value].badge,
                           field.value === value
-                            ? cn('border-transparent', CALL_OUTCOME_META[value].badge, 'ring-2 ring-ring/40')
-                            : 'hover:bg-muted',
+                            ? 'font-semibold shadow-sm ring-2 ring-current/40'
+                            : 'ring-1 ring-current/10 hover:shadow-sm hover:ring-current/25',
                         )}
                       >
+                        {field.value === value ? (
+                          <Check aria-hidden className="size-3.5" strokeWidth={2.25} />
+                        ) : (
+                          <span aria-hidden className="size-1.5 rounded-full bg-current opacity-70" />
+                        )}
                         {CALL_OUTCOME_META[value].label}
                       </button>
                     ))}
@@ -176,13 +183,14 @@ export function LogCallDialog({ influencer, open, onOpenChange, intent }: LogCal
               aria-invalid={!!formState.errors.follow_up}
               {...register('follow_up')}
             />
-            <div className="flex flex-wrap gap-1">
+            <div className="flex flex-wrap gap-1.5 pt-0.5">
               {QUICK_PICKS.map((p) => (
                 <Button
                   key={p.label}
                   type="button"
                   variant="ghost"
                   size="xs"
+                  className="h-7 rounded-full bg-surface-container-lowest/70 px-3 text-label-md text-muted-foreground shadow-sm backdrop-blur-xl hover:bg-surface-container-low hover:text-primary"
                   onClick={() => setValue('follow_up', dateTimeInputFromNow(p.days, p.hour), { shouldValidate: true })}
                 >
                   {p.label}
@@ -199,7 +207,7 @@ export function LogCallDialog({ influencer, open, onOpenChange, intent }: LogCal
               control={control}
               name="move_to_contacted"
               render={({ field }) => (
-                <label className="flex items-center gap-2 rounded-md border bg-muted/40 p-3 text-sm">
+                <label className="flex items-center gap-2 rounded-xl bg-surface-container-low/60 p-3 text-body-sm text-on-surface">
                   <Checkbox checked={field.value} onCheckedChange={(v) => field.onChange(!!v)} />
                   Move to <strong className="font-medium">Contacted</strong>
                 </label>

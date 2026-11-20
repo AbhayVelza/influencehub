@@ -36,13 +36,13 @@ function Notice({ tone, title, children }: { tone: 'info' | 'error'; title: stri
       role={tone === 'error' ? 'alert' : 'status'}
       className={
         tone === 'error'
-          ? 'flex gap-2 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm'
-          : 'flex gap-2 rounded-md border bg-muted/40 p-3 text-sm'
+          ? 'flex gap-2.5 rounded-xl bg-error-container/50 p-3 text-body-sm'
+          : 'flex gap-2.5 rounded-xl bg-tertiary-fixed/30 p-3 text-body-sm'
       }
     >
-      <Icon className={tone === 'error' ? 'mt-0.5 size-4 shrink-0 text-destructive' : 'mt-0.5 size-4 shrink-0 text-muted-foreground'} />
+      <Icon strokeWidth={1.75} className={tone === 'error' ? 'mt-0.5 size-4 shrink-0 text-error' : 'mt-0.5 size-4 shrink-0 text-on-tertiary-container'} />
       <div className="space-y-1">
-        <p className="font-medium">{title}</p>
+        <p className="font-semibold text-primary">{title}</p>
         <div className="text-muted-foreground">{children}</div>
       </div>
     </div>
@@ -53,15 +53,15 @@ function Notice({ tone, title, children }: { tone: 'info' | 'error'; title: stri
 function StatCards({ account }: { account: SocialAccount }) {
   const defs = PLATFORM_META[account.platform].metrics
   return (
-    <dl className="grid grid-cols-2 gap-1.5">
+    <dl className="grid grid-cols-2 gap-2">
       {defs.map((def) => {
         const value = metricValue(account, def.key)
         return (
-          <div key={def.key} className="rounded-md bg-muted/50 px-2 py-1.5">
-            <dd className="truncate text-base font-semibold tabular-nums" title={exactMetric(def, value)}>
+          <div key={def.key} className="flex flex-col-reverse rounded-xl bg-surface-container-low/70 px-3 py-2.5">
+            <dd className="truncate text-headline-sm font-semibold tracking-tight text-primary tabular-nums" title={exactMetric(def, value)}>
               {formatMetric(def, value)}
             </dd>
-            <dt className="text-xs text-muted-foreground">{def.label}</dt>
+            <dt className="text-label-sm tracking-wider text-muted-foreground uppercase">{def.label}</dt>
           </div>
         )
       })}
@@ -75,7 +75,7 @@ function RecentPosts({ influencerId, account }: { influencerId: string; account:
     return (
       <div className="grid grid-cols-3 gap-1.5">
         {Array.from({ length: 6 }, (_, i) => (
-          <Skeleton key={i} className="aspect-square w-full" />
+          <Skeleton key={i} className="aspect-square w-full rounded-xl" />
         ))}
       </div>
     )
@@ -83,14 +83,14 @@ function RecentPosts({ influencerId, account }: { influencerId: string; account:
   if (media.isError) return <p className="text-xs text-muted-foreground">Couldn’t load recent posts.</p>
   if (media.data.items.length === 0) return <p className="text-xs text-muted-foreground">No recent posts.</p>
   return (
-    <ul className="grid grid-cols-3 gap-1.5">
+    <ul className="grid grid-cols-3 gap-2">
       {media.data.items.slice(0, 6).map((post) => (
         <li key={post.permalink}>
           <a
             href={post.permalink}
             target="_blank"
             rel="noreferrer"
-            className="group relative block aspect-square overflow-hidden rounded-md bg-muted"
+            className="group relative block aspect-square overflow-hidden rounded-xl bg-surface-container-low shadow-sm"
             title={`Posted ${formatDate(post.posted_at)}`}
           >
             <img
@@ -128,7 +128,7 @@ function ConnectStatusBadge({ account }: { account: SocialAccount }) {
   const status = account.connect_status ?? 'not_connected'
   const meta = CONNECT_LABEL[status]
   return (
-    <span className="inline-flex items-center gap-1.5 text-xs whitespace-nowrap text-muted-foreground">
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-container-low/80 px-2 py-0.5 text-[11px] font-medium whitespace-nowrap text-muted-foreground">
       <span aria-hidden className={cn('size-1.5 rounded-full', meta.dot)} />
       {meta.label}
       {status === 'link_sent' && account.connect_link_expires_at && (
@@ -241,8 +241,8 @@ function AccountView({ influencer, account }: { influencer: Influencer; account:
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-          <span className="text-muted-foreground">{SYNC_METHOD_LABEL[account.sync_method]}</span>
+        <div className="flex flex-wrap items-center justify-between gap-2 text-body-sm">
+          <span className="text-label-sm tracking-wider text-muted-foreground uppercase">{SYNC_METHOD_LABEL[account.sync_method]}</span>
           {account.sync_method === 'connect' ? (
             <ConnectStatusBadge account={account} />
           ) : account.sync_method === 'lookup' ? (
@@ -280,7 +280,7 @@ function AccountView({ influencer, account }: { influencer: Influencer; account:
         {syncing && (
           <div className="space-y-1" aria-live="polite">
             <Progress value={progress} aria-label="Sync progress" />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-body-sm text-muted-foreground">
               Syncing from {meta.label}… {progress}%
             </p>
           </div>
@@ -310,15 +310,15 @@ function AccountView({ influencer, account }: { influencer: Influencer; account:
         </Notice>
       )}
       {account.sync_status === 'pending' && !hasData && (
-        <p className="text-sm text-muted-foreground">Waiting for the first sync. Stats appear once {meta.label} returns data.</p>
+        <p className="text-body-md text-muted-foreground">Waiting for the first sync. Stats appear once {meta.label} returns data.</p>
       )}
 
       <StatCards account={account} />
-      {account.bio && <p className="text-sm whitespace-pre-wrap">{account.bio}</p>}
+      {account.bio && <p className="text-body-md whitespace-pre-wrap text-on-surface">{account.bio}</p>}
 
       {tracked &&
         (snapshots.isPending ? (
-          <Skeleton className="h-36 w-full" />
+          <Skeleton className="h-36 w-full rounded-xl" />
         ) : snapshots.isError ? (
           <p className="text-xs text-muted-foreground">Couldn’t load the history.</p>
         ) : (
@@ -327,7 +327,7 @@ function AccountView({ influencer, account }: { influencer: Influencer; account:
 
       {tracked && (account.platform === 'instagram' || account.platform === 'youtube') && (
         <section className="space-y-2">
-          <h4 className="text-xs font-medium text-muted-foreground">{account.platform === 'youtube' ? 'Recent videos' : 'Recent posts'}</h4>
+          <h4 className="text-label-sm tracking-wider text-muted-foreground uppercase">{account.platform === 'youtube' ? 'Recent videos' : 'Recent posts'}</h4>
           <RecentPosts influencerId={influencer.id} account={account} />
         </section>
       )}
@@ -360,18 +360,18 @@ export function SocialAccountsPanel({ influencer }: { influencer: Influencer }) 
   return (
     <Card size="sm" aria-labelledby="accounts-panel-title">
       <CardHeader className="flex flex-row items-center justify-between gap-2">
-        <CardTitle id="accounts-panel-title" className="text-sm">
+        <CardTitle id="accounts-panel-title" className="text-headline-sm">
           Social accounts
         </CardTitle>
         {canEdit && (
-          <Button variant="ghost" size="sm" onClick={() => setAdding(true)}>
+          <Button variant="link" size="sm" className="px-1 text-on-tertiary-container" onClick={() => setAdding(true)}>
             <Plus />
             Add account
           </Button>
         )}
       </CardHeader>
       <CardContent className="space-y-4">
-        <div role="tablist" aria-label="Social accounts" aria-orientation="vertical" className="space-y-1" onKeyDown={onKeyDown}>
+        <div role="tablist" aria-label="Social accounts" aria-orientation="vertical" className="space-y-0.5 rounded-xl bg-surface-container-low/50 p-1" onKeyDown={onKeyDown}>
           {accounts.map((a) => {
             const selected = a.id === activeId
             const audience = audienceOf(a)
@@ -386,24 +386,26 @@ export function SocialAccountsPanel({ influencer }: { influencer: Influencer }) 
                 tabIndex={selected ? 0 : -1}
                 onClick={() => setTab(a.id)}
                 className={cn(
-                  'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50',
-                  selected ? 'bg-muted font-medium' : 'hover:bg-muted/50',
+                  'flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-label-md transition-colors duration-150 outline-none focus-visible:ring-3 focus-visible:ring-ring/50',
+                  selected
+                    ? 'bg-surface-container-lowest font-semibold text-primary shadow-sm dark:bg-surface-container-highest'
+                    : 'text-muted-foreground hover:bg-surface-container-lowest/60 hover:text-on-surface',
                 )}
               >
                 <PlatformMark platform={a.platform} />
                 <span className="min-w-0 flex-1 truncate">@{a.handle}</span>
-                <span className={cn('shrink-0 text-xs tabular-nums', selected ? 'text-foreground' : 'text-muted-foreground')}>{audience === null ? '—' : formatCompact(audience)}</span>
+                <span className={cn('shrink-0 font-code text-[11px] tabular-nums', selected ? 'text-primary' : 'text-muted-foreground')}>{audience === null ? '—' : formatCompact(audience)}</span>
               </button>
             )
           })}
         </div>
         {active && (
-          <div role="tabpanel" id={`account-panel-${active.id}`} aria-labelledby={`account-tab-${active.id}`} className="space-y-3 border-t pt-3">
+          <div role="tabpanel" id={`account-panel-${active.id}`} aria-labelledby={`account-tab-${active.id}`} className="space-y-3 border-t border-surface-container pt-3">
             <a
               href={active.profile_url}
               target="_blank"
               rel="noreferrer"
-              className="block truncate text-xs text-muted-foreground hover:text-foreground hover:underline"
+              className="block truncate text-body-sm text-on-tertiary-container hover:underline"
             >
               {PLATFORM_META[active.platform].label} · @{active.handle}
               {active.is_primary && ' · Primary'}

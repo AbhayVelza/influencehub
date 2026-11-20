@@ -20,11 +20,11 @@ export function AlreadyInCrm({ platform, handle, conflict, id, onDone }: Conflic
 
   const title = shown === 'in_pool' ? 'Already in the Unassigned Pool' : 'Already in CRM'
   return (
-    <div role="alert" className="flex items-start gap-2 rounded-md border border-amber-500/40 bg-amber-50 p-3 text-sm dark:bg-amber-400/10">
-      <CircleAlert className="mt-0.5 size-4 shrink-0 text-amber-600 dark:text-amber-400" />
+    <div role="alert" className="flex items-start gap-2.5 rounded-xl bg-amber-50/80 p-3 text-body-md ring-1 ring-amber-500/25 ring-inset dark:bg-amber-400/10">
+      <CircleAlert className="mt-0.5 size-4 shrink-0 text-amber-600 dark:text-amber-400" strokeWidth={1.75} />
       <div className="space-y-2">
         <div>
-          <p className="font-medium">{title}</p>
+          <p className="font-semibold text-primary">{title}</p>
           <p className="text-muted-foreground">
             {shown === 'in_pool' && (
               <>
@@ -40,7 +40,7 @@ export function AlreadyInCrm({ platform, handle, conflict, id, onDone }: Conflic
               <>
                 {label} @{handle} is already in InfluenceHub.{' '}
                 {id && (
-                  <Link to={`/influencers/${id}`} onClick={onDone} className="font-medium text-foreground underline underline-offset-2">
+                  <Link to={`/influencers/${id}`} onClick={onDone} className="font-medium text-on-tertiary-container underline underline-offset-2 hover:text-primary">
                     Open profile
                   </Link>
                 )}

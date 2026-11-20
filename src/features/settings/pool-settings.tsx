@@ -42,8 +42,14 @@ export function PoolSettings() {
     }),
   )
 
-  if (settings.isPending) return <Skeleton className="h-64" />
-  if (settings.isError) return <ErrorState title="Couldn’t load pool settings" error={settings.error} onRetry={() => settings.refetch()} />
+  if (settings.isPending) return <Skeleton className="h-64 max-w-2xl rounded-2xl" />
+  if (settings.isError) {
+    return (
+      <div className="max-w-2xl rounded-2xl bg-surface-container-lowest/70 shadow-glass backdrop-blur-2xl dark:ring-1 dark:ring-white/5">
+        <ErrorState title="Couldn’t load pool settings" error={settings.error} onRetry={() => settings.refetch()} />
+      </div>
+    )
+  }
 
   const errors = formState.errors
   return (
@@ -53,10 +59,10 @@ export function PoolSettings() {
         <CardDescription>Both guards are optional. Leave a field empty to turn it off.</CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={onSubmit} className="space-y-5" noValidate>
-          <div className="grid gap-1.5">
-            <Label htmlFor="claim-limit">Claim limit</Label>
-            <div className="flex items-center gap-2">
+        <form onSubmit={onSubmit} className="space-y-space-md" noValidate>
+          <div className="grid gap-1.5 rounded-xl bg-surface-container-low/50 p-space-md">
+            <Label htmlFor="claim-limit" className="text-label-sm tracking-wider text-muted-foreground uppercase">Claim limit</Label>
+            <div className="flex flex-wrap items-center gap-2">
               <Input
                 id="claim-limit"
                 inputMode="numeric"
@@ -66,18 +72,18 @@ export function PoolSettings() {
                 aria-describedby="claim-limit-hint"
                 {...register('claim_limit')}
               />
-              <span className="text-sm text-muted-foreground">uncontacted influencers per executive</span>
+              <span className="text-body-md text-muted-foreground">uncontacted influencers per executive</span>
             </div>
-            <p id="claim-limit-hint" className={errors.claim_limit ? 'text-xs text-destructive' : 'text-xs text-muted-foreground'}>
+            <p id="claim-limit-hint" className={errors.claim_limit ? 'text-body-sm text-error' : 'text-body-sm text-muted-foreground'}>
               {errors.claim_limit?.message ??
                 'Counts influencers an executive owns in Data Gathered. Claims beyond it are refused.'}
             </p>
           </div>
 
-          <div className="grid gap-1.5">
-            <Label htmlFor="auto-release">Auto-release</Label>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Return to the pool if no call is logged within</span>
+          <div className="grid gap-1.5 rounded-xl bg-surface-container-low/50 p-space-md">
+            <Label htmlFor="auto-release" className="text-label-sm tracking-wider text-muted-foreground uppercase">Auto-release</Label>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-body-md text-muted-foreground">Return to the pool if no call is logged within</span>
               <Input
                 id="auto-release"
                 inputMode="numeric"
@@ -87,9 +93,9 @@ export function PoolSettings() {
                 aria-describedby="auto-release-hint"
                 {...register('auto_release_days')}
               />
-              <span className="text-sm text-muted-foreground">days of claiming</span>
+              <span className="text-body-md text-muted-foreground">days of claiming</span>
             </div>
-            <p id="auto-release-hint" className={errors.auto_release_days ? 'text-xs text-destructive' : 'text-xs text-muted-foreground'}>
+            <p id="auto-release-hint" className={errors.auto_release_days ? 'text-body-sm text-error' : 'text-body-sm text-muted-foreground'}>
               {errors.auto_release_days?.message ?? 'Executives get a notification the day before a claim is released.'}
             </p>
           </div>

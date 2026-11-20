@@ -23,8 +23,8 @@ import { isFullInfluencer, poolPlatforms, poolPrimary } from './queries'
 
 function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="grid grid-cols-[7.5rem_1fr] gap-3 py-1.5 text-sm">
-      <dt className="text-muted-foreground">{label}</dt>
+    <div className="grid grid-cols-[7.5rem_1fr] gap-3 py-2.5 text-body-md">
+      <dt className="text-body-sm leading-5 text-muted-foreground">{label}</dt>
       <dd className="min-w-0 break-words">{children}</dd>
     </div>
   )
@@ -38,21 +38,28 @@ export function PoolPreview({ item }: { item: PoolItem }) {
   const address = full?.address
   return (
     <div className="space-y-4">
-      <div className="flex items-start gap-3">
-        <PersonAvatar name={item.name} src={item.profile_pic_url} className="size-14 text-base" />
-        <div className="min-w-0 space-y-1">
-          <p className="flex items-center gap-1.5 font-heading text-lg font-semibold">
+      <div className="flex items-center gap-space-md rounded-2xl bg-surface-container-lowest/70 p-space-md shadow-glass">
+        <PersonAvatar name={item.name} src={item.profile_pic_url} className="size-14 text-base shadow-sm" />
+        <div className="min-w-0 space-y-1.5">
+          <p className="flex items-center gap-1.5 text-headline-sm font-semibold tracking-tight text-primary">
             <span className="truncate">{item.name}</span>
-            {item.is_verified && <BadgeCheck className="size-4 shrink-0 text-sky-500" aria-label="Verified account" />}
+            {item.is_verified && (
+              <BadgeCheck
+                className="size-4 shrink-0 fill-on-tertiary-container text-surface-container-lowest"
+                aria-label="Verified account"
+              />
+            )}
           </p>
-          <div className="flex flex-wrap items-center gap-2 text-sm">
-            <span className="rounded-full border px-2 py-0.5 text-xs">{item.category}</span>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center rounded-full bg-surface-container-high px-2 py-0.5 text-[11px] font-medium text-on-surface">
+              {item.category}
+            </span>
             <StageBadge stage={item.stage} />
           </div>
         </div>
       </div>
 
-      <dl className="divide-y">
+      <dl className="divide-y divide-surface-container rounded-2xl bg-surface-container-low/50 px-space-md">
         <Row label="Primary account">
           <AccountLabel account={poolPrimary(item)} link className="font-medium" />
         </Row>
@@ -68,7 +75,15 @@ export function PoolPreview({ item }: { item: PoolItem }) {
         </Row>
         {full && (
           <>
-            <Row label="Phone">{full.phone ? <a href={`tel:${full.phone}`} className="hover:underline">{full.phone}</a> : none}</Row>
+            <Row label="Phone">
+              {full.phone ? (
+                <a href={`tel:${full.phone}`} className="font-code text-[12px] hover:underline">
+                  {full.phone}
+                </a>
+              ) : (
+                none
+              )}
+            </Row>
             <Row label="Email">
               {full.email ? <EmailValue value={full.email} /> : none}
             </Row>
@@ -86,8 +101,8 @@ export function PoolPreview({ item }: { item: PoolItem }) {
       </dl>
 
       {!full && (
-        <p className="flex items-start gap-2 rounded-md border bg-muted/40 p-3 text-sm text-muted-foreground">
-          <Lock className="mt-0.5 size-4 shrink-0" />
+        <p className="flex items-start gap-2 rounded-xl bg-tertiary-fixed/30 p-3 text-body-sm text-muted-foreground">
+          <Lock className="mt-0.5 size-4 shrink-0 text-on-tertiary-container" strokeWidth={1.75} />
           Phone, email, address, notes and call history unlock once you claim this influencer.
         </p>
       )}
@@ -120,10 +135,10 @@ export function AssignMenu({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size={size} disabled={disabled}>
-          <UserRound />
+          <UserRound className="text-muted-foreground" />
           {label}
           {influencerName && <span className="sr-only"> {influencerName}</span>}
-          <ChevronDown className="opacity-60" />
+          <ChevronDown className="text-outline" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
@@ -190,13 +205,13 @@ export function PoolPreviewDrawer({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-full gap-0 data-[side=right]:sm:max-w-md">
-        <SheetHeader className="border-b">
+        <SheetHeader className="border-b border-surface-container">
           <SheetTitle>Unassigned influencer</SheetTitle>
           <SheetDescription>In the pool: anyone on the team can claim them.</SheetDescription>
         </SheetHeader>
-        <div className="flex-1 overflow-y-auto p-4">{item && <PoolPreview item={item} />}</div>
+        <div className="flex-1 overflow-y-auto p-space-md">{item && <PoolPreview item={item} />}</div>
         {item && (
-          <SheetFooter className="flex-row justify-end border-t">
+          <SheetFooter className="flex-row justify-end border-t border-surface-container bg-surface-container-lowest/60">
             <PoolActions
               item={item}
               busy={busy}

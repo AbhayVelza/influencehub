@@ -32,12 +32,12 @@ export function Pagination({ page, pageSize, total, pageSizeOptions, onPageChang
 
   return (
     <div className="flex items-center gap-3">
-      <span className="text-sm whitespace-nowrap text-muted-foreground tabular-nums">
+      <span className="text-body-sm whitespace-nowrap text-muted-foreground tabular-nums">
         {formatNumber(from)}–{formatNumber(to)} of {formatNumber(total)}
       </span>
       {pageSizeOptions && onPageSizeChange && (
         <Select value={String(pageSize)} onValueChange={(v) => onPageSizeChange(Number(v))}>
-          <SelectTrigger size="sm" className="w-[104px]" aria-label="Rows per page">
+          <SelectTrigger size="sm" className="w-[104px] bg-surface-container-lowest/80 shadow-sm" aria-label="Rows per page">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -53,6 +53,7 @@ export function Pagination({ page, pageSize, total, pageSizeOptions, onPageChang
         <Button
           variant="ghost"
           size="icon-sm"
+          className="rounded-full text-muted-foreground"
           disabled={page <= 1}
           onClick={() => onPageChange(page - 1)}
           aria-label="Previous page"
@@ -67,12 +68,12 @@ export function Pagination({ page, pageSize, total, pageSizeOptions, onPageChang
           ) : (
             <Button
               key={item}
-              variant={item === page ? 'outline' : 'ghost'}
+              variant={item === page ? 'default' : 'ghost'}
               size="icon-sm"
               onClick={() => onPageChange(item)}
               aria-label={`Page ${item}`}
               aria-current={item === page ? 'page' : undefined}
-              className="tabular-nums"
+              className="rounded-full text-label-md tabular-nums hover:scale-100"
             >
               {item}
             </Button>
@@ -81,6 +82,7 @@ export function Pagination({ page, pageSize, total, pageSizeOptions, onPageChang
         <Button
           variant="ghost"
           size="icon-sm"
+          className="rounded-full text-muted-foreground"
           disabled={page >= pageCount}
           onClick={() => onPageChange(page + 1)}
           aria-label="Next page"

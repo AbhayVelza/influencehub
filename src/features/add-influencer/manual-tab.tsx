@@ -108,8 +108,8 @@ export function ManualTab({ prefill, onDone }: { prefill?: ManualPrefill; onDone
           <Input id="m-name" autoFocus aria-invalid={!!formState.errors.name} {...register('name')} />
         </Field>
 
-        <fieldset className="space-y-3 rounded-md border p-3">
-          <legend className="px-1 text-xs font-medium">Social accounts · the first is primary</legend>
+        <fieldset className="space-y-3 rounded-2xl bg-surface-container-low/50 p-space-md">
+          <legend className="mb-1 text-label-sm tracking-wider text-muted-foreground uppercase">Social accounts · the first is primary</legend>
           {accounts.fields.map((field, index) => (
             <AccountRow
               key={field.id}
@@ -128,7 +128,7 @@ export function ManualTab({ prefill, onDone }: { prefill?: ManualPrefill; onDone
             />
           ))}
           {formState.errors.accounts?.root?.message && (
-            <p className="text-xs text-destructive">{formState.errors.accounts.root.message}</p>
+            <p className="text-body-sm text-error">{formState.errors.accounts.root.message}</p>
           )}
           <Button type="button" variant="outline" size="sm" onClick={() => accounts.append({ ...EMPTY_ACCOUNT, platform: 'youtube' })}>
             <Plus />

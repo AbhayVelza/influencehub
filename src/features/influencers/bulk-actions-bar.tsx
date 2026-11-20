@@ -191,18 +191,27 @@ export function BulkActionsBar({ rows, onClear, onSettled }: BulkActionsBarProps
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <span className="text-sm font-medium tabular-nums">{rows.length} selected</span>
-      <Button variant="ghost" size="icon-xs" onClick={onClear} aria-label="Clear selection" disabled={busy}>
-        <X />
-      </Button>
+    <div className="flex flex-wrap items-center gap-space-sm">
+      <span className="inline-flex items-center gap-1 rounded-full bg-primary py-1 pr-1 pl-3 text-label-md font-semibold text-on-primary tabular-nums shadow-sm">
+        {rows.length} selected
+        <Button
+          variant="ghost"
+          size="icon-xs"
+          className="size-5 rounded-full text-on-primary/70 hover:bg-on-primary/15 hover:text-on-primary"
+          onClick={onClear}
+          aria-label="Clear selection"
+          disabled={busy}
+        >
+          <X />
+        </Button>
+      </span>
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" size="sm" disabled={busy}>
-            <ArrowRightLeft />
+            <ArrowRightLeft className="text-muted-foreground" />
             Change stage
-            <ChevronDown className="opacity-60" />
+            <ChevronDown className="text-outline" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-60">
@@ -229,9 +238,9 @@ export function BulkActionsBar({ rows, onClear, onSettled }: BulkActionsBarProps
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm" disabled={busy}>
-              <UserRound />
+              <UserRound className="text-muted-foreground" />
               Assign
-              <ChevronDown className="opacity-60" />
+              <ChevronDown className="text-outline" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-56">
@@ -253,7 +262,7 @@ export function BulkActionsBar({ rows, onClear, onSettled }: BulkActionsBarProps
       )}
 
       <Button variant="outline" size="sm" disabled={busy} onClick={sync}>
-        <RefreshCw className={isSyncing ? 'animate-spin' : undefined} />
+        <RefreshCw className={isSyncing ? 'animate-spin text-muted-foreground' : 'text-muted-foreground'} />
         Sync IG
       </Button>
 
@@ -266,7 +275,7 @@ export function BulkActionsBar({ rows, onClear, onSettled }: BulkActionsBarProps
 
       {can(role, 'data:export') && (
         <Button variant="outline" size="sm" disabled={busy} onClick={() => exportInfluencers({ ids })}>
-          <Download />
+          <Download className="text-muted-foreground" />
           Export
         </Button>
       )}

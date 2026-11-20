@@ -25,8 +25,8 @@ function FollowUpRow({ call, overdue }: { call: CallLogWithInfluencer; overdue: 
     <>
       <PersonAvatar name={call.influencer.name} src={call.influencer.profile_pic_url} className="size-7" />
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium">{call.influencer.name}</p>
-        <p className="truncate text-xs text-muted-foreground">
+        <p className="truncate text-label-md font-semibold">{call.influencer.name}</p>
+        <p className="truncate text-body-sm text-muted-foreground">
           {CALL_OUTCOME_META[call.outcome].label} ·{' '}
           {overdue ? (
             <span className="text-destructive">
@@ -63,8 +63,12 @@ export function NotificationsMenu() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         {/* Named by hidden text rather than aria-label, so the visible badge doesn't conflict with the name. */}
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell aria-hidden />
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative size-9 rounded-xl bg-surface-container-lowest/80 text-muted-foreground shadow-sm hover:bg-surface-container-low hover:text-on-surface"
+        >
+          <Bell aria-hidden className="size-5" strokeWidth={1.75} />
           <span className="sr-only">
             Notifications, {followUpTotal} follow-ups due
             {releases.length > 0 && `, ${releases.length} returning to the pool`}
@@ -72,7 +76,7 @@ export function NotificationsMenu() {
           {total > 0 && (
             <span
               aria-hidden
-              className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-semibold text-white tabular-nums"
+              className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#ba1a1a] px-1 text-[10px] font-semibold text-white tabular-nums ring-2 ring-surface-container-lowest"
             >
               {total > 9 ? '9+' : total}
             </span>
@@ -91,8 +95,8 @@ export function NotificationsMenu() {
               >
                 <Inbox className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">{r.influencer.name}</p>
-                  <p className="truncate text-xs text-muted-foreground">
+                  <p className="truncate text-label-md font-semibold">{r.influencer.name}</p>
+                  <p className="truncate text-body-sm text-muted-foreground">
                     Auto-release <RelativeTime iso={r.release_at} /> · log a call to keep them
                   </p>
                 </div>

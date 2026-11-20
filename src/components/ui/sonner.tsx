@@ -28,15 +28,24 @@ const Toaster = ({ ...props }: ToasterProps) => {
       }}
       style={
         {
-          "--normal-bg": "var(--popover)",
-          "--normal-text": "var(--popover-foreground)",
-          "--normal-border": "var(--border)",
-          "--border-radius": "var(--radius)",
+          "--normal-bg": "color-mix(in srgb, var(--surface-container-lowest) 92%, transparent)",
+          "--normal-text": "var(--on-surface)",
+          "--normal-border": "transparent",
+          "--border-radius": "1rem",
         } as React.CSSProperties
       }
       toastOptions={{
+        // Stitch glass toast; the type reads from the icon colour.
         classNames: {
-          toast: "cn-toast",
+          toast:
+            "cn-toast !rounded-2xl !shadow-[0_16px_40px_rgba(14,26,36,0.12)] backdrop-blur-2xl ring-1 ring-black/5 dark:ring-white/8",
+          title: "!text-label-md !font-semibold",
+          description: "!text-body-sm !text-muted-foreground",
+          success: "[&_[data-icon]]:text-emerald-600 dark:[&_[data-icon]]:text-emerald-400",
+          error: "[&_[data-icon]]:text-error",
+          warning: "[&_[data-icon]]:text-amber-600 dark:[&_[data-icon]]:text-amber-400",
+          info: "[&_[data-icon]]:text-on-tertiary-container",
+          closeButton: "!bg-surface-container-lowest !border-surface-container",
         },
       }}
       {...props}

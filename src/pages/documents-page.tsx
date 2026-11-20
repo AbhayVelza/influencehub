@@ -1,4 +1,4 @@
-import { ChevronDown, FilePlus2, FileText, SearchX } from 'lucide-react'
+import { CalendarDays, ChartColumn, ChevronDown, FileImage, FileSpreadsheet, FileText, Handshake, SearchX, Upload } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { DateRangeFilter } from '@/components/common/date-range-filter'
@@ -25,7 +25,18 @@ import { useTeam, useTeamMap } from '@/hooks/use-team'
 import { DOCUMENT_TYPE_META, DOCUMENT_TYPES, documentDetail, formatFileSize } from '@/lib/documents'
 import { formatNumber } from '@/lib/format'
 import { cn } from '@/lib/utils'
-import type { DocumentListParams, DocumentType, Influencer } from '@/types'
+import type { DocumentListParams, DocumentType, Influencer, InfluencerDocument } from '@/types'
+
+const TYPE_ICON: Record<DocumentType, typeof FileText> = { insights_summary: ChartColumn, agreement: Handshake }
+
+/** The glyph beside a file name: red for PDFs, as in the reference. */
+function FileGlyph({ contentType }: { contentType: InfluencerDocument['content_type'] }) {
+  const cls = 'size-[18px] shrink-0'
+  if (contentType === 'application/pdf') return <FileText aria-hidden className={cn(cls, 'text-error')} strokeWidth={1.75} />
+  if (contentType.startsWith('image/')) return <FileImage aria-hidden className={cn(cls, 'text-on-tertiary-container')} strokeWidth={1.75} />
+  if (contentType.includes('spreadsheet')) return <FileSpreadsheet aria-hidden className={cn(cls, 'text-muted-foreground')} strokeWidth={1.75} />
+  return <FileText aria-hidden className={cn(cls, 'text-muted-foreground')} strokeWidth={1.75} />
+}
 
 const PAGE_SIZE = 25
 
@@ -65,47 +76,55 @@ export default function DocumentsPage() {
     })
 
   const filtered = !!(params.type?.length || params.q || params.uploaded_by?.length || params.uploaded_from || params.uploaded_to)
-  const COLUMNS = 7
+  const COLUMNS = 8
 
   return (
-    <div className="space-y-4 p-4 sm:p-6">
+    <div className="space-y-space-lg px-4 py-6 sm:px-6 lg:px-space-xl lg:py-space-lg">
       <PageHeader
-        title={
-          <>
-            Documents{' '}
-            {query.data && <span className="font-normal text-muted-foreground tabular-nums">({formatNumber(query.data.total)})</span>}
-          </>
+        title="Documents"
+        count={
+          query.data && (
+            <>
+              <span className="sr-only">(</span>
+              {formatNumber(query.data.total)}
+              <span className="sr-only">)</span>
+            </>
+          )
         }
         description="Insights summaries and agreements for the influencers you can see."
         actions={
           canUpload && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button>
-                  <FilePlus2 />
+                <Button className="shadow-md">
+                  <Upload className="size-[17px]" />
                   Upload
-                  <ChevronDown className="opacity-70" />
+                  <ChevronDown className="opacity-80" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {DOCUMENT_TYPES.map((type) => (
-                  <DropdownMenuItem key={type} onSelect={() => setPickType(type)}>
-                    {DOCUMENT_TYPE_META[type].label}
-                  </DropdownMenuItem>
-                ))}
+              <DropdownMenuContent align="end" className="w-52 p-1.5">
+                {DOCUMENT_TYPES.map((type) => {
+                  const Icon = TYPE_ICON[type]
+                  return (
+                    <DropdownMenuItem key={type} onSelect={() => setPickType(type)} className="gap-2.5 rounded-xl px-3 py-2 text-label-md">
+                      <Icon className="size-[18px] text-on-tertiary-container" strokeWidth={1.75} />
+                      {DOCUMENT_TYPE_META[type].label}
+                    </DropdownMenuItem>
+                  )
+                })}
               </DropdownMenuContent>
             </DropdownMenu>
           )
         }
       />
 
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center gap-space-sm rounded-2xl bg-surface-container-lowest/70 p-space-sm shadow-sm backdrop-blur-2xl">
         <ListSearch
           value={params.q}
           onChange={(q) => update({ q })}
           placeholder="Search creator name or handle…"
           label="Search creators"
-          className="max-w-72"
+          className="max-w-none min-w-48 flex-1"
         />
         <CollapsibleFilters
           activeCount={(params.type?.length ? 1 : 0) + (params.uploaded_by?.length ? 1 : 0) + (params.uploaded_from || params.uploaded_to ? 1 : 0)}
@@ -139,18 +158,27 @@ export default function DocumentsPage() {
         </CollapsibleFilters>
       </div>
 
-      <div className="overflow-hidden rounded-lg border bg-card">
-        <div className="overflow-x-auto">
+      <div className="overflow-hidden rounded-[20px] bg-surface-container-lowest/70 shadow-glass backdrop-blur-2xl">
+        {query.data && query.data.items.length > 0 && (
+          <div className="flex items-center gap-2 bg-surface-container-lowest/40 px-4 py-3 sm:px-space-lg">
+            <span className="text-label-sm tracking-wider text-muted-foreground uppercase">Showing</span>
+            <span className="text-label-md font-semibold text-primary tabular-nums">
+              {formatNumber(query.data.items.length)} of {formatNumber(query.data.total)} documents
+            </span>
+          </div>
+        )}
+        <div className="@container overflow-x-auto">
           <Table className={cn(query.isPlaceholderData && 'opacity-60')}>
             <TableHeader>
-              <TableRow className="bg-muted/40 hover:bg-muted/40">
-                <TableHead>Creator</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Period / signed</TableHead>
-                <TableHead>File</TableHead>
-                <TableHead>Uploaded by</TableHead>
-                <TableHead>Uploaded</TableHead>
-                <TableHead className="w-28">
+              <TableRow>
+                <TableHead className="px-space-md">Creator</TableHead>
+                <TableHead className="px-space-md">Document type</TableHead>
+                <TableHead className="px-space-md">Period / signed</TableHead>
+                <TableHead className="px-space-md">File name &amp; size</TableHead>
+                <TableHead className="px-space-md">Uploaded by</TableHead>
+                <TableHead className="px-space-md">Uploaded</TableHead>
+                <TableHead className="px-space-md">Status</TableHead>
+                <TableHead className="w-28 px-space-md">
                   <span className="sr-only">Actions</span>
                 </TableHead>
               </TableRow>
@@ -160,7 +188,7 @@ export default function DocumentsPage() {
                 Array.from({ length: 6 }, (_, i) => (
                   <TableRow key={i}>
                     {Array.from({ length: COLUMNS }, (_, j) => (
-                      <TableCell key={j}>
+                      <TableCell key={j} className="px-space-md py-3.5">
                         <Skeleton className="h-5 w-20" />
                       </TableCell>
                     ))}
@@ -168,70 +196,106 @@ export default function DocumentsPage() {
                 ))
               ) : query.isError ? (
                 <TableRow>
-                  <TableCell colSpan={COLUMNS}>
+                  <TableCell colSpan={COLUMNS} className="p-0">
+                    {/* Pinned to the visible width so the message stays on screen when the table scrolls sideways. */}
+                    <div className="sticky left-0 w-[100cqw]">
                     <ErrorState title="Couldn’t load documents" error={query.error} onRetry={() => query.refetch()} />
+                    </div>
                   </TableCell>
                 </TableRow>
               ) : query.data.items.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={COLUMNS}>
+                  <TableCell colSpan={COLUMNS} className="p-0">
+                    {/* Pinned to the visible width so the message stays on screen when the table scrolls sideways. */}
+                    <div className="sticky left-0 w-[100cqw]">
                     {filtered ? (
                       <EmptyState icon={SearchX} title="No documents match these filters" />
                     ) : (
                       <EmptyState icon={FileText} title="No documents yet" description="Upload an insights summary or an agreement." />
                     )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ) : (
-                query.data.items.map((doc) => (
-                  <TableRow key={doc.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-2.5">
-                        <PersonAvatar name={doc.influencer.name} src={doc.influencer.profile_pic_url} />
-                        <div className="min-w-0">
-                          <Link to={`/influencers/${doc.influencer_id}?tab=documents`} className="block truncate font-medium hover:underline">
-                            {doc.influencer.name}
-                          </Link>
-                          <AccountLabel account={doc.influencer.primary_account} block className="text-xs text-muted-foreground" />
+                query.data.items.map((doc) => {
+                  const uploader = teamMap.get(doc.uploaded_by)
+                  return (
+                    <TableRow key={doc.id}>
+                      <TableCell className="px-space-md py-3.5">
+                        <div className="flex items-center gap-space-sm">
+                          <PersonAvatar name={doc.influencer.name} src={doc.influencer.profile_pic_url} className="shadow-sm" />
+                          <div className="min-w-0">
+                            <Link
+                              to={`/influencers/${doc.influencer_id}?tab=documents`}
+                              className="block truncate text-label-md font-semibold text-primary hover:underline"
+                            >
+                              {doc.influencer.name}
+                            </Link>
+                            <AccountLabel account={doc.influencer.primary_account} block className="text-body-sm text-muted-foreground" />
+                          </div>
                         </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap items-center gap-1.5">
+                      </TableCell>
+                      <TableCell className="px-space-md py-3.5">
                         <DocumentTypeBadge type={doc.type} />
-                        <AgreementBadges doc={doc} />
-                      </div>
-                      <span className="mt-0.5 block max-w-56 truncate text-xs text-muted-foreground" title={doc.title}>
-                        {doc.title}
-                      </span>
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap">{documentDetail(doc)}</TableCell>
-                    <TableCell className="max-w-48">
-                      <span className="block truncate" title={doc.file_name}>
-                        {doc.file_name}
-                      </span>
-                      <span className="text-xs text-muted-foreground">{formatFileSize(doc.size)}</span>
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap">{teamMap.get(doc.uploaded_by)?.name ?? '…'}</TableCell>
-                    <TableCell className="whitespace-nowrap">
-                      <RelativeTime iso={doc.uploaded_at} />
-                    </TableCell>
-                    <TableCell>
-                      <DocumentButtons doc={doc} actions={actions} />
-                    </TableCell>
-                  </TableRow>
-                ))
+                        <span className="mt-1 block max-w-56 truncate text-body-sm text-muted-foreground" title={doc.title}>
+                          {doc.title}
+                        </span>
+                      </TableCell>
+                      <TableCell className="px-space-md py-3.5 whitespace-nowrap">
+                        <span className="flex items-center gap-1.5">
+                          <CalendarDays aria-hidden className="size-[15px] shrink-0 text-outline" strokeWidth={1.75} />
+                          {documentDetail(doc)}
+                        </span>
+                      </TableCell>
+                      <TableCell className="px-space-md py-3.5">
+                        <div className="flex items-center gap-2">
+                          <FileGlyph contentType={doc.content_type} />
+                          <div className="min-w-0">
+                            <span className="block max-w-[190px] truncate text-label-md font-medium text-primary" title={doc.file_name}>
+                              {doc.file_name}
+                            </span>
+                            <span className="text-body-sm text-muted-foreground">{formatFileSize(doc.size)}</span>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="px-space-md py-3.5 whitespace-nowrap">
+                        <span className="flex items-center gap-1.5">
+                          {uploader && (
+                            <PersonAvatar
+                              name={uploader.name}
+                              aria-hidden
+                              className="size-5 [&_[data-slot=avatar-fallback]]:text-[10px] [&_[data-slot=avatar-fallback]]:font-semibold"
+                            />
+                          )}
+                          {uploader?.name ?? '…'}
+                        </span>
+                      </TableCell>
+                      <TableCell className="px-space-md py-3.5 whitespace-nowrap text-muted-foreground">
+                        <RelativeTime iso={doc.uploaded_at} />
+                      </TableCell>
+                      <TableCell className="px-space-md py-3.5">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <AgreementBadges doc={doc} />
+                        </div>
+                      </TableCell>
+                      <TableCell className="px-space-md py-3.5">
+                        <div className="flex justify-end">
+                          <DocumentButtons doc={doc} actions={actions} />
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })
               )}
             </TableBody>
           </Table>
         </div>
+        {query.data && query.data.total > PAGE_SIZE && (
+          <div className="flex justify-end px-4 py-3 sm:px-space-lg">
+            <Pagination page={params.page} pageSize={PAGE_SIZE} total={query.data.total} onPageChange={(page) => update({ page })} />
+          </div>
+        )}
       </div>
-
-      {query.data && query.data.total > PAGE_SIZE && (
-        <div className="flex justify-end">
-          <Pagination page={params.page} pageSize={PAGE_SIZE} total={query.data.total} onPageChange={(page) => update({ page })} />
-        </div>
-      )}
 
       <InfluencerPicker
         open={pickType !== null}
