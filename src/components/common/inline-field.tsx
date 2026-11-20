@@ -17,6 +17,8 @@ interface InlineFieldBaseProps {
   placeholder?: string
   disabled?: boolean
   className?: string
+  /** No visible label (a table cell whose column header names it); screen readers still hear it. */
+  hideLabel?: boolean
 }
 
 interface InlineTextFieldProps<T extends z.ZodType> extends InlineFieldBaseProps {
@@ -32,12 +34,24 @@ function FieldShell({
   labelId,
   children,
   className,
+  hideLabel,
 }: {
   label: string
   labelId: string
   children: ReactNode
   className?: string
+  hideLabel?: boolean
 }) {
+  if (hideLabel) {
+    return (
+      <div className={cn('min-w-0', className)}>
+        <span id={labelId} className="sr-only">
+          {label}
+        </span>
+        {children}
+      </div>
+    )
+  }
   return (
     <div className={cn('grid grid-cols-[7.5rem_1fr] items-start gap-3 py-1.5', className)}>
       <dt id={labelId} className="pt-1.5 text-sm text-muted-foreground">
@@ -91,6 +105,7 @@ export function InlineTextField<T extends z.ZodType>({
   placeholder,
   disabled,
   className,
+  hideLabel,
   schema,
   onSave,
   multiline,
@@ -137,7 +152,7 @@ export function InlineTextField<T extends z.ZodType>({
 
   if (!editing) {
     return (
-      <FieldShell label={label} labelId={labelId} className={className}>
+      <FieldShell label={label} labelId={labelId} className={className} hideLabel={hideLabel}>
         <DisplayValue value={value} render={render} placeholder={placeholder} disabled={disabled} label={label} onEdit={start} />
       </FieldShell>
     )
@@ -157,7 +172,7 @@ export function InlineTextField<T extends z.ZodType>({
   }
 
   return (
-    <FieldShell label={label} labelId={labelId} className={className}>
+    <FieldShell label={label} labelId={labelId} className={className} hideLabel={hideLabel}>
       <div className="space-y-1">
         <div className="flex items-start gap-1">
           {multiline ? (
