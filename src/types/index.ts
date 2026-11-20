@@ -894,6 +894,14 @@ export interface InstagramSettingsUpdate {
   sync_interval_hours: SyncIntervalHours
 }
 
+/** `POST /settings/instagram/sync-all`: every Instagram account queued for the background sync. */
+export interface InstagramSyncAllResult {
+  /** Accounts queued (typed-in ones included, switched to auto-sync). */
+  queued: number
+  /** Of those, typed-in accounts switched to auto-sync. */
+  switched: number
+}
+
 // ---------------------------------------------------------------------------
 // Unassigned Pool
 

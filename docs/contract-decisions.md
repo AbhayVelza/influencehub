@@ -321,4 +321,10 @@ Rules the forms already applied are now also checked by the handlers, so every c
 - Background sync (`server/sync-worker.ts`): one account about every 40 s, paused for 15 min when Meta reports 75% of
   the hourly allowance used or rate-limits; order: queued, never synced, then older than Settings → Instagram's
   interval. Accounts that fail wait one interval. Each hour with work is a row in Settings → Instagram → Recent runs.
+- `POST /settings/instagram/sync-all` (admin, 20/11/2026) → `{queued, switched}`: every Instagram account switched to
+  auto-sync (typed-in ones; their numbers stay until synced) and queued; 409 `not_connected` when Instagram isn't.
+  Shown as **Sync Instagram** on Influencers and Settings → Instagram.
+- Meta's Business Discovery has no email, category or city for other accounts (verified 20/11/2026: `#100
+  nonexisting field`). A sync fills the influencer's `email` from an address written in the bio, only when the email
+  is empty; category and city stay typed in.
 

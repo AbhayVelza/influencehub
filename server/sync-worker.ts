@@ -74,7 +74,7 @@ async function tick(inTurn: InTurn, save: Save) {
       const found = findAccount(target.id)
       // Removed, renamed or switched back to manual while Instagram answered: drop the result.
       if (!found || found.account.handle !== target.handle || found.account.sync_method !== 'lookup') return
-      applyProfile(found.account, profile)
+      applyProfile(found.influencer, found.account, profile)
       refreshDerived(found.influencer)
       failedAt.delete(target.id)
       recordRun(true)

@@ -27,7 +27,9 @@ const fake: ProfileSource = {
   platforms: ['instagram'],
   fetch: async (_p, handle) => {
     if (handle === 'personal') throw new JobFailure('not_found', 'No Business or Creator account has that username.')
-    return profile(handle, 12_000)
+    const p = profile(handle, 12_000)
+    if (handle === 'mailer') p.bio = 'Collabs: Mailer.Biz@Example.com'
+    return p
   },
 }
 
@@ -107,6 +109,26 @@ describe('Instagram lookup and sync', () => {
     setProfileSource(fake)
     expect((await api('PATCH', `/accounts/${accId}`, { body: { sync_method: 'lookup' } })).status).toBe(200)
     expect(account(res.body.id).sync_method).toBe('lookup')
+  })
+
+  it('an email in the bio fills an empty influencer email, never a typed one', async () => {
+    const res = await addInfluencer('mailer', { body: { accounts: [{ platform: 'instagram', handle: 'mailer' }] } })
+    await runJob('POST', `/accounts/${res.body.accounts[0].id}/sync`)
+    expect(db.influencers.find((i) => i.id === res.body.id)!.email).toBe('mailer.biz@example.com')
+    const typed = db.influencers.find((i) => i.id === res.body.id)!
+    typed.email = 'own@team.com'
+    await runJob('POST', `/accounts/${res.body.accounts[0].id}/sync`)
+    expect(typed.email).toBe('own@team.com')
+  })
+
+  it('admin Sync Instagram queues every Instagram account, switching typed-in ones', async () => {
+    await addInfluencer('riya', { body: { accounts: [{ platform: 'instagram', handle: 'riya', sync_method: 'manual' }] } })
+    await addInfluencer('asha', { body: { accounts: [{ platform: 'instagram', handle: 'asha' }] } })
+    const res = await api('POST', '/settings/instagram/sync-all', { as: ADMIN })
+    expect(res.body).toEqual({ queued: 2, switched: 1 })
+    expect(db.influencers.flatMap((i) => i.accounts).every((a) => a.sync_status === 'pending')).toBe(true)
+    setProfileSource(null)
+    expect((await api('POST', '/settings/instagram/sync-all', { as: ADMIN })).status).toBe(409)
   })
 
   it('CSV import with "Fetch public profiles" queues Instagram accounts as auto-sync', async () => {
