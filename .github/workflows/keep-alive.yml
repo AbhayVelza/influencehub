@@ -1,0 +1,19 @@
+# Keeps the Render free-plan API server awake. It sleeps after 15 minutes without traffic, and the first request then
+# takes ~40 s (Vercel's /api proxy gives up first: 502), and the Instagram background sync stops while it sleeps.
+# GitHub may delay scheduled runs, so an occasional cold start can still happen. Not needed on a paid Render plan.
+name: Keep API awake
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Ping /health
+        run: curl -fsS --retry 3 --retry-delay 10 --max-time 90 https://influencehub-api.onrender.com/health

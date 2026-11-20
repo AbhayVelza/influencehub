@@ -111,7 +111,8 @@ The server runs on Render, over the Supabase database.
    Settings → Team. The same command lets a locked-out admin back in.
 
 `vercel.json` also sends every other path to `index.html`, so deep links and refreshes work. Render's free plan sleeps
-after 15 minutes idle (the first request then takes about a minute) and briefly runs two instances during a deploy, so
+after 15 minutes idle (the first request then takes about a minute, Vercel's proxy answers 502, and the Instagram sync
+stops; `.github/workflows/keep-alive.yml` pings `/health` every 10 minutes to prevent that) and briefly runs two instances during a deploy, so
 deploy when nobody is editing. Every API call and file needs a signed-in, active member, so production no longer needs
 Vercel's Deployment Protection.
 
