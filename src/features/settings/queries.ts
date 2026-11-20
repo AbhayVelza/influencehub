@@ -18,6 +18,17 @@ export function useUpdateInstagramSettings() {
   })
 }
 
+export function useSyncInstagramAll() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: () => settingsApi.syncInstagramAll(),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: instagramKey })
+      void queryClient.invalidateQueries({ queryKey: queryKeys.influencers })
+    },
+  })
+}
+
 export function usePoolSettings() {
   return useQuery({ queryKey: poolKey, queryFn: ({ signal }) => settingsApi.pool(signal) })
 }

@@ -12,6 +12,7 @@ import type {
   DashboardSummary,
   Influencer,
   InstagramSettingsUpdate,
+  InstagramSyncAllResult,
   Integrations,
   PipelineResponse,
   PoolSettings,
@@ -26,7 +27,7 @@ import type {
 import { currentUser, db, everOnboarded, findInfluencer, nextId, noteChangedOnRead, nowIso, stageEnteredAt, toSummary, type StoredCategory } from '../db'
 import { primaryAccount, toRef } from '@/lib/platforms'
 import { dashboardExtras, onboardedOnlyExtras, utcIso } from '../dashboard'
-import { connectedPlatforms } from '../social'
+import { connectedPlatforms, queueSync, switchToAutoSync } from '../social'
 import { liveDocuments } from '../documents'
 import { filterInfluencers, poolInfluencers, visibleInfluencers } from '../domain'
 import { all, api, apiError, forbidden, notFound, readJson } from '../utils'
@@ -235,6 +236,17 @@ export const workspaceHandlers = [
     }
     db.instagramSettings.sync_interval_hours = body.sync_interval_hours as SyncIntervalHours
     return HttpResponse.json(db.instagramSettings)
+  }),
+
+  // Admin "Sync Instagram": every Instagram account to the background sync; typed-in ones switch to auto-sync.
+  http.post(api('/settings/instagram/sync-all'), async () => {
+    if (!can(currentUser().role, 'integrations:manage')) return forbidden('Only admins can sync every account')
+    if (!connectedPlatforms().includes('instagram')) return apiError(409, 'not_connected', 'Instagram isn’t connected')
+    let switched = 0
+    const accounts = db.influencers.flatMap((i) => i.accounts.filter((a) => a.platform === 'instagram'))
+    for (const a of accounts) if (switchToAutoSync(a)) switched += 1
+    const queued = queueSync(accounts)
+    return HttpResponse.json({ queued, switched } satisfies InstagramSyncAllResult)
   }),
 
   // ---- Unassigned Pool guards ----------------------------------------------

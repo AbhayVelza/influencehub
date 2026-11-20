@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils'
 import { getErrorMessage } from '@/services'
 import type { SyncIntervalHours, SyncRunStatus, TokenStatus } from '@/types'
 import { useInstagramSettings, useUpdateInstagramSettings } from './queries'
+import { SyncInstagramButton } from './sync-instagram-button'
 
 const TOKEN: Record<TokenStatus, { label: string; className: string }> = {
   valid: { label: 'Valid', className: 'bg-green-50 text-green-700 dark:bg-green-400/10 dark:text-green-300' },
@@ -98,7 +99,13 @@ export function InstagramSettings() {
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Instagram integration</CardTitle>
-          <CardDescription>Syncs followers, engagement and recent posts for Business and Creator accounts.</CardDescription>
+          <CardDescription>
+            Syncs profile, followers and engagement for Business and Creator accounts, and an email written in the bio.
+            Instagram doesn’t share email, category or city otherwise.
+          </CardDescription>
+          <div className="pt-2">
+            <SyncInstagramButton />
+          </div>
         </CardHeader>
         <CardContent className="grid gap-6 md:grid-cols-2">
           <dl className="grid grid-cols-[8rem_1fr] gap-x-3 gap-y-2 text-sm">

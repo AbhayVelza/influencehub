@@ -90,7 +90,16 @@ export async function lookupProfile(platform: Platform, username: string): Promi
 }
 
 /** Puts a fetched profile on an account: picture, name, bio, links and stats; marks it synced. */
-export function applyProfile(account: SocialAccount, profile: LookupProfile) {
+/** An email address written in a bio ("Collabs: name@mail.com"). */
+const BIO_EMAIL = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/
+
+/**
+ * Applies a looked-up profile to an account. Platforms don't share a creator's email, category or city; an email
+ * written in the bio fills the influencer's email when it has none (never replaces one the team entered).
+ */
+export function applyProfile(influencer: Influencer, account: SocialAccount, profile: LookupProfile) {
+  const email = profile.bio?.match(BIO_EMAIL)?.[0]
+  if (email && !influencer.email) influencer.email = email.toLowerCase()
   account.display_name = profile.display_name || account.display_name
   account.profile_pic_url = profile.profile_pic_url
   account.bio = profile.bio
@@ -120,7 +129,7 @@ export async function syncAccount(accountId: string): Promise<SyncResult> {
   // The account may have been removed or changed while the platform answered.
   const now = findAccount(accountId)
   if (!now) throw new JobFailure('not_found', 'Account no longer exists')
-  applyProfile(now.account, profile)
+  applyProfile(now.influencer, now.account, profile)
   refreshDerived(now.influencer)
   return { account_id: accountId, audience: audienceOf(now.account) }
 }
