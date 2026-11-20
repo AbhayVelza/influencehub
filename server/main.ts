@@ -207,6 +207,13 @@ try {
 const port = Number(process.env.PORT) || 3001
 const server = serve({ fetch: app.fetch, port }, () => console.log(`InfluenceHub API listening on http://localhost:${port}`))
 
+// Render's free plan sleeps after 15 idle minutes (cold start ~40 s: Vercel's proxy answers 502, the Instagram sync
+// stops). Render sets RENDER_EXTERNAL_URL; a request to it every 10 minutes passes Render's edge and counts as traffic.
+const selfUrl = process.env.RENDER_EXTERNAL_URL?.trim()
+const keepAwake = selfUrl
+  ? setInterval(() => void fetch(`${selfUrl}/health`, { signal: AbortSignal.timeout(30_000) }).catch(() => undefined), 10 * 60_000)
+  : null
+
 for (const signal of ['SIGINT', 'SIGTERM'] as const) {
   process.on(signal, () => {
     void (async () => {
@@ -216,6 +223,7 @@ for (const signal of ['SIGINT', 'SIGTERM'] as const) {
         waitForFileTransfers(),
       ])
       stopInstagramSync()
+      if (keepAwake) clearInterval(keepAwake)
       await pgStore.stop()
       process.exit(0)
     })()
