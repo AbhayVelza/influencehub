@@ -3,6 +3,7 @@ import {
   BadgeCheck,
   ChevronDown,
   Copy,
+  Download,
   ExternalLink,
   Inbox,
   MapPin,
@@ -42,9 +43,10 @@ import { ReleaseDialog } from '@/features/pool/release-dialog'
 import { useCan, useMe } from '@/hooks/use-me'
 import { useTeam } from '@/hooks/use-team'
 import { copyToClipboard } from '@/lib/clipboard'
-import { formatCompact, formatLocation, formatNumber } from '@/lib/format'
+import { formatCompact, formatLocation, formatNumber, todayKey } from '@/lib/format'
+import { downloadFile } from '@/lib/jobs'
 import { PLATFORM_META, primaryAccount, toRef } from '@/lib/platforms'
-import { getErrorMessage } from '@/services'
+import { getErrorMessage, influencersApi } from '@/services'
 import type { Influencer, Stage } from '@/types'
 import { listReturnPath } from '../list-params'
 import { useDeleteInfluencer, useUpdateInfluencer } from '../detail-queries'
@@ -198,6 +200,18 @@ export function InfluencerHeader({
     })
   const primary = primaryAccount(influencer)
 
+  // Personal data request: everything stored about this influencer. Erasing is Delete influencer (files included).
+  const exportData = async () => {
+    try {
+      const data = await influencersApi.exportData(influencer.id)
+      const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }))
+      downloadFile(url, `${influencer.name.replace(/[^\w-]+/g, '-')}-data-${todayKey()}.json`)
+      setTimeout(() => URL.revokeObjectURL(url), 10_000)
+    } catch (err) {
+      toast.error('Couldn’t export the data', { description: getErrorMessage(err) })
+    }
+  }
+
   const onDelete = () =>
     remove.mutate(undefined, {
       onSuccess: () => {
@@ -259,6 +273,10 @@ export function InfluencerHeader({
               )}
               {canDelete && (
                 <>
+                  <DropdownMenuItem onSelect={() => void exportData()}>
+                    <Download />
+                    Export all data (JSON)
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem variant="destructive" onSelect={() => setConfirmDelete(true)}>
                     <Trash2 />

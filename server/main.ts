@@ -16,6 +16,7 @@ import { API_BASE } from '@/lib/env'
 import { authRoutes, ensureFirstAdmin, sessionUid } from './auth'
 import { instagramSource } from './meta'
 import * as pgStore from './pg-store'
+import { startScheduler, stopScheduler } from './scheduler'
 import { startInstagramSync, stopInstagramSync } from './sync-worker'
 
 // The API server. It runs the same handlers the prototype runs in the browser (src/backend/handlers: stages, claims,
@@ -197,6 +198,7 @@ try {
       throw err
     }
   }
+  startScheduler(inTurn, save)
   if (await startInstagramSync(inTurn, save)) setProfileSource(instagramSource)
 } catch (err) {
   // e.g. PostgreSQL unreachable, a wrong DATABASE_URL, a database still on the old layout, or ADMIN_PASSWORD too short.
@@ -223,6 +225,7 @@ for (const signal of ['SIGINT', 'SIGTERM'] as const) {
         waitForFileTransfers(),
       ])
       stopInstagramSync()
+      stopScheduler()
       if (keepAwake) clearInterval(keepAwake)
       await pgStore.stop()
       process.exit(0)

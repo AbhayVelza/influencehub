@@ -7,6 +7,8 @@ uses "Acting as"). Firebase was removed. Data lives in PostgreSQL behind the API
 server in `server/` (prototype mode: in the browser); no sample data. Before calling any change done, run
 `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `npm run server:build` (and `npm run test:perf`
 when a change touches lists, the pipeline or the dashboard: NFR-01 at 100,000 influencers).
+When a change touches navigation, permissions or what a role sees, also run `npm run test:e2e` (Playwright, `e2e/`:
+per-role checks in prototype mode on the installed Microsoft Edge; data set up through `window.__ihApi`, dev only).
 Docs: this file, README.md and `docs/`. Never add features beyond this spec without asking; record any API decision
 you make in `docs/contract-decisions.md` (dates and documents: `docs/dates-and-documents.md`).
 

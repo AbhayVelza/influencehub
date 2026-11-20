@@ -1,5 +1,6 @@
 import { http } from '@/services/http'
 import type {
+  RejectedInfluencer,
   AccountCreate,
   Activity,
   BulkRequest,
@@ -27,6 +28,12 @@ const base = '/influencers'
 export const influencersApi = {
   list: (params: InfluencerListParams = {}, signal?: AbortSignal) =>
     http.get<Paginated<Influencer>>(base, { ...params }, signal),
+
+  /** The Rejected tab: name and Instagram handle of every rejected influencer you can see. */
+  rejected: (signal?: AbortSignal) => http.get<Paginated<RejectedInfluencer>>(`${base}/rejected`, undefined, signal),
+
+  /** Admin: everything stored about one influencer (personal data request). */
+  exportData: (id: string) => http.get<unknown>(`${base}/${id}/export`),
 
   filterOptions: (params: InfluencerFilters = {}, signal?: AbortSignal) =>
     http.get<FilterOptions>(`${base}/filter-options`, { ...params }, signal),

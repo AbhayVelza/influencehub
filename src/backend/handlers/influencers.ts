@@ -3,6 +3,7 @@ import { ALL_STAGES, CALL_OUTCOME_META, STAGE_META } from '@/lib/constants'
 import { can } from '@/lib/permissions'
 import { PLATFORM_META, PLATFORMS } from '@/lib/platforms'
 import type {
+  RejectedInfluencer,
   BulkRequest,
   BulkResult,
   BulkSyncResult,
@@ -43,7 +44,8 @@ import {
 } from '../domain'
 import { createJob } from '../jobs'
 import { connectedPlatforms, queueSync, switchToAutoSync, syncAccount } from '../social'
-import { api, apiError, forbidden, notFound, paginate, readJson } from '../utils'
+import { all, api, apiError, forbidden, notFound, paginate, readJson } from '../utils'
+import { publicDocument } from '../documents'
 
 /** The minute a date-time falls in, so two follow-ups at 05:00 PM clash whatever their seconds. */
 const minuteOf = (iso: string) => Math.floor(Date.parse(iso) / 60_000)
@@ -149,8 +151,20 @@ const CALL_OUTCOMES = ['interested', 'not_interested', 'call_back', 'no_answer',
 export const influencerHandlers = [
   http.get(api('/influencers'), async ({ request }) => {
     const params = new URL(request.url).searchParams
-    const list = sortInfluencers(filterInfluencers(params, visibleInfluencers()), params.get('sort'), params.getAll('platform'))
+    // Rejected influencers live in the Rejected tab: listed here only when the stage filter asks for them.
+    const source = params.has('stage') ? visibleInfluencers() : visibleInfluencers().filter((i) => i.stage !== 'rejected')
+    const list = sortInfluencers(filterInfluencers(params, source), params.get('sort'), params.getAll('platform'))
     return HttpResponse.json(paginate(list, params))
+  }),
+
+  // The Rejected tab: name and Instagram handle only, newest rejection first (the whole list; rows are small).
+  http.get(api('/influencers/rejected'), async () => {
+    if (!can(currentUser().role, 'crm:access')) return forbidden()
+    const rows: RejectedInfluencer[] = visibleInfluencers()
+      .filter((i) => i.stage === 'rejected')
+      .sort((a, b) => b.updated_at.localeCompare(a.updated_at))
+      .map((i) => ({ id: i.id, name: i.name, instagram: i.accounts.find((a) => a.platform === 'instagram')?.handle ?? null }))
+    return HttpResponse.json(all(rows))
   }),
 
   http.get(api('/influencers/filter-options'), async ({ request }) => {
@@ -299,6 +313,22 @@ export const influencerHandlers = [
   http.get(api('/influencers/:id'), async ({ params }) => {
     const inf = findVisible(String(params.id))
     return inf ? HttpResponse.json(inf) : notFound('Influencer')
+  }),
+
+  // Personal data request: everything stored about one influencer, as JSON (admins; erasing is Delete influencer).
+  http.get(api('/influencers/:id/export'), async ({ params }) => {
+    if (!can(currentUser().role, 'influencer:delete')) return forbidden('Only admins can export an influencer’s data')
+    const inf = findInfluencer(String(params.id))
+    if (!inf) return notFound('Influencer')
+    const mine = <T extends { influencer_id: string }>(rows: T[]) => rows.filter((r) => r.influencer_id === inf.id)
+    return HttpResponse.json({
+      exported_at: nowIso(),
+      influencer: inf,
+      calls: mine(db.calls),
+      welcome_kits: mine(db.packages),
+      documents: mine(db.documents).filter((d) => !d.deleted_at).map(publicDocument),
+      activity: mine(db.activities),
+    })
   }),
 
   http.post(api('/influencers/:id/claim'), async ({ params }) => {

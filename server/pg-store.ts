@@ -171,6 +171,16 @@ export async function readFile(key: string): Promise<{ content_type: string; dat
   return row
 }
 
+/**
+ * Removes files no document points to any more (purged deleted documents, deleted influencers). Only files older than
+ * a day: a new upload's file arrives a moment before its document. Returns how many.
+ */
+export async function deleteOrphanFiles(): Promise<number> {
+  const rows = await client()`delete from files f where f.created_at < now() - interval '1 day'
+    and not exists (select 1 from documents d where d.storage_key = f.key) returning f.key`
+  return rows.length
+}
+
 // ---- Sign-in: password hashes and sessions (never loaded into the working copy) ----
 
 export async function passwordHash(userId: string): Promise<string | undefined> {

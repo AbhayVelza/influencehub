@@ -17,6 +17,7 @@ import {
   PackagesPage,
   PipelinePage,
   PoolPage,
+  RejectedPage,
   SettingsPage,
 } from '@/pages/lazy'
 
@@ -72,6 +73,7 @@ export const router = createBrowserRouter([
           { path: 'pipeline', element: <RequirePermission permission="crm:access"><PipelinePage /></RequirePermission> },
           { path: 'calls', element: <RequirePermission permission="crm:access"><CallsPage /></RequirePermission> },
           { path: 'packages', element: <RequirePermission permission="crm:access"><PackagesPage /></RequirePermission> },
+          { path: 'rejected', element: <RequirePermission permission="crm:access"><RejectedPage /></RequirePermission> },
           { path: 'documents', element: <RequirePermission permission="crm:access"><DocumentsPage /></RequirePermission> },
           {
             path: 'settings',
