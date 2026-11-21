@@ -4,6 +4,7 @@ import type { AccountCreate, AccountUpdate, Platform } from '@/types'
 import { findAccount, logActivity, nowIso, refreshDerived } from '../db'
 import { findVisible, validateAccounts } from '../domain'
 import { createJob } from '../jobs'
+import { platformData } from '../platform-data'
 import { buildAccount, metricsFor, switchToAutoSync, syncAccount } from '../social'
 import { all, api, apiError, notFound, readJson } from '../utils'
 import { accountConflict } from './influencers'
@@ -72,15 +73,17 @@ export const accountHandlers = [
     return apiError(422, 'not_connected', 'Connect links aren’t set up yet. Add the account’s stats by hand for now.')
   }),
 
+  /** Follower history: one snapshot per IST day a sync ran, the last 365 days, oldest first (../platform-data.ts). */
   http.get(api('/accounts/:id/snapshots'), async ({ params }) => {
     const found = visibleAccount(String(params.id))
-    // No history is collected until syncing is connected.
-    return found ? HttpResponse.json(all([])) : notFound('Account')
+    if (!found) return notFound('Account')
+    return HttpResponse.json(all((await platformData()?.listSnapshots(found.account.id)) ?? []))
   }),
 
+  /** The posts the last sync returned, newest first (empty until a platform that returns posts syncs it). */
   http.get(api('/accounts/:id/media'), async ({ params }) => {
     const found = visibleAccount(String(params.id))
-    // Recent posts need a connected platform API.
-    return found ? HttpResponse.json(all([])) : notFound('Account')
+    if (!found) return notFound('Account')
+    return HttpResponse.json(all((await platformData()?.listRecentPosts(found.account.id)) ?? []))
   }),
 ]

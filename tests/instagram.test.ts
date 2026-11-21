@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { db } from '@/backend/db'
 import { JobFailure } from '@/backend/jobs'
-import { setProfileSource, type ProfileSource } from '@/backend/social'
+import { clearProfileSources, setProfileSource, type ProfileSource } from '@/backend/social'
 import type { LookupProfile } from '@/types'
 import { fetchInstagram } from '../server/meta'
 import { ADMIN, addInfluencer, api, influencer, resetWorkspace, runJob } from './harness'
@@ -24,8 +24,7 @@ const profile = (handle: string, followers: number): LookupProfile =>
   }) as LookupProfile
 
 const fake: ProfileSource = {
-  platforms: ['instagram'],
-  fetch: async (_p, handle) => {
+  fetch: async (handle) => {
     if (handle === 'personal') throw new JobFailure('not_found', 'No Business or Creator account has that username.')
     const p = profile(handle, 12_000)
     if (handle === 'mailer') p.bio = 'Collabs: Mailer.Biz@Example.com'
@@ -35,16 +34,16 @@ const fake: ProfileSource = {
 
 beforeEach(() => {
   resetWorkspace()
-  setProfileSource(fake)
+  setProfileSource('instagram', fake)
 })
-afterEach(() => setProfileSource(null))
+afterEach(() => clearProfileSources())
 
 const account = (id: string) => db.influencers.find((i) => i.id === id)!.accounts[0]!
 
 describe('Instagram lookup and sync', () => {
   it('reports which platforms are connected', async () => {
     expect((await api('GET', '/integrations')).body).toEqual({ profile_lookup: ['instagram'] })
-    setProfileSource(null)
+    setProfileSource('instagram', null)
     expect((await api('GET', '/integrations')).body).toEqual({ profile_lookup: [] })
   })
 
@@ -57,7 +56,7 @@ describe('Instagram lookup and sync', () => {
   })
 
   it('without a connection, lookup says not connected', async () => {
-    setProfileSource(null)
+    setProfileSource('instagram', null)
     const job = await runJob('POST', '/lookup', { body: { platform: 'instagram', username: 'riya' } })
     expect(job.error?.code).toBe('not_connected')
   })
@@ -104,9 +103,9 @@ describe('Instagram lookup and sync', () => {
   it('one account switches to auto-sync, only when its platform is connected', async () => {
     const res = await addInfluencer('riya', { body: { accounts: [{ platform: 'instagram', handle: 'riya', sync_method: 'manual' }] } })
     const accId = res.body.accounts[0].id
-    setProfileSource(null)
+    setProfileSource('instagram', null)
     expect((await api('PATCH', `/accounts/${accId}`, { body: { sync_method: 'lookup' } })).body.error.code).toBe('not_connected')
-    setProfileSource(fake)
+    setProfileSource('instagram', fake)
     expect((await api('PATCH', `/accounts/${accId}`, { body: { sync_method: 'lookup' } })).status).toBe(200)
     expect(account(res.body.id).sync_method).toBe('lookup')
   })
@@ -121,14 +120,14 @@ describe('Instagram lookup and sync', () => {
     expect(typed.email).toBe('own@team.com')
   })
 
-  it('admin Sync Instagram queues every Instagram account, switching typed-in ones', async () => {
+  it('admin Sync profiles queues every account on a connected platform, switching typed-in ones', async () => {
     await addInfluencer('riya', { body: { accounts: [{ platform: 'instagram', handle: 'riya', sync_method: 'manual' }] } })
     await addInfluencer('asha', { body: { accounts: [{ platform: 'instagram', handle: 'asha' }] } })
-    const res = await api('POST', '/settings/instagram/sync-all', { as: ADMIN })
+    const res = await api('POST', '/integrations/sync-all', { as: ADMIN })
     expect(res.body).toEqual({ queued: 2, switched: 1 })
     expect(db.influencers.flatMap((i) => i.accounts).every((a) => a.sync_status === 'pending')).toBe(true)
-    setProfileSource(null)
-    expect((await api('POST', '/settings/instagram/sync-all', { as: ADMIN })).status).toBe(409)
+    setProfileSource('instagram', null)
+    expect((await api('POST', '/integrations/sync-all', { as: ADMIN })).status).toBe(409)
   })
 
   it('CSV import with "Fetch public profiles" queues Instagram accounts as auto-sync', async () => {

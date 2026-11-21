@@ -70,8 +70,9 @@ The server enforces all of this; the UI only hides what a role can't do. Code: `
 **Platforms:** Instagram, YouTube, TikTok, Facebook, Threads, Pinterest, LinkedIn, Snapchat. One creator can have
 accounts on several platforms, each with its own stats.
 
-**Not connected yet:** public profile lookup, "Sync now", connect links and growth history need the platforms'
-APIs. Until then accounts keep the stats people type in.
+**Connected:** Instagram (API server with Meta set up) and YouTube (with a YouTube Data API key): lookup, "Sync now",
+background sync, follower / subscriber history (one point a day, a year) and recent posts or videos. **Not connected
+yet:** the other platforms and connect links; their accounts keep the stats people type in.
 
 **UX rules:** light/dark theme; responsive from 360px phones up (menu sheet below 1024px); skeleton, empty and error states everywhere;
 numbers as 12.4K / 1.2M; dates `dd/MM/yyyy` and date-times `dd/MM/yyyy, hh:mm a` in Asia/Kolkata; relative times;
@@ -297,7 +298,7 @@ From `CLAUDE.md` (the full rulebook):
 - Sign-in lockouts (5 wrong passwords → 15 minutes) are in memory and reset on restart. No password-reset email: an admin sets a new password.
 - Other people's changes appear on the next refetch, not instantly.
 - Auto-release of stale claims and connect-link expiry run at the start of each request (no scheduler).
-- Social platform APIs (lookup, sync, connect links, growth history) are not connected.
+- Platform APIs other than Instagram and YouTube (lookup, sync, connect links, growth history) are not connected.
 - No automated end-to-end test suite yet.
 
 **Troubleshooting:** `docs/server.md`.

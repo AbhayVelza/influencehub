@@ -48,7 +48,8 @@ export const PLATFORM_META: Record<Platform, PlatformMeta> = {
       { key: 'account_type', label: 'Account type', format: 'account_type' },
     ],
     url: (h) => `https://www.instagram.com/${h}/`,
-    urlPattern: /instagram\.com\/([^/?#\s]+)/i,
+    // Post, reel and story links are not profiles.
+    urlPattern: /instagram\.com\/(?!(?:p|reels?|stories|explore|tv|accounts)(?:[/?#]|$))([^/?#\s]+)/i,
   },
   youtube: {
     label: 'YouTube',
@@ -65,7 +66,9 @@ export const PLATFORM_META: Record<Platform, PlatformMeta> = {
       { key: 'channel_country', label: 'Channel country', format: 'country' },
     ],
     url: (h) => `https://www.youtube.com/@${h}`,
-    urlPattern: /youtube\.com\/(?:@|c\/|user\/)?([^/?#\s]+)/i,
+    // Only /@handle links: /channel/UC…, legacy /c/ and /user/ names, /watch, /shorts and /playlist links are not
+    // handles (YouTube is looked up by handle, so those would find nothing or someone else's channel).
+    urlPattern: /youtube\.com\/@([^/?#\s]+)/i,
   },
   tiktok: {
     label: 'TikTok',

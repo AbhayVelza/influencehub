@@ -8,16 +8,19 @@ import { cors } from 'hono/cors'
 import { getResponse } from 'msw'
 import { db, isRead, readChangedData, setActingUid } from '@/backend/db'
 import { handlers } from '@/backend/handlers'
-import { setProfileSource } from '@/backend/social'
+import { dropQueuedSyncedData, saveQueuedSyncedData, setProfileSource } from '@/backend/social'
 import { commitJobs, executeJob, revertJobs } from '@/backend/jobs'
+import { setPlatformData } from '@/backend/platform-data'
 import { apiError } from '@/backend/utils'
 import { MAX_DOCUMENT_BYTES } from '@/lib/documents'
 import { API_BASE } from '@/lib/env'
 import { authRoutes, ensureFirstAdmin, sessionUid } from './auth'
+import { backgroundDataChanged, closeLiveStreams, dataChanged, liveStream } from './live'
 import { instagramSource } from './meta'
 import * as pgStore from './pg-store'
 import { startScheduler, stopScheduler } from './scheduler'
-import { startInstagramSync, stopInstagramSync } from './sync-worker'
+import { startInstagramSync, startYouTubeSync, stopSync } from './sync-worker'
+import { youtubeSource } from './youtube'
 
 // The API server. It runs the same handlers the prototype runs in the browser (src/backend/handlers: stages, claims,
 // scoping, permissions) over a working copy of the workspace that pg-store.ts loads from and saves to PostgreSQL.
@@ -54,9 +57,12 @@ function handleApiRequest(request: Request, uid: string | undefined): Promise<Re
       // A read saves only when it changed something by itself (auto-release, link expiry, a job).
       if (!isRead(request) || readChangedData()) await pgStore.flush()
       commitJobs()
+      // A looked-up account's first history point and posts, now that its row exists.
+      await saveQueuedSyncedData()
       return response
     } catch (err) {
       revertJobs()
+      dropQueuedSyncedData()
       // The handler threw or the save failed: nothing was written, so drop the half-made change.
       pgStore.revert()
       return failed(`${request.method} ${new URL(request.url).pathname}`, err)
@@ -171,6 +177,15 @@ app.get(`${FILES}*`, async (c) => {
   }
 })
 
+// Live updates (server/live.ts). Only the sign-in check takes a turn: the open stream never holds the request queue.
+app.get(`${API_BASE}/events`, async (c) => {
+  const uid = await sessionUid(c)
+  if (!uid || !(await inTurn(async () => db.team.some((u) => u.id === uid && u.is_active)))) {
+    return apiError(401, 'unauthenticated', 'Sign in to continue.')
+  }
+  return liveStream(uid, () => signedIn(c))
+})
+
 app.route(API_BASE, authRoutes(inTurn, handleApiRequest))
 app.all(`${API_BASE}/*`, async (c) => handleApiRequest(c.req.raw, await sessionUid(c)))
 
@@ -188,8 +203,23 @@ if (existsSync(path.join(dist, 'index.html'))) {
 
 try {
   await pgStore.start()
+  setPlatformData(pgStore.platformData)
+  // Every save that changed data tells the open browsers to refresh: at once after a member's request, at most once a
+  // minute for the background sync and the scheduler (their turns are marked; server/live.ts).
+  let backgroundTurn = false
+  pgStore.onDataSaved(() => (backgroundTurn ? backgroundDataChanged() : dataChanged()))
+  const inBackgroundTurn = <T>(task: () => Promise<T>): Promise<T> =>
+    inTurn(async () => {
+      backgroundTurn = true
+      try {
+        return await task()
+      } finally {
+        backgroundTurn = false
+      }
+    })
   await ensureFirstAdmin()
-  // Instagram lookup and the background sync, when META_ACCESS_TOKEN / META_IG_USER_ID are set (server/meta.ts).
+  // Lookup and the background sync per platform: Instagram when META_ACCESS_TOKEN / META_IG_USER_ID are set
+  // (server/meta.ts), YouTube when YOUTUBE_API_KEY is (server/youtube.ts).
   const save = async () => {
     try {
       await pgStore.flush()
@@ -198,8 +228,9 @@ try {
       throw err
     }
   }
-  startScheduler(inTurn, save)
-  if (await startInstagramSync(inTurn, save)) setProfileSource(instagramSource)
+  startScheduler(inBackgroundTurn, save)
+  if (await startInstagramSync(inBackgroundTurn, save)) setProfileSource('instagram', instagramSource)
+  if (await startYouTubeSync(inBackgroundTurn, save)) setProfileSource('youtube', youtubeSource)
 } catch (err) {
   // e.g. PostgreSQL unreachable, a wrong DATABASE_URL, a database still on the old layout, or ADMIN_PASSWORD too short.
   console.error('Could not start:', err instanceof Error ? err.message : err)
@@ -219,12 +250,13 @@ const keepAwake = selfUrl
 for (const signal of ['SIGINT', 'SIGTERM'] as const) {
   process.on(signal, () => {
     void (async () => {
+      closeLiveStreams()
       await Promise.all([
         new Promise<void>((resolve) => server.close(() => resolve())),
         queue,
         waitForFileTransfers(),
       ])
-      stopInstagramSync()
+      stopSync()
       stopScheduler()
       if (keepAwake) clearInterval(keepAwake)
       await pgStore.stop()

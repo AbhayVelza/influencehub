@@ -14,7 +14,7 @@ sign-in: the account menu's **Acting as** picks who you are. No sample data: the
 
 **Business flow:** gather data → call → onboard → send package.
 
-Influencers are added manually, by CSV, or by Instagram lookup; Instagram stats sync automatically when the API server is connected to Meta (docs/server.md, "Instagram"). Other platforms' stats are typed in.
+Influencers are added manually, by CSV, or by Instagram or YouTube lookup; their stats sync automatically when the API server is connected to Meta (docs/server.md, "Instagram") or has a YouTube Data API key ("YouTube"). Other platforms' stats are typed in.
 One creator can have accounts on several platforms (Instagram, YouTube, TikTok, Facebook, Threads, Pinterest,
 LinkedIn, Snapchat), each with its own stats.
 

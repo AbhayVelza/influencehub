@@ -2,12 +2,14 @@ import { getResponse } from 'msw'
 import { db, defaultSettings, newWorkspace, readChangedData, resolveActingUid, setActingUid } from '@/backend/db'
 import { handlers } from '@/backend/handlers'
 import { commitJobs, executeJob, readJob } from '@/backend/jobs'
+import { dropQueuedSyncedData, saveQueuedSyncedData } from '@/backend/social'
 import { OWNER_ID } from '@/lib/mode'
 import { API_BASE } from '@/lib/env'
 import type { Role, User } from '@/types'
 
 /** A fresh workspace: the owner admin and the default categories, nothing else. */
 export function resetWorkspace() {
+  dropQueuedSyncedData()
   Object.assign(db, {
     ...newWorkspace(),
     influencers: [],
@@ -49,6 +51,8 @@ export async function api<T = any>(method: string, path: string, opts: { as?: st
     if (text) body = JSON.parse(text)
     if (response.status === 202 && typeof body?.job_id === 'string') await executeJob(body.job_id)
     commitJobs()
+    // As the API server does after its save: a looked-up account's first history point and posts.
+    await saveQueuedSyncedData()
     return { status: response.status, body, changedOnRead: readChangedData() }
   } finally {
     setActingUid(null)

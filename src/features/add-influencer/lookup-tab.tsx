@@ -130,6 +130,7 @@ function SaveProfileForm({ profile, onDone }: { profile: LookupProfile; onDone: 
       bio: profile.bio,
       links: profile.links,
       is_verified: profile.is_verified,
+      recent_posts: profile.recent_posts,
     },
     ...profile.linked_accounts
       .filter((a) => linked.includes(`${a.platform}:${a.handle}`))

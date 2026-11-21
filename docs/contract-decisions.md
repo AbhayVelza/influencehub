@@ -306,9 +306,10 @@ Rules the forms already applied are now also checked by the handlers, so every c
 
 ## Instagram lookup and sync (Meta Business Discovery, 19/11/2026)
 
-- `GET /integrations` → `{profile_lookup: Platform[]}`: platforms the API server can look up and sync now
-  (`['instagram']` when `META_ACCESS_TOKEN` and `META_IG_USER_ID` are set; `[]` in prototype mode). Screens show
-  "Fetch public profiles", **Auto-sync** and **Auto-sync IG** only for these.
+- `GET /integrations` → `{profile_lookup: Platform[]}`: platforms the API server can look up and sync now, in the
+  app's platform order (`instagram` when `META_ACCESS_TOKEN` and `META_IG_USER_ID` are set, `youtube` when
+  `YOUTUBE_API_KEY` is; `[]` in prototype mode). Screens show "Fetch public profiles" and **Auto-sync** only for
+  these; **Auto-sync IG** (bulk bar) while Instagram is one of them.
 - `POST /lookup` and `POST /accounts/{id}/sync` fetch through `server/meta.ts`. Errors: `not_found` (no Business or
   Creator account with that handle: personal profiles can't be looked up), `rate_limited`, `not_connected`
   (token expired or missing a permission), `unavailable`. A failed sync sets `sync_status: 'error'` and keeps the stats.
@@ -321,12 +322,114 @@ Rules the forms already applied are now also checked by the handlers, so every c
 - Background sync (`server/sync-worker.ts`): one account about every 40 s, paused for 15 min when Meta reports 75% of
   the hourly allowance used or rate-limits; order: queued, never synced, then older than Settings → Instagram's
   interval. Accounts that fail wait one interval. Each hour with work is a row in Settings → Instagram → Recent runs.
-- `POST /settings/instagram/sync-all` (admin, 20/11/2026) → `{queued, switched}`: every Instagram account switched to
-  auto-sync (typed-in ones; their numbers stay until synced) and queued; 409 `not_connected` when Instagram isn't.
-  Shown as **Sync Instagram** on Influencers and Settings → Instagram.
+- `POST /integrations/sync-all` (admin, `integrations:manage`; 20/11/2026, replaces `POST /settings/instagram/sync-all`,
+  which is gone) → `{queued, switched}`: every account on a connected platform switched to auto-sync (typed-in ones;
+  their numbers stay until synced) and queued; 409 `not_connected` when no platform is. Shown as **Sync profiles** on
+  Influencers and Settings → Instagram.
 - Meta's Business Discovery has no email, category or city for other accounts (verified 20/11/2026: `#100
   nonexisting field`). A sync fills the influencer's `email` from an address written in the bio, only when the email
   is empty; category and city stay typed in.
+
+## YouTube lookup and sync (YouTube Data API v3, P3, 20/11/2026)
+
+- Connected when `YOUTUBE_API_KEY` is set and the start-up check (`channels.list part=id forHandle=@youtube`, 1 quota
+  unit) doesn't reject the key; a used-up quota or an outage at start-up still connects. The log says
+  `YouTube connected` or `YouTube not connected: …`.
+- `POST /lookup {platform: 'youtube'}`, Sync now, bulk sync, Auto-sync, CSV "Fetch public profiles" and Sync profiles
+  work as for Instagram (each platform has its own profile source: `setProfileSource(platform, source)` in
+  `src/backend/social.ts`). Handles are looked up as `@handle` (3–30 letters, numbers, dots, dashes, underscores).
+  Only `youtube.com/@handle` links count as YouTube handles (`PLATFORM_META.youtube.urlPattern`): `/channel/UC…`,
+  legacy `/c/` and `/user/` names, `/watch`, `/shorts` and `/playlist` links are refused as invalid handles (422 on
+  lookup, a row error in CSV) and never offered as linked accounts, since looking them up by handle would find nothing
+  or another person's channel. Likewise Instagram `/p/`, `/reel/`, `/reels/`, `/stories/`, `/explore/`, `/tv/` and
+  `/accounts/` links aren't profiles.
+- 3 quota units per channel, never the 100-unit `search`: `channels.list part=snippet,statistics,contentDetails
+  forHandle=@handle` → `playlistItems.list part=contentDetails` of the uploads playlist, `maxResults=10` →
+  `videos.list part=snippet,statistics` for those ids. A channel with no videos costs 1 unit; an uploads playlist
+  YouTube can't find counts as no videos.
+- Kept: `subscribers` (null when the channel hides it, so the last known count stays and no snapshot is recorded),
+  `total_views`, `video_count`, `avg_views_recent` = mean views of the latest uploads (up to 10; live and upcoming
+  streams left out), `channel_country` (2 letters, else null); the title, description (bio), picture (high → medium →
+  default), `links` = the channel's own custom URL (`https://www.youtube.com/@…`) when it has one; `linked_accounts` =
+  profile links in the description (e.g. Instagram). `is_verified` isn't in the API (false).
+- Recent posts = those videos, newest first: `thumbnail` (medium → high → default), `permalink`
+  `https://www.youtube.com/watch?v=ID`, `likes` (null when hidden), `comments` (null when turned off), `posted_at`.
+  History and posts are stored like Instagram's (below).
+- Errors: no channel with that handle → `not_found`; `quotaExceeded` / `dailyLimitExceeded` → `rate_limited` and no
+  background sync until midnight Pacific time (YouTube's quota day); `rateLimitExceeded` / 429 → `rate_limited`; a
+  bad, expired or restricted key, or the API not enabled (`keyInvalid`, `API_KEY_INVALID`, `accessNotConfigured`,
+  `SERVICE_DISABLED`, `API_KEY_*_BLOCKED`, 401) → `not_connected`; anything else → `unavailable`. The key is sent as
+  the `key` parameter and never logged.
+- Background sync (`server/sync-worker.ts`): its own loop, one channel about every 15 s (~240 an hour), same order
+  and same interval as Instagram (Settings → Instagram's sync frequency applies to every platform: one setting). It
+  stops for the day once the server has spent 8,000 of the 10,000 daily units (`YOUTUBE_BACKGROUND_UNITS`, counted
+  per Pacific day by this process, from 0 after a restart), keeping ~2,000 (~660 channels) for Look up, Sync now and
+  CSV fetches. So the background keeps to the interval for up to ~2,600 channel syncs a day: channels × 24 ÷ interval
+  hours, e.g. ~2,600 channels at 24 h, ~330 at 3 h; beyond that accounts sync less often than the interval (oldest
+  first) instead of using up the quota. 15 min pause after `rate_limited` / `unavailable`,
+  6 h after `not_connected`. YouTube runs don't appear in Settings → Instagram → Recent runs, and Meta's usage meter
+  doesn't count them.
+
+## Follower history and recent posts (P3, 20/11/2026)
+
+- `GET /accounts/{id}/snapshots` → `Paginated<AccountSnapshot>`, oldest first; `GET /accounts/{id}/media` →
+  `Paginated<MediaItem>`, newest first (the order the platform lists them). Both 404 for an account the caller can't
+  see; Brand Specialists may read them (onboarded creators only, as before).
+- Written by every successful sync (Sync now, `syncAccount`, and the background sync, `server/sync-worker.ts`), after
+  the profile is applied: a snapshot of the audience the platform returned (none when it returned no audience) and the
+  posts it returned, replacing the previous ones (a platform that returns no posts leaves them). An account added from
+  Look up (`AccountCreate` with `metrics`, on `POST /influencers` or `POST /influencers/{id}/accounts`) is saved as
+  synced, so its audience becomes the first snapshot and the lookup's posts (`AccountCreate.recent_posts`, cleaned:
+  https links only, at most 12, counts or null) its recent posts, written right after the request's save (the rows
+  point at the account). Typed-in stats and CSV imports record nothing: their history starts with the first sync.
+- **Snapshot retention (settles the open decision):** one snapshot per account per IST calendar day; a later sync the
+  same day replaces that day's value (its `captured_at` is the latest sync's time). 365 days kept: older rows are
+  dropped whenever a snapshot is recorded. Removing an account (or its influencer) removes its history and posts.
+- Instagram posts (`server/meta.ts`, same single Business Discovery call, 12 posts): `permalink`, `posted_at` from
+  `timestamp`; `thumbnail` = `thumbnail_url` (videos) or `media_url` (images, carousels: the first image), null when
+  Meta gives neither (a video's file is never used); `likes` null when the creator hides likes, `comments` null when
+  missing. Links other than https and posts without a permalink or timestamp are left out. Verified against a live
+  account 20/11/2026. Image URLs are Meta's signed CDN links: they expire after some days and are refreshed by each sync.
+- Stored outside the working copy (`src/backend/platform-data.ts`): PostgreSQL `account_snapshots` / `account_media`
+  on the API server, IndexedDB stores `snapshots` / `media` in prototype mode (which has no platform connection, so
+  they stay empty). A failure saving them is logged and doesn't fail the sync.
+
+## Live updates (P3, 20/11/2026)
+
+- `GET /events` (API server, `server/live.ts`): a Server-Sent Events stream for a signed-in, active member (the same
+  session check as every route; 401 otherwise). Opening it takes one turn for the check only: the open stream never
+  holds the request queue. It starts with `retry: 3000` and an event carrying the current number, then sends
+  `data: {"v":<n>}` (n increases) after every save that changed data: any request, the background sync (Instagram,
+  YouTube, including follower history and posts) and the scheduler (`pg-store.ts` `onDataSaved`). Bursts are joined:
+  at most one event per 300 ms after a member's request. Saves made in the background sync's and the scheduler's turns
+  (`server/main.ts` marks them) send at most one event per 60 s, the polling rate: each event makes every open screen
+  refetch through the one-at-a-time queue, and a sync tick changes one account. A member's event covers a background
+  one waiting. Events carry no data and no names, only the number. The number starts at the server's boot time
+  (ms), not 0, so a browser reconnecting after a restart or deploy always sees a different number and refreshes.
+- A `: ping` comment every 25 s keeps proxies from closing an idle stream; at each one the member's session is checked
+  again and the stream is closed for someone signed out, deactivated or given a new password. At most 200 streams, 10
+  per member (one per tab); more get 503 `too_many_streams`. Shutdown closes every stream first.
+- The app (`src/lib/live.ts`, started by `RequireAuth` while someone is signed in; `resetSession` remounts it, so a
+  new identity gets a new stream) refetches the active queries 250 ms after an event (one refetch per burst). It
+  waits while one of its own changes is saving (an optimistic update would flicker) and while the tab is hidden
+  (refreshes when shown). Only a visible tab holds a stream: hiding the tab closes it, showing it opens it again
+  (over HTTP/1.1, as in local dev or `npm run server`, a browser allows about 6 connections per host, so a stream per
+  open tab would leave none for API calls). After a reconnect it refreshes if the number changed meanwhile (the
+  server's first event).
+- Fallback: EventSource reconnects a dropped stream by itself (Vercel's rewrite may cut long streams). A refused or
+  broken stream is retried after 5 s, doubling to 5 minutes, and at once when the browser comes back online. The
+  existing `staleTime` / `refetchInterval` polling stays as it was, so a missing stream only makes updates slower.
+- Your own changes also come back as an event, so the screen you changed refetches once more; accepted (no data in
+  events to tell whose change it was).
+- Prototype mode has no server: after a save, a tab tells the other tabs of the same browser (BroadcastChannel
+  `influencehub-prototype-live`, message `{v}` only), which load the saved workspace again and refresh as above. The
+  message is only a hint: each save also writes a new random revision beside the workspace (IndexedDB key `rev`);
+  every request first loads the workspace again when the revision isn't the one its working copy came from
+  (`local-store.ts` `reload`), and a save checks the revision and writes in one read-write transaction (IndexedDB runs
+  those one at a time across tabs). If another tab saved while a request ran, nothing is written: the request is
+  undone, the tab loads the newer workspace and answers 409 `changed_elsewhere` ("Another tab changed the data at
+  the same moment. Try again."). So no tab ever writes over another's save. "Reset prototype data" in one tab empties
+  the others' working copies too.
 
 ## Retention, the Rejected tab and data requests (P2, 20/11/2026)
 
