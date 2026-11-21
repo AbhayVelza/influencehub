@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/query'
-import { categoriesApi, settingsApi, teamApi } from '@/services'
+import { categoriesApi, integrationsApi, settingsApi, teamApi } from '@/services'
 import type { CategoryUpdate, InstagramSettingsUpdate, PoolSettings, TeamMemberCreate, TeamMemberUpdate } from '@/types'
 
 const instagramKey = ['settings', 'instagram'] as const
@@ -18,10 +18,10 @@ export function useUpdateInstagramSettings() {
   })
 }
 
-export function useSyncInstagramAll() {
+export function useSyncAll() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: () => settingsApi.syncInstagramAll(),
+    mutationFn: () => integrationsApi.syncAll(),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: instagramKey })
       void queryClient.invalidateQueries({ queryKey: queryKeys.influencers })

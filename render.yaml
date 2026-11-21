@@ -24,3 +24,6 @@ services:
         sync: false
       - key: META_IG_USER_ID
         sync: false
+      # YouTube lookup and sync (docs/server.md, "YouTube"): a YouTube Data API v3 key.
+      - key: YOUTUBE_API_KEY
+        sync: false

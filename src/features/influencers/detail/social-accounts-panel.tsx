@@ -93,21 +93,27 @@ function RecentPosts({ influencerId, account }: { influencerId: string; account:
             className="group relative block aspect-square overflow-hidden rounded-xl bg-surface-container-low shadow-sm"
             title={`Posted ${formatDate(post.posted_at)}`}
           >
-            <img
-              src={post.thumbnail}
-              alt={`Post from ${formatDate(post.posted_at)}`}
-              loading="lazy"
-              referrerPolicy="no-referrer"
-              className="size-full object-cover transition-transform group-hover:scale-105"
-            />
+            {post.thumbnail ? (
+              <img
+                src={post.thumbnail}
+                alt={`Post from ${formatDate(post.posted_at)}`}
+                loading="lazy"
+                referrerPolicy="no-referrer"
+                className="size-full object-cover transition-transform group-hover:scale-105"
+              />
+            ) : (
+              <span className="flex size-full items-center justify-center p-2 text-center text-[10px] text-muted-foreground">
+                Post from {formatDate(post.posted_at)}
+              </span>
+            )}
             <span className="absolute inset-x-0 bottom-0 flex justify-between bg-gradient-to-t from-black/70 to-transparent px-1.5 pt-4 pb-1 text-[10px] font-medium text-white">
-              <span className="inline-flex items-center gap-0.5">
+              <span className="inline-flex items-center gap-0.5" title={post.likes === null ? 'Likes hidden' : undefined}>
                 <Heart className="size-2.5" />
-                {formatCompact(post.likes)}
+                {post.likes === null ? '–' : formatCompact(post.likes)}
               </span>
               <span className="inline-flex items-center gap-0.5">
                 <MessageCircle className="size-2.5" />
-                {formatCompact(post.comments)}
+                {post.comments === null ? '–' : formatCompact(post.comments)}
               </span>
             </span>
           </a>
@@ -290,7 +296,7 @@ function AccountView({ influencer, account }: { influencer: Influencer; account:
       {account.sync_method === 'manual' && (
         <Notice tone="info" title="Entered manually">
           {canAutoSync
-            ? `Its stats are typed in. Auto-sync fetches them from ${meta.label} instead (Business and Creator accounts only).`
+            ? `Its stats are typed in. Auto-sync fetches them from ${meta.label} instead${account.platform === 'instagram' ? ' (Business and Creator accounts only)' : ''}.`
             : account.platform === 'instagram' || account.platform === 'facebook'
               ? `A personal ${meta.label} profile, which can’t be looked up. Its stats are typed in.`
               : `${meta.label} doesn’t share stats with us, so they’re typed in.`}
@@ -321,6 +327,10 @@ function AccountView({ influencer, account }: { influencer: Influencer; account:
           <Skeleton className="h-36 w-full rounded-xl" />
         ) : snapshots.isError ? (
           <p className="text-xs text-muted-foreground">Couldn’t load the history.</p>
+        ) : snapshots.data.items.length < 2 ? (
+          <p className="text-xs text-muted-foreground">
+            {meta.audienceLabel} history builds up with each day’s sync; the chart appears after the second day.
+          </p>
         ) : (
           <GrowthChart snapshots={snapshots.data.items} label={meta.audienceLabel} id={account.id} />
         ))}

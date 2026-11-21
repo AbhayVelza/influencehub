@@ -12,12 +12,12 @@ import type {
   DashboardSummary,
   Influencer,
   InstagramSettingsUpdate,
-  InstagramSyncAllResult,
   Integrations,
   PipelineResponse,
   PoolSettings,
   Role,
   SavedView,
+  SyncAllResult,
   SavedViewCreate,
   SyncIntervalHours,
   TeamMemberCreate,
@@ -222,6 +222,19 @@ export const workspaceHandlers = [
   // ---- What the API server is connected to (everyone: it decides which options the screens offer) ----------
   http.get(api('/integrations'), async () => HttpResponse.json({ profile_lookup: connectedPlatforms() } satisfies Integrations)),
 
+  // Admin "Sync profiles": every account on a connected platform to the background sync; typed-in ones switch to
+  // auto-sync.
+  http.post(api('/integrations/sync-all'), async () => {
+    if (!can(currentUser().role, 'integrations:manage')) return forbidden('Only admins can sync every account')
+    const connected = connectedPlatforms()
+    if (!connected.length) return apiError(409, 'not_connected', 'Profile lookup isn’t connected')
+    let switched = 0
+    const accounts = db.influencers.flatMap((i) => i.accounts.filter((a) => connected.includes(a.platform)))
+    for (const a of accounts) if (switchToAutoSync(a)) switched += 1
+    const queued = queueSync(accounts)
+    return HttpResponse.json({ queued, switched } satisfies SyncAllResult)
+  }),
+
   // ---- Instagram integration settings -------------------------------------
   http.get(api('/settings/instagram'), async () => {
     if (!can(currentUser().role, 'integrations:manage')) return forbidden('Only admins can view integration settings')
@@ -236,17 +249,6 @@ export const workspaceHandlers = [
     }
     db.instagramSettings.sync_interval_hours = body.sync_interval_hours as SyncIntervalHours
     return HttpResponse.json(db.instagramSettings)
-  }),
-
-  // Admin "Sync Instagram": every Instagram account to the background sync; typed-in ones switch to auto-sync.
-  http.post(api('/settings/instagram/sync-all'), async () => {
-    if (!can(currentUser().role, 'integrations:manage')) return forbidden('Only admins can sync every account')
-    if (!connectedPlatforms().includes('instagram')) return apiError(409, 'not_connected', 'Instagram isn’t connected')
-    let switched = 0
-    const accounts = db.influencers.flatMap((i) => i.accounts.filter((a) => a.platform === 'instagram'))
-    for (const a of accounts) if (switchToAutoSync(a)) switched += 1
-    const queued = queueSync(accounts)
-    return HttpResponse.json({ queued, switched } satisfies InstagramSyncAllResult)
   }),
 
   // ---- Unassigned Pool guards ----------------------------------------------

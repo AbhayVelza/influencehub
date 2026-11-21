@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { useProfileLookup } from '@/hooks/use-integrations'
 import { SYNC_INTERVAL_OPTIONS } from '@/lib/constants'
 import { RelativeTime } from '@/components/common/relative-time'
 import { formatDate, formatDateTime, formatNumber } from '@/lib/format'
@@ -13,7 +14,7 @@ import { cn } from '@/lib/utils'
 import { getErrorMessage } from '@/services'
 import type { SyncIntervalHours, SyncRunStatus, TokenStatus } from '@/types'
 import { useInstagramSettings, useUpdateInstagramSettings } from './queries'
-import { SyncInstagramButton } from './sync-instagram-button'
+import { SyncProfilesButton } from './sync-profiles-button'
 
 const TOKEN: Record<TokenStatus, { label: string; className: string }> = {
   valid: { label: 'Valid', className: 'bg-green-50 text-green-700 dark:bg-green-400/10 dark:text-green-300' },
@@ -71,6 +72,8 @@ const minutes = (from: string, to: string | null) =>
 export function InstagramSettings() {
   const settings = useInstagramSettings()
   const update = useUpdateInstagramSettings()
+  // The interval below is the background sync's for every connected platform.
+  const youtube = useProfileLookup().includes('youtube')
 
   if (settings.isPending) {
     return (
@@ -108,7 +111,7 @@ export function InstagramSettings() {
             Instagram doesn’t share email, category or city otherwise.
           </CardDescription>
           <div className="pt-2">
-            <SyncInstagramButton />
+            <SyncProfilesButton />
           </div>
         </CardHeader>
         <CardContent className="grid gap-6 md:grid-cols-2">
@@ -166,6 +169,7 @@ export function InstagramSettings() {
                   ))}
                 </SelectContent>
               </Select>
+              {youtube && <p className="text-xs text-muted-foreground">YouTube channels sync on the same schedule.</p>}
             </div>
             <UsageMeter value={s.api_usage_pct} />
           </div>

@@ -243,11 +243,14 @@ export interface AccountSnapshot {
   captured_at: ISODateString
 }
 
+/** One of an account's recent posts, as the platform last returned it (replaced on every sync). */
 export interface MediaItem {
-  thumbnail: string
+  /** Image, or a video's cover; null when the platform withholds it (e.g. copyrighted media). */
+  thumbnail: string | null
   permalink: string
-  likes: number
-  comments: number
+  /** Null when the creator hides like counts. */
+  likes: number | null
+  comments: number | null
   posted_at: ISODateString
 }
 
@@ -478,6 +481,8 @@ export interface AccountCreate {
   bio?: string | null
   links?: string[]
   is_verified?: boolean
+  /** From Look up, with `metrics`: the posts it fetched become the account's recent posts once it is saved. */
+  recent_posts?: MediaItem[]
 }
 
 export type InfluencerCreate = Pick<Influencer, 'name' | 'category'> &
@@ -706,6 +711,8 @@ export type LookupProfile = {
     metrics: PlatformMetrics[P]
     /** Other accounts found in the bio or links, e.g. a YouTube channel. */
     linked_accounts: AccountRef[]
+    /** Latest posts, newest first, when the platform returns them (Instagram: the last 12). */
+    recent_posts?: MediaItem[]
   }
 }[Platform]
 
@@ -902,8 +909,8 @@ export interface RejectedInfluencer {
   instagram: string | null
 }
 
-/** `POST /settings/instagram/sync-all`: every Instagram account queued for the background sync. */
-export interface InstagramSyncAllResult {
+/** `POST /integrations/sync-all`: every account on a connected platform queued for the background sync. */
+export interface SyncAllResult {
   /** Accounts queued (typed-in ones included, switched to auto-sync). */
   queued: number
   /** Of those, typed-in accounts switched to auto-sync. */

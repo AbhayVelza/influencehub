@@ -146,7 +146,7 @@ async function migrate(sql: ReturnType<typeof connect>) {
         console.log(`  ${t.padEnd(22)} ${n}`)
       }
       console.log('New rows:')
-      for (const t of [...TABLES.map((x) => x.name), 'account_snapshots', 'files']) {
+      for (const t of [...TABLES.map((x) => x.name), 'account_snapshots', 'account_media', 'files']) {
         const [{ n }] = await tx.unsafe<{ n: number }[]>(`SELECT count(*)::int AS n FROM ${t}`)
         console.log(`  ${t.padEnd(22)} ${n}`)
       }
@@ -176,7 +176,7 @@ async function rollback(sql: ReturnType<typeof connect>) {
   if (!n) fail('Nothing to roll back: there is no `legacy` schema.')
   if (!flag('--confirm')) fail('Rolling back drops the new tables and anything written to them since the migration. Add --confirm.')
   await sql.begin(async (tx) => {
-    for (const t of [...TABLES.map((x) => x.name), 'account_snapshots'].reverse()) await tx.unsafe(`DROP TABLE IF EXISTS public.${t} CASCADE`)
+    for (const t of [...TABLES.map((x) => x.name), 'account_snapshots', 'account_media'].reverse()) await tx.unsafe(`DROP TABLE IF EXISTS public.${t} CASCADE`)
     for (const t of LEGACY_TABLES) await tx.unsafe(`ALTER TABLE legacy.${t} SET SCHEMA public`)
     await tx.unsafe('DROP SCHEMA legacy')
     await tx.unsafe('ALTER TABLE files DROP COLUMN IF EXISTS size')

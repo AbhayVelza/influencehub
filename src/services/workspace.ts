@@ -7,13 +7,13 @@ import type {
   InfluencerFilters,
   InstagramSettings,
   InstagramSettingsUpdate,
-  InstagramSyncAllResult,
   Integrations,
   Paginated,
   PipelineResponse,
   PoolSettings,
   SavedView,
   SavedViewCreate,
+  SyncAllResult,
   TeamMemberCreate,
   TeamMemberUpdate,
   User,
@@ -51,13 +51,13 @@ export const categoriesApi = {
 /** What the API server is connected to (profile lookup per platform). */
 export const integrationsApi = {
   get: (signal?: AbortSignal) => http.get<Integrations>('/integrations', undefined, signal),
+  /** Admin: every account on a connected platform to the background sync (typed-in ones switch to auto-sync). */
+  syncAll: () => http.post<SyncAllResult>('/integrations/sync-all'),
 }
 
 export const settingsApi = {
   instagram: (signal?: AbortSignal) => http.get<InstagramSettings>('/settings/instagram', undefined, signal),
   updateInstagram: (body: InstagramSettingsUpdate) => http.patch<InstagramSettings>('/settings/instagram', body),
-  /** Admin: every Instagram account to the background sync (typed-in ones switch to auto-sync). */
-  syncInstagramAll: () => http.post<InstagramSyncAllResult>('/settings/instagram/sync-all'),
   pool: (signal?: AbortSignal) => http.get<PoolSettings>('/settings/pool', undefined, signal),
   updatePool: (body: Partial<PoolSettings>) => http.patch<PoolSettings>('/settings/pool', body),
 }

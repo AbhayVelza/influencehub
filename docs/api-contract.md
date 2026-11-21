@@ -19,8 +19,11 @@ page_size }`. Errors → `{ error: { code, message } }` (`contract-decisions.md`
   GET /documents (type[], q, uploaded_by[], uploaded_from, uploaded_to, page, page_size) ·
   POST /documents/presign {influencer_id, type, file_name, content_type, size} → {upload_url, key} ·
   GET /documents/{id}/download → {url} · DELETE /documents/{id}
-- GET /integrations → {profile_lookup} · POST /lookup {platform, username} → {job_id} · POST /imports/csv/presign · POST /imports/csv/upload {key, text} · POST /imports/csv → {job_id}
+- GET /integrations → {profile_lookup} · POST /integrations/sync-all (admin) → {queued, switched} · POST /lookup {platform, username} → {job_id} · POST /imports/csv/presign · POST /imports/csv/upload {key, text} · POST /imports/csv → {job_id}
 - POST /exports/influencers → {job_id} · GET /jobs/{id} → {status, progress, result, error}
+- GET /events (server mode): Server-Sent Events for the signed-in, active member; each event's data is only
+  `{"v": <number>}`, sent after a save that changed data (`contract-decisions.md`, Live updates). 401 signed out,
+  503 `too_many_streams`
 - POST /auth/sign-in {email, password} · GET /auth/session · POST /auth/sign-out · POST /auth/password
   {current_password, new_password} · POST /auth/set-password {user_id, password} (admin)
 - GET /me · GET /team · POST /team {email, name, role, location?, password} (admin) → User · PATCH /team/{id} {name?, role?, location?,

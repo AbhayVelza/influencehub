@@ -18,7 +18,7 @@ import {
   useInfluencerListParams,
   viewKey,
 } from '@/features/influencers/list-params'
-import { SyncInstagramButton } from '@/features/settings/sync-instagram-button'
+import { SyncProfilesButton } from '@/features/settings/sync-profiles-button'
 import { ListSearch } from '@/features/influencers/list-search'
 import { useInfluencerList } from '@/features/influencers/queries'
 import { SavedViewsMenu } from '@/features/influencers/saved-views-menu'
@@ -121,7 +121,7 @@ export default function InfluencersPage() {
           description={crm ? undefined : 'Every onboarded creator.'}
           actions={
             <>
-              <SyncInstagramButton />
+              <SyncProfilesButton />
               {canImport && (
                 <Button variant="outline" className="gap-1" onClick={() => addInfluencer.open({ tab: 'csv' })}>
                   <Upload className="size-[17px] text-muted-foreground transition-colors group-hover/button:text-primary" />

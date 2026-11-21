@@ -1,7 +1,7 @@
 import { JobFailure } from '@/backend/jobs'
 import type { ProfileSource } from '@/backend/social'
 import { PLATFORM_META } from '@/lib/platforms'
-import type { LookupProfile, Platform } from '@/types'
+import type { LookupProfile, MediaItem } from '@/types'
 
 // Instagram through Meta's Graph API ("Business Discovery"): a creator's public profile and recent posts, looked up
 // by handle through our own Instagram professional account (META_IG_USER_ID, e.g. @velzaglobalin). Needs
@@ -37,7 +37,18 @@ interface Discovery {
   follows_count?: number
   media_count?: number
   profile_picture_url?: string
-  media?: { data?: { like_count?: number; comments_count?: number }[] }
+  media?: { data?: DiscoveryMedia[] }
+}
+
+/** One recent post. Videos carry `thumbnail_url` (no `media_url`); images and carousels `media_url` (verified 20/11/2026). */
+interface DiscoveryMedia {
+  permalink?: string
+  media_type?: string
+  media_url?: string
+  thumbnail_url?: string
+  timestamp?: string
+  like_count?: number
+  comments_count?: number
 }
 
 /** One Graph API GET. The token never appears in errors or logs. */
@@ -84,10 +95,34 @@ function toFailure(e: GraphError): JobFailure {
 
 const mean = (values: number[]) => (values.length ? values.reduce((a, b) => a + b, 0) / values.length : null)
 
+const count = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) && v >= 0 ? Math.round(v) : null)
+
+/** Links the app shows (as href / img src): https only. */
+const https = (url: string | undefined) => (url && url.startsWith('https://') ? url : null)
+
+/** Recent posts as the app keeps them, newest first. A post without a link or date is left out. */
+function toMediaItems(posts: DiscoveryMedia[]): MediaItem[] {
+  return posts.flatMap((p) => {
+    const at = p.timestamp ? Date.parse(p.timestamp) : NaN
+    const permalink = https(p.permalink)
+    if (!permalink || Number.isNaN(at)) return []
+    return [
+      {
+        thumbnail: https(p.thumbnail_url) ?? (p.media_type === 'VIDEO' ? null : https(p.media_url)),
+        permalink,
+        // Hidden like counts leave like_count out.
+        likes: count(p.like_count),
+        comments: count(p.comments_count),
+        posted_at: new Date(at).toISOString(),
+      },
+    ]
+  })
+}
+
 /** A creator's public profile and the stats the CRM keeps for Instagram. */
 export async function fetchInstagram(handle: string): Promise<LookupProfile> {
   if (!/^[a-z0-9._]{1,30}$/.test(handle)) throw new JobFailure('not_found', 'That isn’t a valid Instagram username.')
-  const fields = `business_discovery.username(${handle}){username,name,biography,website,followers_count,follows_count,media_count,profile_picture_url,media.limit(${RECENT_POSTS}){like_count,comments_count}}`
+  const fields = `business_discovery.username(${handle}){username,name,biography,website,followers_count,follows_count,media_count,profile_picture_url,media.limit(${RECENT_POSTS}){permalink,media_type,media_url,thumbnail_url,timestamp,like_count,comments_count}}`
   const { business_discovery: d } = await graph<{ business_discovery?: Discovery }>(`/${igUserId()}`, fields)
   if (!d) throw new JobFailure('not_found', 'No Business or Creator account has that username.')
   // Posts with hidden like counts leave like_count out; they don't count towards the averages.
@@ -117,6 +152,7 @@ export async function fetchInstagram(handle: string): Promise<LookupProfile> {
       account_type: null,
     },
     linked_accounts: [],
+    recent_posts: toMediaItems(posts),
   } as LookupProfile
 }
 
@@ -126,7 +162,4 @@ export async function fetchBusinessAccount(): Promise<{ username: string; ig_use
   return { username: me.username, ig_user_id: me.id }
 }
 
-export const instagramSource: ProfileSource = {
-  platforms: ['instagram'] satisfies Platform[],
-  fetch: (_platform, handle) => fetchInstagram(handle),
-}
+export const instagramSource: ProfileSource = { fetch: fetchInstagram }

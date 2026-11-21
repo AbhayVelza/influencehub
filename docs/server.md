@@ -27,8 +27,10 @@ With `VITE_API_SERVER=true`, InfluenceHub has two parts: **PostgreSQL** for all 
   workspace's owner takes that email). The password is only set while that admin has none, so later changes stick.
   A new workspace also gets the default categories.
 - **Instagram:** with `META_ACCESS_TOKEN` and `META_IG_USER_ID` set, the server looks creators up and keeps their stats
-  fresh in the background (see "Instagram" below). Other platforms, connect links and growth history aren't connected:
-  their accounts keep the stats people type in.
+  fresh in the background (see "Instagram" below); each sync also records the day's follower count (history, a year)
+  and the latest 12 posts.
+- **YouTube:** with `YOUTUBE_API_KEY` set, the same for YouTube channels (see "YouTube" below), with the latest 10
+  videos. Other platforms and connect links aren't connected: their accounts keep the stats people type in.
 
 | Piece | Where |
 |---|---|
@@ -140,10 +142,37 @@ Business and Creator accounts can be looked up; personal profiles answer "not fo
 - **What it fills in:** name, picture, bio, website, followers, following, posts, and from the last 12 posts average
   likes, average comments and engagement rate.
 - **Background sync (`server/sync-worker.ts`):** one creator about every 40 s (~90 an hour, under Meta's hourly
-  allowance), paused while Meta reports 75% used. Order: accounts queued by Sync now / CSV import / **Auto-sync**, then
-  never-synced ones, then any not synced within Settings → Instagram's interval (3–24 h).
+  allowance), paused while Meta reports 75% used. Order: accounts queued by Sync now / CSV import / **Auto-sync** /
+  **Sync profiles**, then never-synced ones, then any not synced within Settings → Instagram's interval (3–24 h).
+  **Sync profiles** (admins, Influencers and Settings → Instagram) queues every account on a connected platform.
 - **Typed-in accounts:** CSV imports with a followers column create manual accounts. **Auto-sync IG** (bulk bar) or
   **Auto-sync** (influencer → account) switches them; their numbers stay until Instagram's arrive.
+
+## YouTube (YouTube Data API v3)
+
+The server looks YouTube channels up by handle (`@handle`) with an API key (`server/youtube.ts`). No sign-in by the
+creator is needed; the key only reads public data.
+
+- **Making the key:** [Google Cloud console](https://console.cloud.google.com/) → project picker → **New project**
+  (e.g. `influencehub`) → **APIs & Services → Library** → search **YouTube Data API v3** → **Enable** → **APIs &
+  Services → Credentials** → **Create credentials → API key** → open the new key → **API restrictions → Restrict key**
+  → tick **YouTube Data API v3** → **Save**. (Application restrictions can stay "None": Render has no fixed address.)
+- **Environment (secret):** `YOUTUBE_API_KEY` in `.env.local` and on Render (Dashboard → influencehub-api →
+  Environment). On start the server spends 1 quota unit checking the key; the log says `YouTube connected` or
+  `YouTube not connected: …` (a wrong key, or the API not enabled in that project).
+- **Quota:** 10,000 units a day per project, reset at midnight Pacific time (12:30 IST in summer, 13:30 IST in
+  winter). A lookup or sync costs 3 units (channel, its latest 10 uploads, their stats; 1 for a channel without
+  videos), so about 3,300 a day. The background sync stops for the day at 8,000 units, keeping the rest for Look up
+  and Sync now. The search endpoint (100 units) is never used. More quota: Google Cloud console →
+  IAM & Admin → Quotas, or YouTube's audit form.
+- **What it fills in:** name, picture, description (bio), the channel's own link, subscribers (unless the channel
+  hides them), total views, videos, average views of the latest 10 uploads, channel country, and those videos as
+  recent posts. A link to another platform in the description is offered as "Also found" on lookup.
+- **Background sync:** its own loop, one channel about every 15 s (~240 an hour), same order and same interval
+  (Settings → Instagram's sync frequency) as Instagram, up to ~2,600 channel syncs a day (8,000 units; e.g. ~2,600
+  channels at a 24 h interval, ~330 at 3 h; more channels sync less often). Then it stops until midnight Pacific time,
+  so ~660 lookups or Sync nows stay available; if the quota still runs out, those answer "rate limited" until then.
+  The count restarts at 0 when the server restarts. YouTube runs don't show in Settings → Instagram → Recent runs.
 
 ## PostgreSQL layout
 
@@ -156,7 +185,8 @@ SDLC specification, section 9). Ids are the app's ids (`inf_…`, `call_…`, `u
 | `categories` | name (unique, case-insensitive), is_active |
 | `influencers` | `Influencer` with the address and checklist as columns; `category_id` → categories, `assigned_to` → team_members. Kept columns (`platforms`, `has_agreement`, `insights_count`, `ever_onboarded`, `claimed_at`, `stage_before_hold`, `stage_changed_at`, `search_text`) are written by the server for SQL use; the app never reads them back |
 | `social_accounts` | `SocialAccount`; unique (`platform`, `handle`); one primary per influencer; `metrics` jsonb; kept `audience` |
-| `account_snapshots` | audience history (empty until platform sync exists) |
+| `account_snapshots` | audience history written by each sync: one row per account per IST day, the last 365 days; never loaded into memory |
+| `account_media` | the recent posts the last sync returned (`position` 0 = newest; `likes` null when hidden), replaced per sync; never loaded into memory |
 | `calls`, `activities`, `saved_views` | `CallLog`, `Activity` (`payload` jsonb), `SavedView` (`filters` jsonb) |
 | `packages`, `package_items` | `Package` (address as columns) and its items |
 | `documents` | `InfluencerDocument` + `deleted_at` (soft delete) + `storage_key` → files; one current agreement per influencer |
@@ -169,7 +199,9 @@ SDLC specification, section 9). Ids are the app's ids (`inf_…`, `call_…`, `u
 | `credentials` | `user_id`, `password_hash` (scrypt); never loaded into memory |
 | `sessions` | `token_hash` (SHA-256 of the cookie token), `user_id`, `expires_at` |
 
-Deleting an influencer removes its accounts, calls, packages, documents, activity and dismissed pairs (cascade).
+Deleting an influencer removes its accounts, calls, packages, documents, activity and dismissed pairs (cascade);
+removing an account removes its snapshots and posts. Accounts are saved by upsert (only removed accounts are deleted),
+so saving an influencer never touches its history.
 Team members are only soft-deleted, so rows that name them always resolve.
 
 To read it in SQL: `select name, stage, total_reach from influencers order by total_reach desc nulls last;`
@@ -207,7 +239,8 @@ PostgreSQL 17 client tools (`pg_dump`, `pg_restore`, `psql`; on Windows it finds
 - Jobs (CSV import, export) run inside the request that starts them, and their outcome is saved with it (`jobs`), so
   polling works across a restart; outcomes are dropped after an hour. A CSV waiting to be imported is saved too
   (`csv_uploads`).
-- Other people's changes appear when the app next refetches, not instantly.
+- Other people's changes appear within about a second while the live-updates stream is open (Live updates below),
+  otherwise when the app next refetches (30 s stale time, 60 s polling on some screens).
 - Auto-release of stale claims and connect-link expiry run at the start of every request (no scheduler).
 
 ## Troubleshooting
@@ -220,6 +253,30 @@ PostgreSQL 17 client tools (`pg_dump`, `pg_restore`, `psql`; on Windows it finds
   "No one can sign in yet"). Set them in `.env.local` and restart, or run `npm run set-password` (Deploying, step 3).
 - **Data you entered isn't on the server:** `VITE_API_SERVER` isn't `true`, so the app is in prototype mode (data in
   the browser). Restart `npm run dev` after editing env files.
+
+## Live updates
+
+`GET /api/v1/events` (`server/live.ts`) is a Server-Sent Events stream for signed-in, active members. After every save
+that changed data each open stream gets `data: {"v":<n>}`, and the app refetches what it shows (`src/lib/live.ts`):
+at most one event per 300 ms after members' requests, and at most one per minute for the Instagram / YouTube sync and
+the scheduler (each event makes every open screen refetch). Events carry no data; the number starts at the boot time,
+so a browser reconnecting after a restart refreshes. A `: ping` comment every 25 s keeps the stream open through
+proxies and rechecks the session. Limits: 200 streams, 10 per member (503 beyond). Only the sign-in check uses the
+request queue; the open stream doesn't hold it.
+
+- **Visible tabs only:** a hidden tab closes its stream and reopens it when shown. Over plain HTTP/1.1 (`npm run dev`,
+  or `npm run server` on http://localhost) a browser allows about 6 connections per host, so 6 visible windows of the
+  app would leave none for API calls; Vercel and Render serve HTTP/2, where streams share one connection.
+
+- **Vercel:** the app's `/api/*` rewrite (`vercel.json`) proxies the stream to Render, and Vercel may end a proxied
+  response after a while. The browser reconnects by itself (3 s), refreshing if it missed a change, so this only
+  costs a reconnect. A stream that keeps failing is retried with backoff (5 s up to 5 minutes), and the normal polling
+  (`staleTime` 30 s, `refetchInterval` 60 s) still runs, so nothing depends on the stream.
+- **Check it:** sign in, copy the `ih_session` cookie from the browser, then
+  `curl -N -H "Cookie: ih_session=<value>" http://localhost:3001/api/v1/events`. It prints `retry: 3000` and
+  `data: {"v":…}`, a new event after each change, and `: ping` every 25 s.
+- Prototype mode has no server: tabs of the same browser tell each other through a BroadcastChannel, and a tab never
+  saves over another tab's newer save (a revision check; docs/contract-decisions.md, "Live updates").
 
 ## Scheduler
 

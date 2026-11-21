@@ -24,7 +24,10 @@ function GrowthTooltip({ active, payload, label }: Pick<TooltipContentProps, 'ac
   )
 }
 
-/** Weekly audience (followers / subscribers…). One series, so the heading names it and no legend is needed. */
+/**
+ * Audience (followers / subscribers…) per day a sync ran, up to a year. One series, so the heading names it and no
+ * legend is needed.
+ */
 export function GrowthChart({ snapshots, label = 'Followers', id }: { snapshots: AccountSnapshot[]; label?: string; id: string }) {
   const [showTable, setShowTable] = useState(false)
   if (snapshots.length < 2) return null
@@ -38,7 +41,7 @@ export function GrowthChart({ snapshots, label = 'Followers', id }: { snapshots:
     <section aria-labelledby={headingId} className="space-y-2 rounded-xl bg-surface-container-low/50 p-3">
       <div className="flex items-baseline justify-between gap-2">
         <h4 id={headingId} className="text-label-sm tracking-wider text-muted-foreground uppercase">
-          {label}, last {snapshots.length} weeks
+          {label} since {formatDate(snapshots[0]!.captured_at)}
         </h4>
         <span className="font-code text-[11px] text-on-tertiary-container tabular-nums">
           {change >= 0 ? '+' : ''}
@@ -47,23 +50,25 @@ export function GrowthChart({ snapshots, label = 'Followers', id }: { snapshots:
       </div>
 
       {showTable ? (
-        <table className="w-full text-body-sm">
-          <caption className="sr-only">Weekly {label.toLowerCase()}</caption>
-          <thead>
-            <tr className="text-label-sm tracking-wider text-muted-foreground uppercase">
-              <th className="py-1 text-left font-normal">Week of</th>
-              <th className="py-1 text-right font-normal">{label}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {snapshots.map((s) => (
-              <tr key={s.captured_at} className="border-t border-surface-container">
-                <td className="py-1">{formatDate(s.captured_at)}</td>
-                <td className="py-1 text-right tabular-nums">{formatNumber(s.audience)}</td>
+        <div className="max-h-60 overflow-y-auto">
+          <table className="w-full text-body-sm">
+            <caption className="sr-only">{label} by day</caption>
+            <thead>
+              <tr className="text-label-sm tracking-wider text-muted-foreground uppercase">
+                <th className="py-1 text-left font-normal">Date</th>
+                <th className="py-1 text-right font-normal">{label}</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {snapshots.map((s) => (
+                <tr key={s.captured_at} className="border-t border-surface-container">
+                  <td className="py-1">{formatDate(s.captured_at)}</td>
+                  <td className="py-1 text-right tabular-nums">{formatNumber(s.audience)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       ) : (
         <div className="h-32" role="img" aria-label={`${label} grew ${change.toFixed(1)}% from ${formatNumber(first)} to ${formatNumber(last)}`}>
           <ResponsiveContainer width="100%" height="100%">

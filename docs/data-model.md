@@ -54,7 +54,8 @@ Source of truth: `src/types/index.ts`. Update both together.
   account_synced `{platform, handle, audience}`, account_added `{platform, handle}`,
   connect_link_sent `{platform, handle, emailed_to}`, merged `{merged_id, merged_name, fields, stage_from?, stage_to?}`,
   document_uploaded `{document_id, type, title}`, document_deleted `{document_id, type, title}`
-- **AccountSnapshot**: audience, captured_at · **MediaItem**: thumbnail, permalink, likes, comments, posted_at
+- **AccountSnapshot**: audience, captured_at (one per IST day a sync ran, 365 days) · **MediaItem**: thumbnail
+  (null when withheld), permalink, likes (null when hidden), comments, posted_at
 - **Permissions**: executive = view/add/edit/call/package/change stage on **their own** influencers, see the pool
   (preview only), claim from it, release their own to it; manager += see everything, assign/reassign, release anyone's,
   reopen rejected, delete, import/export, review & merge duplicates; admin += override stages, manage team,

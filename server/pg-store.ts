@@ -1,5 +1,7 @@
 import postgres from 'postgres'
 import { db, newWorkspace } from '@/backend/db'
+import { SNAPSHOT_DAYS, type PlatformDataStore } from '@/backend/platform-data'
+import type { MediaItem } from '@/types'
 import { fromRows, readTables, remove, TABLES, sameRow, toRows, upsert, type Row, type Rows } from './relational'
 import schema from './schema.sql?raw'
 
@@ -129,6 +131,13 @@ function pendingOps(): { upserts: Op[]; deletes: Op[] } {
   return { upserts, deletes }
 }
 
+let onSaved: (() => void) | null = null
+
+/** Called after every write that changed data (server/live.ts tells the signed-in browsers to refresh). */
+export function onDataSaved(listener: (() => void) | null) {
+  onSaved = listener
+}
+
 /** Writes everything that changed since PostgreSQL's last known state, all or nothing. */
 export async function flush(): Promise<void> {
   const { upserts, deletes } = pendingOps()
@@ -143,6 +152,7 @@ export async function flush(): Promise<void> {
     table.set(op.key, detach(op.row))
   }
   for (const op of deletes) saved.get(op.table)?.delete(op.key)
+  onSaved?.()
 }
 
 /** True when PostgreSQL answers (health check). */
@@ -179,6 +189,54 @@ export async function deleteOrphanFiles(): Promise<number> {
   const rows = await client()`delete from files f where f.created_at < now() - interval '1 day'
     and not exists (select 1 from documents d where d.storage_key = f.key) returning f.key`
   return rows.length
+}
+
+// ---- Follower history and recent posts (src/backend/platform-data.ts; never loaded into the working copy) ----
+
+type Pg = postgres.Sql | postgres.TransactionSql
+const accountExists = async (pg: Pg, id: string) => (await pg`select 1 from social_accounts where id = ${id}`).length > 0
+/** bigint columns arrive as strings. */
+const num = (v: unknown) => (v === null || v === undefined ? null : Number(v))
+
+export const platformData: PlatformDataStore = {
+  async recordSnapshot(accountId, audience, at) {
+    const wrote = await client().begin(async (tx) => {
+      // An account removed meanwhile (its rows went with it) gets nothing.
+      if (!(await accountExists(tx, accountId))) return false
+      await tx`delete from account_snapshots where account_id = ${accountId} and (
+        (captured_at at time zone 'Asia/Kolkata')::date = (${at}::timestamptz at time zone 'Asia/Kolkata')::date
+        or captured_at < ${at}::timestamptz - make_interval(days => ${SNAPSHOT_DAYS}))`
+      await tx`insert into account_snapshots (account_id, captured_at, audience) values (${accountId}, ${at}, ${audience})`
+      return true
+    })
+    if (wrote) onSaved?.()
+  },
+  async listSnapshots(accountId) {
+    const rows = await client()<{ captured_at: Date; audience: string }[]>`
+      select captured_at, audience from account_snapshots where account_id = ${accountId} order by captured_at`
+    return rows.map((r) => ({ captured_at: r.captured_at.toISOString(), audience: Number(r.audience) }))
+  },
+  async setRecentPosts(accountId, items) {
+    const wrote = await client().begin(async (tx) => {
+      if (!(await accountExists(tx, accountId))) return false
+      await tx`delete from account_media where account_id = ${accountId}`
+      if (!items.length) return true
+      const rows = items.map((m, position) => ({
+        account_id: accountId, position, thumbnail: m.thumbnail, permalink: m.permalink, likes: m.likes,
+        comments: m.comments, posted_at: m.posted_at,
+      }))
+      await tx`insert into account_media ${tx(rows)}`
+      return true
+    })
+    if (wrote) onSaved?.()
+  },
+  async listRecentPosts(accountId) {
+    const rows = await client()<{ thumbnail: string | null; permalink: string; likes: string | null; comments: string | null; posted_at: Date }[]>`
+      select thumbnail, permalink, likes, comments, posted_at from account_media where account_id = ${accountId} order by position`
+    return rows.map(
+      (r): MediaItem => ({ thumbnail: r.thumbnail, permalink: r.permalink, likes: num(r.likes), comments: num(r.comments), posted_at: r.posted_at.toISOString() }),
+    )
+  },
 }
 
 // ---- Sign-in: password hashes and sessions (never loaded into the working copy) ----

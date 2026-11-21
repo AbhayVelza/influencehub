@@ -112,12 +112,25 @@ CREATE UNIQUE INDEX IF NOT EXISTS social_accounts_primary_uq   ON social_account
 CREATE INDEX IF NOT EXISTS social_accounts_influencer_ix       ON social_accounts (influencer_id, position);
 CREATE INDEX IF NOT EXISTS social_accounts_link_expiry_ix      ON social_accounts (connect_link_expires_at) WHERE connect_status = 'link_sent';
 
--- Audience history; filled once platform sync exists.
+-- Audience history, written by each sync (server/pg-store.ts, never loaded into memory): one row per account per
+-- IST day, the last 365 days. Accounts are saved by upsert, so the cascade only fires when an account is removed.
 CREATE TABLE IF NOT EXISTS account_snapshots (
   account_id  text NOT NULL REFERENCES social_accounts (id) ON DELETE CASCADE,
   captured_at timestamptz NOT NULL,
   audience    bigint NOT NULL CHECK (audience >= 0),
   PRIMARY KEY (account_id, captured_at)
+);
+
+-- The recent posts the last sync returned (Instagram: 12), replaced wholesale per sync; position 0 = newest.
+CREATE TABLE IF NOT EXISTS account_media (
+  account_id text NOT NULL REFERENCES social_accounts (id) ON DELETE CASCADE,
+  position   integer NOT NULL CHECK (position >= 0),
+  thumbnail  text,
+  permalink  text NOT NULL,
+  likes      bigint CHECK (likes >= 0),
+  comments   bigint CHECK (comments >= 0),
+  posted_at  timestamptz NOT NULL,
+  PRIMARY KEY (account_id, position)
 );
 
 CREATE TABLE IF NOT EXISTS calls (
