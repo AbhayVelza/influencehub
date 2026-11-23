@@ -254,9 +254,19 @@ CREATE TABLE IF NOT EXISTS instagram_settings (
   business_ig_user_id text,
   token_status        text NOT NULL CHECK (token_status IN ('valid', 'expiring', 'expired')),
   token_expires_at    timestamptz,
-  sync_interval_hours smallint NOT NULL CHECK (sync_interval_hours IN (3, 6, 12, 24)),
+  sync_interval_hours smallint NOT NULL CHECK (sync_interval_hours = 168),
   api_usage_pct       double precision NOT NULL DEFAULT 0 CHECK (api_usage_pct BETWEEN 0 AND 100)
 );
+
+-- Auto-sync runs every 7 days only (23/11/2026): databases made with the old choices (3, 6, 12, 24 hours) move to it.
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'instagram_settings_sync_interval_hours_check'
+             AND pg_get_constraintdef(oid) <> 'CHECK ((sync_interval_hours = 168))') THEN
+    ALTER TABLE instagram_settings DROP CONSTRAINT instagram_settings_sync_interval_hours_check;
+    UPDATE instagram_settings SET sync_interval_hours = 168;
+    ALTER TABLE instagram_settings ADD CONSTRAINT instagram_settings_sync_interval_hours_check CHECK (sync_interval_hours = 168);
+  END IF;
+END $$;
 
 -- The Instagram integration's recent sync runs (the settings page shows the latest 20).
 CREATE TABLE IF NOT EXISTS sync_runs (

@@ -7,7 +7,8 @@ import { checkYouTube, fetchYouTube, youtubeBackgroundHoldUntil, youtubeConfigur
 
 // The API server's background sync: one loop per connected platform, each fetching one account at a time at its own
 // pace. What's due, in order: accounts queued by Sync now / CSV import / Auto-sync (`pending`), never-synced lookup
-// accounts, then those last synced longer ago than Settings → Instagram's interval (used for every platform).
+// accounts, then those last synced more than 7 days ago (auto-sync; Settings → Instagram, used for every platform).
+// Admin "Sync profiles" queues every account as pending, so it refreshes them now, whenever it's clicked.
 // Each fetch runs outside the request queue; only applying the result takes a turn, so the app stays responsive.
 //
 // - Instagram: about every 40 s (~90 an hour, under Meta's hourly allowance), never while Meta reports 75% of it
@@ -38,7 +39,7 @@ interface PlatformSync {
   onResult?: (ok: boolean) => void
 }
 
-/** Accounts that failed (not found, …): tried again only after a full interval, not on every tick. */
+/** Accounts that failed (not found, …): auto-sync tries them again only after a full interval, not on every tick. */
 const failedAt = new Map<string, number>()
 const timers = new Set<ReturnType<typeof setTimeout>>()
 let stopped = false
@@ -51,8 +52,9 @@ export function dueAccount(platform: Platform, now: number): SocialAccount | nul
   for (const inf of db.influencers) {
     for (const a of inf.accounts) {
       if (a.platform !== platform || a.sync_method !== 'lookup') continue
-      if ((failedAt.get(a.id) ?? 0) > now - intervalMs()) continue
       const rank = a.sync_status === 'pending' ? 0 : a.last_synced_at === null ? 1 : 2
+      // Queued accounts (Sync profiles, Sync now, CSV) go regardless; a failure marks them 'error', so no retry loop.
+      if (rank > 0 && (failedAt.get(a.id) ?? 0) > now - intervalMs()) continue
       if (rank === 2 && Date.parse(a.last_synced_at!) > now - intervalMs()) continue
       const at = a.last_synced_at ?? ''
       if (!best || rank < best.rank || (rank === best.rank && at < best.at)) best = { account: a, rank, at }

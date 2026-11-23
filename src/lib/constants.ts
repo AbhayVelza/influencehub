@@ -129,7 +129,7 @@ export const SYNC_STATUS_META: Record<SyncStatus, { label: string; dot: string }
   error: { label: 'Sync error', dot: 'bg-red-500' },
 }
 
-export const SYNC_INTERVAL_OPTIONS: SyncIntervalHours[] = [3, 6, 12, 24]
+export const SYNC_INTERVAL_OPTIONS: SyncIntervalHours[] = [168]
 
 export const ROLE_LABEL: Record<Role, string> = {
   admin: 'Admin',

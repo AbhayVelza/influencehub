@@ -871,7 +871,8 @@ export interface MergeRequest {
 
 export type TokenStatus = 'valid' | 'expiring' | 'expired'
 
-export type SyncIntervalHours = 3 | 6 | 12 | 24
+/** Auto-sync runs every 7 days (168 hours), the only option. */
+export type SyncIntervalHours = 168
 
 export type SyncRunStatus = 'running' | 'succeeded' | 'partial' | 'failed'
 
