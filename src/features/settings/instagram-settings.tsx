@@ -1,19 +1,14 @@
 import { BadgeCheck, CircleAlert, Link2Off } from 'lucide-react'
-import { toast } from 'sonner'
 import { ErrorState } from '@/components/common/states'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useProfileLookup } from '@/hooks/use-integrations'
-import { SYNC_INTERVAL_OPTIONS } from '@/lib/constants'
 import { RelativeTime } from '@/components/common/relative-time'
 import { formatDate, formatDateTime, formatNumber } from '@/lib/format'
 import { cn } from '@/lib/utils'
-import { getErrorMessage } from '@/services'
-import type { SyncIntervalHours, SyncRunStatus, TokenStatus } from '@/types'
-import { useInstagramSettings, useUpdateInstagramSettings } from './queries'
+import type { SyncRunStatus, TokenStatus } from '@/types'
+import { useInstagramSettings } from './queries'
 import { SyncProfilesButton } from './sync-profiles-button'
 
 const TOKEN: Record<TokenStatus, { label: string; className: string }> = {
@@ -71,8 +66,7 @@ const minutes = (from: string, to: string | null) =>
 
 export function InstagramSettings() {
   const settings = useInstagramSettings()
-  const update = useUpdateInstagramSettings()
-  // The interval below is the background sync's for every connected platform.
+  // Auto-sync (every 7 days) covers every connected platform.
   const youtube = useProfileLookup().includes('youtube')
 
   if (settings.isPending) {
@@ -91,15 +85,6 @@ export function InstagramSettings() {
     )
   }
   const s = settings.data
-
-  const setInterval = (value: string) =>
-    update.mutate(
-      { sync_interval_hours: Number(value) as SyncIntervalHours },
-      {
-        onSuccess: (data) => toast.success(`Syncing every ${data.sync_interval_hours} hours`),
-        onError: (err) => toast.error('Couldn’t change the sync interval', { description: getErrorMessage(err) }),
-      },
-    )
 
   return (
     <div className="space-y-gutter">
@@ -156,20 +141,12 @@ export function InstagramSettings() {
           </dl>
           <div className="space-y-5">
             <div className="grid gap-1.5">
-              <Label htmlFor="sync-interval" className="text-label-sm tracking-wider text-muted-foreground uppercase">Sync frequency</Label>
-              <Select value={String(s.sync_interval_hours)} onValueChange={setInterval} disabled={update.isPending}>
-                <SelectTrigger id="sync-interval" className="w-48">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {SYNC_INTERVAL_OPTIONS.map((h) => (
-                    <SelectItem key={h} value={String(h)}>
-                      Every {h} hours
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {youtube && <p className="text-xs text-muted-foreground">YouTube channels sync on the same schedule.</p>}
+              <p className="text-label-sm tracking-wider text-muted-foreground uppercase">Auto-sync</p>
+              <p className="text-body-md">Every 7 days</p>
+              <p className="text-xs text-muted-foreground">
+                Each {youtube ? 'Instagram account and YouTube channel' : 'account'} is refreshed 7 days after its last sync. To refresh
+                everything now, use Sync profiles.
+              </p>
             </div>
             <UsageMeter value={s.api_usage_pct} />
           </div>

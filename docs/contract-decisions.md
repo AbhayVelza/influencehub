@@ -145,7 +145,7 @@ Record any new API decision here. Dates and documents: `dates-and-documents.md`.
   `package_sent`, leaving creators whose package was marked delivered stuck in Onboarded.)
 - Notifications have no endpoint of their own: they combine overdue + due-today follow-ups and `GET /pool/expiring`.
 - `GET/PATCH /settings/instagram` (admin only, else 403). GET → `{ connected, business_account {username,
-  ig_user_id} | null, token_status (valid|expiring|expired), token_expires_at, sync_interval_hours (3|6|12|24),
+  ig_user_id} | null, token_status (valid|expiring|expired), token_expires_at, sync_interval_hours (168: every 7 days, the only option),
   api_usage_pct, last_runs[≤20] {started_at, finished_at|null, status (running|succeeded|partial|failed),
   synced, failed} }`. PATCH accepts `{ sync_interval_hours }` and returns the full object.
 - `GET /dashboard/summary`: `top_cities` = top 10 by influencer count; `recent_activity` = latest 20;

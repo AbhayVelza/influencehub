@@ -143,8 +143,9 @@ Business and Creator accounts can be looked up; personal profiles answer "not fo
   likes, average comments and engagement rate.
 - **Background sync (`server/sync-worker.ts`):** one creator about every 40 s (~90 an hour, under Meta's hourly
   allowance), paused while Meta reports 75% used. Order: accounts queued by Sync now / CSV import / **Auto-sync** /
-  **Sync profiles**, then never-synced ones, then any not synced within Settings → Instagram's interval (3–24 h).
-  **Sync profiles** (admins, Influencers and Settings → Instagram) queues every account on a connected platform.
+  **Sync profiles**, then never-synced ones, then any not synced in the last 7 days (auto-sync; the only interval).
+  **Sync profiles** (admins, Influencers and Settings → Instagram) queues every account on a connected platform, so
+  it refreshes them right away whenever it's clicked (including ones whose last sync failed).
 - **Typed-in accounts:** CSV imports with a followers column create manual accounts. **Auto-sync IG** (bulk bar) or
   **Auto-sync** (influencer → account) switches them; their numbers stay until Instagram's arrive.
 
@@ -168,9 +169,8 @@ creator is needed; the key only reads public data.
 - **What it fills in:** name, picture, description (bio), the channel's own link, subscribers (unless the channel
   hides them), total views, videos, average views of the latest 10 uploads, channel country, and those videos as
   recent posts. A link to another platform in the description is offered as "Also found" on lookup.
-- **Background sync:** its own loop, one channel about every 15 s (~240 an hour), same order and same interval
-  (Settings → Instagram's sync frequency) as Instagram, up to ~2,600 channel syncs a day (8,000 units; e.g. ~2,600
-  channels at a 24 h interval, ~330 at 3 h; more channels sync less often). Then it stops until midnight Pacific time,
+- **Background sync:** its own loop, one channel about every 15 s (~240 an hour), same order and same 7-day
+  auto-sync as Instagram, up to ~2,600 channel syncs a day (8,000 units; far more than 7-day auto-sync needs). Then it stops until midnight Pacific time,
   so ~660 lookups or Sync nows stay available; if the quota still runs out, those answer "rate limited" until then.
   The count restarts at 0 when the server restarts. YouTube runs don't show in Settings → Instagram → Recent runs.
 

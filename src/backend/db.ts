@@ -131,7 +131,7 @@ export function disconnectedInstagramSettings(): InstagramSettings {
     business_account: null,
     token_status: 'expired',
     token_expires_at: null,
-    sync_interval_hours: 6,
+    sync_interval_hours: 168,
     api_usage_pct: 0,
     last_runs: [],
   }

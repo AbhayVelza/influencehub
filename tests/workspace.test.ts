@@ -148,8 +148,10 @@ describe('team, categories and settings', () => {
   it('FR-SET-01: only admins change settings', async () => {
     const manager = await addMember('manager')
     expect((await api('PATCH', '/settings/pool', { as: manager.id, body: { claim_limit: 5 } })).status).toBe(403)
-    expect((await api('PATCH', '/settings/instagram', { as: manager.id, body: { sync_interval_hours: 12 } })).status).toBe(403)
-    expect((await api('PATCH', '/settings/instagram', { body: { sync_interval_hours: 12 } })).status).toBe(200)
+    expect((await api('PATCH', '/settings/instagram', { as: manager.id, body: { sync_interval_hours: 168 } })).status).toBe(403)
+    expect((await api('PATCH', '/settings/instagram', { body: { sync_interval_hours: 168 } })).status).toBe(200)
+    // 7 days is the only interval.
+    expect((await api('PATCH', '/settings/instagram', { body: { sync_interval_hours: 12 } })).status).toBe(422)
   })
 })
 

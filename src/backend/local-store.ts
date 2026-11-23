@@ -147,7 +147,8 @@ function load(data: Snapshot) {
     activities: data.activities,
     savedViews: data.savedViews,
     poolSettings: { ...defaultSettings().poolSettings, ...data.poolSettings },
-    instagramSettings: { ...defaultSettings().instagramSettings, ...data.instagramSettings },
+    // Auto-sync is every 7 days only; a browser saved with an older choice moves to it.
+    instagramSettings: { ...defaultSettings().instagramSettings, ...data.instagramSettings, sync_interval_hours: 168 },
     migrations: { ...defaultSettings().migrations, ...data.migrations },
     dismissedDuplicates: new Set(data.dismissed),
     jobs: data.jobs ?? [],
