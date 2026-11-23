@@ -9,6 +9,7 @@ import { getResponse } from 'msw'
 import { db, isRead, readChangedData, setActingUid } from '@/backend/db'
 import { handlers } from '@/backend/handlers'
 import { dropQueuedSyncedData, saveQueuedSyncedData, setProfileSource } from '@/backend/social'
+import { mayReadFile } from '@/backend/documents'
 import { commitJobs, executeJob, revertJobs } from '@/backend/jobs'
 import { setPlatformData } from '@/backend/platform-data'
 import { apiError } from '@/backend/utils'
@@ -166,10 +167,18 @@ app.put(`${FILES}*`, async (c) => {
 })
 
 app.get(`${FILES}*`, async (c) => {
-  if (!(await signedIn(c))) return apiError(401, 'unauthenticated', 'Sign in to continue.')
+  const uid = await sessionUid(c)
+  const key = fileKey(c.req.path)
+  // Only a document's file, for a member who may download that document (404 otherwise, so keys can't be probed).
+  const allowed = await inTurn(async () => {
+    const user = db.team.find((u) => u.id === uid && u.is_active)
+    return user ? mayReadFile(key, user) : null
+  })
+  if (allowed === null) return apiError(401, 'unauthenticated', 'Sign in to continue.')
+  if (!allowed) return apiError(404, 'not_found', 'File not found')
   fileTransferStarted()
   try {
-    const file = await pgStore.readFile(fileKey(c.req.path))
+    const file = await pgStore.readFile(key)
     if (!file) return apiError(404, 'not_found', 'File not found')
     return new Response(Buffer.from(file.data), { headers: { 'Content-Type': file.content_type, 'Cache-Control': 'private, max-age=3600' } })
   } finally {

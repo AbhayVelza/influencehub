@@ -59,7 +59,7 @@ Source of truth: `src/types/index.ts`. Update both together.
 - **Permissions**: executive = view/add/edit/call/package/change stage on **their own** influencers, see the pool
   (preview only), claim from it, release their own to it; manager += see everything, assign/reassign, release anyone's,
   reopen rejected, delete, import/export, review & merge duplicates; admin += override stages, manage team,
-  categories, integrations, pool guards. **Brand Specialist** = read-only, onboarded creators only (Onboarded,
+  categories, integrations, pool guards, export one influencer's personal data (JSON). **Brand Specialist** = read-only, onboarded creators only (Onboarded,
   Welcome Kit, Delivered): the Dashboard's onboarded numbers, the Influencers list and the Onboarded tabs (both without
   Stage, Assigned to, Docs, selection or saved views), and a read-only profile (identity, accounts, contact, location,
   address, tags, notes). No pool, pipeline, calls, Welcome Kits, documents or activity. Only an admin can give someone

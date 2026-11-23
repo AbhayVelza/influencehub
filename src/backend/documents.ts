@@ -36,6 +36,16 @@ export function findDocument(id: string, user: User): { doc: StoredDocument; inf
   return influencer ? { doc, influencer } : undefined
 }
 
+/**
+ * May `user` read the file stored under `key` (GET /files/{key} on the API server)? Only as the file of a live
+ * document they may download, the same rule as GET /documents/{id}/download. Brand specialists never read documents.
+ */
+export function mayReadFile(key: string, user: User): boolean {
+  if (user.role === 'brand_specialist') return false
+  const doc = liveDocuments().find((d) => d.storage_key === key)
+  return !!doc && !!findDocument(doc.id, user)
+}
+
 export function withInfluencer(doc: StoredDocument): DocumentWithInfluencer | null {
   const inf = db.influencers.find((i) => i.id === doc.influencer_id)
   return inf ? { ...publicDocument(doc), influencer: toSummary(inf) } : null

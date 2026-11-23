@@ -38,6 +38,8 @@ describe('Personal data export', () => {
     expect(res.body).toHaveProperty('activity')
     const exec = await addMember('executive')
     expect((await api('GET', `/influencers/${id}/export`, { as: exec.id })).status).toBe(403)
+    const manager = await addMember('manager')
+    expect((await api('GET', `/influencers/${id}/export`, { as: manager.id })).status).toBe(403)
   })
 })
 

@@ -1,5 +1,5 @@
 import type { Job } from '@/types'
-import { db, nextId, noteChangedOnRead, nowIso } from './db'
+import { currentUser, db, nextId, noteChangedOnRead, nowIso } from './db'
 
 export class JobFailure extends Error {
   readonly code: string
@@ -12,6 +12,8 @@ export class JobFailure extends Error {
 interface LocalJob {
   id: string
   startedAt: number
+  /** The member whose request started it. */
+  createdBy: string
   durationMs: number
   /** Runs once when the job finishes (it may wait, e.g. on a platform API). Throw JobFailure to fail the job. */
   run: () => unknown
@@ -36,7 +38,7 @@ export function createJob(run: () => unknown, durationMs = 0): string {
   const cutoffIso = new Date(cutoff).toISOString()
   if (db.jobs.some((j) => j.created_at < cutoffIso)) db.jobs = db.jobs.filter((j) => j.created_at >= cutoffIso)
   const id = nextId('job')
-  jobs.set(id, { id, startedAt: Date.now(), durationMs, run, done: false, staged: false, result: null, error: null })
+  jobs.set(id, { id, startedAt: Date.now(), createdBy: currentUser().id, durationMs, run, done: false, staged: false, result: null, error: null })
   return id
 }
 
@@ -60,6 +62,7 @@ export async function executeJob(id: string): Promise<void> {
     status: job.error ? 'failed' : 'succeeded',
     result: job.error ? null : (job.result ?? null),
     error: job.error,
+    created_by: job.createdBy,
     created_at: nowIso(),
   })
 }
@@ -84,11 +87,13 @@ export function revertJobs(): void {
   }
 }
 
-export async function readJob(id: string): Promise<Job | null> {
+/** A job's state, for the member who started it only (null for anyone else, as for an unknown id). */
+export async function readJob(id: string, userId: string): Promise<Job | null> {
   const job = jobs.get(id)
+  if (job && job.createdBy !== userId) return null
   if (!job) {
     // Started before a restart: only its saved outcome is left.
-    const saved = db.jobs.find((j) => j.id === id)
+    const saved = db.jobs.find((j) => j.id === id && j.created_by === userId)
     return saved ? { id: saved.id, status: saved.status, progress: 100, result: saved.result, error: saved.error } : null
   }
   const elapsed = Date.now() - job.startedAt
