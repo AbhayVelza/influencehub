@@ -181,7 +181,7 @@ export function OverviewTab({ influencer }: { influencer: Influencer }) {
   const address = influencer.address
 
   return (
-    <div className="grid gap-gutter-sm xl:grid-cols-2">
+    <div className="grid gap-gutter-sm md:grid-cols-2 xl:grid-cols-3">
       <Section title="Contact">
         <dl>
           <InlineTextField label="Name" value={influencer.name} schema={fieldSchemas.name} onSave={(name) => save({ name })} disabled={!canEdit} />

@@ -45,10 +45,8 @@ function DetailSkeleton() {
         </div>
       </div>
       <Skeleton className="h-16 w-full rounded-2xl" />
-      <div className="grid gap-gutter lg:grid-cols-[20rem_1fr]">
-        <Skeleton className="h-96 rounded-2xl" />
-        <Skeleton className="h-96 rounded-2xl" />
-      </div>
+      <Skeleton className="h-72 w-full rounded-2xl" />
+      <Skeleton className="h-56 w-full rounded-2xl" />
     </div>
   )
 }
@@ -111,10 +109,8 @@ function ReadOnlyProfile() {
       <header className="space-y-4">
         <InfluencerIdentity influencer={data} backTo={listReturnPath()} backLabel="Influencers" />
       </header>
-      <div className="grid items-start gap-6 lg:grid-cols-[19rem_minmax(0,1fr)]">
-        <SocialAccountsPanel influencer={data} />
-        <OverviewTab influencer={data} />
-      </div>
+      <SocialAccountsPanel influencer={data} />
+      <OverviewTab influencer={data} />
     </div>
   )
 }
@@ -205,10 +201,9 @@ function FullInfluencerDetail() {
         onCreatePackage={() => openPackage()}
       />
 
-      <div className="grid items-start gap-gutter lg:grid-cols-[19rem_minmax(0,1fr)]">
-        <SocialAccountsPanel influencer={data} />
+      <SocialAccountsPanel influencer={data} />
 
-        <Tabs value={tab} onValueChange={setTab} className="min-w-0 max-w-full gap-space-md">
+      <Tabs value={tab} onValueChange={setTab} className="min-w-0 max-w-full gap-space-md">
           <TabsList className="min-w-0 max-w-full justify-start overflow-x-auto">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="calls">Calls{callCount ? ` (${callCount})` : ''}</TabsTrigger>
@@ -232,7 +227,6 @@ function FullInfluencerDetail() {
             <ActivityTab activity={activity} />
           </TabsContent>
         </Tabs>
-      </div>
 
       <LogCallDialog
         influencer={data}
