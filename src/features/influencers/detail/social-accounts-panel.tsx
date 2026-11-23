@@ -20,7 +20,7 @@ import { copyToClipboard } from '@/lib/clipboard'
 import { RelativeTime } from '@/components/common/relative-time'
 import { formatCompact, formatDate, formatDateTime, formatRelative } from '@/lib/format'
 import { isSessionChanged, waitForJob } from '@/lib/jobs'
-import { audienceOf, exactMetric, formatMetric, metricValue, PLATFORM_META, SYNC_METHOD_LABEL, totalReach } from '@/lib/platforms'
+import { audienceOf, exactMetric, formatMetric, metricValue, PLATFORM_META, SYNC_METHOD_LABEL, totalReach, type MetricDef } from '@/lib/platforms'
 import { cn } from '@/lib/utils'
 import { accountsApi, getErrorMessage } from '@/services'
 import type { ConnectStatus, Influencer, Platform, SocialAccount, SyncResult } from '@/types'
@@ -49,15 +49,17 @@ function Notice({ tone, title, children }: { tone: 'info' | 'error'; title: stri
   )
 }
 
-/** The platform's own stats, with the platform's own labels. */
+const isNumeric = (def: MetricDef) => def.format === 'count' || def.format === 'percent'
+
+/** The platform's own number stats, with the platform's own labels. */
 function StatCards({ account }: { account: SocialAccount }) {
-  const defs = PLATFORM_META[account.platform].metrics
+  const defs = PLATFORM_META[account.platform].metrics.filter(isNumeric)
   return (
-    <dl className="grid grid-cols-2 gap-2">
+    <dl className="grid grid-cols-2 gap-x-6 gap-y-4">
       {defs.map((def) => {
         const value = metricValue(account, def.key)
         return (
-          <div key={def.key} className="flex flex-col-reverse rounded-xl bg-surface-container-low/70 px-3 py-2.5">
+          <div key={def.key} className="flex min-w-0 flex-col-reverse gap-0.5">
             <dd className="truncate text-headline-sm font-semibold tracking-tight text-primary tabular-nums" title={exactMetric(def, value)}>
               {formatMetric(def, value)}
             </dd>
@@ -69,11 +71,27 @@ function StatCards({ account }: { account: SocialAccount }) {
   )
 }
 
+/** Descriptive stats (account type, channel country, page category). */
+function DetailStats({ account }: { account: SocialAccount }) {
+  const defs = PLATFORM_META[account.platform].metrics.filter((d) => !isNumeric(d))
+  if (defs.length === 0) return null
+  return (
+    <dl className="grid gap-3">
+      {defs.map((def) => (
+        <div key={def.key} className="flex flex-col-reverse gap-0.5">
+          <dd className="text-body-md text-on-surface">{formatMetric(def, metricValue(account, def.key))}</dd>
+          <dt className="text-label-sm tracking-wider text-muted-foreground uppercase">{def.label}</dt>
+        </div>
+      ))}
+    </dl>
+  )
+}
+
 function RecentPosts({ influencerId, account }: { influencerId: string; account: SocialAccount }) {
   const media = useAccountMedia(influencerId, account.id, true)
   if (media.isPending) {
     return (
-      <div className="grid grid-cols-3 gap-1.5">
+      <div className="grid grid-cols-3 gap-2 md:grid-cols-6">
         {Array.from({ length: 6 }, (_, i) => (
           <Skeleton key={i} className="aspect-square w-full rounded-xl" />
         ))}
@@ -83,7 +101,7 @@ function RecentPosts({ influencerId, account }: { influencerId: string; account:
   if (media.isError) return <p className="text-xs text-muted-foreground">Couldn’t load recent posts.</p>
   if (media.data.items.length === 0) return <p className="text-xs text-muted-foreground">No recent posts.</p>
   return (
-    <ul className="grid grid-cols-3 gap-2">
+    <ul className="grid grid-cols-3 gap-2 md:grid-cols-6">
       {media.data.items.slice(0, 6).map((post) => (
         <li key={post.permalink}>
           <a
@@ -106,13 +124,13 @@ function RecentPosts({ influencerId, account }: { influencerId: string; account:
                 Post from {formatDate(post.posted_at)}
               </span>
             )}
-            <span className="absolute inset-x-0 bottom-0 flex justify-between bg-gradient-to-t from-black/70 to-transparent px-1.5 pt-4 pb-1 text-[10px] font-medium text-white">
+            <span className="absolute inset-x-0 bottom-0 flex justify-between bg-gradient-to-t from-black/70 to-transparent px-2 pt-6 pb-1.5 text-[11px] font-medium text-white">
               <span className="inline-flex items-center gap-0.5" title={post.likes === null ? 'Likes hidden' : undefined}>
-                <Heart className="size-2.5" />
+                <Heart className="size-3" />
                 {post.likes === null ? '–' : formatCompact(post.likes)}
               </span>
               <span className="inline-flex items-center gap-0.5">
-                <MessageCircle className="size-2.5" />
+                <MessageCircle className="size-3" />
                 {post.comments === null ? '–' : formatCompact(post.comments)}
               </span>
             </span>
@@ -245,8 +263,13 @@ function AccountView({ influencer, account }: { influencer: Influencer; account:
   }
 
   return (
-    <div className="space-y-4">
-      <div className="space-y-2">
+    <>
+      <div className="min-w-0 space-y-4">
+        <a href={account.profile_url} target="_blank" rel="noreferrer" className="block truncate text-body-sm text-on-tertiary-container hover:underline">
+          {meta.label} · @{account.handle}
+          {account.is_primary && ' · Primary'}
+        </a>
+      <div className="space-y-2 rounded-xl bg-surface-container-low/50 p-3">
         <div className="flex flex-wrap items-center justify-between gap-2 text-body-sm">
           <span className="text-label-sm tracking-wider text-muted-foreground uppercase">{SYNC_METHOD_LABEL[account.sync_method]}</span>
           {account.sync_method === 'connect' ? (
@@ -320,7 +343,14 @@ function AccountView({ influencer, account }: { influencer: Influencer; account:
       )}
 
       <StatCards account={account} />
-      {account.bio && <p className="text-body-md whitespace-pre-wrap text-on-surface">{account.bio}</p>}
+        <EditStatsDialog influencer={influencer} account={account} open={editing} onOpenChange={setEditing} />
+      </div>
+
+      <div className="min-w-0 space-y-4 border-t border-surface-container pt-4 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-6">
+        <DetailStats account={account} />
+        {account.bio && (
+          <p className="rounded-xl bg-surface-container-low/50 p-3 text-body-md whitespace-pre-wrap text-on-surface">{account.bio}</p>
+        )}
 
       {tracked &&
         (snapshots.isPending ? (
@@ -334,16 +364,35 @@ function AccountView({ influencer, account }: { influencer: Influencer; account:
         ) : (
           <GrowthChart snapshots={snapshots.data.items} label={meta.audienceLabel} id={account.id} />
         ))}
+        {!tracked && !account.bio && meta.metrics.every(isNumeric) && (
+          <p className="text-xs text-muted-foreground">Bio and history appear once the account syncs.</p>
+        )}
+      </div>
+    </>
+  )
+}
 
-      {tracked && (account.platform === 'instagram' || account.platform === 'youtube') && (
-        <section className="space-y-2">
-          <h4 className="text-label-sm tracking-wider text-muted-foreground uppercase">{account.platform === 'youtube' ? 'Recent videos' : 'Recent posts'}</h4>
-          <RecentPosts influencerId={influencer.id} account={account} />
-        </section>
-      )}
+/** Instagram and YouTube accounts that sync show their latest posts in a full-width card. */
+const hasPosts = (a: SocialAccount) =>
+  (a.platform === 'instagram' || a.platform === 'youtube') && a.last_synced_at !== null && a.sync_method !== 'manual'
 
-      <EditStatsDialog influencer={influencer} account={account} open={editing} onOpenChange={setEditing} />
-    </div>
+function RecentPostsCard({ influencerId, account }: { influencerId: string; account: SocialAccount }) {
+  const label = account.platform === 'youtube' ? 'Recent videos' : 'Recent posts'
+  return (
+    <Card size="sm" aria-label={label}>
+      <CardHeader className="flex flex-row items-center justify-between gap-2">
+        <CardTitle className="text-headline-sm">
+          {label} <span className="text-body-sm font-normal text-muted-foreground">· @{account.handle}</span>
+        </CardTitle>
+        <a href={account.profile_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-body-sm text-on-tertiary-container hover:underline">
+          View on {PLATFORM_META[account.platform].label}
+          <ExternalLink className="size-3.5" />
+        </a>
+      </CardHeader>
+      <CardContent>
+        <RecentPosts influencerId={influencerId} account={account} />
+      </CardContent>
+    </Card>
   )
 }
 
@@ -446,20 +495,25 @@ export function SocialAccountsPanel({ influencer }: { influencer: Influencer }) 
     document.getElementById(`account-tab-${next}`)?.focus()
   }
 
+  // Recent posts: the selected account's, or on Overall the first account that has some.
+  const postsAccount = active ? (hasPosts(active) ? active : undefined) : accounts.find(hasPosts)
+
   return (
+    <div className="space-y-gutter">
     <Card size="sm" aria-labelledby="accounts-panel-title">
-      <CardHeader className="flex flex-row items-center justify-between gap-2">
-        <CardTitle id="accounts-panel-title" className="text-headline-sm">
-          Social accounts
-        </CardTitle>
-        {canEdit && (
-          <Button variant="link" size="sm" className="px-1 text-on-tertiary-container" onClick={() => setAdding(true)}>
-            <Plus />
-            Add account
-          </Button>
-        )}
-      </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="grid gap-6 lg:grid-cols-[17rem_minmax(0,1fr)_minmax(0,1fr)]">
+        <div className="min-w-0 space-y-3">
+        <div className="flex items-center justify-between gap-2">
+          <h3 id="accounts-panel-title" className="text-label-sm tracking-wider text-muted-foreground uppercase">
+            Social accounts
+          </h3>
+          {canEdit && (
+            <Button variant="link" size="sm" className="h-auto px-1 text-on-tertiary-container" onClick={() => setAdding(true)}>
+              <Plus />
+              Add account
+            </Button>
+          )}
+        </div>
         <div role="tablist" aria-label="Social accounts" aria-orientation="vertical" className="space-y-0.5 rounded-xl bg-surface-container-low/50 p-1" onKeyDown={onKeyDown}>
           {showOverall && (
             <button
@@ -525,27 +579,22 @@ export function SocialAccountsPanel({ influencer }: { influencer: Influencer }) 
             )
           })}
         </div>
+        </div>
         {activeId === OVERALL && (
-          <div role="tabpanel" id={`account-panel-${OVERALL}`} aria-labelledby={`account-tab-${OVERALL}`} className="border-t border-surface-container pt-3">
+          <div role="tabpanel" id={`account-panel-${OVERALL}`} aria-labelledby={`account-tab-${OVERALL}`} className="min-w-0 border-t border-surface-container pt-4 lg:col-span-2 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-6">
             <OverallView influencer={influencer} />
           </div>
         )}
         {active && (
-          <div role="tabpanel" id={`account-panel-${active.id}`} aria-labelledby={`account-tab-${active.id}`} className="space-y-3 border-t border-surface-container pt-3">
-            <a
-              href={active.profile_url}
-              target="_blank"
-              rel="noreferrer"
-              className="block truncate text-body-sm text-on-tertiary-container hover:underline"
-            >
-              {PLATFORM_META[active.platform].label} · @{active.handle}
-              {active.is_primary && ' · Primary'}
-            </a>
+          <div role="tabpanel" id={`account-panel-${active.id}`} aria-labelledby={`account-tab-${active.id}`} className="grid min-w-0 gap-6 border-t border-surface-container pt-4 lg:col-span-2 lg:grid-cols-2 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-6">
             <AccountView key={active.id} influencer={influencer} account={active} />
           </div>
         )}
+        {accounts.length === 0 && <p className="text-body-md text-muted-foreground lg:col-span-2">No social accounts yet.</p>}
       </CardContent>
       <AddAccountDialog influencer={influencer} open={adding} onOpenChange={setAdding} onAdded={(id) => setTab(id)} />
     </Card>
+    {postsAccount && <RecentPostsCard key={postsAccount.id} influencerId={influencer.id} account={postsAccount} />}
+    </div>
   )
 }
