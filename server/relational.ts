@@ -253,7 +253,7 @@ export function toRows(): Rows {
     put('sync_runs', { started_at: run.started_at, finished_at: run.finished_at, status: run.status, synced: run.synced, failed: run.failed })
   }
   if (db.migrations.categories_upgraded) put('schema_migrations', { version: 'categories_upgraded' })
-  for (const j of db.jobs) put('jobs', { id: j.id, status: j.status, result: j.result, error: j.error, created_at: j.created_at })
+  for (const j of db.jobs) put('jobs', { id: j.id, status: j.status, result: j.result, error: j.error, created_by: j.created_by, created_at: j.created_at })
   for (const [key, text] of db.uploads) put('csv_uploads', { key, text })
   return out
 }
@@ -371,7 +371,7 @@ export function fromRows(rows: Rows) {
   const versions = new Set(list(rows, 'schema_migrations').map((r) => r.version))
   db.migrations = { categories_upgraded: versions.has('categories_upgraded') }
   db.jobs = list(rows, 'jobs').map((r) => ({
-    id: r.id, status: r.status, result: r.result, error: r.error, created_at: r.created_at,
+    id: r.id, status: r.status, result: r.result, error: r.error, created_by: r.created_by ?? null, created_at: r.created_at,
   }) as StoredJob)
   db.uploads = new Map(list(rows, 'csv_uploads').map((r) => [r.key as string, r.text as string]))
 

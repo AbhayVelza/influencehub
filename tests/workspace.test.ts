@@ -223,7 +223,19 @@ describe('P1: saved jobs and pending CSV files', () => {
     const rows = toRows()
     resetWorkspace()
     fromRows(rows)
-    expect(await readJob(job.body.job_id)).toMatchObject({ status: 'succeeded', progress: 100 })
+    expect(await readJob(job.body.job_id, ADMIN)).toMatchObject({ status: 'succeeded', progress: 100 })
+  })
+
+  it('a job is readable only by the member who started it, also after a restart', async () => {
+    const manager = await addMember('manager')
+    const job = await api('POST', '/exports/influencers', { body: { filters: {} } })
+    expect((await api('GET', `/jobs/${job.body.job_id}`, { as: manager.id })).status).toBe(404)
+    expect((await api('GET', `/jobs/${job.body.job_id}`)).status).toBe(200)
+    const rows = toRows()
+    resetWorkspace()
+    fromRows(rows)
+    expect(await readJob(job.body.job_id, manager.id)).toBeNull()
+    expect(await readJob(job.body.job_id, ADMIN)).toMatchObject({ status: 'succeeded' })
   })
 
   it('an uploaded CSV survives a restart before the import', async () => {

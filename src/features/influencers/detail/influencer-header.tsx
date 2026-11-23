@@ -197,6 +197,7 @@ export function InfluencerHeader({
   const navigate = useNavigate()
   const { data: me } = useMe()
   const canDelete = useCan('influencer:delete')
+  const canExport = useCan('influencer:export')
   const canReassign = useCan('influencer:reassign')
   const canReleaseOwn = useCan('influencer:release')
   const remove = useDeleteInfluencer(influencer.id)
@@ -287,12 +288,14 @@ export function InfluencerHeader({
                     Release to pool…
                   </DropdownMenuItem>
                 )}
+                {canExport && (
+                  <DropdownMenuItem onSelect={() => void exportData()}>
+                    <Download />
+                    Export all data (JSON)
+                  </DropdownMenuItem>
+                )}
                 {canDelete && (
                   <>
-                    <DropdownMenuItem onSelect={() => void exportData()}>
-                      <Download />
-                      Export all data (JSON)
-                    </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem variant="destructive" onSelect={() => setConfirmDelete(true)}>
                       <Trash2 />

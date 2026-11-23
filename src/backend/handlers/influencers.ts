@@ -317,7 +317,7 @@ export const influencerHandlers = [
 
   // Personal data request: everything stored about one influencer, as JSON (admins; erasing is Delete influencer).
   http.get(api('/influencers/:id/export'), async ({ params }) => {
-    if (!can(currentUser().role, 'influencer:delete')) return forbidden('Only admins can export an influencer’s data')
+    if (!can(currentUser().role, 'influencer:export')) return forbidden('Only admins can export an influencer’s data')
     const inf = findInfluencer(String(params.id))
     if (!inf) return notFound('Influencer')
     const mine = <T extends { influencer_id: string }>(rows: T[]) => rows.filter((r) => r.influencer_id === inf.id)

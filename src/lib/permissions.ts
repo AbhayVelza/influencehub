@@ -20,6 +20,8 @@ export type Permission =
   | 'stage:reopen'
   | 'influencer:reassign'
   | 'influencer:delete'
+  /** Everything stored about one influencer, as JSON (a personal-data request). */
+  | 'influencer:export'
   /** Review possible duplicates and merge two influencers. */
   | 'influencer:merge'
   | 'data:import'
@@ -69,6 +71,7 @@ const ADMIN: Permission[] = [
   'categories:manage',
   'integrations:manage',
   'pool:configure',
+  'influencer:export',
 ]
 
 const ROLE_PERMISSIONS: Record<Role, ReadonlySet<Permission>> = {

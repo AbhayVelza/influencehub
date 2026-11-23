@@ -20,7 +20,7 @@ page_size }`. Errors → `{ error: { code, message } }` (`contract-decisions.md`
   POST /documents/presign {influencer_id, type, file_name, content_type, size} → {upload_url, key} ·
   GET /documents/{id}/download → {url} · DELETE /documents/{id}
 - GET /integrations → {profile_lookup} · POST /integrations/sync-all (admin) → {queued, switched} · POST /lookup {platform, username} → {job_id} · POST /imports/csv/presign · POST /imports/csv/upload {key, text} · POST /imports/csv → {job_id}
-- POST /exports/influencers → {job_id} · GET /jobs/{id} → {status, progress, result, error}
+- POST /exports/influencers → {job_id} · GET /jobs/{id} → {status, progress, result, error} (only the member who started it; 404 for anyone else)
 - GET /events (server mode): Server-Sent Events for the signed-in, active member; each event's data is only
   `{"v": <number>}`, sent after a save that changed data (`contract-decisions.md`, Live updates). 401 signed out,
   503 `too_many_streams`

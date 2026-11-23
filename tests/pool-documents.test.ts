@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { db } from '@/backend/db'
+import { mayReadFile } from '@/backend/documents'
 import { splitRoundRobin } from '@/features/pool/use-pool-actions'
 import { ADMIN, addMember, agreement, api, influencer, insights, resetWorkspace, uploadDocument } from './harness'
 
@@ -173,5 +174,22 @@ describe('documents', () => {
     const doc = await uploadDocument(id, insights())
     expect((await api('GET', `/influencers/${id}/documents`, { as: exec.id })).status).toBe(404)
     expect((await api('GET', `/documents/${doc.body.id}/download`, { as: exec.id })).status).toBe(404)
+  })
+
+  it('FR-DOC-07: a stored file is served only to members who may download its document', async () => {
+    const exec = await addMember('executive')
+    const other = await addMember('executive', 'other exec')
+    const specialist = await addMember('brand_specialist')
+    const id = await influencer('a', exec.id)
+    const doc = await uploadDocument(id, insights(), exec.id)
+    const key = db.documents.find((d) => d.id === doc.body.id)!.storage_key
+    const member = (uid: string) => db.team.find((u) => u.id === uid)!
+    expect(mayReadFile(key, member(exec.id))).toBe(true)
+    expect(mayReadFile(key, member(ADMIN))).toBe(true)
+    expect(mayReadFile(key, member(other.id))).toBe(false)
+    expect(mayReadFile(key, member(specialist.id))).toBe(false)
+    expect(mayReadFile('documents/unknown/file.pdf', member(ADMIN))).toBe(false)
+    await api('DELETE', `/documents/${doc.body.id}`)
+    expect(mayReadFile(key, member(exec.id))).toBe(false)
   })
 })

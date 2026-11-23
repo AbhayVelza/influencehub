@@ -39,6 +39,8 @@ export interface StoredJob {
   status: 'succeeded' | 'failed'
   result: unknown
   error: { code: string; message: string } | null
+  /** The member who started it; only they can read it. Null on jobs saved before this was recorded. */
+  created_by: string | null
   created_at: string
 }
 

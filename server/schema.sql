@@ -290,8 +290,11 @@ CREATE TABLE IF NOT EXISTS jobs (
   status      text NOT NULL CHECK (status IN ('succeeded', 'failed')),
   result      jsonb,
   error       jsonb,
+  -- The member who started it; only they can poll it (no FK: kept an hour, members are never hard-deleted).
+  created_by  text,
   created_at  timestamptz NOT NULL
 );
+ALTER TABLE jobs ADD COLUMN IF NOT EXISTS created_by text;
 
 -- CSV files uploaded and waiting to be imported (the latest 5), so a restart between upload and import keeps them.
 CREATE TABLE IF NOT EXISTS csv_uploads (

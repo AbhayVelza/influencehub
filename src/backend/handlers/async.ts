@@ -26,7 +26,7 @@ const HANDLE = /^[a-z0-9._-]{1,60}$/
 
 export const asyncHandlers = [
   http.get(api('/jobs/:id'), async ({ params }) => {
-    const job = await readJob(String(params.id))
+    const job = await readJob(String(params.id), currentUser().id)
     return job ? HttpResponse.json(job) : notFound('Job')
   }),
 

@@ -63,7 +63,7 @@ export async function api<T = any>(method: string, path: string, opts: { as?: st
 export async function runJob<T = any>(method: string, path: string, opts: { as?: string; body?: unknown } = {}) {
   const started = await api(method, path, opts)
   if (started.status !== 202) throw new Error(`Expected 202, got ${started.status}: ${JSON.stringify(started.body)}`)
-  const job = (await readJob(started.body.job_id))!
+  const job = (await readJob(started.body.job_id, resolveActingUid(opts.as ?? ADMIN) ?? ADMIN))!
   return job as { status: string; result: T; error: { code: string; message: string } | null }
 }
 

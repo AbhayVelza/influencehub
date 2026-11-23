@@ -20,7 +20,8 @@ With `VITE_API_SERVER=true`, InfluenceHub has two parts: **PostgreSQL** for all 
   expiry, a job, the one-time category upgrade); `tests/workspace.test.ts` checks that no other read writes.
   `server/relational.ts` maps the app's records to rows and back.
 - **Document files:** `PUT /api/v1/files/<key>` (only for a key handed out by `POST /documents/presign`) stores the
-  file in the `files` table; `GET /api/v1/files/<key>` serves it.
+  file in the `files` table; `GET /api/v1/files/<key>` serves it,
+  only to a member who may download that document (the rule of `GET /documents/{id}/download`; 404 otherwise).
 - **One request at a time, one server:** the server is the only writer, so the rules hold for the whole team (two
   people can't claim the same influencer or add the same handle). Run exactly one instance.
 - **First admin:** on start, `ADMIN_EMAIL` / `ADMIN_PASSWORD` (/ `ADMIN_NAME`) become an admin's sign-in (a new
