@@ -229,7 +229,7 @@ function chartData(s: DashboardSummary) {
       value: w.count,
     })),
     days: s.calls_by_day.map((d) => ({ key: d.day, label: formatChartDay(d.day), fullLabel: formatDay(d.day), value: d.count })),
-    bands: s.follower_bands.map((b) => ({ key: b.band, label: shortBand(b.band), fullLabel: b.band, value: b.count })),
+    bands: s.follower_bands.map((b) => ({ key: b.band, label: b.band, fullLabel: b.band, value: b.count })),
     platforms: s.by_platform.map((p) => ({
       key: p.platform,
       name: PLATFORM_META[p.platform].label,
@@ -245,9 +245,6 @@ function chartData(s: DashboardSummary) {
     outcomes: s.call_outcomes_30d.map((o) => ({ key: o.outcome, label: CALL_OUTCOME_META[o.outcome].label, value: o.count })),
   }
 }
-
-/** Axis label for a size band that fits a narrow card: "Under 10K" → "<10K", "100K–500K" → "100–500K". */
-const shortBand = (band: string) => band.replace(/^Under /, '<').replace(/^(\d+)K–(\d+)K$/, '$1–$2K')
 
 export default function DashboardPage() {
   const { data: me } = useMe()
