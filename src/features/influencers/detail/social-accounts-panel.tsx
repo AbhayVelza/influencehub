@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { ChevronDown, CircleAlert, Heart, Info, Link2, Loader2, Mail, MessageCircle, Pencil, Plus, RefreshCw } from 'lucide-react'
+import { ChevronDown, CircleAlert, ExternalLink, Heart, Info, Link2, Loader2, Mail, MessageCircle, Pencil, Plus, RefreshCw } from 'lucide-react'
 import { useState, type KeyboardEvent, type ReactNode } from 'react'
 import { toast } from 'sonner'
 import { PlatformMark } from '@/components/common/platform-badge'
@@ -386,26 +386,40 @@ export function SocialAccountsPanel({ influencer }: { influencer: Influencer }) 
             const selected = a.id === activeId
             const audience = audienceOf(a)
             return (
-              <button
+              <div
                 key={a.id}
-                id={`account-tab-${a.id}`}
-                type="button"
-                role="tab"
-                aria-selected={selected}
-                aria-controls={`account-panel-${a.id}`}
-                tabIndex={selected ? 0 : -1}
-                onClick={() => setTab(a.id)}
                 className={cn(
-                  'flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-label-md transition-colors duration-150 outline-none focus-visible:ring-3 focus-visible:ring-ring/50',
+                  'flex items-center rounded-lg transition-colors duration-150',
                   selected
                     ? 'bg-surface-container-lowest font-semibold text-primary shadow-sm dark:bg-surface-container-highest'
                     : 'text-muted-foreground hover:bg-surface-container-lowest/60 hover:text-on-surface',
                 )}
               >
-                <PlatformMark platform={a.platform} />
-                <span className="min-w-0 flex-1 truncate">@{a.handle}</span>
-                <span className={cn('shrink-0 font-code text-[11px] tabular-nums', selected ? 'text-primary' : 'text-muted-foreground')}>{audience === null ? '—' : formatCompact(audience)}</span>
-              </button>
+                <button
+                  id={`account-tab-${a.id}`}
+                  type="button"
+                  role="tab"
+                  aria-selected={selected}
+                  aria-controls={`account-panel-${a.id}`}
+                  tabIndex={selected ? 0 : -1}
+                  onClick={() => setTab(a.id)}
+                  className="flex min-w-0 flex-1 items-center gap-2 rounded-lg py-2 pl-2.5 text-left text-label-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+                >
+                  <PlatformMark platform={a.platform} />
+                  <span className="min-w-0 flex-1 truncate">@{a.handle}</span>
+                  <span className={cn('shrink-0 font-code text-[11px] tabular-nums', selected ? 'text-primary' : 'text-muted-foreground')}>{audience === null ? '—' : formatCompact(audience)}</span>
+                </button>
+                <a
+                  href={a.profile_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={`Open @${a.handle} on ${PLATFORM_META[a.platform].label}`}
+                  title={`Open on ${PLATFORM_META[a.platform].label}`}
+                  className="mx-1 flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground outline-none hover:bg-surface-container-low hover:text-on-tertiary-container focus-visible:ring-3 focus-visible:ring-ring/50"
+                >
+                  <ExternalLink className="size-3.5" />
+                </a>
+              </div>
             )
           })}
         </div>
