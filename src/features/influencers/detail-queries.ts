@@ -1,4 +1,4 @@
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
+import { useInfiniteQuery, useMutation, useQueries, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/query'
 import { accountsApi, influencersApi } from '@/services'
 import type { Activity, Influencer, InfluencerUpdate, Stage, StageChangeRequest } from '@/types'
@@ -46,6 +46,16 @@ export function useAccountMedia(influencerId: string, accountId: string, enabled
     queryKey: queryKeys.accountMedia(influencerId, accountId),
     queryFn: ({ signal }) => accountsApi.media(accountId, signal),
     enabled,
+  })
+}
+
+/** Recent posts of several accounts (same cache entries as useAccountMedia). */
+export function useAccountsMedia(influencerId: string, accountIds: string[]) {
+  return useQueries({
+    queries: accountIds.map((accountId) => ({
+      queryKey: queryKeys.accountMedia(influencerId, accountId),
+      queryFn: ({ signal }: { signal: AbortSignal }) => accountsApi.media(accountId, signal),
+    })),
   })
 }
 

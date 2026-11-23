@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { ChevronDown, CircleAlert, ExternalLink, Heart, Info, Link2, Loader2, Mail, MessageCircle, Pencil, Plus, RefreshCw } from 'lucide-react'
+import { ChevronDown, CircleAlert, ExternalLink, Heart, Info, Layers, Link2, Loader2, Mail, MessageCircle, Pencil, Plus, RefreshCw } from 'lucide-react'
 import { useState, type KeyboardEvent, type ReactNode } from 'react'
 import { toast } from 'sonner'
 import { PlatformMark } from '@/components/common/platform-badge'
@@ -20,11 +20,11 @@ import { copyToClipboard } from '@/lib/clipboard'
 import { RelativeTime } from '@/components/common/relative-time'
 import { formatCompact, formatDate, formatDateTime, formatRelative } from '@/lib/format'
 import { isSessionChanged, waitForJob } from '@/lib/jobs'
-import { audienceOf, exactMetric, formatMetric, metricValue, PLATFORM_META, SYNC_METHOD_LABEL } from '@/lib/platforms'
+import { audienceOf, exactMetric, formatMetric, metricValue, PLATFORM_META, SYNC_METHOD_LABEL, totalReach } from '@/lib/platforms'
 import { cn } from '@/lib/utils'
 import { accountsApi, getErrorMessage } from '@/services'
-import type { ConnectStatus, Influencer, SocialAccount, SyncResult } from '@/types'
-import { invalidateInfluencer, useAccountMedia, useAccountSnapshots } from '../detail-queries'
+import type { ConnectStatus, Influencer, Platform, SocialAccount, SyncResult } from '@/types'
+import { invalidateInfluencer, useAccountMedia, useAccountsMedia, useAccountSnapshots } from '../detail-queries'
 import { AddAccountDialog } from './add-account-dialog'
 import { EditStatsDialog } from './edit-stats-dialog'
 import { GrowthChart } from './growth-chart'
@@ -347,24 +347,103 @@ function AccountView({ influencer, account }: { influencer: Influencer; account:
   )
 }
 
-/** One tab per social account (a vertical list, which suits the narrow column), each with its own platform's stats. */
+/** Platforms whose recent posts carry like counts. */
+const LIKE_PLATFORMS: Platform[] = ['instagram', 'youtube']
+
+/** All accounts together: total followers, and average likes per recent post across Instagram and YouTube. */
+function OverallView({ influencer }: { influencer: Influencer }) {
+  const accounts = influencer.accounts
+  const likeAccounts = accounts.filter((a) => LIKE_PLATFORMS.includes(a.platform) && a.last_synced_at !== null && a.sync_method !== 'manual')
+  const media = useAccountsMedia(influencer.id, likeAccounts.map((a) => a.id))
+  const likesPending = media.some((m) => m.isPending)
+
+  /** Likes summed over the account's recent posts that show them, and how many posts that is. */
+  const likesOf = new Map(
+    likeAccounts.map((a, i) => {
+      const counts = (media[i]?.data?.items ?? []).map((p) => p.likes).filter((n): n is number => n !== null)
+      return [a.id, { sum: counts.reduce((x, y) => x + y, 0), posts: counts.length }] as const
+    }),
+  )
+  const all = [...likesOf.values()].reduce((t, l) => ({ sum: t.sum + l.sum, posts: t.posts + l.posts }), { sum: 0, posts: 0 })
+  const avg = (l: { sum: number; posts: number } | undefined) => (l && l.posts ? Math.round(l.sum / l.posts) : null)
+  const reach = totalReach(accounts)
+  const combinedAvg = avg(all)
+
+  return (
+    <div className="space-y-4">
+      <dl className="grid grid-cols-2 gap-2">
+        <div className="flex flex-col-reverse rounded-xl bg-surface-container-low/70 px-3 py-2.5">
+          <dd className="truncate text-headline-sm font-semibold tracking-tight text-primary tabular-nums">{reach === null ? '—' : formatCompact(reach)}</dd>
+          <dt className="text-label-sm tracking-wider text-muted-foreground uppercase">Total followers</dt>
+        </div>
+        <div className="flex flex-col-reverse rounded-xl bg-surface-container-low/70 px-3 py-2.5">
+          <dd className="truncate text-headline-sm font-semibold tracking-tight text-primary tabular-nums">
+            {likesPending ? <Skeleton className="h-7 w-14" /> : combinedAvg === null ? '—' : formatCompact(combinedAvg)}
+          </dd>
+          <dt className="text-label-sm tracking-wider text-muted-foreground uppercase">Avg likes per post</dt>
+        </div>
+      </dl>
+
+      <table className="w-full text-body-sm">
+        <thead>
+          <tr className="text-left text-label-sm tracking-wider text-muted-foreground uppercase">
+            <th scope="col" className="pb-1.5 font-medium">Account</th>
+            <th scope="col" className="pb-1.5 text-right font-medium">Followers</th>
+            <th scope="col" className="pb-1.5 text-right font-medium">Avg likes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {accounts.map((a) => {
+            const audience = audienceOf(a)
+            const likes = avg(likesOf.get(a.id))
+            return (
+              <tr key={a.id} className="border-t border-surface-container">
+                <td className="max-w-0 py-1.5 pr-2">
+                  <span className="flex min-w-0 items-center gap-2">
+                    <PlatformMark platform={a.platform} />
+                    <span className="truncate">@{a.handle}</span>
+                  </span>
+                </td>
+                <td className="py-1.5 text-right font-code tabular-nums">{audience === null ? '—' : formatCompact(audience)}</td>
+                <td className="py-1.5 text-right font-code tabular-nums">
+                  {likesOf.has(a.id) && likesPending ? '…' : likes === null ? '—' : formatCompact(likes)}
+                </td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
+
+      <p className="text-xs text-muted-foreground">
+        Avg likes counts the recent posts and videos each sync fetches from Instagram and YouTube; posts with hidden likes are left out. Facebook page likes and other platforms aren’t included.
+      </p>
+    </div>
+  )
+}
+
+const OVERALL = 'overall'
+
+/** One tab per social account (a vertical list, which suits the narrow column), each with its own platform's stats,
+ *  and an Overall tab above them when there are two or more accounts. */
 export function SocialAccountsPanel({ influencer }: { influencer: Influencer }) {
   const canEdit = useCan('influencer:edit')
   const [tab, setTab] = useState<string | undefined>(undefined)
   const [adding, setAdding] = useState(false)
   const accounts = influencer.accounts
-  const activeId = accounts.some((a) => a.id === tab) ? tab! : accounts[0]?.id
+  const showOverall = accounts.length >= 2
+  const tabIds = [...(showOverall ? [OVERALL] : []), ...accounts.map((a) => a.id)]
+  const activeId = tab && tabIds.includes(tab) ? tab : tabIds[0]
   const active = accounts.find((a) => a.id === activeId)
 
-  // Arrow keys move between accounts, like any tab list.
+  // Arrow keys move between tabs, like any tab list.
   const onKeyDown = (event: KeyboardEvent) => {
-    const index = accounts.findIndex((a) => a.id === activeId)
+    const index = tabIds.findIndex((id) => id === activeId)
     const step = event.key === 'ArrowDown' || event.key === 'ArrowRight' ? 1 : event.key === 'ArrowUp' || event.key === 'ArrowLeft' ? -1 : 0
     if (!step) return
     event.preventDefault()
-    const next = accounts[(index + step + accounts.length) % accounts.length]!
-    setTab(next.id)
-    document.getElementById(`account-tab-${next.id}`)?.focus()
+    const next = tabIds[(index + step + tabIds.length) % tabIds.length]!
+    setTab(next)
+    document.getElementById(`account-tab-${next}`)?.focus()
   }
 
   return (
@@ -382,6 +461,29 @@ export function SocialAccountsPanel({ influencer }: { influencer: Influencer }) 
       </CardHeader>
       <CardContent className="space-y-4">
         <div role="tablist" aria-label="Social accounts" aria-orientation="vertical" className="space-y-0.5 rounded-xl bg-surface-container-low/50 p-1" onKeyDown={onKeyDown}>
+          {showOverall && (
+            <button
+              id={`account-tab-${OVERALL}`}
+              type="button"
+              role="tab"
+              aria-selected={activeId === OVERALL}
+              aria-controls={`account-panel-${OVERALL}`}
+              tabIndex={activeId === OVERALL ? 0 : -1}
+              onClick={() => setTab(OVERALL)}
+              className={cn(
+                'flex w-full items-center gap-2 rounded-lg py-2 pr-9 pl-2.5 text-left text-label-md transition-colors duration-150 outline-none focus-visible:ring-3 focus-visible:ring-ring/50',
+                activeId === OVERALL
+                  ? 'bg-surface-container-lowest font-semibold text-primary shadow-sm dark:bg-surface-container-highest'
+                  : 'text-muted-foreground hover:bg-surface-container-lowest/60 hover:text-on-surface',
+              )}
+            >
+              <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-surface-container-low">
+                <Layers className="size-3.5" />
+              </span>
+              <span className="min-w-0 flex-1 truncate">Overall</span>
+              <span className="shrink-0 font-code text-[11px] tabular-nums">{formatCompact(totalReach(accounts))}</span>
+            </button>
+          )}
           {accounts.map((a) => {
             const selected = a.id === activeId
             const audience = audienceOf(a)
@@ -423,6 +525,11 @@ export function SocialAccountsPanel({ influencer }: { influencer: Influencer }) 
             )
           })}
         </div>
+        {activeId === OVERALL && (
+          <div role="tabpanel" id={`account-panel-${OVERALL}`} aria-labelledby={`account-tab-${OVERALL}`} className="border-t border-surface-container pt-3">
+            <OverallView influencer={influencer} />
+          </div>
+        )}
         {active && (
           <div role="tabpanel" id={`account-panel-${active.id}`} aria-labelledby={`account-tab-${active.id}`} className="space-y-3 border-t border-surface-container pt-3">
             <a
