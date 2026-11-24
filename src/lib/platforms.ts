@@ -30,6 +30,13 @@ interface PlatformMeta {
 
 const count = (key: string, label: string): MetricDef => ({ key, label, format: 'count' })
 
+/** A YouTube channel id (UC + 22 characters): saved as typed and looked up by id. */
+export const YOUTUBE_CHANNEL_ID = /^UC[\w-]{22}$/
+/** facebook.com/people/<name>/<id> or profile.php?id=<id>: the numeric id (group 1 or 2). */
+const FACEBOOK_ID_LINK = /(?:facebook|fb)\.com\/(?:people\/[^/?#\s]+\/(\d+)|profile\.php\?(?:[^#\s]*&)?id=(\d+))/i
+/** youtube.com/channel/UC… (group 1) or a legacy /c/ or /user/ name (group 2). Not offered as linked accounts. */
+const YOUTUBE_LEGACY_LINK = /youtube\.com\/(?:channel\/(UC[\w-]{22})|(?:c|user)\/([^/?#\s]+))/i
+
 export const PLATFORM_META: Record<Platform, PlatformMeta> = {
   instagram: {
     label: 'Instagram',
@@ -65,7 +72,7 @@ export const PLATFORM_META: Record<Platform, PlatformMeta> = {
       count('avg_views_recent', 'Avg views (last 10)'),
       { key: 'channel_country', label: 'Channel country', format: 'country' },
     ],
-    url: (h) => `https://www.youtube.com/@${h}`,
+    url: (h) => (YOUTUBE_CHANNEL_ID.test(h) ? `https://www.youtube.com/channel/${h}` : `https://www.youtube.com/@${h}`),
     // Only /@handle links: /channel/UC…, legacy /c/ and /user/ names, /watch, /shorts and /playlist links are not
     // handles (YouTube is looked up by handle, so those would find nothing or someone else's channel).
     urlPattern: /youtube\.com\/@([^/?#\s]+)/i,
@@ -90,7 +97,8 @@ export const PLATFORM_META: Record<Platform, PlatformMeta> = {
     audienceLabel: 'Page followers',
     metrics: [count('page_followers', 'Page followers'), count('page_likes', 'Page likes'), { key: 'page_category', label: 'Page category', format: 'text' }],
     url: (h) => `https://www.facebook.com/${h}`,
-    urlPattern: /(?:facebook|fb)\.com\/([^/?#\s]+)/i,
+    // facebook.com/people/<name>/<id> and profile.php?id=<id> are unpacked to the id in normalizeHandle.
+    urlPattern: /(?:facebook|fb)\.com\/(?!(?:people|profile\.php|share|sharer|groups|watch|events|l\.php)(?:[/?#.]|$))([^/?#\s]+)/i,
   },
   threads: {
     label: 'Threads',
@@ -214,6 +222,17 @@ export const exactMetric = (def: MetricDef, value: number | string | null) =>
  */
 export function normalizeHandle(value: string, platform?: Platform): string {
   const trimmed = value.trim()
+  if (platform === 'youtube') {
+    // Channel ids stay as typed (they're case-sensitive); legacy /c/ and /user/ names become handles.
+    if (YOUTUBE_CHANNEL_ID.test(trimmed)) return trimmed
+    const legacy = trimmed.match(YOUTUBE_LEGACY_LINK)
+    if (legacy?.[1]) return legacy[1]
+    if (legacy?.[2]) return legacy[2].toLowerCase()
+  }
+  if (platform === 'facebook') {
+    const id = trimmed.match(FACEBOOK_ID_LINK)
+    if (id) return (id[1] ?? id[2])!
+  }
   const patterns = platform ? [PLATFORM_META[platform].urlPattern] : PLATFORMS.map((p) => PLATFORM_META[p].urlPattern)
   let fromUrl: string | undefined
   for (const pattern of patterns) {

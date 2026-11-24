@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useCategories } from '@/hooks/use-categories'
 import { useCan } from '@/hooks/use-me'
-import { addressSchema, fieldSchemas, MAX_TAGS, validateField } from '@/lib/schemas'
+import { addressSchema, fieldSchemas, validateField } from '@/lib/schemas'
 import { getErrorMessage } from '@/services'
 import type { Address, Influencer, InfluencerUpdate, OnboardingChecklist } from '@/types'
 import { useUpdateInfluencer } from '../detail-queries'
@@ -103,7 +103,6 @@ function TagsEditor({
     const result = validateField(fieldSchemas.tag, draft)
     if (!result.ok) return setError(result.error)
     if (tags.includes(result.value)) return setError('Already tagged')
-    if (tags.length >= MAX_TAGS) return setError(`At most ${MAX_TAGS} tags`)
     try {
       await onChange([...tags, result.value])
       setDraft('')

@@ -3,7 +3,7 @@ import { csvCell } from '@/lib/csv'
 import { dayKey, formatDate, todayKey } from '@/lib/format'
 import { can } from '@/lib/permissions'
 import { audienceOf, instagramFollowers, normalizeHandle, PLATFORM_META, PLATFORMS, primaryAccount, toRef } from '@/lib/platforms'
-import { fieldSchemas, MAX_TAGS, normalizeEmailField, normalizePhone } from '@/lib/schemas'
+import { fieldSchemas, normalizeEmailField, normalizePhone } from '@/lib/schemas'
 import { getAllowedTransitions, isOverride, ONBOARDED_OR_LATER, overrideBlockReason, STAGE_TRANSITIONS } from '@/lib/stages'
 import type {
   Activity,
@@ -167,7 +167,6 @@ const collate = new Intl.Collator().compare
 
 export type CreateResult = { ok: true; influencer: Influencer } | { ok: false; status: number; code: string; message: string }
 
-const HANDLE = /^[a-z0-9._-]{1,60}$/
 
 /** Checks new accounts: known platform, valid handle, not repeated, not already in the CRM. */
 export function validateAccounts(accounts: AccountCreate[] | undefined, ownerId?: string): { ok: true } | Failure {
@@ -176,7 +175,7 @@ export function validateAccounts(accounts: AccountCreate[] | undefined, ownerId?
     if (!PLATFORMS.includes(a?.platform)) return { ok: false, status: 422, code: 'validation_error', message: 'Unknown platform' }
     const handle = normalizeHandle(a.handle ?? '', a.platform)
     const label = PLATFORM_META[a.platform].label
-    if (!HANDLE.test(handle)) return { ok: false, status: 422, code: 'validation_error', message: `Enter a valid ${label} handle` }
+    if (!handle) return { ok: false, status: 422, code: 'validation_error', message: `Enter a valid ${label} handle` }
     const key = `${a.platform}:${handle}`
     if (seen.has(key)) return { ok: false, status: 422, code: 'validation_error', message: `${label} @${handle} is listed twice` }
     seen.add(key)
@@ -188,7 +187,7 @@ export function validateAccounts(accounts: AccountCreate[] | undefined, ownerId?
   return { ok: true }
 }
 
-/** FR-INF-12: at most MAX_TAGS tags, each as the form takes it (trimmed, lower case, 1–60 characters); repeats dropped. */
+/** FR-INF-12: tags as the form takes them (trimmed, lower case, not empty); repeats dropped. */
 export function cleanTags(tags: unknown): { ok: true; tags: string[] } | Failure {
   const fail = (message: string): Failure => ({ ok: false, status: 422, code: 'validation_error', message })
   if (!Array.isArray(tags)) return fail('Tags must be a list')
@@ -198,7 +197,6 @@ export function cleanTags(tags: unknown): { ok: true; tags: string[] } | Failure
     if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? 'Invalid tag')
     if (!out.includes(parsed.data)) out.push(parsed.data)
   }
-  if (out.length > MAX_TAGS) return fail(`At most ${MAX_TAGS} tags`)
   return { ok: true, tags: out }
 }
 

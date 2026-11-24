@@ -1,7 +1,7 @@
 import { toCsvText } from '@/lib/csv'
 import { parseCompactNumber, parseImportDate } from '@/lib/format'
 import { PLATFORM_META, PLATFORMS } from '@/lib/platforms'
-import { fieldSchemas, handleSchema, MAX_TAGS, validateField } from '@/lib/schemas'
+import { fieldSchemas, handleSchema, validateField } from '@/lib/schemas'
 import type { AccountCreate, CsvColumnMapping, CsvImportField, InfluencerCreate, Platform } from '@/types'
 
 // CSV import rules shared by the preview (UI) and the data layer (src/backend), so the preview predicts what the import does.
@@ -93,11 +93,7 @@ export interface ValidatedImportRow {
   blank: boolean
 }
 
-/**
- * Validates one row with the same rules as the forms. The category must match an active category (any case).
- * A handle cell that isn't a usable profile (a /channel/ link, a short link) doesn't fail a row that has another
- * handle: it's skipped with a warning and its text kept in the notes.
- */
+/** Validates one row with the same rules as the forms. The category must match an active category (any case). */
 export function validateImportRow(raw: RawImportRow, categoryNames: string[]): ValidatedImportRow {
   const errors: ValidatedImportRow['errors'] = {}
   const warnings: ValidatedImportRow['warnings'] = {}
@@ -124,24 +120,13 @@ export function validateImportRow(raw: RawImportRow, categoryNames: string[]): V
     else errors.created_at = 'Use dd/MM/yyyy or an ISO date like 2026-10-28'
   }
 
-  const unusable: { platform: Platform; error: string }[] = []
   for (const platform of PLATFORMS) {
     const cell = raw[platform]
     if (!cell) continue
     const result = validateField(handleSchema(platform), cell)
-    if (!result.ok) unusable.push({ platform, error: result.error })
+    if (!result.ok) errors[platform] = `${PLATFORM_META[platform].label}: ${result.error}`
     else accounts.push({ platform, handle: result.value })
   }
-  const kept: string[] = []
-  for (const { platform, error } of unusable) {
-    const label = PLATFORM_META[platform].label
-    if (accounts.length === 0) errors[platform] = `${label}: ${error}`
-    else {
-      warnings[platform] = `Not a ${label} profile handle: skipped and kept in the notes`
-      kept.push(`${label}: ${raw[platform]}`)
-    }
-  }
-  if (kept.length && !errors.notes) values.notes = [values.notes, ...kept].filter(Boolean).join('\n').slice(0, 2000)
 
   // Instagram followers: typed-in stats for the row's Instagram account (kept as entered, not synced).
   if (raw.instagram_followers) {
@@ -172,8 +157,7 @@ export function validateImportRow(raw: RawImportRow, categoryNames: string[]): V
       }
       if (!tags.includes(result.value)) tags.push(result.value)
     }
-    if (tags.length > MAX_TAGS) errors.tags = `At most ${MAX_TAGS} tags`
-    else if (!errors.tags && tags.length) values.tags = tags
+    if (!errors.tags && tags.length) values.tags = tags
   }
 
   return { values, accounts, errors, warnings, blank: false }

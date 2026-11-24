@@ -12,7 +12,9 @@ Record any new API decision here. Dates and documents: `dates-and-documents.md`.
   null when none is known; `platform[]` filters influencers with an account on any of those platforms;
   `reach_min/max` filter on total_reach; `followers_min/max` filter on one account's audience: some account on a selected `platform[]` (any account when none is selected) within the range, unknown audiences never match (the Onboarded tabs' Followers filter, which is that platform's followers / subscribers / page followers). Combinable (AND) with everything else, and part of `filter-options`' filters like `reach_min/max`; `filter-options` adds `platforms` with counts (faceted, see Filter options); `q` also matches every
   account handle. Handles are normalised everywhere (forms, lookup, CSV, API): the platform's profile URL and a
-  leading `@` are stripped, then lowercased; format `[a-z0-9._-]{1,60}`. `(platform, handle)` is unique across the CRM.
+  leading `@` are stripped, then lowercased (YouTube channel ids `UC…` keep their case; Facebook
+  `/people/<name>/<id>` and `profile.php?id=<id>` links become the numeric id). No format or length rule:
+  any non-empty text is a handle (decided 24/11/2026: real sheets hold short links and legacy names). `(platform, handle)` is unique across the CRM.
   Influencer PATCH can't change accounts or derived fields (`accounts`, `total_reach`, `is_verified`, `profile_pic_url`).
 - `POST /influencers {…, accounts: AccountCreate[]}` (≥1, first = primary). `AccountCreate {platform, handle,
   sync_method?: 'manual', metrics?, display_name?, profile_pic_url?, bio?, links?, is_verified?}`: a lookup account
@@ -127,9 +129,9 @@ Record any new API decision here. Dates and documents: `dates-and-documents.md`.
   handle, message}], profiles {synced, failed} | null}`. `row` = 1-based file line (header = line 1). Rows are
   validated with the same rules as the forms (`src/lib/csv-import.ts`); a missing or unknown category is a row error (no fallback category).
   Placeholder cells (`-`, `—`, `N/A`, `none`, `nil`, `null`) count as empty; rows with no name and no handle (blank or
-  section-heading rows) are skipped and left out of `total_rows`; tags split on `;`, `|` or `,`. A handle cell that
-  isn't a usable profile (a YouTube `/channel/` or `/c/` link, a short link) is skipped with a preview warning and its
-  text appended to the row's notes when the row has another valid handle; with no valid handle it's a row error. A row
+  section-heading rows) are skipped and left out of `total_rows`; tags split on `;`, `|` or `,`. Influencer text
+  fields (name, city, state, country, email, notes, tags) have no length limit; a phone that isn't a number is kept as
+  typed. A row
   repeating an account from earlier in the file is a duplicate; a row with any account already in the CRM is that
   creator: `skip` counts it as a duplicate, `update` overwrites mapped non-empty fields, merges tags and adds its
   new accounts (never its `created_at`). `fetch_profiles` turns the rows' accounts on connected platforms (GET /integrations) into lookup accounts and queues them for the background sync (`profiles.queued`); typed-in stats stay until the first sync. Client limits: 2 MB, 5,000 rows.
@@ -296,7 +298,7 @@ workspace (settings row `migrations`), so it never undoes later admin edits.
 
 Rules the forms already applied are now also checked by the handlers, so every caller gets them (tests in `tests/`):
 
-- **Tags** (`cleanTags`, create and PATCH): at most 20, each trimmed, lower case, 1–60 letters, numbers, spaces, `-`, `_`, `'`, `&`, `.`, `+`, `/`, `#`;
+- **Tags** (`cleanTags`, create and PATCH): any number, each trimmed and lower case, any characters, not empty;
   repeats dropped. Otherwise 422 `validation_error`.
 - **Calls:** `call_back` needs `follow_up_date`, and any follow-up must be in the future (422 `validation_error`).
 - **Welcome Kits:** the address needs line 1, city, state, postal code and country; once the status is past
@@ -341,11 +343,11 @@ Rules the forms already applied are now also checked by the handlers, so every c
   `YouTube connected` or `YouTube not connected: …`.
 - `POST /lookup {platform: 'youtube'}`, Sync now, bulk sync, Auto-sync, CSV "Fetch public profiles" and Sync profiles
   work as for Instagram (each platform has its own profile source: `setProfileSource(platform, source)` in
-  `src/backend/social.ts`). Handles are looked up as `@handle` (3–30 letters, numbers, dots, dashes, underscores).
-  Only `youtube.com/@handle` links count as YouTube handles (`PLATFORM_META.youtube.urlPattern`): `/channel/UC…`,
-  legacy `/c/` and `/user/` names, `/watch`, `/shorts` and `/playlist` links are refused as invalid handles (422 on
-  lookup; in CSV skipped into the notes, or a row error when the row has no other handle) and never offered as linked accounts, since looking them up by handle would find nothing
-  or another person's channel. Likewise Instagram `/p/`, `/reel/`, `/reels/`, `/stories/`, `/explore/`, `/tv/` and
+  `src/backend/social.ts`). Handles are looked up as `@handle` (3–30 letters, numbers, dots, dashes, underscores);
+  channel ids (`youtube.com/channel/UC…`, saved as typed) by `id`. Legacy `/c/` and `/user/` links are saved as that
+  name and looked up as `@name` (which can miss, or find another channel). Other saved text (short links) is kept but
+  can't sync. Lookup still refuses anything else (422), and only `youtube.com/@handle` links are offered as linked
+  accounts (`PLATFORM_META.youtube.urlPattern`). Likewise Instagram `/p/`, `/reel/`, `/reels/`, `/stories/`, `/explore/`, `/tv/` and
   `/accounts/` links aren't profiles.
 - 3 quota units per channel, never the 100-unit `search`: `channels.list part=snippet,statistics,contentDetails
   forHandle=@handle` → `playlistItems.list part=contentDetails` of the uploads playlist, `maxResults=10` →

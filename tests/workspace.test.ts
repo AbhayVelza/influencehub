@@ -85,22 +85,27 @@ describe('CSV import and export', () => {
     expect(job.result.errors.map((e: { row: number }) => e.row)).toEqual([3, 4])
   })
 
-  it('FR-CSV-02: placeholders, blank rows, long tags and unusable extra links never fail a row', async () => {
+  it('FR-CSV-02: placeholders count as empty, blank rows are skipped, any handle or tag is kept', async () => {
     const cat = db.categories[0]!.name
     const text =
-      `Name,Category,Instagram,Youtube,Facebook,Tags,Notes\n` +
-      `Varun,${cat},varun,https://www.youtube.com/channel/UClvPVnx6LN8l0XNtO2gnwMQ,-,Men's Fitness Workout Lifestyle,Actor\n` +
-      `,,,,,,\n,,,,,,Alcohol content creators\n` +
-      `Lucky,${cat},-,yt.openinapp.co/0ru6h,-,,\n`
+      `Name,Category,Instagram,Youtube,Facebook,Tags,Notes
+` +
+      `Varun,${cat},varun,https://www.youtube.com/channel/UClvPVnx6LN8l0XNtO2gnwMQ,-,Men's Fitness Workout Lifestyle,Actor
+` +
+      `,,,,,,
+,,,,,,Alcohol content creators
+` +
+      `Lucky,${cat},-,yt.openinapp.co/0ru6h,-,,
+`
     const job = await importCsv(text, { name: 'Name', category: 'Category', instagram: 'Instagram', youtube: 'Youtube', facebook: 'Facebook', tags: 'Tags', notes: 'Notes' })
     expect(job.result.total_rows).toBe(2)
-    expect(job.result.created).toBe(1)
-    // Lucky has no usable handle at all: still a row error, naming the platform.
-    expect(job.result.errors).toEqual([{ row: 4, handle: null, message: expect.stringContaining('YouTube:') }])
+    // "-" in both Facebook cells is empty, so the rows aren't duplicates of each other.
+    expect(job.result.created).toBe(2)
+    expect(job.result.duplicates).toBe(0)
     const varun = db.influencers.find((i) => i.name === 'Varun')!
-    expect(varun.accounts.map((a) => `${a.platform}:${a.handle}`)).toEqual(['instagram:varun'])
+    expect(varun.accounts.map((a) => `${a.platform}:${a.handle}`)).toEqual(['instagram:varun', 'youtube:UClvPVnx6LN8l0XNtO2gnwMQ'])
     expect(varun.tags).toEqual(["men's fitness workout lifestyle"])
-    expect(varun.notes).toBe('Actor\nYouTube: https://www.youtube.com/channel/UClvPVnx6LN8l0XNtO2gnwMQ')
+    expect(db.influencers.find((i) => i.name === 'Lucky')!.accounts[0]!.handle).toBe('yt.openinapp.co/0ru6h')
   })
 
   it('FR-CSV-03: update overwrites mapped fields, merges tags, never created_at', async () => {
