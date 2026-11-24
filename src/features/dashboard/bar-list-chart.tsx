@@ -89,7 +89,7 @@ export function BarListChart({
               <XAxis
                 type="number"
                 allowDecimals={false}
-                tick={{ fontSize: 13, fill: 'var(--muted-foreground)' }}
+                tick={{ fontSize: 14, fill: 'var(--muted-foreground)' }}
                 tickLine={false}
                 axisLine={false}
               />
@@ -97,7 +97,7 @@ export function BarListChart({
                 type="category"
                 dataKey="label"
                 width={112}
-                tick={{ fontSize: 13, fill: 'var(--foreground)' }}
+                tick={{ fontSize: 14, fill: 'var(--foreground)' }}
                 tickLine={false}
                 axisLine={false}
                 interval={0}

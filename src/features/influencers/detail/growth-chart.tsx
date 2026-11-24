@@ -77,7 +77,7 @@ export function GrowthChart({ snapshots, label = 'Followers', id }: { snapshots:
               <XAxis
                 dataKey="captured_at"
                 tickFormatter={(v: string) => formatChartDate(v)}
-                tick={{ fontSize: 13, fill: 'var(--muted-foreground)' }}
+                tick={{ fontSize: 14, fill: 'var(--muted-foreground)' }}
                 tickLine={false}
                 axisLine={false}
                 interval="preserveStartEnd"
@@ -86,7 +86,7 @@ export function GrowthChart({ snapshots, label = 'Followers', id }: { snapshots:
               <YAxis
                 width={36}
                 tickFormatter={(v: number) => formatCompact(v)}
-                tick={{ fontSize: 13, fill: 'var(--muted-foreground)' }}
+                tick={{ fontSize: 14, fill: 'var(--muted-foreground)' }}
                 tickLine={false}
                 axisLine={false}
                 domain={['auto', 'auto']}
