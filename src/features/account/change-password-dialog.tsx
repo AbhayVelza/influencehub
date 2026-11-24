@@ -75,7 +75,7 @@ export function ChangePasswordDialog({ open, onOpenChange }: { open: boolean; on
                   {...register(name)}
                 />
                 {error && (
-                  <p id={`${id}-error`} className="text-xs text-destructive">
+                  <p id={`${id}-error`} className="text-small text-destructive">
                     {error.message}
                   </p>
                 )}
@@ -83,7 +83,7 @@ export function ChangePasswordDialog({ open, onOpenChange }: { open: boolean; on
             )
           })}
           {formError && (
-            <p role="alert" className="text-sm text-destructive">
+            <p role="alert" className="text-body text-destructive">
               {formError}
             </p>
           )}

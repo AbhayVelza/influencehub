@@ -49,7 +49,7 @@ export function ListSearch({
         onKeyDown={(e) => e.key === 'Escape' && e.currentTarget.blur()}
         placeholder={placeholder}
         aria-label={label}
-        className="h-9 rounded-full bg-surface-container-lowest/70 py-2 pr-4 pl-10 text-body-sm text-on-surface shadow-sm shadow-black/5 backdrop-blur-md transition-all duration-150 placeholder:text-muted-foreground/60 hover:bg-surface-container-lowest focus-visible:bg-surface-container-lowest md:text-body-sm dark:bg-surface-container-high/70"
+        className="h-9 rounded-full bg-surface-container-lowest/70 py-2 pr-4 pl-10 text-small text-on-surface shadow-sm shadow-black/5 backdrop-blur-md transition-all duration-150 placeholder:text-muted-foreground/60 hover:bg-surface-container-lowest focus-visible:bg-surface-container-lowest md:text-small dark:bg-surface-container-high/70"
       />
     </div>
   )

@@ -90,7 +90,7 @@ export function StageReasonDialog({
                 setError(null)
               }}
             />
-            {error && <p className="text-body-sm text-error">{error}</p>}
+            {error && <p className="text-small text-error">{error}</p>}
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onCancel} disabled={pending}>

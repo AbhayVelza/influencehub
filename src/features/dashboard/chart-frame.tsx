@@ -29,9 +29,9 @@ export function ChartFrame({
     <div className="space-y-2">
       {showTable ? (
         <div className="max-h-72 overflow-y-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-body">
             <thead>
-              <tr className="text-xs text-muted-foreground">
+              <tr className="text-small text-muted-foreground">
                 <th className="py-1 text-left font-normal">{labelHeader}</th>
                 <th className="py-1 text-right font-normal">{valueHeader}</th>
                 {extraHeader && <th className="py-1 text-right font-normal">{extraHeader}</th>}
@@ -51,7 +51,7 @@ export function ChartFrame({
       ) : (
         chart
       )}
-      <Button variant="link" size="xs" className="h-auto px-0 text-xs" onClick={() => setShowTable((v) => !v)}>
+      <Button variant="link" size="xs" className="h-auto px-0 text-small" onClick={() => setShowTable((v) => !v)}>
         {showTable ? 'Show chart' : 'Show as table'}
       </Button>
     </div>
@@ -61,7 +61,7 @@ export function ChartFrame({
 /** Tooltip body: the value leads, the label follows. */
 export function ChartTooltipBody({ value, label }: { value: string; label: string }) {
   return (
-    <div className="rounded-md border bg-popover px-2.5 py-1.5 text-xs shadow-md">
+    <div className="rounded-md border bg-popover px-2.5 py-1.5 text-small shadow-md">
       <div className="font-semibold text-popover-foreground tabular-nums">{value}</div>
       <div className="text-muted-foreground">{label}</div>
     </div>

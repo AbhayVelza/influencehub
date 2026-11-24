@@ -14,7 +14,7 @@ function DocFlag({ label, ok }: { label: string; ok: boolean }) {
 
 export function DocFlags({ documents }: { documents: DocumentSummary }) {
   return (
-    <span className="inline-flex items-center gap-2.5 text-body-sm whitespace-nowrap text-on-surface">
+    <span className="inline-flex items-center gap-2.5 text-small whitespace-nowrap text-on-surface">
       <DocFlag label="Insights" ok={documents.insights_count > 0} />
       <DocFlag label="Agreement" ok={documents.has_agreement} />
     </span>

@@ -61,7 +61,7 @@ export function PoolSettings() {
       <CardContent>
         <form onSubmit={onSubmit} className="space-y-space-md" noValidate>
           <div className="grid gap-1.5 rounded-xl bg-surface-container-low/50 p-space-md">
-            <Label htmlFor="claim-limit" className="text-label-sm tracking-wider text-muted-foreground uppercase">Claim limit</Label>
+            <Label htmlFor="claim-limit" className="text-small tracking-wider text-muted-foreground uppercase">Claim limit</Label>
             <div className="flex flex-wrap items-center gap-2">
               <Input
                 id="claim-limit"
@@ -72,18 +72,18 @@ export function PoolSettings() {
                 aria-describedby="claim-limit-hint"
                 {...register('claim_limit')}
               />
-              <span className="text-body-md text-muted-foreground">uncontacted influencers per executive</span>
+              <span className="text-body text-muted-foreground">uncontacted influencers per executive</span>
             </div>
-            <p id="claim-limit-hint" className={errors.claim_limit ? 'text-body-sm text-error' : 'text-body-sm text-muted-foreground'}>
+            <p id="claim-limit-hint" className={errors.claim_limit ? 'text-small text-error' : 'text-small text-muted-foreground'}>
               {errors.claim_limit?.message ??
                 'Counts influencers an executive owns in Data Gathered. Claims beyond it are refused.'}
             </p>
           </div>
 
           <div className="grid gap-1.5 rounded-xl bg-surface-container-low/50 p-space-md">
-            <Label htmlFor="auto-release" className="text-label-sm tracking-wider text-muted-foreground uppercase">Auto-release</Label>
+            <Label htmlFor="auto-release" className="text-small tracking-wider text-muted-foreground uppercase">Auto-release</Label>
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-body-md text-muted-foreground">Return to the pool if no call is logged within</span>
+              <span className="text-body text-muted-foreground">Return to the pool if no call is logged within</span>
               <Input
                 id="auto-release"
                 inputMode="numeric"
@@ -93,9 +93,9 @@ export function PoolSettings() {
                 aria-describedby="auto-release-hint"
                 {...register('auto_release_days')}
               />
-              <span className="text-body-md text-muted-foreground">days of claiming</span>
+              <span className="text-body text-muted-foreground">days of claiming</span>
             </div>
-            <p id="auto-release-hint" className={errors.auto_release_days ? 'text-body-sm text-error' : 'text-body-sm text-muted-foreground'}>
+            <p id="auto-release-hint" className={errors.auto_release_days ? 'text-small text-error' : 'text-small text-muted-foreground'}>
               {errors.auto_release_days?.message ?? 'Executives get a notification the day before a claim is released.'}
             </p>
           </div>

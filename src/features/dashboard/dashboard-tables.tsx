@@ -6,7 +6,7 @@ import { ROLE_LABEL } from '@/lib/constants'
 import { formatCompact, formatDate, formatNumber } from '@/lib/format'
 import type { RecentlyOnboarded, TeamPerformanceRow } from '@/types'
 
-const empty = (text: string) => <p className="py-6 text-center text-sm text-muted-foreground">{text}</p>
+const empty = (text: string) => <p className="py-6 text-center text-body text-muted-foreground">{text}</p>
 
 /** The 10 creators most recently moved onto Onboarded. Scrolls sideways on phones. */
 export function RecentlyOnboardedTable({ rows }: { rows: RecentlyOnboarded[] }) {
@@ -32,7 +32,7 @@ export function RecentlyOnboardedTable({ rows }: { rows: RecentlyOnboarded[] }) 
                   <PersonAvatar name={r.name} src={r.profile_pic_url} className="size-7" aria-hidden />
                   <span className="min-w-0">
                     <span className="block truncate font-medium">{r.name}</span>
-                    <AccountLabel account={r.primary_account} className="text-xs text-muted-foreground" />
+                    <AccountLabel account={r.primary_account} className="text-small text-muted-foreground" />
                   </span>
                 </Link>
               </TableCell>
@@ -76,7 +76,7 @@ export function TeamPerformanceTable({ rows }: { rows: TeamPerformanceRow[] }) {
                   <PersonAvatar name={r.name} src={null} className="size-7" aria-hidden />
                   <span>
                     <span className="block font-medium">{r.name}</span>
-                    <span className="block text-xs text-muted-foreground">{ROLE_LABEL[r.role]}</span>
+                    <span className="block text-small text-muted-foreground">{ROLE_LABEL[r.role]}</span>
                   </span>
                 </span>
               </TableCell>

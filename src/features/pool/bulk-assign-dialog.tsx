@@ -88,11 +88,11 @@ export function BulkAssignDialog({
                         <Checkbox id={id} checked={chosenIds.has(user.id)} onCheckedChange={(on) => toggle(user.id, on === true)} />
                         <PersonAvatar name={user.name} className="size-7 text-[10px]" aria-hidden />
                         <span className="min-w-0 flex-1">
-                          <span className="block truncate text-label-md font-medium text-on-surface">{nameOf(user)}</span>
-                          <span className="block text-body-sm text-muted-foreground">{ROLE_LABEL[user.role]}</span>
+                          <span className="block truncate text-body font-medium text-on-surface">{nameOf(user)}</span>
+                          <span className="block text-small text-muted-foreground">{ROLE_LABEL[user.role]}</span>
                         </span>
                         {share !== undefined && (
-                          <span className="rounded-full bg-surface-container-lowest px-2 py-0.5 text-[11px] font-medium text-on-surface tabular-nums shadow-sm">
+                          <span className="rounded-full bg-surface-container-lowest px-2 py-0.5 text-small font-medium text-on-surface tabular-nums shadow-sm">
                             {plural(share)}
                           </span>
                         )}
@@ -123,7 +123,7 @@ export function BulkAssignDialog({
             </DialogHeader>
             {chosen.length > 1 && (
               <ul
-                className="divide-y divide-surface-container rounded-2xl bg-surface-container-low/50 px-space-md text-body-md"
+                className="divide-y divide-surface-container rounded-2xl bg-surface-container-low/50 px-space-md text-body"
                 aria-label="How they’re shared out"
               >
                 {chosen.map((user, i) => (

@@ -44,7 +44,7 @@ export function verifiedMark() {
 /** Stitch category pill; shared with the pool table. */
 export function categoryPill(category: string) {
   return (
-    <span className="inline-flex items-center rounded-full bg-surface-container-high px-2 py-0.5 text-[11px] font-medium text-on-surface">
+    <span className="inline-flex items-center rounded-full bg-surface-container-high px-2 py-0.5 text-small font-medium text-on-surface">
       {category}
     </span>
   )
@@ -111,13 +111,13 @@ export function buildColumns(team: Map<string, User>): ColumnDef<Influencer>[] {
               <div className="flex min-w-0 items-center gap-1.5">
                 <Link
                   to={`/influencers/${inf.id}`}
-                  className="truncate text-body-md leading-tight font-semibold text-primary hover:underline"
+                  className="truncate text-body leading-tight font-semibold text-primary hover:underline"
                 >
                   {inf.name}
                 </Link>
                 {inf.is_verified && verifiedMark()}
               </div>
-              {handle && <span className="truncate font-code text-[11px] text-muted-foreground">@{handle}</span>}
+              {handle && <span className="truncate tabular-nums text-small text-muted-foreground">@{handle}</span>}
             </div>
           </div>
         )
@@ -166,7 +166,7 @@ export function buildColumns(team: Map<string, User>): ColumnDef<Influencer>[] {
         row.original.phone ? (
           <a
             href={`tel:${row.original.phone}`}
-            className="font-code text-[11px] whitespace-nowrap text-muted-foreground hover:text-on-surface hover:underline"
+            className="tabular-nums text-small whitespace-nowrap text-muted-foreground hover:text-on-surface hover:underline"
           >
             {row.original.phone}
           </a>
@@ -217,7 +217,7 @@ export function buildColumns(team: Map<string, User>): ColumnDef<Influencer>[] {
         const user = row.original.assigned_to ? team.get(row.original.assigned_to) : undefined
         if (!row.original.assigned_to) return <span className="text-muted-foreground">Unassigned</span>
         return (
-          <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-label-md text-on-surface">
+          <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-body text-on-surface">
             <PersonAvatar name={user?.name ?? '?'} className="size-5 text-[9px]" />
             {user?.name ?? '…'}
           </span>

@@ -67,7 +67,7 @@ function UploadStep({ onParsed }: { onParsed: (parsed: ParsedFile) => void }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-tertiary-fixed/25 p-3 text-body-md">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-tertiary-fixed/25 p-3 text-body">
         <span className="text-muted-foreground">Start from the template so columns match automatically.</span>
         <Button variant="outline" size="sm" onClick={() => downloadCsv('influencehub-import-template.csv', templateCsv())}>
           <Download />
@@ -89,8 +89,8 @@ function UploadStep({ onParsed }: { onParsed: (parsed: ParsedFile) => void }) {
         <span className="mb-1 flex size-14 items-center justify-center rounded-full bg-surface-container-lowest shadow-sm">
           <FileUp className="size-6 text-on-tertiary-container" strokeWidth={1.75} />
         </span>
-        <p className="text-headline-sm font-semibold tracking-tight text-primary">Drop a CSV file here</p>
-        <p className="text-body-sm text-muted-foreground">Up to 2 MB and {formatNumber(MAX_ROWS)} rows</p>
+        <p className="text-h3 font-semibold tracking-tight text-primary">Drop a CSV file here</p>
+        <p className="text-small text-muted-foreground">Up to 2 MB and {formatNumber(MAX_ROWS)} rows</p>
         <Button variant="outline" size="sm" onClick={() => inputRef.current?.click()}>
           <Upload />
           Choose file
@@ -108,7 +108,7 @@ function UploadStep({ onParsed }: { onParsed: (parsed: ParsedFile) => void }) {
         />
       </div>
       {error && (
-        <p role="alert" className="text-body-md text-error">
+        <p role="alert" className="text-body text-error">
           {error}
         </p>
       )}
@@ -193,13 +193,13 @@ function MappingStep({
   return (
     <div className="space-y-5">
       <section className="space-y-2">
-        <h3 className="text-headline-sm font-semibold tracking-tight text-primary">
+        <h3 className="text-h3 font-semibold tracking-tight text-primary">
           Match columns · <span className="font-normal text-muted-foreground">{parsed.file.name}</span>
         </h3>
         <div className="grid grid-cols-1 gap-x-4 gap-y-2 rounded-2xl bg-surface-container-low/50 p-3 sm:grid-cols-2">
           {IMPORT_FIELDS.map((field) => (
             <div key={field.key} className="grid grid-cols-[8rem_1fr] items-center gap-2">
-              <Label htmlFor={`map-${field.key}`} className="text-label-md font-medium text-on-surface">
+              <Label htmlFor={`map-${field.key}`} className="text-body font-medium text-on-surface">
                 {field.label}
                 {field.required && <span className="text-error"> *</span>}
                 {field.handle && <span className="sr-only"> handle</span>}
@@ -223,9 +223,9 @@ function MappingStep({
             </div>
           ))}
         </div>
-        <p className="text-body-sm text-muted-foreground">One column per platform; map at least one of them.</p>
+        <p className="text-small text-muted-foreground">One column per platform; map at least one of them.</p>
         {missingRequired.length > 0 && (
-          <p role="alert" className="text-body-sm text-error">
+          <p role="alert" className="text-small text-error">
             Match a column for {missingRequired.join(' and ')}.
           </p>
         )}
@@ -233,8 +233,8 @@ function MappingStep({
 
       <section className="space-y-2">
         <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-          <h3 className="text-headline-sm font-semibold tracking-tight text-primary">Preview · first {Math.min(PREVIEW_ROWS, parsed.rows.length)} rows</h3>
-          <p className="text-body-sm text-muted-foreground tabular-nums">
+          <h3 className="text-h3 font-semibold tracking-tight text-primary">Preview · first {Math.min(PREVIEW_ROWS, parsed.rows.length)} rows</h3>
+          <p className="text-small text-muted-foreground tabular-nums">
             {formatNumber(parsed.rows.length)} rows ·{' '}
             <span className={cn(invalidRows > 0 && 'font-medium text-error')}>
               {formatNumber(invalidRows)} with errors (won’t import)
@@ -243,16 +243,16 @@ function MappingStep({
           </p>
         </div>
         <div className="max-h-64 overflow-auto rounded-2xl bg-surface-container-lowest/75 shadow-glass backdrop-blur-2xl dark:ring-1 dark:ring-white/5">
-          <table className="w-full text-body-sm">
+          <table className="w-full text-small">
             <thead className="sticky top-0 bg-surface-container-low">
               <tr>
-                <th className="px-3 py-2 text-left text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">Row</th>
+                <th className="px-3 py-2 text-left text-small font-semibold tracking-wider text-muted-foreground uppercase">Row</th>
                 {shownFields.map((f) => (
-                  <th key={f.key} className="px-3 py-2 text-left text-[11px] font-semibold tracking-wider text-muted-foreground uppercase whitespace-nowrap">
+                  <th key={f.key} className="px-3 py-2 text-left text-small font-semibold tracking-wider text-muted-foreground uppercase whitespace-nowrap">
                     {f.label}
                   </th>
                 ))}
-                <th className="px-3 py-2 text-left text-[11px] font-semibold tracking-wider text-muted-foreground uppercase whitespace-nowrap">Possible duplicate</th>
+                <th className="px-3 py-2 text-left text-small font-semibold tracking-wider text-muted-foreground uppercase whitespace-nowrap">Possible duplicate</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-surface-container">
@@ -264,12 +264,12 @@ function MappingStep({
                     <td className="px-3 py-2 align-top text-muted-foreground tabular-nums">
                       {i + 2}
                       {repeated[i] && (
-                        <span className="ml-1 rounded-full bg-surface-container-high px-1.5 py-0.5 text-[10px]" title="Same account earlier in the file">
+                        <span className="ml-1 rounded-full bg-surface-container-high px-1.5 py-0.5 text-small" title="Same account earlier in the file">
                           dup
                         </span>
                       )}
                       {errors.accounts && (
-                        <span className="mt-0.5 flex items-start gap-1 text-[11px] leading-tight text-error">
+                        <span className="mt-0.5 flex items-start gap-1 text-small leading-tight text-error">
                           <CircleAlert className="mt-px size-3 shrink-0" />
                           {errors.accounts}
                         </span>
@@ -292,7 +292,7 @@ function MappingStep({
                             {raw[key] ?? <span className="text-muted-foreground">—</span>}
                           </span>
                           {(error || warning) && (
-                            <span className="mt-0.5 flex items-start gap-1 text-[11px] leading-tight">
+                            <span className="mt-0.5 flex items-start gap-1 text-small leading-tight">
                               {error ? <CircleAlert className="mt-px size-3 shrink-0" /> : <TriangleAlert className="mt-px size-3 shrink-0 text-amber-600" />}
                               {error ?? warning}
                             </span>
@@ -313,11 +313,11 @@ function MappingStep({
 
       <section className="space-y-3 rounded-2xl bg-surface-container-low/50 p-space-md">
         {lookup.length > 0 && (
-          <label className="flex items-start gap-2 text-body-md">
+          <label className="flex items-start gap-2 text-body">
             <Checkbox checked={fetchProfiles} onCheckedChange={(v) => setFetchProfiles(!!v)} className="mt-0.5" />
             <span>
               Fetch public profiles for imported rows
-              <span className="block text-body-sm text-muted-foreground">
+              <span className="block text-small text-muted-foreground">
                 {lookup.map((p) => PLATFORM_META[p].label).join(', ')} accounts switch to auto-sync and are filled in
                 over the next hours (about 90 profiles an hour). Personal profiles can’t be fetched.
               </span>
@@ -325,8 +325,8 @@ function MappingStep({
           </label>
         )}
         <fieldset className="space-y-1">
-          <legend className="text-label-sm tracking-wider text-muted-foreground uppercase">If an account is already in the CRM</legend>
-          <div role="radiogroup" className="flex flex-wrap gap-x-4 gap-y-2 pt-1 text-body-md">
+          <legend className="text-small tracking-wider text-muted-foreground uppercase">If an account is already in the CRM</legend>
+          <div role="radiogroup" className="flex flex-wrap gap-x-4 gap-y-2 pt-1 text-body">
             {(['skip', 'update'] as const).map((policy) => (
               <label key={policy} className="flex items-center gap-2">
                 <input
@@ -362,10 +362,10 @@ function MappingStep({
 function Stat({ label, value, tone }: { label: string; value: number; tone?: 'bad' }) {
   return (
     <div className="flex flex-col-reverse gap-1 rounded-2xl bg-surface-container-lowest/75 shadow-glass backdrop-blur-2xl dark:ring-1 dark:ring-white/5 p-space-md">
-      <div className={cn('text-headline-md font-semibold tracking-tight text-primary tabular-nums', tone === 'bad' && value > 0 && 'text-error')}>
+      <div className={cn('text-h2 font-semibold tracking-tight text-primary tabular-nums', tone === 'bad' && value > 0 && 'text-error')}>
         {formatNumber(value)}
       </div>
-      <div className="text-label-sm tracking-wider text-muted-foreground uppercase">{label}</div>
+      <div className="text-small tracking-wider text-muted-foreground uppercase">{label}</div>
     </div>
   )
 }
@@ -383,7 +383,7 @@ function Summary({ result, onDone, onAgain }: { result: CsvImportResult; onDone:
 
   return (
     <div className="space-y-4" aria-live="polite">
-      <p className="text-headline-sm font-semibold tracking-tight text-primary">Import finished · {formatNumber(result.total_rows)} rows</p>
+      <p className="text-h3 font-semibold tracking-tight text-primary">Import finished · {formatNumber(result.total_rows)} rows</p>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         <Stat label="Created" value={result.created} />
         <Stat label="Updated" value={result.updated} />
@@ -391,7 +391,7 @@ function Summary({ result, onDone, onAgain }: { result: CsvImportResult; onDone:
         <Stat label="Failed" value={result.failed} tone="bad" />
       </div>
       {result.profiles && (
-        <p className="text-body-md text-muted-foreground">
+        <p className="text-body text-muted-foreground">
           {result.profiles.queued
             ? `Profiles: ${formatNumber(result.profiles.queued)} accounts queued; their stats fill in over the next hours (about 90 an hour).`
             : `Profiles: ${formatNumber(result.profiles.synced)} accounts synced, ${formatNumber(result.profiles.failed)} couldn’t be fetched (personal, not found or rate limited).`}
@@ -399,13 +399,13 @@ function Summary({ result, onDone, onAgain }: { result: CsvImportResult; onDone:
       )}
       {result.errors.length > 0 && (
         <div className="space-y-2">
-          <div className="max-h-40 overflow-auto rounded-2xl bg-surface-container-lowest/75 shadow-glass backdrop-blur-2xl dark:ring-1 dark:ring-white/5 text-body-sm">
+          <div className="max-h-40 overflow-auto rounded-2xl bg-surface-container-lowest/75 shadow-glass backdrop-blur-2xl dark:ring-1 dark:ring-white/5 text-small">
             <table className="w-full">
               <thead className="sticky top-0 bg-surface-container-low">
                 <tr>
-                  <th className="px-3 py-2 text-left text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">Row</th>
-                  <th className="px-3 py-2 text-left text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">Handle</th>
-                  <th className="px-3 py-2 text-left text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">Error</th>
+                  <th className="px-3 py-2 text-left text-small font-semibold tracking-wider text-muted-foreground uppercase">Row</th>
+                  <th className="px-3 py-2 text-left text-small font-semibold tracking-wider text-muted-foreground uppercase">Handle</th>
+                  <th className="px-3 py-2 text-left text-small font-semibold tracking-wider text-muted-foreground uppercase">Error</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-surface-container">
@@ -493,7 +493,7 @@ export function CsvTab({ onDone, onBusyChange }: { onDone: () => void; onBusyCha
     return (
       <div role="alert" className="space-y-3 rounded-2xl bg-error-container/40 p-space-md">
         <p className="font-semibold text-error">The import failed</p>
-        <p className="text-body-md text-muted-foreground">{job.data?.error?.message ?? 'Something went wrong.'} Nothing was imported.</p>
+        <p className="text-body text-muted-foreground">{job.data?.error?.message ?? 'Something went wrong.'} Nothing was imported.</p>
         <Button variant="outline" onClick={again}>
           Try again
         </Button>
@@ -503,12 +503,12 @@ export function CsvTab({ onDone, onBusyChange }: { onDone: () => void; onBusyCha
   if (running) {
     return (
       <div className="space-y-2 py-6" aria-live="polite">
-        <div className="flex items-center gap-2 text-body-md font-medium text-primary">
+        <div className="flex items-center gap-2 text-body font-medium text-primary">
           <Loader2 className="size-4 animate-spin text-on-tertiary-container" />
           {starting ? 'Uploading the file…' : `Importing ${parsed ? formatNumber(parsed.rows.length) : ''} rows… ${job.data?.progress ?? 0}%`}
         </div>
         <Progress value={starting ? 5 : (job.data?.progress ?? 0)} aria-label="Import progress" />
-        <p className="text-body-sm text-muted-foreground">Keep this window open until the import finishes.</p>
+        <p className="text-small text-muted-foreground">Keep this window open until the import finishes.</p>
       </div>
     )
   }

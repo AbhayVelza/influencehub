@@ -10,7 +10,7 @@ export function PlatformMark({ platform, className }: { platform: Platform; clas
       title={meta.label}
       className={cn(
         // relative: keeps the sr-only label inside the mark, so it can't escape a scroll container and widen the page.
-        'relative inline-flex h-5 min-w-6 shrink-0 items-center justify-center rounded px-1 text-[10px] font-semibold ring-1 ring-inset',
+        'relative inline-flex h-5 min-w-6 shrink-0 items-center justify-center rounded px-1 text-small font-semibold ring-1 ring-inset',
         meta.badge,
         className,
       )}

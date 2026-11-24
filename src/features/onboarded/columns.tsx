@@ -36,7 +36,7 @@ export function buildOnboardedColumns(team: Map<string, User>, platform: Platfor
         const n = account && audienceOf(account)
         if (n == null) return muted
         return (
-          <span title={`${formatNumber(n)} ${meta.audienceLabel.toLowerCase()}`} className="font-code font-semibold tracking-tight text-on-surface">
+          <span title={`${formatNumber(n)} ${meta.audienceLabel.toLowerCase()}`} className="tabular-nums font-semibold tracking-tight text-on-surface">
             {formatCompact(n)}
           </span>
         )

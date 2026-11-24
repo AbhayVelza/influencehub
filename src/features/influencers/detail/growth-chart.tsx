@@ -12,7 +12,7 @@ function GrowthTooltip({ active, payload, label }: Pick<TooltipContentProps, 'ac
   if (!active || !point) return null
   // Value leads, label follows; a short line key carries the series identity.
   return (
-    <div className="rounded-xl bg-popover/90 px-2.5 py-1.5 text-body-sm shadow-glass-hover backdrop-blur-xl">
+    <div className="rounded-xl bg-popover/90 px-2.5 py-1.5 text-small shadow-glass-hover backdrop-blur-xl">
       <div className="flex items-center gap-1.5">
         <span aria-hidden className="h-0.5 w-3 rounded-full" style={{ background: SERIES }} />
         <span className="font-semibold text-popover-foreground tabular-nums">{formatNumber(point.audience)}</span>
@@ -40,10 +40,10 @@ export function GrowthChart({ snapshots, label = 'Followers', id }: { snapshots:
   return (
     <section aria-labelledby={headingId} className="space-y-2 rounded-xl bg-surface-container-low/50 p-3">
       <div className="flex items-baseline justify-between gap-2">
-        <h4 id={headingId} className="text-label-sm tracking-wider text-muted-foreground uppercase">
+        <h4 id={headingId} className="text-small tracking-wider text-muted-foreground uppercase">
           {label} since {formatDate(snapshots[0]!.captured_at)}
         </h4>
-        <span className="font-code text-[11px] text-on-tertiary-container tabular-nums">
+        <span className="tabular-nums text-small text-on-tertiary-container">
           {change >= 0 ? '+' : ''}
           {change.toFixed(1)}%
         </span>
@@ -51,10 +51,10 @@ export function GrowthChart({ snapshots, label = 'Followers', id }: { snapshots:
 
       {showTable ? (
         <div className="max-h-60 overflow-y-auto">
-          <table className="w-full text-body-sm">
+          <table className="w-full text-small">
             <caption className="sr-only">{label} by day</caption>
             <thead>
-              <tr className="text-label-sm tracking-wider text-muted-foreground uppercase">
+              <tr className="text-small tracking-wider text-muted-foreground uppercase">
                 <th className="py-1 text-left font-normal">Date</th>
                 <th className="py-1 text-right font-normal">{label}</th>
               </tr>
@@ -77,7 +77,7 @@ export function GrowthChart({ snapshots, label = 'Followers', id }: { snapshots:
               <XAxis
                 dataKey="captured_at"
                 tickFormatter={(v: string) => formatChartDate(v)}
-                tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
+                tick={{ fontSize: 13, fill: 'var(--muted-foreground)' }}
                 tickLine={false}
                 axisLine={false}
                 interval="preserveStartEnd"
@@ -86,7 +86,7 @@ export function GrowthChart({ snapshots, label = 'Followers', id }: { snapshots:
               <YAxis
                 width={36}
                 tickFormatter={(v: number) => formatCompact(v)}
-                tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
+                tick={{ fontSize: 13, fill: 'var(--muted-foreground)' }}
                 tickLine={false}
                 axisLine={false}
                 domain={['auto', 'auto']}
@@ -123,7 +123,7 @@ export function GrowthChart({ snapshots, label = 'Followers', id }: { snapshots:
         </div>
       )}
 
-      <Button variant="link" size="xs" className="h-auto min-h-7 px-0 py-1 text-xs" onClick={() => setShowTable((v) => !v)}>
+      <Button variant="link" size="xs" className="h-auto min-h-7 px-0 py-1 text-small" onClick={() => setShowTable((v) => !v)}>
         {showTable ? 'Show chart' : 'Show as table'}
       </Button>
     </section>

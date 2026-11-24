@@ -62,7 +62,7 @@ export function ReleaseDialog({
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-1.5">
-            <Label htmlFor="release-reason" className="text-label-md">
+            <Label htmlFor="release-reason" className="text-body">
               Reason <span className="font-normal text-muted-foreground">(required)</span>
             </Label>
             <Textarea
@@ -78,7 +78,7 @@ export function ReleaseDialog({
               }}
             />
             {error && (
-              <p id="release-reason-error" className="text-body-sm text-error">
+              <p id="release-reason-error" className="text-small text-error">
                 {error}
               </p>
             )}

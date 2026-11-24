@@ -105,7 +105,7 @@ export function AccountRow({
             control={control}
             name={`${name}.personal`}
             render={({ field }) => (
-              <label className="flex items-center gap-2 text-body-sm text-on-surface">
+              <label className="flex items-center gap-2 text-small text-on-surface">
                 <Checkbox checked={!!field.value} onCheckedChange={(v) => field.onChange(!!v)} />
                 Personal profile (can’t be looked up; enter stats by hand)
               </label>
@@ -118,7 +118,7 @@ export function AccountRow({
           </Field>
         )}
         {!manual && meta.defaultSyncMethod === 'connect' && (
-          <p className="text-body-sm text-muted-foreground">Stats arrive once the creator connects it (send a connect link from their profile).</p>
+          <p className="text-small text-muted-foreground">Stats arrive once the creator connects it (send a connect link from their profile).</p>
         )}
       </div>
       {check.taken && <AlreadyInCrm {...check.taken} onDone={onDone} />}

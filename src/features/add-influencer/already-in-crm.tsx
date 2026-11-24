@@ -20,7 +20,7 @@ export function AlreadyInCrm({ platform, handle, conflict, id, onDone }: Conflic
 
   const title = shown === 'in_pool' ? 'Already in the Unassigned Pool' : 'Already in CRM'
   return (
-    <div role="alert" className="flex items-start gap-2.5 rounded-xl bg-amber-50/80 p-3 text-body-md ring-1 ring-amber-500/25 ring-inset dark:bg-amber-400/10">
+    <div role="alert" className="flex items-start gap-2.5 rounded-xl bg-amber-50/80 p-3 text-body ring-1 ring-amber-500/25 ring-inset dark:bg-amber-400/10">
       <CircleAlert className="mt-0.5 size-4 shrink-0 text-amber-600 dark:text-amber-400" strokeWidth={1.75} />
       <div className="space-y-2">
         <div>

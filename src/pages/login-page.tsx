@@ -49,15 +49,15 @@ export default function LoginPage() {
         <div className="flex items-center justify-center gap-2">
           <div
             aria-hidden
-            className="flex size-8 items-center justify-center rounded-md bg-primary text-sm font-bold text-primary-foreground"
+            className="flex size-8 items-center justify-center rounded-md bg-primary text-body font-bold text-primary-foreground"
           >
             IH
           </div>
-          <span className="font-heading text-lg font-semibold tracking-tight">InfluenceHub</span>
+          <span className="font-heading text-h2 font-semibold tracking-tight">InfluenceHub</span>
         </div>
         <Card className="[--card-spacing:--spacing(6)]">
           <CardHeader>
-            <h1 className="font-heading text-xl font-semibold tracking-tight">Sign in to InfluenceHub</h1>
+            <h1 className="font-heading text-h1 font-semibold tracking-tight">Sign in to InfluenceHub</h1>
             <CardDescription>Use the email and password your admin gave you.</CardDescription>
           </CardHeader>
           <CardContent>
@@ -75,7 +75,7 @@ export default function LoginPage() {
                   {...register('email')}
                 />
                 {errors.email && (
-                  <p id="login-email-error" className="text-xs text-destructive">
+                  <p id="login-email-error" className="text-small text-destructive">
                     {errors.email.message}
                   </p>
                 )}
@@ -91,13 +91,13 @@ export default function LoginPage() {
                   {...register('password')}
                 />
                 {errors.password && (
-                  <p id="login-password-error" className="text-xs text-destructive">
+                  <p id="login-password-error" className="text-small text-destructive">
                     {errors.password.message}
                   </p>
                 )}
               </div>
               {error && (
-                <p role="alert" className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                <p role="alert" className="rounded-md bg-destructive/10 px-3 py-2 text-body text-destructive">
                   {error}
                 </p>
               )}
@@ -107,7 +107,7 @@ export default function LoginPage() {
             </form>
           </CardContent>
         </Card>
-        <p className="text-center text-sm text-muted-foreground">No account? Ask an admin to add you.</p>
+        <p className="text-center text-body text-muted-foreground">No account? Ask an admin to add you.</p>
       </div>
     </main>
   )

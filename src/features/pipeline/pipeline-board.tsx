@@ -107,11 +107,11 @@ function Column({
       >
         <div className="flex flex-col items-center gap-2 pt-1">
           <span aria-hidden className={cn('size-2.5 shrink-0 rounded-full', meta.dot)} style={glow} />
-          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-surface-container px-1 text-label-sm text-muted-foreground tabular-nums">
+          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-surface-container px-1 text-small text-muted-foreground tabular-nums">
             {formatNumber(count)}
           </span>
         </div>
-        <span className="flex rotate-180 items-center gap-2 py-4 text-headline-sm font-medium tracking-tight text-muted-foreground transition-colors [writing-mode:vertical-rl] group-hover/strip:text-primary">
+        <span className="flex rotate-180 items-center gap-2 py-4 text-h3 font-medium tracking-tight text-muted-foreground transition-colors [writing-mode:vertical-rl] group-hover/strip:text-primary">
           {meta.label}
         </span>
         <Button
@@ -142,10 +142,10 @@ function Column({
       {/* Keep this header ~40px: keyboard moves land 56px below the column's top (see keyboard.ts). */}
       <header className="mb-space-xs flex h-10 items-center gap-2 px-space-xs">
         <span aria-hidden className={cn('size-2.5 shrink-0 rounded-full', meta.dot)} style={glow} />
-        <h2 className="min-w-0 truncate text-headline-sm font-semibold tracking-tight text-primary">{meta.label}</h2>
+        <h2 className="min-w-0 truncate text-h3 font-semibold tracking-tight text-primary">{meta.label}</h2>
         <span className="ml-auto flex items-center gap-1.5">
-          {drag === 'override' && <span className="text-[11px] font-medium text-amber-700 dark:text-amber-400">Override</span>}
-          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-surface-container-highest px-1 text-label-sm text-muted-foreground tabular-nums">
+          {drag === 'override' && <span className="text-small font-medium text-amber-700 dark:text-amber-400">Override</span>}
+          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-surface-container-highest px-1 text-small text-muted-foreground tabular-nums">
             {formatNumber(count)}
           </span>
           {onToggle && (
@@ -157,7 +157,7 @@ function Column({
       </header>
       <ol className="-mx-1 flex max-h-[calc(100svh-17rem)] min-h-24 flex-col gap-space-sm overflow-y-auto px-1 pt-0.5 pb-1">
         {cards.length === 0 && (
-          <li className="rounded-2xl border border-dashed border-outline-variant/40 bg-surface-container-low/30 px-3 py-6 text-center text-label-md text-muted-foreground">
+          <li className="rounded-2xl border border-dashed border-outline-variant/40 bg-surface-container-low/30 px-3 py-6 text-center text-body text-muted-foreground">
             No influencers
           </li>
         )}
@@ -167,7 +167,7 @@ function Column({
           </li>
         ))}
         {count > cards.length && (
-          <li className="px-1 py-2 text-center text-xs text-muted-foreground">
+          <li className="px-1 py-2 text-center text-small text-muted-foreground">
             Showing {cards.length} of {formatNumber(count)}, longest in this stage first. Filter to see the rest.
           </li>
         )}

@@ -32,7 +32,7 @@ export function Pagination({ page, pageSize, total, pageSizeOptions, onPageChang
 
   return (
     <div className="flex items-center gap-3">
-      <span className="text-body-sm whitespace-nowrap text-muted-foreground tabular-nums">
+      <span className="text-small whitespace-nowrap text-muted-foreground tabular-nums">
         {formatNumber(from)}–{formatNumber(to)} of {formatNumber(total)}
       </span>
       {pageSizeOptions && onPageSizeChange && (
@@ -73,7 +73,7 @@ export function Pagination({ page, pageSize, total, pageSizeOptions, onPageChang
               onClick={() => onPageChange(item)}
               aria-label={`Page ${item}`}
               aria-current={item === page ? 'page' : undefined}
-              className="rounded-full text-label-md tabular-nums hover:scale-100"
+              className="rounded-full text-body tabular-nums hover:scale-100"
             >
               {item}
             </Button>

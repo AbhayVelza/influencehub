@@ -107,7 +107,7 @@ export default function RejectedPage() {
             </div>
           )}
           {rows.length > SHOWN && (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-body text-muted-foreground">
               Showing {formatNumber(SHOWN)} of {formatNumber(rows.length)}. Search to narrow, or download the full list.
             </p>
           )}

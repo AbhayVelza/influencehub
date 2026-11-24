@@ -63,7 +63,7 @@ function PoolPreviewPage({ item }: { item: PoolItem }) {
         </Link>
       </Button>
       <div className="space-y-4 rounded-2xl bg-surface-container-lowest/70 p-space-lg shadow-glass backdrop-blur-2xl dark:ring-1 dark:ring-white/5">
-        <p className="text-body-md text-muted-foreground">This influencer is in the Unassigned Pool. Claim them to see everything.</p>
+        <p className="text-body text-muted-foreground">This influencer is in the Unassigned Pool. Claim them to see everything.</p>
         <PoolPreview item={item} />
         <div className="flex justify-end gap-2">
           <PoolActions item={item} busy={busy} onClaim={() => void claim(item)} onAssign={() => {}} />

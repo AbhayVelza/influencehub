@@ -37,7 +37,7 @@ export function StageStepper({ stage, position }: StageStepperProps) {
                 </span>
                 <span
                   className={cn(
-                    'text-label-md whitespace-nowrap',
+                    'text-body whitespace-nowrap',
                     current || paused ? 'font-semibold text-primary' : done ? 'font-medium text-on-surface' : 'text-muted-foreground',
                   )}
                 >

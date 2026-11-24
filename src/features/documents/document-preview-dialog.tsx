@@ -29,7 +29,7 @@ export function DocumentPreviewDialog({ doc, onClose, onDownload }: { doc: Influ
           {link.isPending ? (
             <Skeleton className="size-full" />
           ) : link.isError ? (
-            <p role="alert" className="px-6 text-center text-body-md text-error">
+            <p role="alert" className="px-6 text-center text-body text-error">
               Couldn’t load the preview. {getErrorMessage(link.error)}
             </p>
           ) : isImage ? (

@@ -93,19 +93,19 @@ export function FollowersFilter({ label = 'Followers', min, max, onChange }: Fol
         <form onSubmit={onSubmit} className="space-y-2 border-t pt-3" noValidate>
           <div className="grid grid-cols-2 gap-2">
             <div className="grid gap-1">
-              <Label htmlFor={`${id}-min`} className="text-xs">
+              <Label htmlFor={`${id}-min`} className="text-small">
                 Min
               </Label>
               <Input id={`${id}-min`} inputMode="decimal" placeholder="e.g. 10k" value={minText} onChange={(e) => setMinText(e.target.value)} />
             </div>
             <div className="grid gap-1">
-              <Label htmlFor={`${id}-max`} className="text-xs">
+              <Label htmlFor={`${id}-max`} className="text-small">
                 Max
               </Label>
               <Input id={`${id}-max`} inputMode="decimal" placeholder="e.g. 500k" value={maxText} onChange={(e) => setMaxText(e.target.value)} />
             </div>
           </div>
-          {error && <p className="text-xs text-destructive">{error}</p>}
+          {error && <p className="text-small text-destructive">{error}</p>}
           <div className="flex justify-between gap-2">
             <Button type="button" variant="ghost" size="sm" disabled={!active} onClick={() => apply({})}>
               Clear

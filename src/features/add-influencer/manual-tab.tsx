@@ -109,7 +109,7 @@ export function ManualTab({ prefill, onDone }: { prefill?: ManualPrefill; onDone
         </Field>
 
         <fieldset className="space-y-3 rounded-2xl bg-surface-container-low/50 p-space-md">
-          <legend className="mb-1 text-label-sm tracking-wider text-muted-foreground uppercase">Social accounts · the first is primary</legend>
+          <legend className="mb-1 text-small tracking-wider text-muted-foreground uppercase">Social accounts · the first is primary</legend>
           {accounts.fields.map((field, index) => (
             <AccountRow
               key={field.id}
@@ -128,7 +128,7 @@ export function ManualTab({ prefill, onDone }: { prefill?: ManualPrefill; onDone
             />
           ))}
           {formState.errors.accounts?.root?.message && (
-            <p className="text-body-sm text-error">{formState.errors.accounts.root.message}</p>
+            <p className="text-small text-error">{formState.errors.accounts.root.message}</p>
           )}
           <Button type="button" variant="outline" size="sm" onClick={() => accounts.append({ ...EMPTY_ACCOUNT, platform: 'youtube' })}>
             <Plus />

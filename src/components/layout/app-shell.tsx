@@ -60,8 +60,8 @@ function AccessDenied({ message }: { message: string }) {
         <div className="mx-auto mb-3 flex size-10 items-center justify-center rounded-full bg-destructive/10 text-destructive">
           <ShieldX className="size-5" aria-hidden />
         </div>
-        <h1 className="text-lg font-semibold">No access to InfluenceHub</h1>
-        <p className="mt-1 text-sm text-muted-foreground">{message}</p>
+        <h1 className="text-h2 font-semibold">No access to InfluenceHub</h1>
+        <p className="mt-1 text-body text-muted-foreground">{message}</p>
         <Button className="mt-5" variant="outline" onClick={() => void signOut()}>
           Sign out
         </Button>

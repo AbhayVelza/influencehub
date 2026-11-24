@@ -23,7 +23,7 @@ export function SegmentedBar({ parts, unit, labelHeader }: { parts: Part[]; unit
   const total = parts.reduce((s, p) => s + p.value, 0)
   const share = (v: number) => (total ? formatPercent((v / total) * 100, 0) : '—')
 
-  if (total === 0) return <p className="py-6 text-center text-sm text-muted-foreground">Nothing to show yet.</p>
+  if (total === 0) return <p className="py-6 text-center text-body text-muted-foreground">Nothing to show yet.</p>
 
   const focused = active === null ? null : parts[active]
   return (
@@ -46,7 +46,7 @@ export function SegmentedBar({ parts, unit, labelHeader }: { parts: Part[]; unit
                   key={p.key}
                   type="button"
                   className={cn(
-                    'flex min-w-1 items-center overflow-hidden rounded px-1.5 text-xs font-medium tabular-nums outline-none transition-opacity focus-visible:ring-2 focus-visible:ring-ring',
+                    'flex min-w-1 items-center overflow-hidden rounded px-1.5 text-small font-medium tabular-nums outline-none transition-opacity focus-visible:ring-2 focus-visible:ring-ring',
                     active !== null && active !== i && 'opacity-60',
                   )}
                   style={{ flexGrow: p.value, flexBasis: 0, background: SLOTS[i % SLOTS.length], color: i === DARK_TEXT_SLOT ? '#0b0b0b' : '#ffffff' }}
@@ -61,7 +61,7 @@ export function SegmentedBar({ parts, unit, labelHeader }: { parts: Part[]; unit
               ),
             )}
           </div>
-          <p className="h-4 text-xs text-muted-foreground" aria-live="polite">
+          <p className="h-4 text-small text-muted-foreground" aria-live="polite">
             {focused ? (
               <>
                 <span className="font-semibold text-foreground tabular-nums">{formatNumber(focused.value)}</span> · {focused.label} ·{' '}
@@ -73,7 +73,7 @@ export function SegmentedBar({ parts, unit, labelHeader }: { parts: Part[]; unit
               </>
             )}
           </p>
-          <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+          <ul className="flex flex-wrap gap-x-4 gap-y-1 text-small text-muted-foreground">
             {parts.map((p, i) => (
               <li key={p.key} className="inline-flex items-center gap-1.5">
                 <span className="size-2.5 rounded-sm" style={{ background: SLOTS[i % SLOTS.length] }} aria-hidden />

@@ -66,7 +66,7 @@ export function MultiSelectFilter({
           <span className={cn(selected.length > 0 ? 'text-muted-foreground' : 'text-on-surface')}>{label}</span>
           {selected.length === 1 && <span className="truncate font-semibold text-primary">{firstLabel}</span>}
           {selected.length > 1 && (
-            <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 font-code text-[10px] font-bold text-on-primary tabular-nums">
+            <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 tabular-nums text-[10px] font-bold text-on-primary">
               {selected.length}
             </span>
           )}
@@ -84,7 +84,7 @@ export function MultiSelectFilter({
                 ))}
               </div>
             ) : hint ? (
-              <p className="px-3 py-6 text-center text-sm text-muted-foreground">{hint}</p>
+              <p className="px-3 py-6 text-center text-body text-muted-foreground">{hint}</p>
             ) : (
               <>
                 <CommandEmpty>No matches.</CommandEmpty>
@@ -115,7 +115,7 @@ export function MultiSelectFilter({
                         </span>
                         {option.count !== undefined && (
                           <span
-                            className={cn('text-xs text-muted-foreground tabular-nums transition-opacity', refreshing && 'opacity-50')}
+                            className={cn('text-small text-muted-foreground tabular-nums transition-opacity', refreshing && 'opacity-50')}
                           >
                             {option.count}
                           </span>

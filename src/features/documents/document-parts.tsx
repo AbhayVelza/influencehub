@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils'
 import type { InfluencerDocument } from '@/types'
 import type { DocumentActions } from './use-document-actions'
 
-const BADGE = 'inline-flex items-center rounded-full px-2.5 py-0.5 text-label-sm font-medium whitespace-nowrap'
+const BADGE = 'inline-flex items-center rounded-full px-2.5 py-0.5 text-small font-medium whitespace-nowrap'
 /** Stitch status pill: neutral chip with a coloured dot. */
 const STATUS = cn(BADGE, 'gap-1.5 bg-surface-container text-on-surface')
 

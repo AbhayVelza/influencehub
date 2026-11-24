@@ -67,11 +67,11 @@ function AddressEditor({
     <form onSubmit={onSubmit} className="grid grid-cols-1 gap-3 sm:grid-cols-2" noValidate aria-label="Edit address">
       {ADDRESS_FIELDS.map(({ name, label, span }) => (
         <div key={name} className={span === 2 ? 'grid gap-1 sm:col-span-2' : 'grid gap-1'}>
-          <Label htmlFor={`addr-${name}`} className="text-label-sm tracking-wider text-muted-foreground uppercase">
+          <Label htmlFor={`addr-${name}`} className="text-small tracking-wider text-muted-foreground uppercase">
             {label}
           </Label>
           <Input id={`addr-${name}`} aria-invalid={!!formState.errors[name]} {...register(name)} />
-          {formState.errors[name] && <p className="text-body-sm text-error">{formState.errors[name]?.message}</p>}
+          {formState.errors[name] && <p className="text-small text-error">{formState.errors[name]?.message}</p>}
         </div>
       ))}
       <div className="flex justify-end gap-2 pt-2 sm:col-span-2">
@@ -116,9 +116,9 @@ function TagsEditor({
   return (
     <div className="space-y-2">
       <ul className="flex flex-wrap gap-1.5" aria-label="Tags">
-        {tags.length === 0 && <li className="text-body-md text-muted-foreground">No tags yet</li>}
+        {tags.length === 0 && <li className="text-body text-muted-foreground">No tags yet</li>}
         {tags.map((tag) => (
-          <li key={tag} className="inline-flex h-6 items-center gap-1 rounded-full bg-tertiary-fixed/40 pr-0.5 pl-2.5 text-[11px] font-medium text-on-surface">
+          <li key={tag} className="inline-flex h-6 items-center gap-1 rounded-full bg-tertiary-fixed/40 pr-0.5 pl-2.5 text-small font-medium text-on-surface">
             {tag}
             {!disabled && (
               <button
@@ -144,7 +144,7 @@ function TagsEditor({
             placeholder="Add a tag"
             aria-label="New tag"
             aria-invalid={!!error}
-            className="h-8 max-w-48 text-body-sm"
+            className="h-8 max-w-48 text-small"
           />
           <Button type="submit" variant="outline" size="sm" disabled={!draft.trim()}>
             <Plus />
@@ -152,7 +152,7 @@ function TagsEditor({
           </Button>
         </form>
       )}
-      {error && <p className="text-body-sm text-error">{error}</p>}
+      {error && <p className="text-small text-error">{error}</p>}
     </div>
   )
 }
@@ -258,7 +258,7 @@ export function OverviewTab({ influencer }: { influencer: Influencer }) {
             }}
           />
         ) : address ? (
-          <address className="text-body-md leading-relaxed text-on-surface not-italic">
+          <address className="text-body leading-relaxed text-on-surface not-italic">
             {address.line1}
             {address.line2 && (
               <>
@@ -272,7 +272,7 @@ export function OverviewTab({ influencer }: { influencer: Influencer }) {
             {address.country}
           </address>
         ) : (
-          <p className="text-body-md text-muted-foreground">No address yet. Needed before sending a Welcome Kit.</p>
+          <p className="text-body text-muted-foreground">No address yet. Needed before sending a Welcome Kit.</p>
         )}
       </Section>
 
@@ -281,7 +281,7 @@ export function OverviewTab({ influencer }: { influencer: Influencer }) {
         <ul className="divide-y divide-surface-container overflow-hidden rounded-xl bg-surface-container-low/50">
           {CHECKLIST.map(({ key, label }) => (
             <li key={key}>
-              <label className="flex items-center gap-2.5 px-3 py-2.5 text-body-md text-on-surface">
+              <label className="flex items-center gap-2.5 px-3 py-2.5 text-body text-on-surface">
                 <Checkbox
                   checked={influencer.onboarding_checklist[key]}
                   disabled={!canEdit || update.isPending}

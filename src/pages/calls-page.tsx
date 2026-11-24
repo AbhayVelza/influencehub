@@ -39,7 +39,7 @@ function Outcome({ call }: { call: CallLogWithInfluencer }) {
     <div className="max-w-60 space-y-1">
       <span
         className={cn(
-          'inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-label-md font-medium whitespace-nowrap',
+          'inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-body font-medium whitespace-nowrap',
           meta.badge,
         )}
       >
@@ -47,7 +47,7 @@ function Outcome({ call }: { call: CallLogWithInfluencer }) {
         {meta.label}
       </span>
       {call.notes && (
-        <p className="truncate pl-1 text-body-sm text-muted-foreground" title={call.notes}>
+        <p className="truncate pl-1 text-small text-muted-foreground" title={call.notes}>
           {call.notes}
         </p>
       )}
@@ -62,11 +62,11 @@ function InfluencerCell({ call }: { call: CallLogWithInfluencer }) {
       <div className="min-w-0">
         <Link
           to={`/influencers/${call.influencer_id}?tab=calls`}
-          className="block truncate text-headline-sm font-semibold text-primary hover:underline"
+          className="block truncate text-h3 font-semibold text-primary hover:underline"
         >
           {call.influencer.name}
         </Link>
-        <AccountLabel account={call.influencer.primary_account} block className="text-body-sm text-muted-foreground" />
+        <AccountLabel account={call.influencer.primary_account} block className="text-small text-muted-foreground" />
       </div>
     </div>
   )
@@ -75,7 +75,7 @@ function InfluencerCell({ call }: { call: CallLogWithInfluencer }) {
 function OwnerCell({ name }: { name: string | undefined }) {
   if (!name) return <>…</>
   return (
-    <span className="flex items-center gap-2 text-body-md font-medium text-primary">
+    <span className="flex items-center gap-2 text-body font-medium text-primary">
       <PersonAvatar aria-hidden name={name} className="size-6 text-[10px]" />
       {name}
     </span>
@@ -88,7 +88,7 @@ function CountBadge({ bucket, mine }: { bucket: FollowUpBucket; mine: boolean })
   return (
     <span
       className={cn(
-        'rounded-full px-1.5 py-px font-code text-code font-semibold tabular-nums',
+        'rounded-full px-1.5 py-px tabular-nums text-small font-semibold ',
         bucket === 'today'
           ? 'bg-tertiary-fixed text-on-tertiary-fixed'
           : bucket === 'overdue' && data.total > 0
@@ -148,7 +148,7 @@ export default function CallsPage() {
         eyebrow={
           <>
             Outreach cadence <span className="text-outline">/</span>{' '}
-            <span className="rounded-full bg-tertiary-fixed/30 px-2 py-0.5 font-code text-code tracking-normal text-on-tertiary-container">
+            <span className="rounded-full bg-tertiary-fixed/30 px-2 py-0.5 tabular-nums text-small tracking-normal text-on-tertiary-container">
               UTC +05:30
             </span>
           </>
@@ -171,7 +171,7 @@ export default function CallsPage() {
           </TabsList>
           {canSeeTeam && (
             <div className="flex items-center gap-space-sm self-end px-1 lg:self-auto">
-              <Label htmlFor="only-mine" className="text-label-md text-muted-foreground hover:text-primary">
+              <Label htmlFor="only-mine" className="text-body text-muted-foreground hover:text-primary">
                 Only my follow-ups
               </Label>
               <Switch
@@ -253,7 +253,7 @@ export default function CallsPage() {
                                 {call.influencer.phone ? (
                                   <a
                                     href={`tel:${call.influencer.phone}`}
-                                    className="inline-flex items-center gap-1.5 rounded-lg bg-surface-container-low/70 px-2 py-1 font-code text-code whitespace-nowrap text-on-surface hover:underline"
+                                    className="inline-flex items-center gap-1.5 rounded-lg bg-surface-container-low/70 px-2 py-1 tabular-nums text-small whitespace-nowrap text-on-surface hover:underline"
                                   >
                                     <Phone aria-hidden className="size-3.5 text-outline" strokeWidth={1.75} />
                                     {call.influencer.phone}
@@ -270,7 +270,7 @@ export default function CallsPage() {
                                   <>
                                     <span
                                       className={cn(
-                                        'flex items-center gap-1 text-label-md font-semibold text-primary',
+                                        'flex items-center gap-1 text-body font-semibold text-primary',
                                         overdue && 'text-destructive',
                                       )}
                                     >
@@ -281,7 +281,7 @@ export default function CallsPage() {
                                       />
                                       {formatDateTime(call.follow_up_date)}
                                     </span>
-                                    <span className="block text-body-sm text-muted-foreground">
+                                    <span className="block text-small text-muted-foreground">
                                       {call.follow_up_done ? 'Done' : <RelativeTime iso={call.follow_up_date} />}
                                     </span>
                                   </>

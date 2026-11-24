@@ -87,9 +87,9 @@ export function ActivityTab({ activity }: ActivityTabProps) {
                 <Icon className="size-4" strokeWidth={1.75} />
               </span>
               <div className="min-w-0 flex-1">
-                <p className="text-body-md text-on-surface">{text}</p>
-                {detail && <p className="mt-0.5 text-body-md text-muted-foreground">“{detail}”</p>}
-                <p className="mt-0.5 text-body-sm text-muted-foreground">
+                <p className="text-body text-on-surface">{text}</p>
+                {detail && <p className="mt-0.5 text-body text-muted-foreground">“{detail}”</p>}
+                <p className="mt-0.5 text-small text-muted-foreground">
                   {entry.actor ? name(entry.actor, team) : 'System'} ·{' '}
                   <RelativeTime iso={entry.created_at} />
                 </p>

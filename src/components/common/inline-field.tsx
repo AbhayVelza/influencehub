@@ -54,7 +54,7 @@ function FieldShell({
   }
   return (
     <div className={cn('grid grid-cols-[7.5rem_1fr] items-start gap-3 py-1.5', className)}>
-      <dt id={labelId} className="pt-1.5 text-sm text-muted-foreground">
+      <dt id={labelId} className="pt-1.5 text-body text-muted-foreground">
         {label}
       </dt>
       <dd className="min-w-0">{children}</dd>
@@ -79,7 +79,7 @@ function DisplayValue({
 }) {
   return (
     <div className="group flex min-h-8 items-center gap-1">
-      <div className="min-w-0 py-1 text-sm break-words whitespace-pre-wrap">
+      <div className="min-w-0 py-1 text-body break-words whitespace-pre-wrap">
         {value ? (render ? render(value) : value) : <span className="text-muted-foreground">{placeholder ?? '—'}</span>}
       </div>
       {!disabled && (
@@ -188,11 +188,11 @@ export function InlineTextField<T extends z.ZodType>({
           </Button>
         </div>
         {error && (
-          <p id={errorId} className="text-xs text-destructive">
+          <p id={errorId} className="text-small text-destructive">
             {error}
           </p>
         )}
-        {multiline && !error && <p className="text-xs text-muted-foreground">Ctrl + Enter to save · Esc to cancel</p>}
+        {multiline && !error && <p className="text-small text-muted-foreground">Ctrl + Enter to save · Esc to cancel</p>}
       </div>
     </FieldShell>
   )
@@ -278,7 +278,7 @@ export function InlineSelectField<T extends z.ZodType>({
           </Select>
           {saving && <Loader2 className="size-4 animate-spin text-muted-foreground" />}
         </div>
-        {error && <p className="text-xs text-destructive">{error}</p>}
+        {error && <p className="text-small text-destructive">{error}</p>}
       </div>
     </FieldShell>
   )

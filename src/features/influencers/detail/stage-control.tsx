@@ -78,13 +78,13 @@ export function StageControl({ influencer, previousStage, hasInterestedCall, has
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-64">
           <DropdownMenuGroup>
-            <DropdownMenuLabel className="text-xs text-muted-foreground">Move to</DropdownMenuLabel>
+            <DropdownMenuLabel className="text-small text-muted-foreground">Move to</DropdownMenuLabel>
             {standard.length === 0 && <DropdownMenuItem disabled>No standard moves from {meta.label}</DropdownMenuItem>}
             {standard.map((to) => (
               <DropdownMenuItem key={to} onSelect={() => mover.requestMove(influencer, to, { requirementMet: requirementMet(to) })}>
                 <StageDot stage={to} />
                 {STAGE_META[to].label}
-                {hint(to) && <span className="ml-auto text-xs text-muted-foreground">{hint(to)}</span>}
+                {hint(to) && <span className="ml-auto text-small text-muted-foreground">{hint(to)}</span>}
               </DropdownMenuItem>
             ))}
           </DropdownMenuGroup>
@@ -92,7 +92,7 @@ export function StageControl({ influencer, previousStage, hasInterestedCall, has
             <>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
-                <DropdownMenuLabel className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <DropdownMenuLabel className="flex items-center gap-1.5 text-small text-muted-foreground">
                   <ShieldAlert className="size-3.5" />
                   Override (admin)
                 </DropdownMenuLabel>
@@ -103,7 +103,7 @@ export function StageControl({ influencer, previousStage, hasInterestedCall, has
                   >
                     <StageDot stage={to} />
                     {STAGE_META[to].label}
-                    {to === 'onboarded' && !hasAgreement && <span className="ml-auto text-xs text-muted-foreground">Upload agreement…</span>}
+                    {to === 'onboarded' && !hasAgreement && <span className="ml-auto text-small text-muted-foreground">Upload agreement…</span>}
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuGroup>

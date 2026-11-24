@@ -25,8 +25,8 @@ export function EmptyState({ icon: Icon = Inbox, title, description, action, cla
           </div>
         </div>
       </div>
-      <p className="text-headline-sm font-semibold tracking-tight text-primary">{title}</p>
-      {description && <p className="mt-1.5 max-w-md text-body-md text-muted-foreground">{description}</p>}
+      <p className="text-h3 font-semibold tracking-tight text-primary">{title}</p>
+      {description && <p className="mt-1.5 max-w-md text-body text-muted-foreground">{description}</p>}
       {action && <div className="mt-5">{action}</div>}
     </div>
   )
@@ -47,8 +47,8 @@ export function ErrorState({ title = 'Something went wrong', error, onRetry, cla
           <CircleAlert className="size-5 text-error" strokeWidth={1.75} />
         </div>
       </div>
-      <p className="text-headline-sm font-semibold tracking-tight text-primary">{title}</p>
-      {error !== undefined && <p className="mt-1.5 max-w-md text-body-md text-muted-foreground">{getErrorMessage(error)}</p>}
+      <p className="text-h3 font-semibold tracking-tight text-primary">{title}</p>
+      {error !== undefined && <p className="mt-1.5 max-w-md text-body text-muted-foreground">{getErrorMessage(error)}</p>}
       {onRetry && (
         <Button variant="outline" size="sm" className="mt-4" onClick={onRetry}>
           <RefreshCw />

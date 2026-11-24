@@ -42,7 +42,7 @@ function ActingAs({ meId }: { meId: string }) {
   const active = (team.data?.items ?? []).filter((u) => u.is_active)
   return (
     <>
-      <DropdownMenuLabel className="text-xs text-muted-foreground">Acting as</DropdownMenuLabel>
+      <DropdownMenuLabel className="text-small text-muted-foreground">Acting as</DropdownMenuLabel>
       <DropdownMenuRadioGroup
         value={meId}
         onValueChange={(id) => {
@@ -90,12 +90,12 @@ export function UserMenu() {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-60">
           <DropdownMenuLabel className="font-normal">
-            <p className="truncate text-label-md font-semibold text-foreground">{me.name}</p>
-            <p className="truncate text-body-sm text-muted-foreground">{me.email}</p>
-            <p className="mt-1 text-xs text-muted-foreground">{ROLE_LABEL[me.role]}</p>
+            <p className="truncate text-body font-semibold text-foreground">{me.name}</p>
+            <p className="truncate text-small text-muted-foreground">{me.email}</p>
+            <p className="mt-1 text-small text-muted-foreground">{ROLE_LABEL[me.role]}</p>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuLabel className="text-xs text-muted-foreground">Theme</DropdownMenuLabel>
+          <DropdownMenuLabel className="text-small text-muted-foreground">Theme</DropdownMenuLabel>
           <DropdownMenuRadioGroup value={theme} onValueChange={(v) => setTheme(v as Theme)}>
             {THEMES.map(({ value, label, icon: Icon }) => (
               <DropdownMenuRadioItem key={value} value={value}>

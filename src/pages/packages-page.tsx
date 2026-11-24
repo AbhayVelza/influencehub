@@ -234,11 +234,11 @@ export default function PackagesPage() {
                           <div className="min-w-0">
                             <Link
                               to={`/influencers/${pkg.influencer_id}?tab=packages`}
-                              className="block truncate text-label-md font-semibold text-on-surface group-hover:text-primary hover:underline"
+                              className="block truncate text-body font-semibold text-on-surface group-hover:text-primary hover:underline"
                             >
                               {pkg.influencer.name}
                             </Link>
-                            <AccountLabel account={pkg.influencer.primary_account} block className="text-body-sm text-muted-foreground" />
+                            <AccountLabel account={pkg.influencer.primary_account} block className="text-small text-muted-foreground" />
                           </div>
                         </div>
                       </TableCell>
@@ -246,14 +246,14 @@ export default function PackagesPage() {
                         <div className="min-w-0" title={itemLabels.join(', ')}>
                           <span className="block truncate font-medium text-on-surface">{itemLabels[0]}</span>
                           {itemLabels.length > 1 && (
-                            <span className="block truncate text-[11px] text-muted-foreground">{itemLabels.slice(1).join(' + ')}</span>
+                            <span className="block truncate text-small text-muted-foreground">{itemLabels.slice(1).join(' + ')}</span>
                           )}
                         </div>
                       </TableCell>
                       <TableCell className="px-4 py-3">
                         <span
                           className={cn(
-                            'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-label-sm font-medium whitespace-nowrap',
+                            'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-small font-medium whitespace-nowrap',
                             PACKAGE_STATUS_META[pkg.status].badge,
                           )}
                         >
@@ -274,7 +274,7 @@ export default function PackagesPage() {
                       <TableCell className="px-4 py-3">
                         {pkg.tracking_number ? (
                           <span className="inline-flex items-center gap-1">
-                            <span className="rounded-md bg-surface-container-low px-1.5 py-0.5 font-code text-code whitespace-nowrap text-muted-foreground select-all">
+                            <span className="rounded-md bg-surface-container-low px-1.5 py-0.5 tabular-nums text-small whitespace-nowrap text-muted-foreground select-all">
                               {pkg.tracking_number}
                             </span>
                             <Button
@@ -311,7 +311,7 @@ export default function PackagesPage() {
                               Edit Welcome Kit
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuLabel className="px-3 text-label-sm tracking-wider text-muted-foreground uppercase">Mark as</DropdownMenuLabel>
+                            <DropdownMenuLabel className="px-3 text-small tracking-wider text-muted-foreground uppercase">Mark as</DropdownMenuLabel>
                             {PACKAGE_STATUSES.filter((s) => s !== pkg.status && s !== 'preparing').map((s) => (
                               <DropdownMenuItem key={s} onSelect={() => setStatus(pkg, s)} className="rounded-xl px-3 py-2">
                                 {PACKAGE_STATUS_META[s].label}
