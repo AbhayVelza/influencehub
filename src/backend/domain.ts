@@ -360,7 +360,12 @@ function buildClaimFacts() {
   }
   const lastCall = new Map<string, string>()
   for (const c of db.calls) if ((lastCall.get(c.influencer_id) ?? '') < c.created_at) lastCall.set(c.influencer_id, c.created_at)
-  return { ownership, lastCall }
+  // Current claims, time parsed once: auto-release checks only these, not every influencer, on every request.
+  const claims: { influencerId: string; actor: string | null; at: string; ms: number }[] = []
+  for (const a of ownership.values()) {
+    if (a.type === 'claimed') claims.push({ influencerId: a.influencer_id, actor: a.actor, at: a.created_at, ms: Date.parse(a.created_at) })
+  }
+  return { ownership, lastCall, claims }
 }
 
 type ClaimFacts = ReturnType<typeof buildClaimFacts>
@@ -413,14 +418,14 @@ export function runAutoRelease(now = Date.now()): number {
   const facts = claimFacts()
   const window = days * DAY_MS
   let released = 0
-  for (const inf of db.influencers) {
-    // releaseAt, without building a date string per claim (this runs on every request).
-    const claimed = claimedAt(inf, facts)
-    if (!claimed || (facts.lastCall.get(inf.id) ?? '') >= claimed) continue
-    if (Date.parse(claimed) + window <= now) {
-      releaseInfluencer(inf, `No call logged within ${days} days of claiming`, null, true)
-      released += 1
-    }
+  // releaseAt over the current claims only, without building a date string per claim (this runs on every request).
+  for (const c of facts.claims) {
+    if (c.ms + window > now) continue
+    const inf = findInfluencer(c.influencerId)
+    // Still owned through that claim (claimedAt), and no call logged since.
+    if (!inf || !inf.assigned_to || inf.assigned_to !== c.actor || (facts.lastCall.get(inf.id) ?? '') >= c.at) continue
+    releaseInfluencer(inf, `No call logged within ${days} days of claiming`, null, true)
+    released += 1
   }
   return released
 }

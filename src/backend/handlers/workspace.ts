@@ -2,6 +2,7 @@ import { TZDate, tzOffset } from '@date-fns/tz'
 import { startOfMonth, startOfWeek } from 'date-fns'
 import { http, HttpResponse } from 'msw'
 import { ALL_STAGES, APP_TIMEZONE, PIPELINE_COLUMN_LIMIT, DEFAULT_CATEGORIES, ROLE_LABEL, SYNC_INTERVAL_OPTIONS } from '@/lib/constants'
+import { todayKey } from '@/lib/format'
 import { can } from '@/lib/permissions'
 import { ONBOARDED_OR_LATER } from '@/lib/stages'
 import type {
@@ -345,11 +346,14 @@ export const workspaceHandlers = [
     const user = currentUser()
     const me = user.id
     const influencers = visibleInfluencers(user)
-    const visibleIds = new Set(influencers.map((i) => i.id))
-    const visible = (influencerId: string) => visibleIds.has(influencerId)
+    // Admins and managers see everyone: no per-record visibility check or copies of the logs (NFR-01).
+    const seesAll = influencers.length === db.influencers.length
+    const visibleIds = seesAll ? null : new Set(influencers.map((i) => i.id))
+    const visible = (influencerId: string) => !visibleIds || visibleIds.has(influencerId)
     const withAgreement = new Set(liveDocuments().filter((d) => d.type === 'agreement' && d.is_current).map((d) => d.influencer_id))
-    const activities = db.activities.filter((a) => visible(a.influencer_id))
-    const calls = db.calls.filter((c) => visible(c.influencer_id))
+    const activities = seesAll ? db.activities : db.activities.filter((a) => visible(a.influencer_id))
+    const calls = seesAll ? db.calls : db.calls.filter((c) => visible(c.influencer_id))
+    const today = todayKey()
     const now = new TZDate(Date.now(), APP_TIMEZONE)
     const weekStart = utcIso(startOfWeek(now, { weekStartsOn: 1 }))
     const monthStart = utcIso(startOfMonth(now))
@@ -369,7 +373,7 @@ export const workspaceHandlers = [
     }
 
     const openFollowUps = calls.filter((c) => {
-      const bucket = followUpBucket(c)
+      const bucket = followUpBucket(c, today)
       return bucket === 'today' || bucket === 'overdue'
     })
     const mine = openFollowUps
@@ -389,7 +393,7 @@ export const workspaceHandlers = [
         packages_in_transit: db.packages.filter(
           (p) => visible(p.influencer_id) && (p.status === 'sent' || p.status === 'in_transit'),
         ).length,
-        follow_ups_today: calls.filter((c) => followUpBucket(c) === 'today').length,
+        follow_ups_today: calls.filter((c) => followUpBucket(c, today) === 'today').length,
         onboarded_without_agreement: influencers.filter(
           (i) => ONBOARDED_OR_LATER.includes(i.stage) && i.assigned_to !== null && !withAgreement.has(i.id),
         ).length,

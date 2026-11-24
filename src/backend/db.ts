@@ -80,26 +80,32 @@ export function everOnboarded(inf: Pick<Influencer, 'id' | 'stage'>): boolean {
 }
 
 /**
- * Ids with a recorded move onto Onboarded or later, built once from the activity log and reused (every response and
- * every store flush serialises all influencers, so a scan per influencer would cost influencers × activities).
- * Dropped at the start of each request (`setActingUid`), on every new activity (`logActivity`) and after a merge
- * re-points activities (`invalidateEverOnboarded`).
+ * Indexes over the activity log, each built on first use and kept between requests (NFR-01: rebuilding them costs
+ * ~180 ms per pipeline request at 100,000 influencers). `onboarded`: ids with a recorded move onto Onboarded or later.
+ * `entered`: the latest move onto each (influencer, stage). Rebuilt when the log is replaced (store load, a delete)
+ * or changes length outside `logActivity` (which updates them in place), and after a merge re-points activities
+ * (`invalidateEverOnboarded`).
  */
-let onboardedIds: Set<string> | null = null
+let activityIndexes: { log: Activity[]; count: number; onboarded: Set<string> | null; entered: Map<string, string> | null } | null = null
+
+function indexes() {
+  const x = activityIndexes
+  if (x && x.log === db.activities && x.count === db.activities.length) return x
+  return (activityIndexes = { log: db.activities, count: db.activities.length, onboarded: null, entered: null })
+}
 
 function onboardedIndex(): Set<string> {
-  if (!onboardedIds) {
-    onboardedIds = new Set(
-      db.activities
-        .filter((a) => a.type === 'stage_changed' && ONBOARDED_OR_LATER.includes(a.payload.to as Stage))
-        .map((a) => a.influencer_id),
-    )
-  }
-  return onboardedIds
+  const x = indexes()
+  x.onboarded ??= new Set(
+    db.activities
+      .filter((a) => a.type === 'stage_changed' && ONBOARDED_OR_LATER.includes(a.payload.to as Stage))
+      .map((a) => a.influencer_id),
+  )
+  return x.onboarded
 }
 
 export function invalidateEverOnboarded() {
-  onboardedIds = null
+  activityIndexes = null
 }
 
 /** What's on file for an influencer (null in the pool: documents aren't shown for unassigned influencers). */
@@ -224,8 +230,6 @@ export function resolveActingUid(uid: string | null): string | null {
 /** Set for each request (resolveActingUid). */
 export function setActingUid(uid: string | null) {
   changedOnRead = false
-  invalidateEverOnboarded()
-  stageEntered = null
   actingUid = uid
 }
 
@@ -295,9 +299,17 @@ export function logActivity(
     payload,
     created_at: nowIso(),
   }
+  // Keeps the activity indexes current instead of rebuilding them (a bulk move logs one activity per influencer).
+  const x = activityIndexes
+  const current = x !== null && x.log === db.activities && x.count === db.activities.length
   db.activities.push(activity)
-  invalidateEverOnboarded()
-  stageEntered = null
+  if (current) {
+    x.count += 1
+    if (type === 'stage_changed') {
+      if (ONBOARDED_OR_LATER.includes(payload.to as Stage)) x.onboarded?.add(influencerId)
+      x.entered?.set(`${influencerId}:${String(payload.to)}`, activity.created_at)
+    }
+  }
   return activity
 }
 
@@ -312,21 +324,16 @@ export function previousStageOf(influencerId: string): Influencer['stage'] | nul
   return null
 }
 
-/**
- * The latest move onto each (influencer, stage), built once from the activity log and dropped at the start of each
- * request and on every new activity (the pipeline asks for every influencer's; a scan each would cost
- * influencers × activities).
- */
-let stageEntered: Map<string, string> | null = null
-
-/** When the influencer entered its current stage. */
+/** When the influencer entered its current stage (the pipeline asks for every influencer's: `indexes`). */
 export function stageEnteredAt(inf: Influencer): string {
-  if (!stageEntered) {
-    stageEntered = new Map()
+  const x = indexes()
+  if (!x.entered) {
+    const entered = new Map<string, string>()
     for (const a of db.activities) {
-      if (a.type === 'stage_changed') stageEntered.set(`${a.influencer_id}:${String(a.payload.to)}`, a.created_at)
+      if (a.type === 'stage_changed') entered.set(`${a.influencer_id}:${String(a.payload.to)}`, a.created_at)
     }
+    x.entered = entered
   }
-  return stageEntered.get(`${inf.id}:${inf.stage}`) ?? inf.created_at
+  return x.entered.get(`${inf.id}:${inf.stage}`) ?? inf.created_at
 }
 
