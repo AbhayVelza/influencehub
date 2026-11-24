@@ -64,20 +64,23 @@ export function dashboardExtras(
   // Onboarded per week: the last 12 weeks, oldest first, counting each move onto Onboarded.
   const firstWeek = mondayOf(today) - 7 * (WEEKS - 1)
   const weekKeys = Array.from({ length: WEEKS }, (_, i) => keyOf(firstWeek + 7 * i))
-  const perWeek = new Map(weekKeys.map((k) => [k, 0]))
+  // Counted by day number, not by a date key per record (NFR-01: a Date and a string each, at 100,000 records).
+  const weekCounts = new Array<number>(WEEKS).fill(0)
   for (const a of onboardedMoves) {
-    const k = keyOf(mondayOf(dayNo(a.created_at)))
-    if (perWeek.has(k)) perWeek.set(k, perWeek.get(k)! + 1)
+    const w = (mondayOf(dayNo(a.created_at)) - firstWeek) / 7
+    if (w >= 0 && w < WEEKS) weekCounts[w] += 1
   }
+  const perWeek = new Map(weekKeys.map((k, i) => [k, weekCounts[i]!]))
 
   // Calls per day: the last 30 days, oldest first.
   const firstDay = today - (DAYS - 1)
   const dayKeys = Array.from({ length: DAYS }, (_, i) => keyOf(firstDay + i))
-  const perDay = new Map(dayKeys.map((k) => [k, 0]))
+  const dayCounts = new Array<number>(DAYS).fill(0)
   for (const c of calls) {
-    const k = keyOf(dayNo(c.created_at))
-    if (perDay.has(k)) perDay.set(k, perDay.get(k)! + 1)
+    const d = dayNo(c.created_at) - firstDay
+    if (d >= 0 && d < DAYS) dayCounts[d] += 1
   }
+  const perDay = new Map(dayKeys.map((k, i) => [k, dayCounts[i]!]))
   const firstDayIso = new Date(firstDay * DAY_MS - offset).toISOString()
   const since30 = firstDayIso
 
