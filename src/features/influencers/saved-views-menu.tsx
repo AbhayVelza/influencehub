@@ -75,7 +75,7 @@ export function SavedViewsMenu({ filters, sort, onApply }: SavedViewsMenuProps) 
             <Bookmark className="size-[17px] text-muted-foreground" strokeWidth={1.75} />
             <span className="shrink-0">Saved views</span>
             {activeView && (
-              <span className="ml-0.5 min-w-0 truncate rounded bg-secondary-fixed/50 px-1.5 py-px font-code text-[10px] font-medium text-muted-foreground">
+              <span className="ml-0.5 min-w-0 truncate rounded bg-secondary-fixed/50 px-1.5 py-px tabular-nums text-small font-medium text-muted-foreground">
                 {activeView.name}
               </span>
             )}
@@ -89,16 +89,16 @@ export function SavedViewsMenu({ filters, sort, onApply }: SavedViewsMenuProps) 
               <Skeleton className="h-6 w-full" />
             </div>
           ) : views.isError ? (
-            <p className="px-2 py-4 text-center text-body-sm text-muted-foreground">Couldn’t load saved views.</p>
+            <p className="px-2 py-4 text-center text-small text-muted-foreground">Couldn’t load saved views.</p>
           ) : views.data?.items.length === 0 ? (
-            <p className="px-2 py-4 text-center text-body-sm text-muted-foreground">No saved views yet.</p>
+            <p className="px-2 py-4 text-center text-small text-muted-foreground">No saved views yet.</p>
           ) : (
             <ul className="max-h-72 overflow-y-auto">
               {views.data?.items.map((view) => (
                 <li key={view.id} className="group flex items-center gap-1 rounded-xl hover:bg-surface-container-low">
                   <button
                     type="button"
-                    className="flex min-w-0 flex-1 items-center gap-2 px-2.5 py-2 text-left text-label-md"
+                    className="flex min-w-0 flex-1 items-center gap-2 px-2.5 py-2 text-left text-body"
                     onClick={() => {
                       onApply(view)
                       setOpen(false)

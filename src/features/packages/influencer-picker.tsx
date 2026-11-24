@@ -50,7 +50,7 @@ export function InfluencerPicker({
                 ))}
               </div>
             ) : results.isError ? (
-              <p className="px-3 py-6 text-center text-body-md text-muted-foreground">Couldn’t search. Try again.</p>
+              <p className="px-3 py-6 text-center text-body text-muted-foreground">Couldn’t search. Try again.</p>
             ) : (
               <>
                 <CommandEmpty>No influencers match.</CommandEmpty>
@@ -59,8 +59,8 @@ export function InfluencerPicker({
                     <CommandItem key={inf.id} value={inf.id} onSelect={() => onPick(inf)} className="gap-space-sm px-3 py-2 data-selected:bg-tertiary-fixed/30 [&>svg:last-child]:hidden">
                       <PersonAvatar name={inf.name} src={inf.profile_pic_url} className="size-8 shadow-sm" />
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate text-label-md font-semibold text-on-surface">{inf.name}</span>
-                        <span className="block truncate text-body-sm text-muted-foreground">{formatHandle(primaryAccount(inf))}</span>
+                        <span className="block truncate text-body font-semibold text-on-surface">{inf.name}</span>
+                        <span className="block truncate text-small text-muted-foreground">{formatHandle(primaryAccount(inf))}</span>
                       </span>
                       <StageBadge stage={inf.stage} />
                     </CommandItem>

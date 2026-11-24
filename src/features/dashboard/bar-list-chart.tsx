@@ -17,7 +17,7 @@ function BarTooltip({ active, payload, unit }: Pick<TooltipContentProps, 'active
   const datum = payload?.[0]?.payload as Datum | undefined
   if (!active || !datum) return null
   return (
-    <div className="rounded-xl bg-popover/90 px-2.5 py-1.5 text-body-sm shadow-glass-hover backdrop-blur-2xl">
+    <div className="rounded-xl bg-popover/90 px-2.5 py-1.5 text-small shadow-glass-hover backdrop-blur-2xl">
       <div className="font-semibold text-popover-foreground tabular-nums">{formatNumber(datum.value)}</div>
       <div className="text-muted-foreground">
         {unit} · {datum.label}
@@ -51,13 +51,13 @@ export function BarListChart({
     <div>
       <div className="mb-space-md flex items-start justify-between gap-space-sm">
         <div className="min-w-0">
-          <h2 className="text-headline-sm font-semibold tracking-tight text-primary">{title}</h2>
-          {description && <p className="mt-0.5 text-body-sm text-muted-foreground">{description}</p>}
+          <h2 className="text-h3 font-semibold tracking-tight text-primary">{title}</h2>
+          {description && <p className="mt-0.5 text-small text-muted-foreground">{description}</p>}
         </div>
         <Button
           variant="link"
           size="xs"
-          className="group/toggle h-auto min-h-7 shrink-0 gap-1 px-0 py-1 text-label-md hover:no-underline"
+          className="group/toggle h-auto min-h-7 shrink-0 gap-1 px-0 py-1 text-body hover:no-underline"
           onClick={() => setShowTable((v) => !v)}
         >
           {showTable ? 'Show chart' : 'Show as table'}
@@ -65,9 +65,9 @@ export function BarListChart({
         </Button>
       </div>
       {showTable ? (
-        <table className="w-full text-body-md">
+        <table className="w-full text-body">
           <thead>
-            <tr className="text-[11px] tracking-wider text-muted-foreground uppercase">
+            <tr className="text-small tracking-wider text-muted-foreground uppercase">
               <th className="py-1.5 text-left font-semibold">{labelHeader}</th>
               <th className="py-1.5 text-right font-semibold">{unit}</th>
             </tr>
@@ -89,7 +89,7 @@ export function BarListChart({
               <XAxis
                 type="number"
                 allowDecimals={false}
-                tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
+                tick={{ fontSize: 13, fill: 'var(--muted-foreground)' }}
                 tickLine={false}
                 axisLine={false}
               />
@@ -97,7 +97,7 @@ export function BarListChart({
                 type="category"
                 dataKey="label"
                 width={112}
-                tick={{ fontSize: 12, fill: 'var(--foreground)' }}
+                tick={{ fontSize: 13, fill: 'var(--foreground)' }}
                 tickLine={false}
                 axisLine={false}
                 interval={0}

@@ -70,7 +70,7 @@ function RailTooltip({ label, children }: { label: string; children: ReactElemen
 /** Nav item: 42px row, 14px label, 12px radius; hover = white glass lift; active = cyan tint + accent bar. */
 const linkClass = ({ isActive }: { isActive: boolean }) =>
   cn(
-    'group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-body-md font-medium transition-all duration-150 lg:max-xl:mx-auto lg:max-xl:size-11 lg:max-xl:justify-center lg:max-xl:p-0 lg:max-xl:hover:translate-x-0',
+    'group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-body font-medium transition-all duration-150 lg:max-xl:mx-auto lg:max-xl:size-11 lg:max-xl:justify-center lg:max-xl:p-0 lg:max-xl:hover:translate-x-0',
     isActive
       ? 'bg-tertiary-fixed/60 font-semibold text-primary shadow-sm ring-1 ring-on-tertiary-container/15 before:absolute before:top-2 before:bottom-2 before:left-0 before:w-[3px] before:rounded-full before:bg-on-tertiary-container dark:bg-tertiary-fixed/70'
       : 'text-on-surface-variant hover:translate-x-0.5 hover:bg-surface-container-lowest/90 hover:text-primary hover:shadow-[0_4px_14px_rgba(14,26,36,0.08)] dark:hover:bg-surface-container-high',
@@ -79,7 +79,7 @@ const linkClass = ({ isActive }: { isActive: boolean }) =>
 function NavBadge({ value, label }: { value: number; label?: string }) {
   return (
     <span
-      className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-semibold text-on-primary tabular-nums lg:max-xl:absolute lg:max-xl:-top-0.5 lg:max-xl:-right-0.5 lg:max-xl:ml-0 lg:max-xl:h-4 lg:max-xl:min-w-4 lg:max-xl:px-1 lg:max-xl:text-[9px] lg:max-xl:ring-2 lg:max-xl:ring-surface-container-lowest"
+      className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-small font-semibold text-on-primary tabular-nums lg:max-xl:absolute lg:max-xl:-top-0.5 lg:max-xl:-right-0.5 lg:max-xl:ml-0 lg:max-xl:h-4 lg:max-xl:min-w-4 lg:max-xl:px-1 lg:max-xl:text-[9px] lg:max-xl:ring-2 lg:max-xl:ring-surface-container-lowest"
       aria-label={`${value} ${label ?? ''}`.trim()}
     >
       {value > 99 ? '99+' : value}
@@ -121,7 +121,7 @@ function OnboardedPlatformLinks() {
               to={`/onboarded/${platform}`}
               className={({ isActive }) =>
                 cn(
-                  'flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-label-md transition-all',
+                  'flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-body transition-all',
                   isActive
                     ? 'bg-surface-container-lowest/80 font-medium text-primary shadow-sm'
                     : 'text-on-surface-variant hover:translate-x-0.5 hover:bg-surface-container-lowest/90 hover:text-primary hover:shadow-sm dark:hover:bg-surface-container-high',
@@ -131,7 +131,7 @@ function OnboardedPlatformLinks() {
               <PlatformIcon platform={platform} className="size-5 rounded-[6px]" />
               <span className="truncate">{PLATFORM_META[platform].label}</span>
               {total !== undefined && (
-                <span className="ml-auto font-code text-[10px] text-outline tabular-nums">{formatCompact(total)}</span>
+                <span className="ml-auto tabular-nums text-small text-outline">{formatCompact(total)}</span>
               )}
             </NavLink>
           </li>
@@ -222,12 +222,12 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <>
       <div className="flex h-16 shrink-0 items-center gap-space-sm px-space-md lg:max-xl:justify-center lg:max-xl:px-0">
-        <div className="flex size-9 items-center justify-center rounded-xl bg-primary text-headline-sm tracking-tight text-on-primary shadow-sm">
+        <div className="flex size-9 items-center justify-center rounded-xl bg-primary text-h3 tracking-tight text-on-primary shadow-sm">
           IH
         </div>
         <div className="flex flex-col lg:max-xl:hidden">
-          <span className="text-[18px] leading-6 font-semibold tracking-tight text-primary">InfluenceHub</span>
-          <span className="text-label-sm tracking-widest text-muted-foreground uppercase">Platform</span>
+          <span className="text-h3 font-semibold tracking-tight text-primary">InfluenceHub</span>
+          <span className="text-small tracking-widest text-muted-foreground uppercase">Platform</span>
         </div>
       </div>
       <nav aria-label="Main" className="flex min-h-0 flex-1 flex-col" onClick={closeOnLink}>

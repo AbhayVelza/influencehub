@@ -32,11 +32,11 @@ function UsageMeter({ value }: { value: number }) {
   return (
     <div className="space-y-1.5">
       <div className="flex items-baseline justify-between">
-        <span className="text-label-sm tracking-wider text-muted-foreground uppercase" id="usage-label">
+        <span className="text-small tracking-wider text-muted-foreground uppercase" id="usage-label">
           API usage
         </span>
-        <span className="text-body-md tabular-nums">
-          <span className="text-headline-sm font-semibold tracking-tight text-primary">{value}%</span>
+        <span className="text-body tabular-nums">
+          <span className="text-h3 font-semibold tracking-tight text-primary">{value}%</span>
           <span className="text-muted-foreground"> of the rate limit</span>
         </span>
       </div>
@@ -52,7 +52,7 @@ function UsageMeter({ value }: { value: number }) {
         <div className={cn('h-full rounded-full', fill)} style={{ width: `${Math.min(100, value)}%` }} />
       </div>
       {level !== 'normal' && (
-        <p className="flex items-center gap-1 text-body-sm text-muted-foreground">
+        <p className="flex items-center gap-1 text-small text-muted-foreground">
           <CircleAlert className="size-3.5" strokeWidth={1.75} />
           {level === 'critical' ? 'Close to the limit — syncs may be rate limited.' : 'Usage is high.'}
         </p>
@@ -100,7 +100,7 @@ export function InstagramSettings() {
           </div>
         </CardHeader>
         <CardContent className="grid gap-6 md:grid-cols-2">
-          <dl className="grid grid-cols-[8rem_minmax(0,1fr)] content-start gap-x-3 gap-y-3 rounded-xl bg-surface-container-low/50 p-space-md text-body-md">
+          <dl className="grid grid-cols-[8rem_minmax(0,1fr)] content-start gap-x-3 gap-y-3 rounded-xl bg-surface-container-low/50 p-space-md text-body">
             <dt className="text-muted-foreground">Connection</dt>
             <dd className="flex items-center gap-1.5">
               {s.connected ? (
@@ -120,7 +120,7 @@ export function InstagramSettings() {
               {s.business_account ? (
                 <>
                   @{s.business_account.username}
-                  <span className="block font-code text-[11px] text-muted-foreground">ID {s.business_account.ig_user_id}</span>
+                  <span className="block tabular-nums text-small text-muted-foreground">ID {s.business_account.ig_user_id}</span>
                 </>
               ) : (
                 '—'
@@ -128,12 +128,12 @@ export function InstagramSettings() {
             </dd>
             <dt className="text-muted-foreground">Access token</dt>
             <dd>
-              <span className={cn('inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-medium', TOKEN[s.token_status].className)}>
+              <span className={cn('inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-small font-medium', TOKEN[s.token_status].className)}>
                 <span aria-hidden className="size-1.5 rounded-full bg-current" />
                 {TOKEN[s.token_status].label}
               </span>
               {s.token_expires_at && (
-                <span className="mt-1 block text-body-sm text-muted-foreground">
+                <span className="mt-1 block text-small text-muted-foreground">
                   {s.token_status === 'expired' ? 'Expired' : 'Expires'} <RelativeTime iso={s.token_expires_at} /> ({formatDate(s.token_expires_at)})
                 </span>
               )}
@@ -141,9 +141,9 @@ export function InstagramSettings() {
           </dl>
           <div className="space-y-5">
             <div className="grid gap-1.5">
-              <p className="text-label-sm tracking-wider text-muted-foreground uppercase">Auto-sync</p>
-              <p className="text-body-md">Every 7 days</p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-small tracking-wider text-muted-foreground uppercase">Auto-sync</p>
+              <p className="text-body">Every 7 days</p>
+              <p className="text-small text-muted-foreground">
                 Each {youtube ? 'Instagram account and YouTube channel' : 'account'} is refreshed 7 days after its last sync. To refresh
                 everything now, use Sync profiles.
               </p>
@@ -159,7 +159,7 @@ export function InstagramSettings() {
         </CardHeader>
         <CardContent className="px-0">
           {s.last_runs.length === 0 ? (
-            <p className="py-6 pb-8 text-center text-body-md text-muted-foreground">No sync runs yet.</p>
+            <p className="py-6 pb-8 text-center text-body text-muted-foreground">No sync runs yet.</p>
           ) : (
             <Table>
               <TableHeader>
@@ -177,13 +177,13 @@ export function InstagramSettings() {
                     <TableCell className="pl-(--card-spacing) font-medium whitespace-nowrap text-on-surface">{formatDateTime(run.started_at)}</TableCell>
                     <TableCell>{minutes(run.started_at, run.finished_at)}</TableCell>
                     <TableCell>
-                      <span className={cn('inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-medium', RUN[run.status].className)}>
+                      <span className={cn('inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-small font-medium', RUN[run.status].className)}>
                         <span aria-hidden className="size-1.5 rounded-full bg-current" />
                         {RUN[run.status].label}
                       </span>
                     </TableCell>
-                    <TableCell className="text-right font-code tabular-nums">{formatNumber(run.synced)}</TableCell>
-                    <TableCell className={cn('pr-(--card-spacing) text-right font-code tabular-nums', run.failed > 0 && 'font-medium text-error')}>
+                    <TableCell className="text-right tabular-nums">{formatNumber(run.synced)}</TableCell>
+                    <TableCell className={cn('pr-(--card-spacing) text-right tabular-nums', run.failed > 0 && 'font-medium text-error')}>
                       {formatNumber(run.failed)}
                     </TableCell>
                   </TableRow>

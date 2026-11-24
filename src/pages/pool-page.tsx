@@ -165,7 +165,7 @@ export default function PoolPage() {
           <div className="flex flex-wrap items-center gap-space-sm">
             {selectedRows.length > 0 && (
               <>
-                <span className="inline-flex items-center gap-1 rounded-full bg-primary py-1 pr-1 pl-3 text-label-md font-semibold text-on-primary tabular-nums shadow-sm">
+                <span className="inline-flex items-center gap-1 rounded-full bg-primary py-1 pr-1 pl-3 text-body font-semibold text-on-primary tabular-nums shadow-sm">
                   {selectedRows.length} selected
                   <Button
                     variant="ghost"

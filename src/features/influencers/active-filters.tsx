@@ -82,11 +82,11 @@ export function ActiveFilters({ filters, onChange, onClear }: ActiveFiltersProps
 
   return (
     <div className="flex flex-wrap items-center gap-1.5" aria-label="Active filters">
-      <span className="mr-1 text-label-sm tracking-wider text-muted-foreground uppercase">Active:</span>
+      <span className="mr-1 text-small tracking-wider text-muted-foreground uppercase">Active:</span>
       {chips.map((chip) => (
         <span
           key={chip.key}
-          className="inline-flex h-7 items-center gap-1 rounded-full bg-surface-container-lowest/70 pr-1 pl-3 text-label-md font-medium text-on-surface shadow-sm backdrop-blur-md dark:bg-surface-container-high/70"
+          className="inline-flex h-7 items-center gap-1 rounded-full bg-surface-container-lowest/70 pr-1 pl-3 text-body font-medium text-on-surface shadow-sm backdrop-blur-md dark:bg-surface-container-high/70"
         >
           {chip.label}
           <button
@@ -99,7 +99,7 @@ export function ActiveFilters({ filters, onChange, onClear }: ActiveFiltersProps
           </button>
         </span>
       ))}
-      <Button variant="link" size="sm" className="h-7 px-1.5 text-label-md" onClick={onClear}>
+      <Button variant="link" size="sm" className="h-7 px-1.5 text-body" onClick={onClear}>
         Clear all
       </Button>
     </div>

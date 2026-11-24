@@ -102,18 +102,18 @@ function FileField({
           else e.target.value = ''
         }}
       />
-      <p id="document-file-hint" className="text-body-sm text-muted-foreground">
+      <p id="document-file-hint" className="text-small text-muted-foreground">
         {file ? `${file.name} · ${formatFileSize(file.size)}` : DOCUMENT_FILE_HINT}
       </p>
       {fileError && (
-        <p role="alert" className="text-body-sm text-error">
+        <p role="alert" className="text-small text-error">
           {fileError}
         </p>
       )}
       {busy && (
         <div className="space-y-1" aria-live="polite">
           <Progress value={progress} aria-label="Upload progress" />
-          <p className="text-body-sm text-muted-foreground tabular-nums">{progress < 100 ? `Uploading… ${progress}%` : 'Saving…'}</p>
+          <p className="text-small text-muted-foreground tabular-nums">{progress < 100 ? `Uploading… ${progress}%` : 'Saving…'}</p>
         </div>
       )}
     </div>
@@ -128,7 +128,7 @@ function Field({ id, label, hint, error, children }: { id: string; label: string
         {hint && <span className="font-normal text-muted-foreground"> {hint}</span>}
       </Label>
       {children}
-      {error && <p className="text-body-sm text-error">{error}</p>}
+      {error && <p className="text-small text-error">{error}</p>}
     </div>
   )
 }
@@ -244,7 +244,7 @@ function AgreementForm({ influencer, onDone, onCancel }: { influencer: UploadTar
       <Field id="doc-notes" label="Notes" hint="(optional)" error={errors.notes?.message}>
         <Textarea id="doc-notes" rows={2} {...register('notes')} />
       </Field>
-      <p className="rounded-xl bg-tertiary-fixed/30 px-3 py-2 text-body-sm text-on-surface-variant">This becomes the current agreement. Earlier versions are kept as history.</p>
+      <p className="rounded-xl bg-tertiary-fixed/30 px-3 py-2 text-small text-on-surface-variant">This becomes the current agreement. Earlier versions are kept as history.</p>
       <Footer busy={uploader.busy} onCancel={onCancel} />
     </form>
   )

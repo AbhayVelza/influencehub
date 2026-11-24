@@ -35,7 +35,7 @@ export function buildPoolColumns({ canReassign, busy, onOpen, onClaim, onAssign 
             return phone ? (
               <a
                 href={`tel:${phone}`}
-                className="font-code text-[11px] whitespace-nowrap text-muted-foreground hover:text-on-surface hover:underline"
+                className="tabular-nums text-small whitespace-nowrap text-muted-foreground hover:text-on-surface hover:underline"
               >
                 {phone}
               </a>
@@ -79,13 +79,13 @@ export function buildPoolColumns({ canReassign, busy, onOpen, onClaim, onAssign 
                 <button
                   type="button"
                   onClick={() => onOpen(item)}
-                  className="truncate text-left text-body-md leading-tight font-semibold text-primary hover:underline"
+                  className="truncate text-left text-body leading-tight font-semibold text-primary hover:underline"
                 >
                   {item.name}
                 </button>
                 {item.is_verified && verifiedMark()}
               </div>
-              {handle && <span className="truncate font-code text-[11px] text-muted-foreground">@{handle}</span>}
+              {handle && <span className="truncate tabular-nums text-small text-muted-foreground">@{handle}</span>}
             </div>
           </div>
         )

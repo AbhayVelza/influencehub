@@ -35,16 +35,16 @@ export default function OnboardedPage() {
                   />
                 </div>
                 <div className="mt-6 flex flex-col">
-                  <span className="truncate text-headline-md font-semibold tracking-tight text-primary">{PLATFORM_META[platform].label}</span>{' '}
+                  <span className="truncate text-h2 font-semibold tracking-tight text-primary">{PLATFORM_META[platform].label}</span>{' '}
                   <div className="mt-1 flex min-h-10 items-baseline justify-between gap-2">
                     {count.isPending ? (
                       <Skeleton className="h-9 w-20 self-center rounded-lg" />
                     ) : count.isError ? (
-                      <span className="text-body-md text-muted-foreground">Couldn’t load the count</span>
+                      <span className="text-body text-muted-foreground">Couldn’t load the count</span>
                     ) : (
                       <>
-                        <span className="text-display-lg-mobile font-bold text-primary tabular-nums">{formatNumber(count.data ?? 0)}</span>{' '}
-                        <span className="text-label-md text-muted-foreground">onboarded</span>
+                        <span className="text-h1 font-bold text-primary tabular-nums">{formatNumber(count.data ?? 0)}</span>{' '}
+                        <span className="text-body text-muted-foreground">onboarded</span>
                       </>
                     )}
                   </div>

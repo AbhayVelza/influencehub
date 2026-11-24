@@ -13,7 +13,7 @@ export function PersonAvatar({ name, src, className, 'aria-hidden': ariaHidden }
   return (
     <Avatar className={cn('size-8', className)} aria-hidden={ariaHidden}>
       {src && <AvatarImage src={src} alt="" referrerPolicy="no-referrer" />}
-      <AvatarFallback className="text-xs font-medium text-secondary-foreground">{initials(name)}</AvatarFallback>
+      <AvatarFallback className="text-small font-medium text-secondary-foreground">{initials(name)}</AvatarFallback>
     </Avatar>
   )
 }

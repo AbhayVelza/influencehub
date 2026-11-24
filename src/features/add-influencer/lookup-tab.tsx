@@ -32,18 +32,18 @@ function ProfilePreview({ profile }: { profile: LookupProfile }) {
   return (
     <div className="space-y-3 rounded-2xl bg-surface-container-low/60 p-space-md" aria-label="Profile preview">
       <div className="flex gap-3">
-        <PersonAvatar name={profile.display_name} src={profile.profile_pic_url} className="size-14 text-base shadow-sm" />
+        <PersonAvatar name={profile.display_name} src={profile.profile_pic_url} className="size-14 text-body shadow-sm" />
         <div className="min-w-0 flex-1 space-y-1">
           <div className="flex flex-wrap items-center gap-x-2">
             <PlatformMark platform={profile.platform} />
-            <span className="text-headline-sm font-semibold tracking-tight text-primary">{profile.display_name}</span>
+            <span className="text-h3 font-semibold tracking-tight text-primary">{profile.display_name}</span>
             {profile.is_verified && <BadgeCheck className="size-4 fill-on-tertiary-container text-surface-container-lowest" aria-label="Verified" />}
-            <span className="text-body-md text-muted-foreground">@{profile.handle}</span>
+            <span className="text-body text-muted-foreground">@{profile.handle}</span>
           </div>
-          {profile.bio && <p className="text-body-md text-muted-foreground">{profile.bio}</p>}
+          {profile.bio && <p className="text-body text-muted-foreground">{profile.bio}</p>}
         </div>
       </div>
-      <dl className="flex flex-wrap gap-x-5 gap-y-1 text-body-md">
+      <dl className="flex flex-wrap gap-x-5 gap-y-1 text-body">
         {meta.metrics.map((def) => {
           const value = metricValue(profile, def.key)
           return value === null ? null : (
@@ -88,7 +88,7 @@ function LinkedAccounts({
   })
   if (!accounts.length) return null
   return (
-    <div className="space-y-2 rounded-xl bg-tertiary-fixed/25 p-3 text-body-md">
+    <div className="space-y-2 rounded-xl bg-tertiary-fixed/25 p-3 text-body">
       {accounts.map((a, i) => {
         const key = `${a.platform}:${a.handle}`
         const taken = checks[i]?.data?.available === false
@@ -287,7 +287,7 @@ export function LookupTab({ onDone, onManual }: { onDone: () => void; onManual: 
   return (
     <div className="space-y-4">
       <form onSubmit={start} className="grid gap-1.5" noValidate>
-        <Label htmlFor="lookup-username" className="text-label-md font-medium text-on-surface">Username or profile link</Label>
+        <Label htmlFor="lookup-username" className="text-body font-medium text-on-surface">Username or profile link</Label>
         <div className="flex flex-wrap gap-2 sm:flex-nowrap">
           <Select value={platform} onValueChange={(v) => setPlatform(v as Platform)} disabled={running}>
             <SelectTrigger className="w-40 shrink-0" aria-label="Platform">
@@ -323,7 +323,7 @@ export function LookupTab({ onDone, onManual }: { onDone: () => void; onManual: 
           </Button>
         </div>
         {inputError && (
-          <p id="lookup-username-error" className="text-body-sm text-error">
+          <p id="lookup-username-error" className="text-small text-error">
             {inputError}
           </p>
         )}
@@ -332,7 +332,7 @@ export function LookupTab({ onDone, onManual }: { onDone: () => void; onManual: 
       {running && (
         <div className="space-y-1" aria-live="polite">
           <Progress value={job.data?.progress ?? 5} aria-label="Lookup progress" />
-          <p className="text-body-sm text-muted-foreground">
+          <p className="text-small text-muted-foreground">
             Fetching @{handle} from {label}…
           </p>
         </div>
@@ -341,7 +341,7 @@ export function LookupTab({ onDone, onManual }: { onDone: () => void; onManual: 
       {conflict && <AlreadyInCrm {...conflict} onDone={onDone} />}
 
       {status === 'failed' && (
-        <div role="alert" className="space-y-3 rounded-xl bg-surface-container-low/70 p-3 text-body-md">
+        <div role="alert" className="space-y-3 rounded-xl bg-surface-container-low/70 p-3 text-body">
           <div className="flex gap-2">
             {failure === 'personal_account' ? (
               <UserX className="mt-0.5 size-4 shrink-0 text-on-tertiary-container" strokeWidth={1.75} />
@@ -369,7 +369,7 @@ export function LookupTab({ onDone, onManual }: { onDone: () => void; onManual: 
       )}
 
       {!running && status !== 'failed' && !conflict && (
-        <p className="rounded-xl bg-surface-container-low/50 p-3 text-body-sm text-muted-foreground">
+        <p className="rounded-xl bg-surface-container-low/50 p-3 text-small text-muted-foreground">
           Works for Instagram Business / Creator accounts, YouTube channels, Threads and public Facebook Pages. TikTok and
           Pinterest are connected by the creator; LinkedIn and Snapchat are added manually.
         </p>

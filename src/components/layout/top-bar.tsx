@@ -23,7 +23,7 @@ export function TopBar() {
             type="button"
             onClick={() => open()}
             aria-label="Add Influencer"
-            className="flex items-center gap-space-xs rounded-full bg-primary px-3 py-2.5 text-body-md font-semibold text-on-primary shadow-sm transition-all duration-150 outline-none hover:-translate-y-px hover:bg-primary/85 hover:shadow-[0_6px_18px_rgba(5,8,11,0.28)] focus-visible:ring-3 focus-visible:ring-ring/50 active:translate-y-0 active:scale-[0.98] sm:px-5"
+            className="flex items-center gap-space-xs rounded-full bg-primary px-3 py-2.5 text-body font-semibold text-on-primary shadow-sm transition-all duration-150 outline-none hover:-translate-y-px hover:bg-primary/85 hover:shadow-[0_6px_18px_rgba(5,8,11,0.28)] focus-visible:ring-3 focus-visible:ring-ring/50 active:translate-y-0 active:scale-[0.98] sm:px-5"
           >
             <Plus className="size-4" />
             <span className="hidden sm:inline">Add Influencer</span>

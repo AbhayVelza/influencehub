@@ -22,21 +22,21 @@ export function PageHeader({ title, description, actions, eyebrow, count, icon, 
         {eyebrow && (
           <div className="mb-1 flex items-center gap-space-xs">
             <span aria-hidden className="inline-block size-2 rounded-full bg-on-tertiary-container" />
-            <span className="text-label-sm tracking-wider text-muted-foreground uppercase">{eyebrow}</span>
+            <span className="text-small tracking-wider text-muted-foreground uppercase">{eyebrow}</span>
           </div>
         )}
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
           {icon}
-          <h1 className="text-headline-xl-mobile font-semibold tracking-tight text-primary sm:text-headline-xl">
+          <h1 className="text-h1 font-semibold tracking-tight text-primary">
             {title}
           </h1>
           {count !== undefined && count !== null && (
-            <span className="rounded-full bg-surface-container-low px-2.5 py-0.5 text-label-md font-medium text-muted-foreground tabular-nums shadow-sm">
+            <span className="rounded-full bg-surface-container-low px-2.5 py-0.5 text-body font-medium text-muted-foreground tabular-nums shadow-sm">
               {count}
             </span>
           )}
         </div>
-        {description && <p className="mt-0.5 text-body-md text-muted-foreground">{description}</p>}
+        {description && <p className="mt-0.5 text-body text-muted-foreground">{description}</p>}
       </div>
       {actions && <div className="flex flex-wrap items-center gap-space-sm">{actions}</div>}
     </div>

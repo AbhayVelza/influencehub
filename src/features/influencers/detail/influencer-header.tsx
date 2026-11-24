@@ -74,7 +74,7 @@ function OwnerControl({ influencer, onRelease }: { influencer: Influencer; onRel
     return (
       <Tooltip>
         <TooltipTrigger asChild>
-          <span tabIndex={0} className="inline-flex h-9 items-center gap-1.5 rounded-full bg-surface-container-low/60 px-3.5 text-label-md text-muted-foreground">
+          <span tabIndex={0} className="inline-flex h-9 items-center gap-1.5 rounded-full bg-surface-container-low/60 px-3.5 text-body text-muted-foreground">
             <UserRound className="size-4" strokeWidth={1.75} />
             Owner: <span className="font-medium text-primary">{label}</span>
           </span>
@@ -94,7 +94,7 @@ function OwnerControl({ influencer, onRelease }: { influencer: Influencer; onRel
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-56">
-        <DropdownMenuLabel className="text-label-sm tracking-wider text-muted-foreground uppercase">Assign to</DropdownMenuLabel>
+        <DropdownMenuLabel className="text-small tracking-wider text-muted-foreground uppercase">Assign to</DropdownMenuLabel>
         {team.data?.items
           .filter((u) => u.is_active)
           .map((user) => (
@@ -139,25 +139,25 @@ export function InfluencerIdentity({
 
       <div className="space-y-space-lg rounded-2xl bg-surface-container-lowest/70 p-space-md shadow-glass backdrop-blur-2xl sm:p-space-lg dark:ring-1 dark:ring-white/5">
         <div className="flex flex-wrap items-start gap-4">
-          <PersonAvatar name={influencer.name} src={influencer.profile_pic_url} className="size-16 text-lg shadow-sm" />
+          <PersonAvatar name={influencer.name} src={influencer.profile_pic_url} className="size-16 text-h2 shadow-sm" />
           <div className="min-w-0 flex-1 space-y-1.5">
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-              <h1 className="flex min-w-0 items-center gap-1.5 text-headline-md font-semibold tracking-tight text-primary sm:text-headline-xl">
+              <h1 className="flex min-w-0 items-center gap-1.5 text-h1 font-semibold tracking-tight text-primary">
                 <span className="min-w-0 break-words">{influencer.name}</span>
                 {influencer.is_verified && (
                   <BadgeCheck className="size-5 shrink-0 fill-on-tertiary-container text-surface-container-lowest" aria-label="Verified account" />
                 )}
               </h1>
-              <AccountLabel account={primary && toRef(primary)} link className="text-body-md text-muted-foreground" />
+              <AccountLabel account={primary && toRef(primary)} link className="text-body text-muted-foreground" />
             </div>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-body-sm text-muted-foreground">
-              <span className="inline-flex items-center rounded-full bg-surface-container-high px-2.5 py-0.5 text-[11px] font-medium text-on-surface">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-small text-muted-foreground">
+              <span className="inline-flex items-center rounded-full bg-surface-container-high px-2.5 py-0.5 text-small font-medium text-on-surface">
                 {influencer.category}
               </span>
               <PlatformMarks platforms={influencer.accounts.map((a) => a.platform)} />
               {influencer.total_reach != null && (
                 <span title={formatNumber(influencer.total_reach)}>
-                  <span className="font-code font-semibold text-primary tabular-nums">{formatCompact(influencer.total_reach)}</span> total followers
+                  <span className="tabular-nums font-semibold text-primary">{formatCompact(influencer.total_reach)}</span> total followers
                 </span>
               )}
               {location !== '—' && (

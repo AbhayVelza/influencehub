@@ -119,7 +119,7 @@ export function LogCallDialog({ influencer, open, onOpenChange, intent }: LogCal
           </DialogHeader>
 
           <fieldset className="space-y-2">
-            <legend className="mb-2 text-label-md font-semibold text-primary">Outcome</legend>
+            <legend className="mb-2 text-body font-semibold text-primary">Outcome</legend>
             <Controller
               control={control}
               name="outcome"
@@ -134,7 +134,7 @@ export function LogCallDialog({ influencer, open, onOpenChange, intent }: LogCal
                         aria-checked={field.value === value}
                         onClick={() => field.onChange(value)}
                         className={cn(
-                          'inline-flex h-8 items-center gap-1.5 rounded-full px-3.5 text-label-md font-medium transition-all duration-150 outline-none focus-visible:ring-3 focus-visible:ring-ring/50 active:scale-95',
+                          'inline-flex h-8 items-center gap-1.5 rounded-full px-3.5 text-body font-medium transition-all duration-150 outline-none focus-visible:ring-3 focus-visible:ring-ring/50 active:scale-95',
                           CALL_OUTCOME_META[value].badge,
                           field.value === value
                             ? 'font-semibold shadow-sm ring-2 ring-current/40'
@@ -150,25 +150,25 @@ export function LogCallDialog({ influencer, open, onOpenChange, intent }: LogCal
                       </button>
                     ))}
                   </div>
-                  {fieldState.error && <p className="text-xs text-destructive">{fieldState.error.message}</p>}
+                  {fieldState.error && <p className="text-small text-destructive">{fieldState.error.message}</p>}
                 </>
               )}
             />
             {outcome === 'not_interested' && (
-              <p className="text-xs text-muted-foreground">Will automatically move to <strong>Rejected</strong>.</p>
+              <p className="text-small text-muted-foreground">Will automatically move to <strong>Rejected</strong>.</p>
             )}
             {(outcome === 'no_answer' || outcome === 'wrong_number') && (
-              <p className="text-xs text-muted-foreground">Will automatically move to <strong>On Hold</strong>.</p>
+              <p className="text-small text-muted-foreground">Will automatically move to <strong>On Hold</strong>.</p>
             )}
             {outcome === 'call_back' && (
-              <p className="text-xs text-muted-foreground">Will be scheduled and tracked in <strong>Follow-ups</strong>.</p>
+              <p className="text-small text-muted-foreground">Will be scheduled and tracked in <strong>Follow-ups</strong>.</p>
             )}
           </fieldset>
 
           <div className="grid gap-1.5">
             <Label htmlFor="call-notes">Notes</Label>
             <Textarea id="call-notes" rows={3} placeholder="What did you discuss?" {...register('notes')} />
-            {formState.errors.notes && <p className="text-xs text-destructive">{formState.errors.notes.message}</p>}
+            {formState.errors.notes && <p className="text-small text-destructive">{formState.errors.notes.message}</p>}
           </div>
 
           <div className="grid gap-1.5">
@@ -190,7 +190,7 @@ export function LogCallDialog({ influencer, open, onOpenChange, intent }: LogCal
                   type="button"
                   variant="ghost"
                   size="xs"
-                  className="h-7 rounded-full bg-surface-container-lowest/70 px-3 text-label-md text-muted-foreground shadow-sm backdrop-blur-xl hover:bg-surface-container-low hover:text-primary"
+                  className="h-7 rounded-full bg-surface-container-lowest/70 px-3 text-body text-muted-foreground shadow-sm backdrop-blur-xl hover:bg-surface-container-low hover:text-primary"
                   onClick={() => setValue('follow_up', dateTimeInputFromNow(p.days, p.hour), { shouldValidate: true })}
                 >
                   {p.label}
@@ -198,7 +198,7 @@ export function LogCallDialog({ influencer, open, onOpenChange, intent }: LogCal
               ))}
             </div>
             {formState.errors.follow_up && (
-              <p className="text-xs text-destructive">{formState.errors.follow_up.message}</p>
+              <p className="text-small text-destructive">{formState.errors.follow_up.message}</p>
             )}
           </div>
 
@@ -207,7 +207,7 @@ export function LogCallDialog({ influencer, open, onOpenChange, intent }: LogCal
               control={control}
               name="move_to_contacted"
               render={({ field }) => (
-                <label className="flex items-center gap-2 rounded-xl bg-surface-container-low/60 p-3 text-body-sm text-on-surface">
+                <label className="flex items-center gap-2 rounded-xl bg-surface-container-low/60 p-3 text-small text-on-surface">
                   <Checkbox checked={field.value} onCheckedChange={(v) => field.onChange(!!v)} />
                   Move to <strong className="font-medium">Contacted</strong>
                 </label>

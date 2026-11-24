@@ -76,7 +76,7 @@ const ADDRESS_FIELDS = [
 type SubmitValues = z.output<typeof packageSchema>
 
 function FieldMessage({ error }: { error?: FieldError | { message?: string } }) {
-  return error?.message ? <p className="text-body-sm text-error">{error.message}</p> : null
+  return error?.message ? <p className="text-small text-error">{error.message}</p> : null
 }
 
 export function PackageDrawer({ influencer, pkg, open, onOpenChange, intent, onSaved }: PackageDrawerProps) {
@@ -184,7 +184,7 @@ export function PackageDrawer({ influencer, pkg, open, onOpenChange, intent, onS
 
           <div className="flex-1 space-y-space-md overflow-y-auto p-4">
             <section className="space-y-2 rounded-xl bg-surface-container-low/50 p-4">
-              <h3 className="text-label-sm tracking-wider text-muted-foreground uppercase">Items</h3>
+              <h3 className="text-small tracking-wider text-muted-foreground uppercase">Items</h3>
               {items.fields.map((field, index) => (
                 <div key={field.id} className="flex items-start gap-2">
                   <div className="flex-1">
@@ -227,7 +227,7 @@ export function PackageDrawer({ influencer, pkg, open, onOpenChange, intent, onS
 
             <section className="space-y-2 rounded-xl bg-surface-container-low/50 p-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-label-sm tracking-wider text-muted-foreground uppercase">Ship to</h3>
+                <h3 className="text-small tracking-wider text-muted-foreground uppercase">Ship to</h3>
                 {influencer.address && (
                   <Button
                     type="button"
@@ -240,12 +240,12 @@ export function PackageDrawer({ influencer, pkg, open, onOpenChange, intent, onS
                 )}
               </div>
               {!influencer.address && !isEdit && (
-                <p className="text-body-sm text-muted-foreground">No address on the profile yet. Enter one for this Welcome Kit.</p>
+                <p className="text-small text-muted-foreground">No address on the profile yet. Enter one for this Welcome Kit.</p>
               )}
               <div className="grid grid-cols-2 gap-2">
                 {ADDRESS_FIELDS.map(({ name, label, span }) => (
                   <div key={name} className={span === 2 ? 'col-span-2 grid gap-1' : 'grid gap-1'}>
-                    <Label htmlFor={`pkg-${name}`} className="text-xs">
+                    <Label htmlFor={`pkg-${name}`} className="text-small">
                       {label}
                     </Label>
                     <Input id={`pkg-${name}`} aria-invalid={!!errors.address?.[name]} {...register(`address.${name}`)} />
@@ -256,9 +256,9 @@ export function PackageDrawer({ influencer, pkg, open, onOpenChange, intent, onS
             </section>
 
             <section className="grid grid-cols-2 gap-2 rounded-xl bg-surface-container-low/50 p-4">
-              <h3 className="col-span-2 text-label-sm tracking-wider text-muted-foreground uppercase">Shipping</h3>
+              <h3 className="col-span-2 text-small tracking-wider text-muted-foreground uppercase">Shipping</h3>
               <div className="grid gap-1">
-                <Label htmlFor="pkg-status" className="text-xs">
+                <Label htmlFor="pkg-status" className="text-small">
                   Status
                 </Label>
                 <Controller
@@ -281,7 +281,7 @@ export function PackageDrawer({ influencer, pkg, open, onOpenChange, intent, onS
                 />
               </div>
               <div className="grid gap-1">
-                <Label htmlFor="pkg-courier" className="text-xs">
+                <Label htmlFor="pkg-courier" className="text-small">
                   Courier
                 </Label>
                 <Input id="pkg-courier" list="pkg-couriers" aria-invalid={!!errors.courier} {...register('courier')} />
@@ -293,13 +293,13 @@ export function PackageDrawer({ influencer, pkg, open, onOpenChange, intent, onS
                 <FieldMessage error={errors.courier} />
               </div>
               <div className="col-span-2 grid gap-1">
-                <Label htmlFor="pkg-tracking" className="text-xs">
+                <Label htmlFor="pkg-tracking" className="text-small">
                   Tracking number
                 </Label>
                 <div className="flex gap-2">
                   <Input
                     id="pkg-tracking"
-                    className="font-code"
+                    className="tabular-nums"
                     aria-invalid={!!errors.tracking_number}
                     {...register('tracking_number')}
                   />

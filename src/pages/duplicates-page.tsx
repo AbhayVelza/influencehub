@@ -37,11 +37,11 @@ function Side({ influencer }: { influencer: Influencer }) {
     <div className="min-w-0 space-y-3 rounded-xl bg-surface-container-low/50 p-4">
       <div className="flex items-center gap-2.5">
         <PersonAvatar name={influencer.name} src={influencer.profile_pic_url} className="size-9 shadow-sm" />
-        <Link to={`/influencers/${influencer.id}`} className="truncate text-label-md font-semibold text-primary hover:underline">
+        <Link to={`/influencers/${influencer.id}`} className="truncate text-body font-semibold text-primary hover:underline">
           {influencer.name}
         </Link>
       </div>
-      <dl className="grid grid-cols-[7rem_1fr] gap-x-3 gap-y-1.5 text-body-sm">
+      <dl className="grid grid-cols-[7rem_1fr] gap-x-3 gap-y-1.5 text-small">
         {rows.map(([label, value]) => (
           <div key={label} className="contents">
             <dt className="text-muted-foreground">{label}</dt>
@@ -65,7 +65,7 @@ function PairCard({ pair }: { pair: DuplicatePair }) {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="space-y-2">
           <ConfidenceBadge confidence={pair.confidence} />
-          <ul className="list-disc space-y-0.5 pl-5 text-body-md text-muted-foreground marker:text-outline">
+          <ul className="list-disc space-y-0.5 pl-5 text-body text-muted-foreground marker:text-outline">
             {pair.reasons.map((r) => (
               <li key={r}>{r}</li>
             ))}
@@ -115,8 +115,8 @@ function NoDuplicates() {
           </div>
         </div>
       </div>
-      <h2 className="mb-space-xs text-headline-md font-semibold tracking-tight text-primary">No possible duplicates</h2>
-      <p className="max-w-md text-body-md leading-relaxed text-muted-foreground">New matches show up here as creators are added.</p>
+      <h2 className="mb-space-xs text-h2 font-semibold tracking-tight text-primary">No possible duplicates</h2>
+      <p className="max-w-md text-body leading-relaxed text-muted-foreground">New matches show up here as creators are added.</p>
     </div>
   )
 }

@@ -44,11 +44,11 @@ function TextInput({ id, label, error, hint, ...props }: ComponentProps<typeof I
       <Label htmlFor={id}>{label}</Label>
       <Input id={id} aria-invalid={!!error} aria-describedby={error ? `${id}-error` : undefined} {...props} />
       {error && (
-        <p id={`${id}-error`} className="text-body-sm text-error">
+        <p id={`${id}-error`} className="text-small text-error">
           {error}
         </p>
       )}
-      {hint && !error && <p className="text-xs text-muted-foreground">{hint}</p>}
+      {hint && !error && <p className="text-small text-muted-foreground">{hint}</p>}
     </div>
   )
 }
@@ -143,7 +143,7 @@ function AddMemberDialog({ open, onOpenChange }: { open: boolean; onOpenChange: 
             />
           )}
           {formError && (
-            <p role="alert" className="rounded-xl bg-error-container/50 px-3 py-2 text-body-md text-error">
+            <p role="alert" className="rounded-xl bg-error-container/50 px-3 py-2 text-body text-error">
               {formError}
             </p>
           )}
@@ -294,10 +294,10 @@ export function TeamSettings() {
                         <div className="flex items-center gap-3">
                           <PersonAvatar name={user.name} className="shadow-sm" />
                           <div className="min-w-0">
-                            <p className={cn('text-label-md font-semibold', user.is_active && 'text-primary')}>
-                              {user.name} {self && <span className="text-body-sm font-normal text-muted-foreground">(you)</span>}
+                            <p className={cn('text-body font-semibold', user.is_active && 'text-primary')}>
+                              {user.name} {self && <span className="text-small font-normal text-muted-foreground">(you)</span>}
                             </p>
-                            <p className="font-code text-[11px] text-muted-foreground">{user.email}</p>
+                            <p className="tabular-nums text-small text-muted-foreground">{user.email}</p>
                           </div>
                         </div>
                       </TableCell>
@@ -332,7 +332,7 @@ export function TeamSettings() {
                       <TableCell>
                         <span
                           className={cn(
-                            'inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-medium whitespace-nowrap',
+                            'inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-small font-medium whitespace-nowrap',
                             user.is_active ? 'bg-green-50 text-green-700 dark:bg-green-400/10 dark:text-green-300' : 'bg-surface-container-high text-muted-foreground',
                           )}
                         >

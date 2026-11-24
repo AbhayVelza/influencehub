@@ -25,8 +25,8 @@ function FollowUpRow({ call, overdue }: { call: CallLogWithInfluencer; overdue: 
     <>
       <PersonAvatar name={call.influencer.name} src={call.influencer.profile_pic_url} className="size-7" />
       <div className="min-w-0 flex-1">
-        <p className="truncate text-label-md font-semibold">{call.influencer.name}</p>
-        <p className="truncate text-body-sm text-muted-foreground">
+        <p className="truncate text-body font-semibold">{call.influencer.name}</p>
+        <p className="truncate text-small text-muted-foreground">
           {CALL_OUTCOME_META[call.outcome].label} ·{' '}
           {overdue ? (
             <span className="text-destructive">
@@ -95,8 +95,8 @@ export function NotificationsMenu() {
               >
                 <Inbox className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-label-md font-semibold">{r.influencer.name}</p>
-                  <p className="truncate text-body-sm text-muted-foreground">
+                  <p className="truncate text-body font-semibold">{r.influencer.name}</p>
+                  <p className="truncate text-small text-muted-foreground">
                     Auto-release <RelativeTime iso={r.release_at} /> · log a call to keep them
                   </p>
                 </div>
@@ -107,7 +107,7 @@ export function NotificationsMenu() {
         )}
         <DropdownMenuLabel className="flex items-center justify-between">
           Follow-ups due
-          {followUpTotal > 0 && <span className="text-xs font-normal text-muted-foreground">{followUpTotal} open</span>}
+          {followUpTotal > 0 && <span className="text-small font-normal text-muted-foreground">{followUpTotal} open</span>}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         {isLoading ? (
@@ -123,9 +123,9 @@ export function NotificationsMenu() {
             ))}
           </div>
         ) : isError ? (
-          <p className="px-2 py-6 text-center text-sm text-muted-foreground">Couldn’t load follow-ups.</p>
+          <p className="px-2 py-6 text-center text-body text-muted-foreground">Couldn’t load follow-ups.</p>
         ) : rows.length === 0 ? (
-          <p className="px-2 py-6 text-center text-sm text-muted-foreground">You’re all caught up.</p>
+          <p className="px-2 py-6 text-center text-body text-muted-foreground">You’re all caught up.</p>
         ) : (
           rows.map(({ call, overdue: isOverdue }) => (
             <DropdownMenuItem
@@ -138,7 +138,7 @@ export function NotificationsMenu() {
           ))
         )}
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild className="justify-center text-sm">
+        <DropdownMenuItem asChild className="justify-center text-body">
           <Link to="/calls">View all follow-ups</Link>
         </DropdownMenuItem>
       </DropdownMenuContent>

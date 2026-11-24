@@ -17,7 +17,7 @@ const CONFIDENCE_META: Record<MatchConfidence, { label: string; dot: string }> =
 export function ConfidenceBadge({ confidence }: { confidence: MatchConfidence }) {
   const meta = CONFIDENCE_META[confidence]
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-container px-2.5 py-0.5 text-label-sm font-medium whitespace-nowrap text-on-surface">
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-container px-2.5 py-0.5 text-small font-medium whitespace-nowrap text-on-surface">
       <span aria-hidden className={cn('size-1.5 rounded-full', meta.dot)} />
       {meta.label} confidence
     </span>
@@ -44,8 +44,8 @@ export function DuplicateWarning({ matches, onUseExisting, onProceed, proceedLab
   const restricted = matches.length - visible.length
 
   return (
-    <div role="alert" className="space-y-3 rounded-2xl bg-amber-50/90 p-4 text-body-md shadow-sm ring-1 ring-amber-500/25 backdrop-blur-xl dark:bg-amber-400/10 dark:ring-amber-400/25">
-      <p className="flex items-center gap-2 text-label-md font-semibold text-on-surface">
+    <div role="alert" className="space-y-3 rounded-2xl bg-amber-50/90 p-4 text-body shadow-sm ring-1 ring-amber-500/25 backdrop-blur-xl dark:bg-amber-400/10 dark:ring-amber-400/25">
+      <p className="flex items-center gap-2 text-body font-semibold text-on-surface">
         <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-amber-500/15">
           <TriangleAlert className="size-4 text-amber-600 dark:text-amber-400" strokeWidth={1.75} />
         </span>
@@ -60,17 +60,17 @@ export function DuplicateWarning({ matches, onUseExisting, onProceed, proceedLab
                 <PersonAvatar name={inf.name} src={inf.profile_pic_url} className="size-8 shadow-sm" />
                 <div className="min-w-0 flex-1 space-y-1">
                   <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                    <Link to={`/influencers/${inf.id}`} onClick={onLeave} className="text-label-md font-semibold text-primary hover:underline">
+                    <Link to={`/influencers/${inf.id}`} onClick={onLeave} className="text-body font-semibold text-primary hover:underline">
                       {inf.name}
                     </Link>
                     <ConfidenceBadge confidence={m.confidence} />
-                    {m.access === 'pool' && <span className="text-body-sm text-muted-foreground">In the Unassigned Pool</span>}
+                    {m.access === 'pool' && <span className="text-small text-muted-foreground">In the Unassigned Pool</span>}
                   </div>
-                  <div className="flex flex-wrap items-center gap-x-2 text-body-sm text-muted-foreground">
+                  <div className="flex flex-wrap items-center gap-x-2 text-small text-muted-foreground">
                     <AccountLabel account={inf.primary_account} />
                     {inf.city && <span>· {inf.city}</span>}
                   </div>
-                  <ul className="list-disc pl-4 text-body-sm text-muted-foreground marker:text-outline">
+                  <ul className="list-disc pl-4 text-small text-muted-foreground marker:text-outline">
                     {m.reasons.map((r) => (
                       <li key={r}>{r}</li>
                     ))}

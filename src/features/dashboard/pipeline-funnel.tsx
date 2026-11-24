@@ -23,7 +23,7 @@ export function PipelineFunnel({ funnel }: { funnel: { stage: Stage; count: numb
         >
           <span className="flex w-28 shrink-0 items-center gap-2 sm:w-36">
             <span aria-hidden className={cn('size-2 shrink-0 rounded-full', STAGE_META[stage].dot)} />
-            <span className={cn('truncate text-body-md font-medium', secondary ? 'text-muted-foreground' : 'text-on-surface')}>
+            <span className={cn('truncate text-body font-medium', secondary ? 'text-muted-foreground' : 'text-on-surface')}>
               {STAGE_META[stage].label}
             </span>
           </span>
@@ -38,9 +38,9 @@ export function PipelineFunnel({ funnel }: { funnel: { stage: Stage; count: numb
               style={{ width: `${(count / max) * 100}%`, minWidth: count ? 4 : 0 }}
             />
           </span>
-          <span className={cn('w-20 shrink-0 text-right font-code text-body-sm tabular-nums', secondary ? 'text-muted-foreground' : 'text-primary')}>
+          <span className={cn('w-20 shrink-0 text-right tabular-nums text-small', secondary ? 'text-muted-foreground' : 'text-primary')}>
             <span className={secondary ? 'font-medium' : 'font-semibold'}>{formatNumber(count)}</span>{' '}
-            <span className="text-[11px] text-muted-foreground">({total ? Math.round((count / total) * 100) : 0}%)</span>
+            <span className="text-small text-muted-foreground">({total ? Math.round((count / total) * 100) : 0}%)</span>
             <span className="sr-only"> influencers — open the list filtered to this stage</span>
           </span>
         </Link>

@@ -40,15 +40,15 @@ function Kpi({ label, value, to, hint }: { label: string; value: number; to?: st
     <>
       <div className="flex items-start justify-between gap-1">
         <div className="flex min-w-0 flex-col pr-1">
-          <span className="line-clamp-2 text-label-sm font-medium text-muted-foreground">{label}</span>
-          {hint && <span className="mt-0.5 text-body-sm text-muted-foreground/60">{hint}</span>}
+          <span className="line-clamp-2 text-small font-medium text-muted-foreground">{label}</span>
+          {hint && <span className="mt-0.5 text-small text-muted-foreground/60">{hint}</span>}
         </div>
         <span aria-hidden className="mt-1 size-1.5 shrink-0 rounded-full bg-on-tertiary-container" />
       </div>
       <div>
         <div aria-hidden className="my-3 h-px w-full bg-surface-container-highest" />
         <div className="flex items-center justify-between gap-1">
-          <span className="text-headline-md font-semibold tracking-tight text-primary tabular-nums">{formatNumber(value)}</span>
+          <span className="text-h2 font-semibold tracking-tight text-primary tabular-nums">{formatNumber(value)}</span>
           {to && (
             <ArrowUpRight
               aria-hidden
@@ -99,9 +99,9 @@ function Panel({
         <div className="min-w-0">
           <div className="flex items-center gap-space-sm">
             {Icon && <Icon aria-hidden className="size-5 shrink-0 text-primary" strokeWidth={1.75} />}
-            <h2 className="text-headline-sm font-semibold tracking-tight text-primary">{title}</h2>
+            <h2 className="text-h3 font-semibold tracking-tight text-primary">{title}</h2>
           </div>
-          {description && <p className="mt-0.5 text-body-sm text-muted-foreground">{description}</p>}
+          {description && <p className="mt-0.5 text-small text-muted-foreground">{description}</p>}
         </div>
         {action}
       </div>
@@ -129,11 +129,11 @@ function MyFollowUps({ items }: { items: DashboardSummary['my_follow_ups'] }) {
               <div className="min-w-0 flex-1">
                 <Link
                   to={`/influencers/${call.influencer_id}?tab=calls`}
-                  className="block truncate text-body-md font-medium text-primary hover:underline"
+                  className="block truncate text-body font-medium text-primary hover:underline"
                 >
                   {call.influencer.name}
                 </Link>
-                <p className="truncate text-body-sm text-muted-foreground">
+                <p className="truncate text-small text-muted-foreground">
                   {CALL_OUTCOME_META[call.outcome].label} ·{' '}
                   {overdue ? (
                     <span className="font-medium text-error">
@@ -186,13 +186,13 @@ function RecentActivity({ items }: { items: DashboardSummary['recent_activity'] 
       {items.map((a) => {
         const { text, detail } = describeActivity(a, team)
         return (
-          <li key={a.id} className="py-2.5 text-body-md">
+          <li key={a.id} className="py-2.5 text-body">
             <Link to={`/influencers/${a.influencer_id}?tab=activity`} className="font-medium text-primary hover:underline">
               {a.influencer.name}
             </Link>{' '}
             <span className="text-muted-foreground">·</span> {text}
             {detail && <span className="text-muted-foreground"> — “{detail}”</span>}
-            <p className="mt-0.5 text-body-sm text-muted-foreground">
+            <p className="mt-0.5 text-small text-muted-foreground">
               {a.actor ? (team.get(a.actor)?.name ?? 'Someone') : 'System'} ·{' '}
               <RelativeTime iso={a.created_at} />
             </p>
@@ -356,7 +356,7 @@ export default function DashboardPage() {
                 <Panel title="Pipeline" icon={Filter} description="Click a stage to see its influencers">
                   <PipelineFunnel funnel={s.funnel} />
                 </Panel>
-                <Panel title="My follow-ups" icon={PhoneCall} action={<span className="shrink-0 pt-0.5 text-label-sm text-muted-foreground">Today &amp; overdue</span>}>
+                <Panel title="My follow-ups" icon={PhoneCall} action={<span className="shrink-0 pt-0.5 text-small text-muted-foreground">Today &amp; overdue</span>}>
                   <MyFollowUps items={s.my_follow_ups} />
                 </Panel>
               </div>

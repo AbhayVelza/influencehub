@@ -36,8 +36,8 @@ function Notice({ tone, title, children }: { tone: 'info' | 'error'; title: stri
       role={tone === 'error' ? 'alert' : 'status'}
       className={
         tone === 'error'
-          ? 'flex gap-2.5 rounded-xl bg-error-container/50 p-3 text-body-sm'
-          : 'flex gap-2.5 rounded-xl bg-tertiary-fixed/30 p-3 text-body-sm'
+          ? 'flex gap-2.5 rounded-xl bg-error-container/50 p-3 text-small'
+          : 'flex gap-2.5 rounded-xl bg-tertiary-fixed/30 p-3 text-small'
       }
     >
       <Icon strokeWidth={1.75} className={tone === 'error' ? 'mt-0.5 size-4 shrink-0 text-error' : 'mt-0.5 size-4 shrink-0 text-on-tertiary-container'} />
@@ -60,10 +60,10 @@ function StatCards({ account }: { account: SocialAccount }) {
         const value = metricValue(account, def.key)
         return (
           <div key={def.key} className="flex min-w-0 flex-col-reverse gap-0.5">
-            <dd className="truncate text-headline-sm font-semibold tracking-tight text-primary tabular-nums" title={exactMetric(def, value)}>
+            <dd className="truncate text-h3 font-semibold tracking-tight text-primary tabular-nums" title={exactMetric(def, value)}>
               {formatMetric(def, value)}
             </dd>
-            <dt className="text-label-sm tracking-wider text-muted-foreground uppercase">{def.label}</dt>
+            <dt className="text-small tracking-wider text-muted-foreground uppercase">{def.label}</dt>
           </div>
         )
       })}
@@ -79,8 +79,8 @@ function DetailStats({ account }: { account: SocialAccount }) {
     <dl className="grid gap-3">
       {defs.map((def) => (
         <div key={def.key} className="flex flex-col-reverse gap-0.5">
-          <dd className="text-body-md text-on-surface">{formatMetric(def, metricValue(account, def.key))}</dd>
-          <dt className="text-label-sm tracking-wider text-muted-foreground uppercase">{def.label}</dt>
+          <dd className="text-body text-on-surface">{formatMetric(def, metricValue(account, def.key))}</dd>
+          <dt className="text-small tracking-wider text-muted-foreground uppercase">{def.label}</dt>
         </div>
       ))}
     </dl>
@@ -98,8 +98,8 @@ function RecentPosts({ influencerId, account }: { influencerId: string; account:
       </div>
     )
   }
-  if (media.isError) return <p className="text-xs text-muted-foreground">Couldn’t load recent posts.</p>
-  if (media.data.items.length === 0) return <p className="text-xs text-muted-foreground">No recent posts.</p>
+  if (media.isError) return <p className="text-small text-muted-foreground">Couldn’t load recent posts.</p>
+  if (media.data.items.length === 0) return <p className="text-small text-muted-foreground">No recent posts.</p>
   return (
     <ul className="grid grid-cols-3 gap-2 md:grid-cols-6">
       {media.data.items.slice(0, 6).map((post) => (
@@ -120,11 +120,11 @@ function RecentPosts({ influencerId, account }: { influencerId: string; account:
                 className="size-full object-cover transition-transform group-hover:scale-105"
               />
             ) : (
-              <span className="flex size-full items-center justify-center p-2 text-center text-[10px] text-muted-foreground">
+              <span className="flex size-full items-center justify-center p-2 text-center text-small text-muted-foreground">
                 Post from {formatDate(post.posted_at)}
               </span>
             )}
-            <span className="absolute inset-x-0 bottom-0 flex justify-between bg-gradient-to-t from-black/70 to-transparent px-2 pt-6 pb-1.5 text-[11px] font-medium text-white">
+            <span className="absolute inset-x-0 bottom-0 flex justify-between bg-gradient-to-t from-black/70 to-transparent px-2 pt-6 pb-1.5 text-small font-medium text-white">
               <span className="inline-flex items-center gap-0.5" title={post.likes === null ? 'Likes hidden' : undefined}>
                 <Heart className="size-3" />
                 {post.likes === null ? '–' : formatCompact(post.likes)}
@@ -152,7 +152,7 @@ function ConnectStatusBadge({ account }: { account: SocialAccount }) {
   const status = account.connect_status ?? 'not_connected'
   const meta = CONNECT_LABEL[status]
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-container-low/80 px-2 py-0.5 text-[11px] font-medium whitespace-nowrap text-muted-foreground">
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-container-low/80 px-2 py-0.5 text-small font-medium whitespace-nowrap text-muted-foreground">
       <span aria-hidden className={cn('size-1.5 rounded-full', meta.dot)} />
       {meta.label}
       {status === 'link_sent' && account.connect_link_expires_at && (
@@ -265,13 +265,13 @@ function AccountView({ influencer, account }: { influencer: Influencer; account:
   return (
     <>
       <div className="min-w-0 space-y-4">
-        <a href={account.profile_url} target="_blank" rel="noreferrer" className="block truncate text-body-sm text-on-tertiary-container hover:underline">
+        <a href={account.profile_url} target="_blank" rel="noreferrer" className="block truncate text-small text-on-tertiary-container hover:underline">
           {meta.label} · @{account.handle}
           {account.is_primary && ' · Primary'}
         </a>
       <div className="space-y-2 rounded-xl bg-surface-container-low/50 p-3">
-        <div className="flex flex-wrap items-center justify-between gap-2 text-body-sm">
-          <span className="text-label-sm tracking-wider text-muted-foreground uppercase">{SYNC_METHOD_LABEL[account.sync_method]}</span>
+        <div className="flex flex-wrap items-center justify-between gap-2 text-small">
+          <span className="text-small tracking-wider text-muted-foreground uppercase">{SYNC_METHOD_LABEL[account.sync_method]}</span>
           {account.sync_method === 'connect' ? (
             <ConnectStatusBadge account={account} />
           ) : account.sync_method === 'lookup' ? (
@@ -309,7 +309,7 @@ function AccountView({ influencer, account }: { influencer: Influencer; account:
         {syncing && (
           <div className="space-y-1" aria-live="polite">
             <Progress value={progress} aria-label="Sync progress" />
-            <p className="text-body-sm text-muted-foreground">
+            <p className="text-small text-muted-foreground">
               Syncing from {meta.label}… {progress}%
             </p>
           </div>
@@ -339,7 +339,7 @@ function AccountView({ influencer, account }: { influencer: Influencer; account:
         </Notice>
       )}
       {account.sync_status === 'pending' && !hasData && (
-        <p className="text-body-md text-muted-foreground">Waiting for the first sync. Stats appear once {meta.label} returns data.</p>
+        <p className="text-body text-muted-foreground">Waiting for the first sync. Stats appear once {meta.label} returns data.</p>
       )}
 
       <StatCards account={account} />
@@ -349,23 +349,23 @@ function AccountView({ influencer, account }: { influencer: Influencer; account:
       <div className="min-w-0 space-y-4 border-t border-surface-container pt-4 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-6">
         <DetailStats account={account} />
         {account.bio && (
-          <p className="rounded-xl bg-surface-container-low/50 p-3 text-body-md whitespace-pre-wrap text-on-surface">{account.bio}</p>
+          <p className="rounded-xl bg-surface-container-low/50 p-3 text-body whitespace-pre-wrap text-on-surface">{account.bio}</p>
         )}
 
       {tracked &&
         (snapshots.isPending ? (
           <Skeleton className="h-36 w-full rounded-xl" />
         ) : snapshots.isError ? (
-          <p className="text-xs text-muted-foreground">Couldn’t load the history.</p>
+          <p className="text-small text-muted-foreground">Couldn’t load the history.</p>
         ) : snapshots.data.items.length < 2 ? (
-          <p className="text-xs text-muted-foreground">
+          <p className="text-small text-muted-foreground">
             {meta.audienceLabel} history builds up with each day’s sync; the chart appears after the second day.
           </p>
         ) : (
           <GrowthChart snapshots={snapshots.data.items} label={meta.audienceLabel} id={account.id} />
         ))}
         {!tracked && !account.bio && meta.metrics.every(isNumeric) && (
-          <p className="text-xs text-muted-foreground">Bio and history appear once the account syncs.</p>
+          <p className="text-small text-muted-foreground">Bio and history appear once the account syncs.</p>
         )}
       </div>
     </>
@@ -381,10 +381,10 @@ function RecentPostsCard({ influencerId, account }: { influencerId: string; acco
   return (
     <Card size="sm" aria-label={label}>
       <CardHeader className="flex flex-row items-center justify-between gap-2">
-        <CardTitle className="text-headline-sm">
-          {label} <span className="text-body-sm font-normal text-muted-foreground">· @{account.handle}</span>
+        <CardTitle className="text-h3">
+          {label} <span className="text-small font-normal text-muted-foreground">· @{account.handle}</span>
         </CardTitle>
-        <a href={account.profile_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-body-sm text-on-tertiary-container hover:underline">
+        <a href={account.profile_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-small text-on-tertiary-container hover:underline">
           View on {PLATFORM_META[account.platform].label}
           <ExternalLink className="size-3.5" />
         </a>
@@ -422,20 +422,20 @@ function OverallView({ influencer }: { influencer: Influencer }) {
     <div className="space-y-4">
       <dl className="grid grid-cols-2 gap-2">
         <div className="flex flex-col-reverse rounded-xl bg-surface-container-low/70 px-3 py-2.5">
-          <dd className="truncate text-headline-sm font-semibold tracking-tight text-primary tabular-nums">{reach === null ? '—' : formatCompact(reach)}</dd>
-          <dt className="text-label-sm tracking-wider text-muted-foreground uppercase">Total followers</dt>
+          <dd className="truncate text-h3 font-semibold tracking-tight text-primary tabular-nums">{reach === null ? '—' : formatCompact(reach)}</dd>
+          <dt className="text-small tracking-wider text-muted-foreground uppercase">Total followers</dt>
         </div>
         <div className="flex flex-col-reverse rounded-xl bg-surface-container-low/70 px-3 py-2.5">
-          <dd className="truncate text-headline-sm font-semibold tracking-tight text-primary tabular-nums">
+          <dd className="truncate text-h3 font-semibold tracking-tight text-primary tabular-nums">
             {likesPending ? <Skeleton className="h-7 w-14" /> : combinedAvg === null ? '—' : formatCompact(combinedAvg)}
           </dd>
-          <dt className="text-label-sm tracking-wider text-muted-foreground uppercase">Avg likes per post</dt>
+          <dt className="text-small tracking-wider text-muted-foreground uppercase">Avg likes per post</dt>
         </div>
       </dl>
 
-      <table className="w-full text-body-sm">
+      <table className="w-full text-small">
         <thead>
-          <tr className="text-left text-label-sm tracking-wider text-muted-foreground uppercase">
+          <tr className="text-left text-small tracking-wider text-muted-foreground uppercase">
             <th scope="col" className="pb-1.5 font-medium">Account</th>
             <th scope="col" className="pb-1.5 text-right font-medium">Followers</th>
             <th scope="col" className="pb-1.5 text-right font-medium">Avg likes</th>
@@ -453,8 +453,8 @@ function OverallView({ influencer }: { influencer: Influencer }) {
                     <span className="truncate">@{a.handle}</span>
                   </span>
                 </td>
-                <td className="py-1.5 text-right font-code tabular-nums">{audience === null ? '—' : formatCompact(audience)}</td>
-                <td className="py-1.5 text-right font-code tabular-nums">
+                <td className="py-1.5 text-right tabular-nums">{audience === null ? '—' : formatCompact(audience)}</td>
+                <td className="py-1.5 text-right tabular-nums">
                   {likesOf.has(a.id) && likesPending ? '…' : likes === null ? '—' : formatCompact(likes)}
                 </td>
               </tr>
@@ -463,7 +463,7 @@ function OverallView({ influencer }: { influencer: Influencer }) {
         </tbody>
       </table>
 
-      <p className="text-xs text-muted-foreground">
+      <p className="text-small text-muted-foreground">
         Avg likes counts the recent posts and videos each sync fetches from Instagram and YouTube; posts with hidden likes are left out. Facebook page likes and other platforms aren’t included.
       </p>
     </div>
@@ -504,7 +504,7 @@ export function SocialAccountsPanel({ influencer }: { influencer: Influencer }) 
       <CardContent className="grid gap-6 lg:grid-cols-[17rem_minmax(0,1fr)_minmax(0,1fr)]">
         <div className="min-w-0 space-y-3">
         <div className="flex items-center justify-between gap-2">
-          <h3 id="accounts-panel-title" className="text-label-sm tracking-wider text-muted-foreground uppercase">
+          <h3 id="accounts-panel-title" className="text-small tracking-wider text-muted-foreground uppercase">
             Social accounts
           </h3>
           {canEdit && (
@@ -525,7 +525,7 @@ export function SocialAccountsPanel({ influencer }: { influencer: Influencer }) 
               tabIndex={activeId === OVERALL ? 0 : -1}
               onClick={() => setTab(OVERALL)}
               className={cn(
-                'flex w-full items-center gap-2 rounded-lg py-2 pr-9 pl-2.5 text-left text-label-md transition-colors duration-150 outline-none focus-visible:ring-3 focus-visible:ring-ring/50',
+                'flex w-full items-center gap-2 rounded-lg py-2 pr-9 pl-2.5 text-left text-body transition-colors duration-150 outline-none focus-visible:ring-3 focus-visible:ring-ring/50',
                 activeId === OVERALL
                   ? 'bg-surface-container-lowest font-semibold text-primary shadow-sm dark:bg-surface-container-highest'
                   : 'text-muted-foreground hover:bg-surface-container-lowest/60 hover:text-on-surface',
@@ -535,7 +535,7 @@ export function SocialAccountsPanel({ influencer }: { influencer: Influencer }) 
                 <Layers className="size-3.5" />
               </span>
               <span className="min-w-0 flex-1 truncate">Overall</span>
-              <span className="shrink-0 font-code text-[11px] tabular-nums">{formatCompact(totalReach(accounts))}</span>
+              <span className="shrink-0 tabular-nums text-small">{formatCompact(totalReach(accounts))}</span>
             </button>
           )}
           {accounts.map((a) => {
@@ -559,11 +559,11 @@ export function SocialAccountsPanel({ influencer }: { influencer: Influencer }) 
                   aria-controls={`account-panel-${a.id}`}
                   tabIndex={selected ? 0 : -1}
                   onClick={() => setTab(a.id)}
-                  className="flex min-w-0 flex-1 items-center gap-2 rounded-lg py-2 pl-2.5 text-left text-label-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+                  className="flex min-w-0 flex-1 items-center gap-2 rounded-lg py-2 pl-2.5 text-left text-body outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
                 >
                   <PlatformMark platform={a.platform} />
                   <span className="min-w-0 flex-1 truncate">@{a.handle}</span>
-                  <span className={cn('shrink-0 font-code text-[11px] tabular-nums', selected ? 'text-primary' : 'text-muted-foreground')}>{audience === null ? '—' : formatCompact(audience)}</span>
+                  <span className={cn('shrink-0 tabular-nums text-small', selected ? 'text-primary' : 'text-muted-foreground')}>{audience === null ? '—' : formatCompact(audience)}</span>
                 </button>
                 <a
                   href={a.profile_url}
@@ -590,7 +590,7 @@ export function SocialAccountsPanel({ influencer }: { influencer: Influencer }) 
             <AccountView key={active.id} influencer={influencer} account={active} />
           </div>
         )}
-        {accounts.length === 0 && <p className="text-body-md text-muted-foreground lg:col-span-2">No social accounts yet.</p>}
+        {accounts.length === 0 && <p className="text-body text-muted-foreground lg:col-span-2">No social accounts yet.</p>}
       </CardContent>
       <AddAccountDialog influencer={influencer} open={adding} onOpenChange={setAdding} onAdded={(id) => setTab(id)} />
     </Card>

@@ -91,20 +91,20 @@ export function DateRangeFilter({ label, value, onChange }: { label: string; val
         </div>
         <div className="grid grid-cols-2 gap-2 border-t pt-3">
           <div className="grid gap-1">
-            <Label htmlFor="range-from" className="text-xs">
+            <Label htmlFor="range-from" className="text-small">
               From
             </Label>
             <DateInput id="range-from" value={draft.from} aria-invalid={badFrom} onChange={(e) => setDraft((d) => ({ ...d, from: e.target.value }))} />
           </div>
           <div className="grid gap-1">
-            <Label htmlFor="range-to" className="text-xs">
+            <Label htmlFor="range-to" className="text-small">
               To
             </Label>
             <DateInput id="range-to" value={draft.to} aria-invalid={badTo} onChange={(e) => setDraft((d) => ({ ...d, to: e.target.value }))} />
           </div>
         </div>
-        {(badFrom || badTo) && <p className="text-xs text-destructive">Use dd/MM/yyyy</p>}
-        {reversed && <p className="text-xs text-destructive">“From” is after “To”</p>}
+        {(badFrom || badTo) && <p className="text-small text-destructive">Use dd/MM/yyyy</p>}
+        {reversed && <p className="text-small text-destructive">“From” is after “To”</p>}
         <div className="flex justify-between">
           <Button variant="ghost" size="sm" disabled={!active} onClick={() => apply({})}>
             Clear

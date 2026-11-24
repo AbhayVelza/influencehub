@@ -106,7 +106,7 @@ export default function DocumentsPage() {
                 {DOCUMENT_TYPES.map((type) => {
                   const Icon = TYPE_ICON[type]
                   return (
-                    <DropdownMenuItem key={type} onSelect={() => setPickType(type)} className="gap-2.5 rounded-xl px-3 py-2 text-label-md">
+                    <DropdownMenuItem key={type} onSelect={() => setPickType(type)} className="gap-2.5 rounded-xl px-3 py-2 text-body">
                       <Icon className="size-[18px] text-on-tertiary-container" strokeWidth={1.75} />
                       {DOCUMENT_TYPE_META[type].label}
                     </DropdownMenuItem>
@@ -161,8 +161,8 @@ export default function DocumentsPage() {
       <div className="overflow-hidden rounded-[20px] bg-surface-container-lowest/70 shadow-glass backdrop-blur-2xl">
         {query.data && query.data.items.length > 0 && (
           <div className="flex items-center gap-2 bg-surface-container-lowest/40 px-4 py-3 sm:px-space-lg">
-            <span className="text-label-sm tracking-wider text-muted-foreground uppercase">Showing</span>
-            <span className="text-label-md font-semibold text-primary tabular-nums">
+            <span className="text-small tracking-wider text-muted-foreground uppercase">Showing</span>
+            <span className="text-body font-semibold text-primary tabular-nums">
               {formatNumber(query.data.items.length)} of {formatNumber(query.data.total)} documents
             </span>
           </div>
@@ -227,17 +227,17 @@ export default function DocumentsPage() {
                           <div className="min-w-0">
                             <Link
                               to={`/influencers/${doc.influencer_id}?tab=documents`}
-                              className="block truncate text-label-md font-semibold text-primary hover:underline"
+                              className="block truncate text-body font-semibold text-primary hover:underline"
                             >
                               {doc.influencer.name}
                             </Link>
-                            <AccountLabel account={doc.influencer.primary_account} block className="text-body-sm text-muted-foreground" />
+                            <AccountLabel account={doc.influencer.primary_account} block className="text-small text-muted-foreground" />
                           </div>
                         </div>
                       </TableCell>
                       <TableCell className="px-space-md py-3.5">
                         <DocumentTypeBadge type={doc.type} />
-                        <span className="mt-1 block max-w-56 truncate text-body-sm text-muted-foreground" title={doc.title}>
+                        <span className="mt-1 block max-w-56 truncate text-small text-muted-foreground" title={doc.title}>
                           {doc.title}
                         </span>
                       </TableCell>
@@ -251,10 +251,10 @@ export default function DocumentsPage() {
                         <div className="flex items-center gap-2">
                           <FileGlyph contentType={doc.content_type} />
                           <div className="min-w-0">
-                            <span className="block max-w-[190px] truncate text-label-md font-medium text-primary" title={doc.file_name}>
+                            <span className="block max-w-[190px] truncate text-body font-medium text-primary" title={doc.file_name}>
                               {doc.file_name}
                             </span>
-                            <span className="text-body-sm text-muted-foreground">{formatFileSize(doc.size)}</span>
+                            <span className="text-small text-muted-foreground">{formatFileSize(doc.size)}</span>
                           </div>
                         </div>
                       </TableCell>

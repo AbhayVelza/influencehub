@@ -15,7 +15,7 @@ import type { AgreementDocument, DocumentType, Influencer, InfluencerDocument } 
 
 function Row({ doc, actions, uploader }: { doc: InfluencerDocument; actions: DocumentActions; uploader: string }) {
   return (
-    <li className="flex items-start justify-between gap-3 p-3 text-body-md transition-colors duration-150 hover:bg-tertiary-fixed/20">
+    <li className="flex items-start justify-between gap-3 p-3 text-body transition-colors duration-150 hover:bg-tertiary-fixed/20">
       <div className="min-w-0 space-y-0.5">
         <div className="flex flex-wrap items-center gap-2">
           <span className="font-semibold text-primary">{doc.title}</span>
@@ -23,7 +23,7 @@ function Row({ doc, actions, uploader }: { doc: InfluencerDocument; actions: Doc
         </div>
         <p className="text-muted-foreground">{documentDetail(doc)}</p>
         {doc.notes && <p className="text-muted-foreground">“{doc.notes}”</p>}
-        <p className="truncate text-body-sm text-muted-foreground">
+        <p className="truncate text-small text-muted-foreground">
           {doc.file_name} · {formatFileSize(doc.size)} · {uploader} · <RelativeTime iso={doc.uploaded_at} />
         </p>
       </div>
@@ -36,7 +36,7 @@ function Section({ title, action, children }: { title: string; action?: ReactNod
   return (
     <section className="space-y-4 rounded-2xl bg-surface-container-lowest/70 shadow-glass backdrop-blur-2xl dark:ring-1 dark:ring-white/5 p-space-md sm:p-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="text-headline-sm font-semibold tracking-tight text-primary">{title}</h3>
+        <h3 className="text-h3 font-semibold tracking-tight text-primary">{title}</h3>
         {action}
       </div>
       {children}
@@ -103,7 +103,7 @@ export function DocumentsTab({ influencer }: { influencer: Influencer }) {
         }
       >
         {insights.length === 0 ? (
-          <p className="rounded-xl bg-surface-container-low/50 p-4 text-body-md text-muted-foreground">No insights summaries yet.</p>
+          <p className="rounded-xl bg-surface-container-low/50 p-4 text-body text-muted-foreground">No insights summaries yet.</p>
         ) : (
           <ul className="divide-y divide-surface-container overflow-hidden rounded-xl bg-surface-container-low/50" aria-label="Insights summaries">
             {insights.map((doc) => (
@@ -129,11 +129,11 @@ export function DocumentsTab({ influencer }: { influencer: Influencer }) {
             <Row doc={current} actions={actions} uploader={uploader(current)} />
           </ul>
         ) : (
-          <p className="rounded-xl bg-surface-container-low/50 p-4 text-body-md text-muted-foreground">No agreement on file.</p>
+          <p className="rounded-xl bg-surface-container-low/50 p-4 text-body text-muted-foreground">No agreement on file.</p>
         )}
         {history.length > 0 && (
           <div className="space-y-2 pt-2">
-            <h4 className="flex items-center gap-1.5 text-label-sm tracking-wider text-muted-foreground uppercase">
+            <h4 className="flex items-center gap-1.5 text-small tracking-wider text-muted-foreground uppercase">
               <History className="size-3.5" strokeWidth={1.75} />
               Version history
             </h4>

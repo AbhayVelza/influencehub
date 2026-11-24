@@ -23,8 +23,8 @@ import { isFullInfluencer, poolPlatforms, poolPrimary } from './queries'
 
 function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="grid grid-cols-[7.5rem_1fr] gap-3 py-2.5 text-body-md">
-      <dt className="text-body-sm leading-5 text-muted-foreground">{label}</dt>
+    <div className="grid grid-cols-[7.5rem_1fr] gap-3 py-2.5 text-body">
+      <dt className="text-small leading-5 text-muted-foreground">{label}</dt>
       <dd className="min-w-0 break-words">{children}</dd>
     </div>
   )
@@ -39,9 +39,9 @@ export function PoolPreview({ item }: { item: PoolItem }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-space-md rounded-2xl bg-surface-container-lowest/70 p-space-md shadow-glass">
-        <PersonAvatar name={item.name} src={item.profile_pic_url} className="size-14 text-base shadow-sm" />
+        <PersonAvatar name={item.name} src={item.profile_pic_url} className="size-14 text-body shadow-sm" />
         <div className="min-w-0 space-y-1.5">
-          <p className="flex items-center gap-1.5 text-headline-sm font-semibold tracking-tight text-primary">
+          <p className="flex items-center gap-1.5 text-h3 font-semibold tracking-tight text-primary">
             <span className="truncate">{item.name}</span>
             {item.is_verified && (
               <BadgeCheck
@@ -51,7 +51,7 @@ export function PoolPreview({ item }: { item: PoolItem }) {
             )}
           </p>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center rounded-full bg-surface-container-high px-2 py-0.5 text-[11px] font-medium text-on-surface">
+            <span className="inline-flex items-center rounded-full bg-surface-container-high px-2 py-0.5 text-small font-medium text-on-surface">
               {item.category}
             </span>
             <StageBadge stage={item.stage} />
@@ -77,7 +77,7 @@ export function PoolPreview({ item }: { item: PoolItem }) {
           <>
             <Row label="Phone">
               {full.phone ? (
-                <a href={`tel:${full.phone}`} className="font-code text-[12px] hover:underline">
+                <a href={`tel:${full.phone}`} className="tabular-nums text-small hover:underline">
                   {full.phone}
                 </a>
               ) : (
@@ -101,7 +101,7 @@ export function PoolPreview({ item }: { item: PoolItem }) {
       </dl>
 
       {!full && (
-        <p className="flex items-start gap-2 rounded-xl bg-tertiary-fixed/30 p-3 text-body-sm text-muted-foreground">
+        <p className="flex items-start gap-2 rounded-xl bg-tertiary-fixed/30 p-3 text-small text-muted-foreground">
           <Lock className="mt-0.5 size-4 shrink-0 text-on-tertiary-container" strokeWidth={1.75} />
           Phone, email, address, notes and call history unlock once you claim this influencer.
         </p>
@@ -142,7 +142,7 @@ export function AssignMenu({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel className="text-xs text-muted-foreground">Assign to</DropdownMenuLabel>
+        <DropdownMenuLabel className="text-small text-muted-foreground">Assign to</DropdownMenuLabel>
         {team.isLoading && <DropdownMenuItem disabled>Loading team…</DropdownMenuItem>}
         {team.isError && <DropdownMenuItem disabled>Couldn’t load team</DropdownMenuItem>}
         {members.map((user) => (

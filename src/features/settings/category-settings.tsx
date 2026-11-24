@@ -67,8 +67,8 @@ function RenameDialog({ category, onClose }: { category: Category | null; onClos
           <div className="grid gap-1.5">
             <Label htmlFor="category-name">Name</Label>
             <Input id="category-name" value={name} autoFocus aria-invalid={!!error} onChange={(e) => setName(e.target.value)} />
-            {error && <p className="text-body-sm text-error">{error}</p>}
-            <p className="text-body-sm text-muted-foreground">Influencers in this category move with it.</p>
+            {error && <p className="text-small text-error">{error}</p>}
+            <p className="text-small text-muted-foreground">Influencers in this category move with it.</p>
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>
@@ -128,7 +128,7 @@ export function CategorySettings() {
               aria-invalid={!!error}
               className="w-64 max-w-full"
             />
-            {error && <p className="text-body-sm text-error">{error}</p>}
+            {error && <p className="text-small text-error">{error}</p>}
           </div>
           <Button type="submit" variant="outline" disabled={create.isPending}>
             <Plus />
@@ -161,7 +161,7 @@ export function CategorySettings() {
                 {categories.data.items.map((c) => (
                   <TableRow key={c.id} className={cn(!c.is_active && 'text-muted-foreground')}>
                     <TableCell className={cn('font-medium', c.is_active && 'text-primary')}>{c.name}</TableCell>
-                    <TableCell className="text-right font-code tabular-nums">{formatNumber(c.influencer_count)}</TableCell>
+                    <TableCell className="text-right tabular-nums">{formatNumber(c.influencer_count)}</TableCell>
                     <TableCell>
                       <Switch
                         checked={c.is_active}

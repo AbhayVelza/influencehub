@@ -28,16 +28,16 @@ export function Field({
 }) {
   return (
     <div className={cn('grid content-start gap-1.5', className)}>
-      <Label htmlFor={id} className="text-label-md font-medium text-on-surface">
+      <Label htmlFor={id} className="text-body font-medium text-on-surface">
         {label}
       </Label>
       {children}
       {error?.message ? (
-        <p id={`${id}-error`} className="text-body-sm text-error">
+        <p id={`${id}-error`} className="text-small text-error">
           {error.message}
         </p>
       ) : (
-        hint && <div className="text-body-sm text-muted-foreground">{hint}</div>
+        hint && <div className="text-small text-muted-foreground">{hint}</div>
       )}
     </div>
   )

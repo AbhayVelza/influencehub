@@ -192,7 +192,7 @@ export function BulkActionsBar({ rows, onClear, onSettled }: BulkActionsBarProps
 
   return (
     <div className="flex flex-wrap items-center gap-space-sm">
-      <span className="inline-flex items-center gap-1 rounded-full bg-primary py-1 pr-1 pl-3 text-label-md font-semibold text-on-primary tabular-nums shadow-sm">
+      <span className="inline-flex items-center gap-1 rounded-full bg-primary py-1 pr-1 pl-3 text-body font-semibold text-on-primary tabular-nums shadow-sm">
         {rows.length} selected
         <Button
           variant="ghost"
@@ -215,7 +215,7 @@ export function BulkActionsBar({ rows, onClear, onSettled }: BulkActionsBarProps
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-60">
-          <DropdownMenuLabel className="text-xs text-muted-foreground">Move selected to</DropdownMenuLabel>
+          <DropdownMenuLabel className="text-small text-muted-foreground">Move selected to</DropdownMenuLabel>
           {stageOptions.length === 0 ? (
             <DropdownMenuItem disabled>No standard moves for this selection</DropdownMenuItem>
           ) : (
@@ -224,7 +224,7 @@ export function BulkActionsBar({ rows, onClear, onSettled }: BulkActionsBarProps
                 <StageDot stage={stage} />
                 {STAGE_META[stage].label}
                 {count < rows.length && (
-                  <span className="ml-auto text-xs text-muted-foreground tabular-nums">
+                  <span className="ml-auto text-small text-muted-foreground tabular-nums">
                     {count} of {rows.length}
                   </span>
                 )}
@@ -244,7 +244,7 @@ export function BulkActionsBar({ rows, onClear, onSettled }: BulkActionsBarProps
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-56">
-            <DropdownMenuLabel className="text-xs text-muted-foreground">Assign selected to</DropdownMenuLabel>
+            <DropdownMenuLabel className="text-small text-muted-foreground">Assign selected to</DropdownMenuLabel>
             {team.isLoading && <DropdownMenuItem disabled>Loading team…</DropdownMenuItem>}
             {team.isError && <DropdownMenuItem disabled>Couldn’t load team</DropdownMenuItem>}
             {team.data?.items

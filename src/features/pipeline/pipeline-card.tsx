@@ -24,7 +24,7 @@ export function PipelineCardView({
   return (
     <div
       className={cn(
-        'group/card relative flex flex-col gap-2.5 rounded-2xl bg-surface-container-lowest/90 p-3.5 text-body-sm shadow-[0_4px_20px_rgba(0,180,240,0.06)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-surface-container-lowest hover:shadow-[0_8px_28px_rgba(0,180,240,0.12)]',
+        'group/card relative flex flex-col gap-2.5 rounded-2xl bg-surface-container-lowest/90 p-3.5 text-small shadow-[0_4px_20px_rgba(0,180,240,0.06)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-surface-container-lowest hover:shadow-[0_8px_28px_rgba(0,180,240,0.12)]',
         overlay && 'rotate-2 shadow-glass-glow ring-2 ring-on-tertiary-container/30',
         className,
       )}
@@ -39,16 +39,16 @@ export function PipelineCardView({
           <Link
             id={`pipeline-card-${card.id}`}
             to={`/influencers/${card.id}`}
-            className="block truncate text-label-md font-semibold text-primary transition-colors group-hover/card:text-on-tertiary-container hover:underline"
+            className="block truncate text-body font-semibold text-primary transition-colors group-hover/card:text-on-tertiary-container hover:underline"
             // A plain click opens the profile (drags need 6px of movement); no native link dragging.
             draggable={false}
           >
             {card.name}
           </Link>
-          <AccountLabel account={card.primary_account} block className="font-code text-[11px] text-muted-foreground" />
+          <AccountLabel account={card.primary_account} block className="tabular-nums text-small text-muted-foreground" />
         </div>
       </div>
-      <p className="flex items-center justify-between gap-2 rounded-xl bg-surface-container-low/50 p-2 text-label-sm font-medium tracking-normal text-muted-foreground">
+      <p className="flex items-center justify-between gap-2 rounded-xl bg-surface-container-low/50 p-2 text-small font-medium tracking-normal text-muted-foreground">
         <span className="flex shrink-0 items-center gap-1.5">
           <Users aria-hidden className="size-[15px]" strokeWidth={1.75} />
           <span className="font-semibold text-primary tabular-nums">{formatCompact(card.total_reach)}</span> followers
@@ -59,7 +59,7 @@ export function PipelineCardView({
           </span>
         )}
       </p>
-      <div className="flex items-center justify-between gap-2 pt-0.5 text-body-sm">
+      <div className="flex items-center justify-between gap-2 pt-0.5 text-small">
         <span className="flex min-w-0 items-center gap-1.5 text-muted-foreground">
           {owner ? (
             <>
@@ -72,7 +72,7 @@ export function PipelineCardView({
         </span>
         <span
           className={cn(
-            'inline-flex shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 font-code text-code tabular-nums',
+            'inline-flex shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 tabular-nums text-small ',
             stale
               ? 'bg-amber-100 font-semibold text-amber-800 dark:bg-amber-400/15 dark:text-amber-300'
               : 'text-muted-foreground/80',
