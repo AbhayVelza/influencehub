@@ -23,7 +23,7 @@ export const IMPORT_FIELDS: { key: ImportField; label: string; required?: boolea
   { key: 'name', label: 'Name', required: true, aliases: ['name', 'full name', 'influencer', 'influencer name', 'creator'] },
   { key: 'category', label: 'Category', aliases: ['category', 'niche', 'vertical', 'genre'] },
   { key: 'phone', label: 'Phone', aliases: ['phone', 'phone number', 'mobile', 'mobile number', 'contact', 'whatsapp'] },
-  { key: 'email', label: 'Email', aliases: ['email', 'email address', 'e-mail', 'mail'] },
+  { key: 'email', label: 'Email', aliases: ['email', 'email address', 'e mail', 'mail', 'email contact', 'email or contact'] },
   { key: 'city', label: 'City', aliases: ['city', 'town'] },
   { key: 'state', label: 'State', aliases: ['state', 'province', 'region'] },
   { key: 'country', label: 'Country', aliases: ['country', 'nation'] },
@@ -31,14 +31,14 @@ export const IMPORT_FIELDS: { key: ImportField; label: string; required?: boolea
   {
     key: 'instagram_followers',
     label: 'Instagram followers',
-    aliases: ['instagram followers', 'ig followers', 'followers', 'follower count', 'instagram follower count', 'insta followers'],
+    aliases: ['instagram followers', 'ig followers', 'followers', 'follower count', 'instagram follower count', 'insta followers', 'followers count'],
   },
   { key: 'tags', label: 'Tags', aliases: ['tags', 'labels', 'keywords'] },
   { key: 'notes', label: 'Notes', aliases: ['notes', 'note', 'comments', 'remarks'] },
   { key: 'created_at', label: 'Added on', aliases: ['created at', 'created', 'added on', 'date added', 'added', 'date'] },
 ]
 
-const squash = (header: string) => header.trim().toLowerCase().replace(/[_\-.]+/g, ' ').replace(/\s+/g, ' ')
+const squash = (header: string) => header.trim().toLowerCase().replace(/[_\-./]+/g, ' ').replace(/\s+/g, ' ')
 
 /** Maps each field to the first CSV header whose name matches one of its aliases. */
 export function autoMatchColumns(headers: string[]): CsvColumnMapping {
@@ -64,7 +64,10 @@ export function missingMappings(mapping: CsvColumnMapping): string[] {
 
 export type RawImportRow = Partial<Record<ImportField, string>>
 
-/** Pulls the mapped cells out of one CSV row (trimmed; unmapped/empty cells are left out). */
+/** Placeholder cells that mean "nothing here" in hand-made sheets: "-", "—", "N/A", "none"… */
+const EMPTY_CELL = /^(?:[-–—.]+|n\/?a|nil|none|null)$/i
+
+/** Pulls the mapped cells out of one CSV row (trimmed; unmapped, empty and placeholder cells are left out). */
 export function mapImportRow(row: string[], headers: string[], mapping: CsvColumnMapping): RawImportRow {
   const raw: RawImportRow = {}
   for (const field of IMPORT_FIELDS) {
@@ -72,7 +75,7 @@ export function mapImportRow(row: string[], headers: string[], mapping: CsvColum
     if (!column) continue
     const index = headers.indexOf(column)
     const value = index === -1 ? '' : (row[index] ?? '').trim()
-    if (value) raw[field.key] = value
+    if (value && !EMPTY_CELL.test(value)) raw[field.key] = value
   }
   return raw
 }
@@ -86,14 +89,21 @@ export interface ValidatedImportRow {
   accounts: AccountCreate[]
   errors: Partial<Record<ImportErrorKey, string>>
   warnings: Partial<Record<ImportErrorKey, string>>
+  /** No name and no handle (an empty or section-heading row): skipped, not an error. */
+  blank: boolean
 }
 
-/** Validates one row with the same rules as the forms. The category must match an active category (any case). */
+/**
+ * Validates one row with the same rules as the forms. The category must match an active category (any case).
+ * A handle cell that isn't a usable profile (a /channel/ link, a short link) doesn't fail a row that has another
+ * handle: it's skipped with a warning and its text kept in the notes.
+ */
 export function validateImportRow(raw: RawImportRow, categoryNames: string[]): ValidatedImportRow {
   const errors: ValidatedImportRow['errors'] = {}
   const warnings: ValidatedImportRow['warnings'] = {}
   const values: ValidatedImportRow['values'] = { category: '' }
   const accounts: AccountCreate[] = []
+  if (!raw.name && !PLATFORMS.some((p) => raw[p])) return { values, accounts, errors, warnings, blank: true }
 
   const text = (key: 'name' | 'phone' | 'email' | 'city' | 'state' | 'country' | 'notes') => {
     const result = validateField(fieldSchemas[key], raw[key] ?? '')
@@ -114,13 +124,24 @@ export function validateImportRow(raw: RawImportRow, categoryNames: string[]): V
     else errors.created_at = 'Use dd/MM/yyyy or an ISO date like 2026-10-28'
   }
 
+  const unusable: { platform: Platform; error: string }[] = []
   for (const platform of PLATFORMS) {
     const cell = raw[platform]
     if (!cell) continue
     const result = validateField(handleSchema(platform), cell)
-    if (!result.ok) errors[platform] = result.error
+    if (!result.ok) unusable.push({ platform, error: result.error })
     else accounts.push({ platform, handle: result.value })
   }
+  const kept: string[] = []
+  for (const { platform, error } of unusable) {
+    const label = PLATFORM_META[platform].label
+    if (accounts.length === 0) errors[platform] = `${label}: ${error}`
+    else {
+      warnings[platform] = `Not a ${label} profile handle: skipped and kept in the notes`
+      kept.push(`${label}: ${raw[platform]}`)
+    }
+  }
+  if (kept.length && !errors.notes) values.notes = [values.notes, ...kept].filter(Boolean).join('\n').slice(0, 2000)
 
   // Instagram followers: typed-in stats for the row's Instagram account (kept as entered, not synced).
   if (raw.instagram_followers) {
@@ -142,7 +163,7 @@ export function validateImportRow(raw: RawImportRow, categoryNames: string[]): V
 
   if (raw.tags) {
     const tags: string[] = []
-    for (const part of raw.tags.split(/[;|]/)) {
+    for (const part of raw.tags.split(/[;|,]/)) {
       if (!part.trim()) continue
       const result = validateField(fieldSchemas.tag, part)
       if (!result.ok) {
@@ -155,7 +176,7 @@ export function validateImportRow(raw: RawImportRow, categoryNames: string[]): V
     else if (!errors.tags && tags.length) values.tags = tags
   }
 
-  return { values, accounts, errors, warnings }
+  return { values, accounts, errors, warnings, blank: false }
 }
 
 export function templateCsv(): string {
