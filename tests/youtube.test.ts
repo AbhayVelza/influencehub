@@ -4,7 +4,7 @@ import { memoryPlatformData, setPlatformData } from '@/backend/platform-data'
 import { clearProfileSources, setProfileSource, type ProfileSource } from '@/backend/social'
 import type { LookupProfile } from '@/types'
 import { dueAccount } from '../server/sync-worker'
-import { findLinkedAccounts, normalizeHandle, platformOfUrl } from '@/lib/platforms'
+import { findLinkedAccounts, normalizeHandle, PLATFORM_META, platformOfUrl } from '@/lib/platforms'
 import { handleSchema } from '@/lib/schemas'
 import {
   checkYouTube,
@@ -134,24 +134,25 @@ describe('YouTube links', () => {
   beforeEach(() => resetWorkspace())
   afterEach(() => clearProfileSources())
 
-  it('only /@handle links are YouTube handles: channel ids, legacy names and video links are not', async () => {
+  it('channel ids keep their case and link to /channel/; legacy /c/ and /user/ names become handles', async () => {
     expect(normalizeHandle('https://www.youtube.com/@RiyaVlogs/videos', 'youtube')).toBe('riyavlogs')
-    const notHandles = [
-      'https://www.youtube.com/channel/UCabcdefghijklmnop',
-      'youtube.com/c/RiyaVlogs',
-      'https://www.youtube.com/user/riya',
-      'https://www.youtube.com/watch?v=abc123',
-      'https://youtube.com/playlist?list=PL1',
-      'https://www.youtube.com/shorts/abc123',
-    ]
-    for (const link of notHandles) {
+    const id = 'UClvPVnx6LN8l0XNtO2gnwMQ'
+    expect(normalizeHandle(`https://www.youtube.com/channel/${id} `, 'youtube')).toBe(id)
+    expect(PLATFORM_META.youtube.url(id)).toBe(`https://www.youtube.com/channel/${id}`)
+    expect(normalizeHandle('youtube.com/c/RiyaVlogs', 'youtube')).toBe('riyavlogs')
+    expect(normalizeHandle('https://www.youtube.com/user/riya', 'youtube')).toBe('riya')
+    // Still never offered as linked accounts, and video links aren't profiles.
+    for (const link of [`https://www.youtube.com/channel/${id}`, 'youtube.com/c/RiyaVlogs', 'https://www.youtube.com/watch?v=abc123']) {
       expect(platformOfUrl(link)).toBeNull()
-      expect(handleSchema('youtube').safeParse(link).success).toBe(false)
     }
-    // Look up refuses them instead of looking up "@channel" (or someone else's channel).
+    // Facebook profile links keep their numeric id, so two creators never share the handle "people".
+    expect(normalizeHandle('https://www.facebook.com/people/Arti-Sharma/100063723456789/', 'facebook')).toBe('100063723456789')
+    expect(normalizeHandle('https://m.facebook.com/profile.php?id=1000123', 'facebook')).toBe('1000123')
+    expect(platformOfUrl('https://www.facebook.com/people/Arti-Sharma/100063723456789/')).toBeNull()
+    // A short link is saved as typed: handles have no format rule.
+    expect(handleSchema('youtube').safeParse('yt.openinapp.co/0ru6h').success).toBe(true)
     setProfileSource('youtube', youtube)
-    const res = await api('POST', '/lookup', { body: { platform: 'youtube', username: notHandles[0] } })
-    expect(res.status).toBe(422)
+    expect((await api('POST', '/lookup', { body: { platform: 'youtube', username: 'https://www.youtube.com/watch?v=abc123' } })).status).toBe(422)
   })
 
   it('video, post and reel links in a description are not offered as linked accounts', () => {

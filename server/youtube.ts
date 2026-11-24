@@ -1,6 +1,6 @@
 import { JobFailure } from '@/backend/jobs'
 import type { ProfileSource } from '@/backend/social'
-import { findLinkedAccounts, PLATFORM_META } from '@/lib/platforms'
+import { findLinkedAccounts, PLATFORM_META, YOUTUBE_CHANNEL_ID } from '@/lib/platforms'
 import type { LookupProfile, MediaItem } from '@/types'
 
 // YouTube through the YouTube Data API v3, with an API key (YOUTUBE_API_KEY; docs/server.md, "YouTube"). A channel
@@ -191,10 +191,11 @@ function toMediaItems(videos: Video[]): MediaItem[] {
 /** A channel's public profile and the stats the CRM keeps for YouTube, by handle (without @). */
 export async function fetchYouTube(handle: string): Promise<LookupProfile> {
   // YouTube handles: 3–30 letters, numbers, dots, dashes or underscores.
-  if (!/^[a-z0-9._-]{3,30}$/.test(handle)) throw new JobFailure('not_found', 'That isn’t a valid YouTube handle.')
+  const byId = YOUTUBE_CHANNEL_ID.test(handle)
+  if (!byId && !/^[a-z0-9._-]{3,30}$/.test(handle)) throw new JobFailure('not_found', 'That isn’t a valid YouTube handle.')
   const { items } = await call<{ items?: Channel[] }>('channels', {
     part: 'snippet,statistics,contentDetails',
-    forHandle: `@${handle}`,
+    ...(byId ? { id: handle } : { forHandle: `@${handle}` }),
   })
   const channel = items?.[0]
   if (!channel) throw new JobFailure('not_found', 'No YouTube channel has that handle.')

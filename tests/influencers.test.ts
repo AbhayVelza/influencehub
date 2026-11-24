@@ -105,9 +105,10 @@ describe('influencers', () => {
     expect(res.body.email).toBe('managed by @agency')
   })
 
-  it('FR-INF-12: at most 20 tags', async () => {
-    const tags = Array.from({ length: 21 }, (_, i) => `tag${i}`)
-    expect((await addInfluencer('riya', { body: { tags } })).status).toBe(422)
-    expect((await addInfluencer('riya', { body: { tags: tags.slice(0, 20) } })).status).toBe(201)
+  it('FR-INF-12: tags have no count, length or character limit', async () => {
+    const tags = [...Array.from({ length: 30 }, (_, i) => `tag${i}`), "Men's Fitness & Strength Training Workouts / Home"]
+    const res = await addInfluencer('riya', { body: { tags } })
+    expect(res.status).toBe(201)
+    expect(res.body.tags).toHaveLength(31)
   })
 })

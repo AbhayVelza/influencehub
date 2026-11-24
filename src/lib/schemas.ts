@@ -9,7 +9,6 @@ import type { Platform } from '@/types'
 
 const E164 = /^\+[1-9]\d{7,14}$/
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-const HANDLE = /^[a-z0-9._-]{1,60}$/
 
 /** True when the value is a real email address (the Email field may also hold a note like "managed by @agency"). */
 export function isEmailAddress(value: string | null | undefined): value is string {
@@ -38,7 +37,7 @@ export const handleSchema = (platform?: Platform) =>
   z
     .string()
     .transform((v) => normalizeHandle(v, platform))
-    .pipe(z.string().regex(HANDLE, 'Use 1–60 letters, numbers, dots, dashes or underscores'))
+    .pipe(z.string().min(1, 'Enter a handle or profile link'))
 
 /** Optional count typed as 12000, 12k or 1.2m; empty → null. */
 export const countField = z
@@ -46,6 +45,12 @@ export const countField = z
   .trim()
   .refine((v) => v === '' || parseCompactNumber(v) !== undefined, 'Use a number like 12000, 12k or 1.2m')
   .transform((v) => (v ? parseCompactNumber(v)! : null))
+
+/** Influencer text fields: trimmed, no length limit (empty becomes null). */
+const freeText = z
+  .string()
+  .trim()
+  .transform((v) => v || null)
 
 /** Trimmed text; empty becomes null. */
 const optionalText = (max: number, label: string) =>
@@ -59,33 +64,31 @@ const requiredText = (max: number, label: string) =>
   z.string().trim().min(1, `${label} is required`).max(max, `${label} must be at most ${max} characters`)
 
 export const fieldSchemas = {
-  name: requiredText(100, 'Name'),
-  category: requiredText(50, 'Category'),
+  name: z.string().trim().min(1, 'Name is required'),
+  category: z.string().trim().min(1, 'Category is required'),
   handle: handleSchema(),
   phone: z
     .string()
-    .transform(normalizePhone)
-    .refine((v) => v === null || E164.test(v), 'Enter a valid phone number, e.g. +91 98765 43210'),
+    // A number becomes +91…; anything else (two numbers, "via manager") is kept as typed.
+    .transform((v) => {
+      const phone = normalizePhone(v)
+      return phone === null || E164.test(phone) ? phone : v.trim()
+    }),
   // An address or a contact note ("managed by @iplixmedia"); see normalizeEmailField.
   email: z
     .string()
     .trim()
-    .max(200, 'Email must be 200 characters or fewer')
     .transform(normalizeEmailField),
-  city: optionalText(80, 'City'),
-  state: optionalText(80, 'State'),
-  country: optionalText(80, 'Country'),
-  notes: optionalText(2000, 'Notes'),
+  city: freeText,
+  state: freeText,
+  country: freeText,
+  notes: freeText,
   tag: z
     .string()
     .trim()
     .toLowerCase()
-    .min(1, 'Tag can’t be empty')
-    .max(60, 'Tags must be at most 60 characters')
-    .regex(/^[\p{L}\p{M}\p{N} _\-'’&.+/#]+$/u, 'Tags can use letters, numbers, spaces and - _ \' & . + / #'),
+    .min(1, 'Tag can’t be empty'),
 }
-
-export const MAX_TAGS = 20
 
 // ---------------------------------------------------------------------------
 // Add influencer

@@ -39,7 +39,7 @@ Source of truth: `src/types/index.ts`. Update both together.
   threads {followers, avg_likes_recent, avg_replies_recent} · pinterest {followers, monthly_views, pin_count,
   board_count} · linkedin {followers, connections} · snapchat {subscribers}.
   Labels, audience metric and URL patterns live in `src/lib/platforms.ts` (`PLATFORM_META`).
-- **Influencer**: id, name, category, phone (E.164, default +91), email, address {line1, line2, city, state,
+- **Influencer**: id, name, category, phone (E.164 with default +91 when it's a number, else as typed), email, address {line1, line2, city, state,
   postal_code, country}, city, state, country, profile_pic_url (primary account's), is_verified (any account),
   accounts[] (≥1, primary first), total_reach, stage, assigned_to, tags[], notes,
   onboarding_checklist {called, agreement_signed, insights_received, address_collected, ig_connected},

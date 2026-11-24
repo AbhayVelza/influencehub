@@ -2,7 +2,7 @@ import { http, HttpResponse } from 'msw'
 import { LOCAL_UPLOAD_PREFIX } from '@/lib/upload-targets'
 import { mapImportRow, validateImportRow } from '@/lib/csv-import'
 import { can } from '@/lib/permissions'
-import { LOOKUP_PLATFORMS, PLATFORM_META } from '@/lib/platforms'
+import { LOOKUP_PLATFORMS, PLATFORM_META, YOUTUBE_CHANNEL_ID } from '@/lib/platforms'
 import { toSearchParams } from '@/services/http'
 import type { CsvImportRequest, CsvImportResult, ExportRequest, ExportResult, Influencer, InfluencerCreate, LookupRequest, SocialAccount } from '@/types'
 import { currentUser, db, logActivity, nowIso, refreshDerived } from '../db'
@@ -38,7 +38,7 @@ export const asyncHandlers = [
     }
     const username = normalizeHandle(body.username ?? '', platform)
     const label = `${PLATFORM_META[platform].label} @${username}`
-    if (!HANDLE.test(username)) return apiError(422, 'validation_error', `Enter a valid ${PLATFORM_META[platform].label} username`)
+    if (!HANDLE.test(username) && !(platform === 'youtube' && YOUTUBE_CHANNEL_ID.test(username))) return apiError(422, 'validation_error', `Enter a valid ${PLATFORM_META[platform].label} username`)
     const { conflict } = handleStatus(platform, username)
     if (conflict === 'exists') return apiError(409, 'already_exists', `${label} is already in the CRM`)
     if (conflict === 'in_pool') return apiError(409, 'in_pool', inPoolMessage(label))
