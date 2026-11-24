@@ -98,7 +98,11 @@ export const asyncHandlers = [
       rows.forEach((row, idx) => {
         const line = idx + 2 // header is line 1
         const raw = mapImportRow(row, headers, mapping)
-        const { values, accounts, errors } = validateImportRow(raw, categoryNames)
+        const { values, accounts, errors, blank } = validateImportRow(raw, categoryNames)
+        if (blank) {
+          result.total_rows--
+          return
+        }
         const firstHandle = accounts[0]?.handle ?? null
         const problems = Object.values(errors)
         if (problems.length) {

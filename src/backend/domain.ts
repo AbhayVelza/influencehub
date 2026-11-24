@@ -188,7 +188,7 @@ export function validateAccounts(accounts: AccountCreate[] | undefined, ownerId?
   return { ok: true }
 }
 
-/** FR-INF-12: at most MAX_TAGS tags, each as the form takes it (trimmed, lower case, 1–30 characters); repeats dropped. */
+/** FR-INF-12: at most MAX_TAGS tags, each as the form takes it (trimmed, lower case, 1–60 characters); repeats dropped. */
 export function cleanTags(tags: unknown): { ok: true; tags: string[] } | Failure {
   const fail = (message: string): Failure => ({ ok: false, status: 422, code: 'validation_error', message })
   if (!Array.isArray(tags)) return fail('Tags must be a list')

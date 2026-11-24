@@ -125,7 +125,11 @@ Record any new API decision here. Dates and documents: `dates-and-documents.md`.
   category, phone, email, city, state, country, tags, notes, created_at (optional "added on" date, see Dates) and one
   handle column per platform (at least one mapped; each row needs ≥1 handle). Job result `{total_rows, created, updated, duplicates, failed, errors[{row,
   handle, message}], profiles {synced, failed} | null}`. `row` = 1-based file line (header = line 1). Rows are
-  validated with the same rules as the forms (`src/lib/csv-import.ts`); a missing or unknown category is a row error (no fallback category); a row
+  validated with the same rules as the forms (`src/lib/csv-import.ts`); a missing or unknown category is a row error (no fallback category).
+  Placeholder cells (`-`, `—`, `N/A`, `none`, `nil`, `null`) count as empty; rows with no name and no handle (blank or
+  section-heading rows) are skipped and left out of `total_rows`; tags split on `;`, `|` or `,`. A handle cell that
+  isn't a usable profile (a YouTube `/channel/` or `/c/` link, a short link) is skipped with a preview warning and its
+  text appended to the row's notes when the row has another valid handle; with no valid handle it's a row error. A row
   repeating an account from earlier in the file is a duplicate; a row with any account already in the CRM is that
   creator: `skip` counts it as a duplicate, `update` overwrites mapped non-empty fields, merges tags and adds its
   new accounts (never its `created_at`). `fetch_profiles` turns the rows' accounts on connected platforms (GET /integrations) into lookup accounts and queues them for the background sync (`profiles.queued`); typed-in stats stay until the first sync. Client limits: 2 MB, 5,000 rows.
@@ -292,7 +296,7 @@ workspace (settings row `migrations`), so it never undoes later admin edits.
 
 Rules the forms already applied are now also checked by the handlers, so every caller gets them (tests in `tests/`):
 
-- **Tags** (`cleanTags`, create and PATCH): at most 20, each trimmed, lower case, 1–30 letters, numbers, spaces, `-`, `_`;
+- **Tags** (`cleanTags`, create and PATCH): at most 20, each trimmed, lower case, 1–60 letters, numbers, spaces, `-`, `_`, `'`, `&`, `.`, `+`, `/`, `#`;
   repeats dropped. Otherwise 422 `validation_error`.
 - **Calls:** `call_back` needs `follow_up_date`, and any follow-up must be in the future (422 `validation_error`).
 - **Welcome Kits:** the address needs line 1, city, state, postal code and country; once the status is past
@@ -340,7 +344,7 @@ Rules the forms already applied are now also checked by the handlers, so every c
   `src/backend/social.ts`). Handles are looked up as `@handle` (3–30 letters, numbers, dots, dashes, underscores).
   Only `youtube.com/@handle` links count as YouTube handles (`PLATFORM_META.youtube.urlPattern`): `/channel/UC…`,
   legacy `/c/` and `/user/` names, `/watch`, `/shorts` and `/playlist` links are refused as invalid handles (422 on
-  lookup, a row error in CSV) and never offered as linked accounts, since looking them up by handle would find nothing
+  lookup; in CSV skipped into the notes, or a row error when the row has no other handle) and never offered as linked accounts, since looking them up by handle would find nothing
   or another person's channel. Likewise Instagram `/p/`, `/reel/`, `/reels/`, `/stories/`, `/explore/`, `/tv/` and
   `/accounts/` links aren't profiles.
 - 3 quota units per channel, never the 100-unit `search`: `channels.list part=snippet,statistics,contentDetails

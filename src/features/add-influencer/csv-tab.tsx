@@ -184,6 +184,7 @@ function MappingStep({
     })
   }, [validated])
   const invalidRows = validated.filter((v) => Object.keys(v.errors).length > 0).length
+  const blankRows = validated.filter((v) => v.blank).length
   const missingRequired = missingMappings(mapping)
   const shownFields = IMPORT_FIELDS.filter((f) => mapping[f.key])
   const previewRows = useMemo(() => validated.slice(0, PREVIEW_ROWS), [validated])
@@ -235,11 +236,12 @@ function MappingStep({
         <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
           <h3 className="text-h3 font-semibold tracking-tight text-primary">Preview · first {Math.min(PREVIEW_ROWS, parsed.rows.length)} rows</h3>
           <p className="text-small text-muted-foreground tabular-nums">
-            {formatNumber(parsed.rows.length)} rows ·{' '}
+            {formatNumber(parsed.rows.length - blankRows)} rows ·{' '}
             <span className={cn(invalidRows > 0 && 'font-medium text-error')}>
               {formatNumber(invalidRows)} with errors (won’t import)
             </span>
             {flagged > 0 && <> · {formatNumber(flagged)} may match existing creators</>}
+            {blankRows > 0 && <> · {formatNumber(blankRows)} empty rows skipped</>}
           </p>
         </div>
         <div className="max-h-64 overflow-auto rounded-2xl bg-surface-container-lowest/75 shadow-glass backdrop-blur-2xl dark:ring-1 dark:ring-white/5">
@@ -349,10 +351,10 @@ function MappingStep({
           Choose another file
         </Button>
         <Button
-          disabled={missingRequired.length > 0 || invalidRows === parsed.rows.length}
+          disabled={missingRequired.length > 0 || invalidRows + blankRows === parsed.rows.length}
           onClick={() => onImport({ mapping, fetchProfiles, onDuplicate })}
         >
-          Import {formatNumber(parsed.rows.length - invalidRows)} rows
+          Import {formatNumber(parsed.rows.length - invalidRows - blankRows)} rows
         </Button>
       </div>
     </div>

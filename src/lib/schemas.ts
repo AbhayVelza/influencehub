@@ -81,8 +81,8 @@ export const fieldSchemas = {
     .trim()
     .toLowerCase()
     .min(1, 'Tag can’t be empty')
-    .max(30, 'Tags must be at most 30 characters')
-    .regex(/^[\p{L}\p{N} _-]+$/u, 'Tags can use letters, numbers, spaces, - and _'),
+    .max(60, 'Tags must be at most 60 characters')
+    .regex(/^[\p{L}\p{M}\p{N} _\-'’&.+/#]+$/u, 'Tags can use letters, numbers, spaces and - _ \' & . + / #'),
 }
 
 export const MAX_TAGS = 20
