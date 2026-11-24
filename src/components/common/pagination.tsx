@@ -37,7 +37,7 @@ export function Pagination({ page, pageSize, total, pageSizeOptions, onPageChang
       </span>
       {pageSizeOptions && onPageSizeChange && (
         <Select value={String(pageSize)} onValueChange={(v) => onPageSizeChange(Number(v))}>
-          <SelectTrigger size="sm" className="w-[104px] bg-surface-container-lowest/80 shadow-sm" aria-label="Rows per page">
+          <SelectTrigger size="sm" className="w-auto min-w-[104px] bg-surface-container-lowest/80 shadow-sm" aria-label="Rows per page">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

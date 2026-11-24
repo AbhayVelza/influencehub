@@ -39,7 +39,7 @@ export function PipelineCardView({
           <Link
             id={`pipeline-card-${card.id}`}
             to={`/influencers/${card.id}`}
-            className="block truncate text-body font-semibold text-primary transition-colors group-hover/card:text-on-tertiary-container hover:underline"
+            className="line-clamp-2 text-body font-semibold break-words text-primary transition-colors group-hover/card:text-on-tertiary-container hover:underline"
             // A plain click opens the profile (drags need 6px of movement); no native link dragging.
             draggable={false}
           >
