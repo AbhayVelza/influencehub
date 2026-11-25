@@ -32,6 +32,8 @@ export type Permission =
   | 'integrations:manage'
   /** Claim limit and auto-release for the Unassigned Pool. */
   | 'pool:configure'
+  /** The Dashboard's Recent activity feed (admins only). */
+  | 'activity:view'
 
 /**
  * Brand Specialist: read-only, onboarded creators only (Onboarded, Welcome Kit, Delivered). Sees the Dashboard's
@@ -72,6 +74,7 @@ const ADMIN: Permission[] = [
   'integrations:manage',
   'pool:configure',
   'influencer:export',
+  'activity:view',
 ]
 
 const ROLE_PERMISSIONS: Record<Role, ReadonlySet<Permission>> = {

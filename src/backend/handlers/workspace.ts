@@ -404,9 +404,10 @@ export const workspaceHandlers = [
         .slice(0, 10)
         .map(([city, count]) => ({ city, count })),
       my_follow_ups: withInfluencer(mine).slice(0, 10),
-      // `activities` holds only influencers that exist (`visible`), so the newest 20 are the 20 shown.
-      recent_activity: newest(activities, 20)
-        .map((a) => ({ ...a, influencer: toSummary(findInfluencer(a.influencer_id)!) })),
+      // `activities` holds only influencers that exist (`visible`), so the newest 20 are the 20 shown. Admins only.
+      recent_activity: can(user.role, 'activity:view')
+        ? newest(activities, 20).map((a) => ({ ...a, influencer: toSummary(findInfluencer(a.influencer_id)!) }))
+        : [],
       ...dashboardExtras(
         influencers,
         activities,

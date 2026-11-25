@@ -222,6 +222,21 @@ describe('lists and dashboard', () => {
     expect((await api('GET', '/dashboard/summary')).body.kpis.total).toBe(2)
   })
 
+  it('team performance for managers and admins; recent activity for admins only', async () => {
+    const exec = await addMember('executive')
+    const manager = await addMember('manager')
+    const id = await influencer('mine', exec.id)
+    await logCall(id, 'no_answer', {}, exec.id)
+    const as = async (who?: string) => (await api('GET', '/dashboard/summary', who ? { as: who } : {})).body
+    const [e, m, a] = [await as(exec.id), await as(manager.id), await as()]
+    expect(e.team).toBeNull()
+    expect(m.team).not.toBeNull()
+    expect(a.team).not.toBeNull()
+    expect(e.recent_activity).toEqual([])
+    expect(m.recent_activity).toEqual([])
+    expect(a.recent_activity.length).toBeGreaterThan(0)
+  })
+
   it('FR-DASH-01: an onboarding at 00:10 IST on a Monday counts in that week', async () => {
     const id = await influencer('riya')
     await onboard(id)
