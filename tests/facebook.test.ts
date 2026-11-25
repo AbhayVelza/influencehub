@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { checkFacebook, fetchFacebookPage } from '../server/facebook'
+import { metaUsagePct } from '../server/meta'
 
 const ok = (body: unknown) => new Response(JSON.stringify(body), { status: 200 })
 const fail = (code: number, subcode?: number, message = 'nope') =>
@@ -26,11 +27,11 @@ const page = {
 
 describe("server/facebook.ts: Facebook's answers", () => {
   beforeEach(() => {
-    process.env.META_ACCESS_TOKEN = 'test-token'
+    process.env.FACEBOOK_API_KEY = 'test-token'
   })
   afterEach(() => {
     vi.restoreAllMocks()
-    delete process.env.META_ACCESS_TOKEN
+    delete process.env.FACEBOOK_API_KEY
   })
 
   it('maps a Page in one call and never puts the token in the profile', async () => {
@@ -71,6 +72,14 @@ describe("server/facebook.ts: Facebook's answers", () => {
     await expect(fetchFacebookPage('some.person')).rejects.toMatchObject({ code: 'not_found', message: expect.stringContaining('personal profile') })
     stub(fail(10))
     await expect(fetchFacebookPage('riyastyle')).rejects.toMatchObject({ code: 'not_connected', message: expect.stringContaining('Page Public Metadata Access') })
+    stub(
+      fail(
+        100,
+        undefined,
+        "(#100) Object does not exist, cannot be loaded due to missing permission or reviewable feature, or does not support this operation. This endpoint requires the 'pages_read_engagement' permission or the 'Page Public Content Access' feature or the 'Page Public Metadata Access' feature.",
+      ),
+    )
+    await expect(fetchFacebookPage('riyastyle')).rejects.toMatchObject({ code: 'not_connected', message: expect.stringContaining('Page Public Metadata Access') })
     stub(fail(190))
     await expect(fetchFacebookPage('riyastyle')).rejects.toMatchObject({ code: 'not_connected' })
     stub(fail(4))
@@ -98,5 +107,20 @@ describe("server/facebook.ts: Facebook's answers", () => {
     expect(new URL(String(spy.mock.calls[0]![0])).pathname).toBe('/v21.0/me')
     stub(fail(190))
     await expect(checkFacebook()).rejects.toMatchObject({ code: 'not_connected' })
+  })
+
+  it('uses FACEBOOK_API_KEY and its own usage meter, not Instagram’s', async () => {
+    process.env.META_ACCESS_TOKEN = 'instagram-token'
+    try {
+      const usage = { 'x-app-usage': JSON.stringify({ call_count: 80, total_time: 5, total_cputime: 5 }) }
+      const spy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response(JSON.stringify(page), { status: 200, headers: usage }))
+      const before = metaUsagePct('instagram')
+      await fetchFacebookPage('riyastyle')
+      expect(new URL(String(spy.mock.calls[0]![0])).searchParams.get('access_token')).toBe('test-token')
+      expect(metaUsagePct('facebook')).toBe(80)
+      expect(metaUsagePct('instagram')).toBe(before)
+    } finally {
+      delete process.env.META_ACCESS_TOKEN
+    }
   })
 })

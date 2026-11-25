@@ -77,7 +77,7 @@ function recordInstagramRun(ok: boolean) {
   else run.failed += 1
   run.finished_at = nowIso()
   run.status = run.failed === 0 ? 'succeeded' : run.synced === 0 ? 'failed' : 'partial'
-  settings.api_usage_pct = Math.min(100, metaUsagePct())
+  settings.api_usage_pct = Math.min(100, metaUsagePct('instagram'))
 }
 
 const INSTAGRAM: PlatformSync = {
@@ -85,7 +85,7 @@ const INSTAGRAM: PlatformSync = {
   label: 'Instagram',
   tickMs: 40_000,
   fetch: fetchInstagram,
-  holdUntil: (now) => (metaUsagePct() >= 75 ? now + COOL_DOWN_MS : 0),
+  holdUntil: (now) => (metaUsagePct('instagram') >= 75 ? now + COOL_DOWN_MS : 0),
   onNotConnected: async (inTurn, save) =>
     inTurn(async () => {
       db.instagramSettings.connected = false
@@ -95,13 +95,13 @@ const INSTAGRAM: PlatformSync = {
   onResult: recordInstagramRun,
 }
 
-/** Facebook Pages share Meta's hourly allowance with Instagram, so they go slower and pause at the same 75%. */
+/** Facebook Pages run on their own Meta app (FACEBOOK_API_KEY) and pause when that app's allowance reaches 75%. */
 const FACEBOOK: PlatformSync = {
   platform: 'facebook',
   label: 'Facebook',
   tickMs: 60_000,
   fetch: fetchFacebookPage,
-  holdUntil: (now) => (metaUsagePct() >= 75 ? now + COOL_DOWN_MS : 0),
+  holdUntil: (now) => (metaUsagePct('facebook') >= 75 ? now + COOL_DOWN_MS : 0),
 }
 
 const YOUTUBE: PlatformSync = {
@@ -203,11 +203,11 @@ export async function startInstagramSync(inTurn: InTurn, save: Save): Promise<bo
 }
 
 /**
- * Checks META_ACCESS_TOKEN with one call (`/me`) and starts the Facebook Pages sync loop. False when the token isn't
+ * Checks FACEBOOK_API_KEY with one call (`/me`) and starts the Facebook Pages sync loop. False when the token isn't
  * set or Meta rejects it; an outage or rate limit at start-up still connects (the token may be fine).
  */
 export async function startFacebookSync(inTurn: InTurn, save: Save): Promise<boolean> {
-  if (!metaTokenSet()) return false
+  if (!metaTokenSet('facebook')) return false
   try {
     await checkFacebook()
     console.log('Facebook Pages connected')

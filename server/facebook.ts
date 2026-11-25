@@ -5,8 +5,8 @@ import type { LookupProfile } from '@/types'
 import { metaGet, metaRateLimit, type GraphError } from './meta'
 
 // Facebook Pages through Meta's Graph API: a Page's public profile (name, category, about, followers, likes, website,
-// picture, verified badge), read by its username or numeric id with META_ACCESS_TOKEN (the same Meta app and token as
-// Instagram; META_IG_USER_ID isn't needed). Pages we manage can be read with pages_read_engagement; any other public
+// picture, verified badge), read by its username or numeric id with FACEBOOK_API_KEY: a token of a separate Meta app
+// from Instagram's, with its own hourly allowance (META_IG_USER_ID isn't needed). Pages we manage can be read with pages_read_engagement; any other public
 // Page needs the "Page Public Metadata Access" feature approved in Meta App Review. Posts and their engagement aren't
 // part of Page Public Metadata Access, so a Page has no recent posts here. Personal profiles can't be looked up.
 
@@ -30,11 +30,13 @@ interface Page {
 
 /** Meta's error codes as the app's lookup errors (the Add influencer screen explains each). */
 function toFailure(e: GraphError): JobFailure {
-  const limited = metaRateLimit(e)
+  const limited = metaRateLimit('facebook', e)
   if (limited) return limited
-  if (e.code === 190) return new JobFailure('not_connected', 'The Facebook connection has expired. An admin needs to renew META_ACCESS_TOKEN.')
-  // 10 / 200: the app lacks Page Public Metadata Access (or the token lacks pages_read_engagement).
-  if (e.code === 10 || e.code === 200) {
+  if (e.code === 190) return new JobFailure('not_connected', 'The Facebook connection has expired. An admin needs to renew FACEBOOK_API_KEY.')
+  // 10 / 200, or 100 naming the Page permissions (no subcode; seen 25/11/2026): the app lacks Page Public Metadata
+  // Access, or the token lacks pages_read_engagement for a Page we manage.
+  const needsPageAccess = e.code === 100 && /pages_read_engagement|Page Public (Metadata|Content) Access/i.test(e.message ?? '')
+  if (e.code === 10 || e.code === 200 || needsPageAccess) {
     return new JobFailure(
       'not_connected',
       'Facebook Pages can’t be read yet: Meta hasn’t approved Page Public Metadata Access for the app. Pages we manage still work.',
@@ -61,7 +63,7 @@ const websites = (value: string | undefined) => (value ?? '').split(/[\s,]+/).fi
 /** A Facebook Page's public profile and the stats the CRM keeps for it. */
 export async function fetchFacebookPage(handle: string): Promise<LookupProfile> {
   if (!PAGE_HANDLE.test(handle)) throw new JobFailure('not_found', 'That isn’t a valid Facebook Page name or id.')
-  const d = await metaGet<Page>(`/${handle}`, FIELDS, 'Facebook', toFailure)
+  const d = await metaGet<Page>('facebook', `/${handle}`, FIELDS, 'Facebook', toFailure)
   if (!d?.id) throw new JobFailure('not_found', 'No public Facebook Page has that name.')
   const saved = (d.username ?? d.id).toLowerCase()
   const about = d.about?.trim() || null
@@ -87,7 +89,7 @@ export async function fetchFacebookPage(handle: string): Promise<LookupProfile> 
 
 /** One cheap call that checks the token works (start-up); throws the same errors as a lookup. */
 export async function checkFacebook(): Promise<void> {
-  await metaGet<{ id: string }>('/me', 'id', 'Facebook', toFailure)
+  await metaGet<{ id: string }>('facebook', '/me', 'id', 'Facebook', toFailure)
 }
 
 export const facebookSource: ProfileSource = { fetch: fetchFacebookPage }
