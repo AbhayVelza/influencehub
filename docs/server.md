@@ -30,7 +30,7 @@ With `VITE_API_SERVER=true`, InfluenceHub has two parts: **PostgreSQL** for all 
 - **Instagram:** with `META_ACCESS_TOKEN` and `META_IG_USER_ID` set, the server looks creators up and keeps their stats
   fresh in the background (see "Instagram" below); each sync also records the day's follower count (history, a year)
   and the latest 12 posts.
-- **Facebook Pages:** with `META_ACCESS_TOKEN` set, the same for public Facebook Pages (followers, likes, category; no
+- **Facebook Pages:** with `FACEBOOK_API_KEY` set (a token of our separate Meta app for Facebook, InfluenceHubv2), the same for public Facebook Pages (followers, likes, category; no
   posts). Pages we manage work straight away; any other Page needs Meta to approve the app's Page Public Metadata
   Access (`docs/contract-decisions.md`, "Facebook Page lookup and sync").
 - **YouTube:** with `YOUTUBE_API_KEY` set, the same for YouTube channels (see "YouTube" below), with the latest 10

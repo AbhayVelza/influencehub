@@ -338,7 +338,8 @@ Rules the forms already applied are now also checked by the handlers, so every c
 
 ## Facebook Page lookup and sync (Graph API v21.0, 25/11/2026)
 
-- Connected when `META_ACCESS_TOKEN` is set (no `META_IG_USER_ID` needed) and the start-up check (`GET /me?fields=id`)
+- Connected when `FACEBOOK_API_KEY` is set (a token of a separate Meta app, InfluenceHubv2, where Page Public
+  Metadata Access is requested; no `META_IG_USER_ID` needed) and the start-up check (`GET /me?fields=id`)
   doesn't reject the token; an outage or rate limit at start-up still connects. The log says `Facebook Pages connected`
   or `Facebook Pages not connected: …`. Lookup, Sync now, bulk sync, Auto-sync, CSV "Fetch public profiles" and Sync
   profiles work as for Instagram (`setProfileSource('facebook', facebookSource)`).
@@ -350,12 +351,14 @@ Rules the forms already applied are now also checked by the handlers, so every c
   === 'blue_verified'`, `linked_accounts` from about + links. The saved handle is the Page's username (lower case), or
   its id when it has none. No recent posts: post data isn't part of Page Public Metadata Access.
 - Access: Pages the token's user manages work with `pages_read_engagement`; any other public Page needs the app's
-  **Page Public Metadata Access** feature (Meta App Review). Without it Meta answers `#10`/`#200`, shown as
+  **Page Public Metadata Access** feature (Meta App Review). Without it Meta answers `#10`/`#200`, or `#100` with no
+  subcode naming `pages_read_engagement` / Page Public Metadata Access (seen 25/11/2026), shown as
   `not_connected` ("Meta hasn't approved Page Public Metadata Access…"), and the Facebook sync pauses 6 hours.
 - Errors: `#803` and `#100` subcode 33 (missing, restricted or unreadable Page) → `not_found`; `#100` "on node type
   (User)" → `not_found` (a personal profile); `#190` → `not_connected`; Meta rate limits → `rate_limited`.
-- Facebook and Instagram share the Meta app's hourly allowance (`X-App-Usage`): the Facebook loop runs every 60 s
-  and both pause while it's at 75% or more.
+- Facebook and Instagram are separate Meta apps, each with its own hourly allowance (`X-App-Usage`, tracked per app in
+  `server/meta.ts`): the Facebook loop runs every 60 s and pauses while its app is at 75% or more; Instagram's meter in
+  Settings → Instagram shows only Instagram's app.
 
 ## YouTube lookup and sync (YouTube Data API v3, P3, 20/11/2026)
 

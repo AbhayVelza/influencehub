@@ -229,7 +229,7 @@ try {
     })
   await ensureFirstAdmin()
   // Lookup and the background sync per platform: Instagram when META_ACCESS_TOKEN / META_IG_USER_ID are set
-  // (server/meta.ts), Facebook Pages when META_ACCESS_TOKEN is (server/facebook.ts), YouTube when YOUTUBE_API_KEY is
+  // (server/meta.ts), Facebook Pages when FACEBOOK_API_KEY is (server/facebook.ts), YouTube when YOUTUBE_API_KEY is
   // (server/youtube.ts).
   const save = async () => {
     try {

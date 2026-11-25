@@ -13,16 +13,22 @@ const GRAPH = 'https://graph.facebook.com/v21.0'
 /** Posts averaged for likes, comments and engagement rate. */
 const RECENT_POSTS = 12
 
-const token = () => process.env.META_ACCESS_TOKEN?.trim() ?? ''
+/**
+ * The Meta app a call goes through. Instagram uses META_ACCESS_TOKEN; Facebook Pages use FACEBOOK_API_KEY, a token of a
+ * separate Meta app (the one with Page Public Metadata Access), so each has its own hourly allowance.
+ */
+export type MetaApp = 'instagram' | 'facebook'
+const TOKEN_ENV: Record<MetaApp, string> = { instagram: 'META_ACCESS_TOKEN', facebook: 'FACEBOOK_API_KEY' }
+const token = (app: MetaApp) => process.env[TOKEN_ENV[app]]?.trim() ?? ''
 const igUserId = () => process.env.META_IG_USER_ID?.trim() ?? ''
 
-export const metaConfigured = () => !!token() && !!igUserId()
-/** Facebook Pages need only the token. */
-export const metaTokenSet = () => !!token()
+export const metaConfigured = () => !!token('instagram') && !!igUserId()
+/** The app's token is set (Facebook Pages need only the token). */
+export const metaTokenSet = (app: MetaApp) => !!token(app)
 
-/** Share (0–100) of Meta's hourly call allowance used, from the last response's X-App-Usage header. */
-let usagePct = 0
-export const metaUsagePct = () => usagePct
+/** Share (0–100) of each Meta app's hourly call allowance used, from the last response's X-App-Usage header. */
+const usagePct: Record<MetaApp, number> = { instagram: 0, facebook: 0 }
+export const metaUsagePct = (app: MetaApp) => usagePct[app]
 
 export interface GraphError {
   message?: string
@@ -54,11 +60,17 @@ interface DiscoveryMedia {
 }
 
 /**
- * One Graph API GET with META_ACCESS_TOKEN (Instagram and Facebook Pages share the app and its hourly allowance).
- * Returns the body, or throws `toFailure(error)`. The token never appears in errors or logs.
+ * One Graph API GET with the app's token. Returns the body, or throws `toFailure(error)`. The token never appears in
+ * errors or logs.
  */
-export async function metaGet<T>(path: string, fields: string, label: string, toFailure: (e: GraphError) => JobFailure): Promise<T> {
-  const url = `${GRAPH}${path}?fields=${encodeURIComponent(fields)}&access_token=${encodeURIComponent(token())}`
+export async function metaGet<T>(
+  app: MetaApp,
+  path: string,
+  fields: string,
+  label: string,
+  toFailure: (e: GraphError) => JobFailure,
+): Promise<T> {
+  const url = `${GRAPH}${path}?fields=${encodeURIComponent(fields)}&access_token=${encodeURIComponent(token(app))}`
   let res: Response
   try {
     res = await fetch(url, { signal: AbortSignal.timeout(20_000) })
@@ -69,7 +81,7 @@ export async function metaGet<T>(path: string, fields: string, label: string, to
   if (usage) {
     try {
       const u = JSON.parse(usage) as { call_count?: number; total_time?: number; total_cputime?: number }
-      usagePct = Math.max(u.call_count ?? 0, u.total_time ?? 0, u.total_cputime ?? 0)
+      usagePct[app] = Math.max(u.call_count ?? 0, u.total_time ?? 0, u.total_cputime ?? 0)
     } catch {
       // Unreadable header: keep the last known value.
     }
@@ -80,17 +92,17 @@ export async function metaGet<T>(path: string, fields: string, label: string, to
 }
 
 /** A Meta rate limit (4, 17, 32, 613, 80002: app, user, page, custom, Instagram), as the app's error; else null. */
-export function metaRateLimit(e: GraphError): JobFailure | null {
+export function metaRateLimit(app: MetaApp, e: GraphError): JobFailure | null {
   if (![4, 17, 32, 613, 80002].includes(e.code ?? 0)) return null
-  usagePct = Math.max(usagePct, 100)
+  usagePct[app] = Math.max(usagePct[app], 100)
   return new JobFailure('rate_limited', 'Too many lookups right now. Wait a few minutes, then try again.')
 }
 
-const graph = <T>(path: string, fields: string) => metaGet<T>(path, fields, 'Instagram', toFailure)
+const graph = <T>(path: string, fields: string) => metaGet<T>('instagram', path, fields, 'Instagram', toFailure)
 
 /** Meta's error codes as the app's lookup errors (the Add influencer screen explains each). */
 function toFailure(e: GraphError): JobFailure {
-  const limited = metaRateLimit(e)
+  const limited = metaRateLimit('instagram', e)
   if (limited) return limited
   // 110 / 2207013: no professional account with that username (missing, or a personal profile).
   if (e.code === 110 || e.error_subcode === 2207013) {
