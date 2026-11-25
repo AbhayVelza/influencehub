@@ -27,7 +27,7 @@ const NOT_CONNECTED_PAUSE_MS = 6 * 3600_000
 type InTurn = <T>(task: () => Promise<T>) => Promise<T>
 type Save = () => Promise<void>
 
-interface PlatformSync {
+export interface PlatformSync {
   platform: Platform
   label: string
   tickMs: number
@@ -112,61 +112,73 @@ const YOUTUBE: PlatformSync = {
   holdUntil: youtubeBackgroundHoldUntil,
 }
 
-/** One platform's loop: its own pause, its own pace. */
-function startLoop(sync: PlatformSync, inTurn: InTurn, save: Save) {
-  let pausedUntil = 0
+/** A loop's pause: no calls before this time (ms since epoch). */
+export interface LoopState {
+  pausedUntil: number
+}
 
-  async function tick() {
-    const now = Date.now()
-    if (now < pausedUntil) return
-    const hold = sync.holdUntil?.(now) ?? 0
-    if (hold > now) {
-      pausedUntil = hold
+/**
+ * One step of a platform's loop: fetch the next due account and apply it. A failure never touches the account's stats:
+ * not found marks it `error` (tried again after an interval); rate limits, outages and a lost connection pause the
+ * loop and leave the account as it was (still queued), so it's retried once the pause ends.
+ */
+export async function syncNext(sync: PlatformSync, inTurn: InTurn, save: Save, state: LoopState) {
+  const now = Date.now()
+  if (now < state.pausedUntil) return
+  const hold = sync.holdUntil?.(now) ?? 0
+  if (hold > now) {
+    state.pausedUntil = hold
+    return
+  }
+  const target = await inTurn(async () => {
+    const a = dueAccount(sync.platform, now)
+    return a ? { id: a.id, handle: a.handle } : null
+  })
+  if (!target) return
+  try {
+    const profile = await sync.fetch(target.handle)
+    await inTurn(async () => {
+      const found = findAccount(target.id)
+      // Removed, renamed or switched back to manual while the platform answered: drop the result.
+      if (!found || found.account.handle !== target.handle || found.account.sync_method !== 'lookup') return
+      applyProfile(found.influencer, found.account, profile)
+      refreshDerived(found.influencer)
+      failedAt.delete(target.id)
+      sync.onResult?.(true)
+      await save()
+      // After the save, so the account's row exists for the history and posts that point at it.
+      await recordSyncedData(found.account, profile)
+    })
+  } catch (err) {
+    const code = err instanceof JobFailure ? err.code : 'unavailable'
+    if (code === 'rate_limited' || code === 'unavailable') {
+      // A used-up daily quota is picked up by holdUntil on the next tick.
+      state.pausedUntil = Date.now() + COOL_DOWN_MS
       return
     }
-    const target = await inTurn(async () => {
-      const a = dueAccount(sync.platform, now)
-      return a ? { id: a.id, handle: a.handle } : null
-    })
-    if (!target) return
-    try {
-      const profile = await sync.fetch(target.handle)
-      await inTurn(async () => {
-        const found = findAccount(target.id)
-        // Removed, renamed or switched back to manual while the platform answered: drop the result.
-        if (!found || found.account.handle !== target.handle || found.account.sync_method !== 'lookup') return
-        applyProfile(found.influencer, found.account, profile)
-        refreshDerived(found.influencer)
-        failedAt.delete(target.id)
-        sync.onResult?.(true)
-        await save()
-        // After the save, so the account's row exists for the history and posts that point at it.
-        await recordSyncedData(found.account, profile)
-      })
-    } catch (err) {
-      const code = err instanceof JobFailure ? err.code : 'unavailable'
-      if (code === 'rate_limited' || code === 'unavailable') {
-        // A used-up daily quota is picked up by holdUntil on the next tick.
-        pausedUntil = Date.now() + COOL_DOWN_MS
-        return
-      }
-      if (code === 'not_connected') {
-        console.error(`${sync.label} sync paused:`, err instanceof Error ? err.message : err)
-        pausedUntil = Date.now() + NOT_CONNECTED_PAUSE_MS
-        await sync.onNotConnected?.(inTurn, save)
-        return
-      }
-      // not_found: a personal profile, renamed or deleted account. Marked, and tried again after an interval.
-      failedAt.set(target.id, Date.now())
-      await inTurn(async () => {
-        const found = findAccount(target.id)
-        if (found?.account.sync_method !== 'lookup') return
-        found.account.sync_status = 'error'
-        sync.onResult?.(false)
-        await save()
-      })
+    if (code === 'not_connected') {
+      console.error(`${sync.label} sync paused:`, err instanceof Error ? err.message : err)
+      state.pausedUntil = Date.now() + NOT_CONNECTED_PAUSE_MS
+      await sync.onNotConnected?.(inTurn, save)
+      return
     }
+    // not_found: a personal profile, renamed or deleted account. Marked, and tried again after an interval.
+    failedAt.set(target.id, Date.now())
+    await inTurn(async () => {
+      const found = findAccount(target.id)
+      // Renamed or switched to manual while the platform answered: the error was about the old handle.
+      if (found?.account.sync_method !== 'lookup' || found.account.handle !== target.handle) return
+      found.account.sync_status = 'error'
+      sync.onResult?.(false)
+      await save()
+    })
   }
+}
+
+/** One platform's loop: its own pause, its own pace. */
+function startLoop(sync: PlatformSync, inTurn: InTurn, save: Save) {
+  const state: LoopState = { pausedUntil: 0 }
+  const tick = () => syncNext(sync, inTurn, save, state)
 
   const schedule = (ms: number) => {
     const timer = setTimeout(() => {
