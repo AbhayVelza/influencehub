@@ -1,6 +1,6 @@
 import type { ColumnDef } from '@tanstack/react-table'
 import { AccountLabel } from '@/components/common/platform-badge'
-import { RelativeTime } from '@/components/common/relative-time'
+import { DataAge } from '@/components/common/data-age'
 import { SyncStatusBadge } from '@/components/common/sync-status-badge'
 import { buildColumns, totalReachColumn } from '@/features/influencers/columns'
 import { formatCompact, formatNumber } from '@/lib/format'
@@ -60,7 +60,7 @@ export function buildOnboardedColumns(team: Map<string, User>, platform: Platfor
       meta: { label: 'Last synced', hiddenByDefault: true },
       cell: ({ row }) => {
         const at = accountOn(row.original, platform)?.last_synced_at
-        return at ? <RelativeTime iso={at} className="whitespace-nowrap text-muted-foreground" /> : muted
+        return at ? <DataAge iso={at} prefix="" /> : muted
       },
     },
   ]

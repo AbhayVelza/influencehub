@@ -1,6 +1,6 @@
 import { TZDate } from '@date-fns/tz'
 import { addDays, format, formatDistanceToNowStrict, isValid, set } from 'date-fns'
-import { APP_TIMEZONE } from '@/lib/constants'
+import { APP_TIMEZONE, STALE_AFTER_DAYS } from '@/lib/constants'
 
 const compactFormatter = new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 })
 const fullFormatter = new Intl.NumberFormat('en-IN')
@@ -89,6 +89,13 @@ export function formatRelative(iso: string | null | undefined): string {
   const date = new Date(iso)
   if (!isValid(date)) return '—'
   return formatDistanceToNowStrict(date, { addSuffix: true })
+}
+
+/** True when data last synced at `iso` is older than STALE_AFTER_DAYS (auto-sync refreshes every 7 days). */
+export function isStale(iso: string | null | undefined, now = Date.now()): boolean {
+  if (!iso) return false
+  const at = Date.parse(iso)
+  return !Number.isNaN(at) && now - at > STALE_AFTER_DAYS * 86_400_000
 }
 
 // ---------------------------------------------------------------------------

@@ -25,7 +25,7 @@ active filters stay visible. `CollapsibleFilters` in `components/common/collapsi
    Category/Platform/Country/State/City/Stage/Assigned/Agreement (signed, missing)/Insights (received, missing)/Total followers; chips; table; bulk bar; pagination. Columns:
    name+avatar+verified, category, primary account, platforms, Instagram followers, phone, email (shown by default), city,
    state, country, stage, assigned to, docs (Insights ✓/✗, Agreement ✓/✗; — in the pool), sync (primary), last synced
-   (primary). Filters in URL. Every option shows a count that follows the other active filters (ticking Stage updates the
+   (primary; "3 days ago", amber **Stale** marker after 8 days, as on each account in Social accounts). Filters in URL. Every option shows a count that follows the other active filters (ticking Stage updates the
    Category / Country / … counts, and the reverse); options with nothing left stay listed, dimmed at 0. Clear one filter
    ("Clear <filter>" in its menu, a chip's ×) or all ("Clear all").
 4. **Influencer detail**: header (avatar, name, primary account, category, platforms, total followers, location, Stage ▾,

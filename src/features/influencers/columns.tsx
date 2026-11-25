@@ -8,7 +8,7 @@ import { AccountLabel, PlatformMarks } from '@/components/common/platform-badge'
 import { StageBadge } from '@/components/common/stage-badge'
 import { SyncStatusBadge } from '@/components/common/sync-status-badge'
 import { Checkbox } from '@/components/ui/checkbox'
-import { RelativeTime } from '@/components/common/relative-time'
+import { DataAge } from '@/components/common/data-age'
 import { formatCompact, formatNumber } from '@/lib/format'
 import { instagramFollowers, primaryAccount, toRef } from '@/lib/platforms'
 import type { Influencer, InfluencerSortKey, User } from '@/types'
@@ -250,11 +250,7 @@ export function buildColumns(team: Map<string, User>): ColumnDef<Influencer>[] {
       meta: { label: 'Last synced', hiddenByDefault: true },
       cell: ({ row }) => {
         const at = primaryAccount(row.original)?.last_synced_at
-        return at ? (
-          <RelativeTime iso={at} className="whitespace-nowrap" />
-        ) : (
-          muted
-        )
+        return at ? <DataAge iso={at} prefix="" /> : muted
       },
     },
   ]

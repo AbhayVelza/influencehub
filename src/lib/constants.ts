@@ -130,6 +130,8 @@ export const SYNC_STATUS_META: Record<SyncStatus, { label: string; dot: string }
 }
 
 export const SYNC_INTERVAL_OPTIONS: SyncIntervalHours[] = [168]
+/** An account's numbers count as stale (DataAge marker) once its last sync is older than this; auto-sync runs every 7 days. */
+export const STALE_AFTER_DAYS = 8
 
 export const ROLE_LABEL: Record<Role, string> = {
   admin: 'Admin',
