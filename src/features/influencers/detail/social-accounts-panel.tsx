@@ -17,6 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useProfileLookup } from '@/hooks/use-integrations'
 import { useCan } from '@/hooks/use-me'
 import { copyToClipboard } from '@/lib/clipboard'
+import { DataAge } from '@/components/common/data-age'
 import { RelativeTime } from '@/components/common/relative-time'
 import { formatCompact, formatDate, formatDateTime, formatRelative } from '@/lib/format'
 import { isSessionChanged, waitForJob } from '@/lib/jobs'
@@ -272,16 +273,16 @@ function AccountView({ influencer, account }: { influencer: Influencer; account:
       <div className="space-y-2 rounded-xl bg-surface-container-low/50 p-3">
         <div className="flex flex-wrap items-center justify-between gap-2 text-small">
           <span className="text-small tracking-wider text-muted-foreground uppercase">{SYNC_METHOD_LABEL[account.sync_method]}</span>
-          {account.sync_method === 'connect' ? (
-            <ConnectStatusBadge account={account} />
-          ) : account.sync_method === 'lookup' ? (
-            <span title={formatDateTime(account.last_synced_at)}>
-              <SyncStatusBadge status={syncing ? 'pending' : account.sync_status} />
-              {!syncing && account.sync_status === 'synced' && account.last_synced_at && (
-                <span className="text-muted-foreground"> · <RelativeTime iso={account.last_synced_at} /></span>
+          {account.sync_method !== 'manual' && (
+            <span className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
+              {account.sync_method === 'connect' ? (
+                <ConnectStatusBadge account={account} />
+              ) : (
+                <SyncStatusBadge status={syncing ? 'pending' : account.sync_status} />
               )}
+              {!syncing && account.last_synced_at && <DataAge iso={account.last_synced_at} />}
             </span>
-          ) : null}
+          )}
         </div>
         <div className="flex flex-wrap justify-end gap-2">
           {account.sync_method === 'connect' && account.connect_status !== 'connected' && canEdit && (
