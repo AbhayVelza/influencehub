@@ -191,6 +191,16 @@ export async function deleteOrphanFiles(): Promise<number> {
   return rows.length
 }
 
+/**
+ * Follower snapshots older than SNAPSHOT_DAYS, for every account. A sync prunes only its own account's history, so
+ * accounts that stopped syncing (typed in, not found, platform disconnected) are cleaned up here. Returns how many.
+ */
+export async function pruneSnapshots(now = new Date()): Promise<number> {
+  const rows = await client()`delete from account_snapshots
+    where captured_at < ${now.toISOString()}::timestamptz - make_interval(days => ${SNAPSHOT_DAYS}) returning account_id`
+  return rows.length
+}
+
 // ---- Follower history and recent posts (src/backend/platform-data.ts; never loaded into the working copy) ----
 
 type Pg = postgres.Sql | postgres.TransactionSql
