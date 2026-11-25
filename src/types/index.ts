@@ -883,6 +883,10 @@ export interface SyncRun {
   status: SyncRunStatus
   synced: number
   failed: number
+  /** Accounts still due after the run's latest sync (0 = caught up). */
+  queued: number
+  /** When the queue should be done at 1 account per 40 s (pauses for rate limits add to it); null when nothing is queued. */
+  expected_finish_at: ISODateString | null
 }
 
 export interface InstagramSettings {

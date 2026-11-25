@@ -153,7 +153,12 @@ Record any new API decision here. Dates and documents: `dates-and-documents.md`.
 - `GET/PATCH /settings/instagram` (admin only, else 403). GET → `{ connected, business_account {username,
   ig_user_id} | null, token_status (valid|expiring|expired), token_expires_at, sync_interval_hours (168: every 7 days, the only option),
   api_usage_pct, last_runs[≤20] {started_at, finished_at|null, status (running|succeeded|partial|failed),
-  synced, failed} }`. PATCH accepts `{ sync_interval_hours }` and returns the full object.
+  synced, failed, queued, expected_finish_at|null} }`. PATCH accepts `{ sync_interval_hours }` and returns the full object.
+  A run is one hour of background Instagram work. After each account it syncs or fails, `queued` = Instagram accounts
+  still due (queued, never synced, or last synced over 7 days ago; not ones that just failed) and `expected_finish_at`
+  = now + `queued` × 40 s (null when 0). It's an estimate: rate-limit pauses (15 min) push it back. The server logs
+  `Instagram sync: N account(s) queued; expected to finish about …` when a run starts. Capacity: ~90 an hour,
+  ~15,000 a week.
 - `GET /dashboard/summary`: `top_cities` = top 10 by influencer count; `recent_activity` = latest 20, admins only (others get `[]`);
   `my_follow_ups` = today + overdue, scoped like `mine=true`; "contacted this week" counts moves since Monday 00:00 IST.
   Trends, breakdowns and tables (`src/backend/dashboard.ts`, over what the caller can see): `onboarded_by_week` (moves
