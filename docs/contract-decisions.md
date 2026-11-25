@@ -473,3 +473,10 @@ Rules the forms already applied are now also checked by the handlers, so every c
 - The API server's scheduler (`server/scheduler.ts`, every 5 min) runs auto-release, connect-link expiry and the
   purge even when nobody is using the app; the first two still run before every request too (prototype mode has no
   scheduler).
+
+## Saved views (25/11/2026)
+
+- Shared with the whole team; no limit on how many a member saves (any role). `PATCH /saved-views/{id}` {name?, filters?,
+  sort?} renames a view and/or replaces its filters and sort (a key left out is kept; an empty name → 422). Executives
+  edit and delete only their own views (403); managers and admins any. The Edit button (pencil per view in the Saved
+  views menu) offers "Use the current filters and sort", ticked when what is on screen differs from the view.

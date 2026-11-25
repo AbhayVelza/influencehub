@@ -212,6 +212,32 @@ describe('lists and dashboard', () => {
     expect((await api('GET', '/saved-views', { as: exec.id })).body.items).toHaveLength(1)
   })
 
+  it('saved views: no limit per member; edit renames and replaces filters (executives: own views only)', async () => {
+    const exec = await addMember('executive')
+    const manager = await addMember('manager')
+    for (const [who, n] of [[exec.id, 30], [manager.id, 30], [ADMIN, 30]] as const) {
+      for (let i = 0; i < n; i++) {
+        expect((await api('POST', '/saved-views', { as: who, body: { name: `v${i}`, filters: {} } })).status).toBe(201)
+      }
+    }
+    expect((await api('GET', '/saved-views')).body.items).toHaveLength(90)
+
+    const mine = (await api('POST', '/saved-views', { as: exec.id, body: { name: 'Pune', filters: { city: ['Pune'] } } })).body
+    const theirs = (await api('POST', '/saved-views', { body: { name: 'Delhi', filters: { city: ['Delhi'] } } })).body
+    const edited = await api('PATCH', `/saved-views/${mine.id}`, {
+      as: exec.id,
+      body: { name: ' Pune fashion ', filters: { city: ['Pune'], category: ['Fashion'] }, sort: '-created_at' },
+    })
+    expect(edited.status).toBe(200)
+    expect(edited.body).toMatchObject({ name: 'Pune fashion', filters: { city: ['Pune'], category: ['Fashion'] }, sort: '-created_at' })
+    // Rename only: filters stay.
+    expect((await api('PATCH', `/saved-views/${mine.id}`, { as: exec.id, body: { name: 'Pune' } })).body.filters).toEqual({ city: ['Pune'], category: ['Fashion'] })
+    expect((await api('PATCH', `/saved-views/${mine.id}`, { as: exec.id, body: { name: '  ' } })).status).toBe(422)
+    expect((await api('PATCH', `/saved-views/${theirs.id}`, { as: exec.id, body: { name: 'x' } })).status).toBe(403)
+    expect((await api('PATCH', `/saved-views/${mine.id}`, { as: manager.id, body: { name: 'By manager' } })).status).toBe(200)
+    expect((await api('PATCH', '/saved-views/nope', { body: { name: 'x' } })).status).toBe(404)
+  })
+
   it('FR-DASH-01: executives see only their own figures', async () => {
     const exec = await addMember('executive')
     await influencer('mine', exec.id)

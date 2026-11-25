@@ -20,6 +20,7 @@ import type {
   SavedView,
   SyncAllResult,
   SavedViewCreate,
+  SavedViewUpdate,
   SyncIntervalHours,
   TeamMemberCreate,
   TeamMemberUpdate,
@@ -292,6 +293,25 @@ export const workspaceHandlers = [
     }
     db.savedViews.push(view)
     return HttpResponse.json(view, { status: 201 })
+  }),
+
+  // Rename and/or replace the filters and sort. Same rule as delete: executives edit only their own views.
+  http.patch(api('/saved-views/:id'), async ({ params, request }) => {
+    const view = db.savedViews.find((v) => v.id === params.id)
+    if (!view) return notFound('Saved view')
+    const user = currentUser()
+    if (view.created_by !== user.id && user.role === 'executive') {
+      return forbidden('You can only edit your own saved views')
+    }
+    const body = await readJson<SavedViewUpdate>(request)
+    if (body.name !== undefined) {
+      const name = body.name?.trim()
+      if (!name) return apiError(422, 'validation_error', 'Name is required')
+      view.name = name
+    }
+    if (body.filters !== undefined) view.filters = body.filters ?? {}
+    if (body.sort !== undefined) view.sort = body.sort ?? null
+    return HttpResponse.json(view)
   }),
 
   http.delete(api('/saved-views/:id'), async ({ params }) => {
