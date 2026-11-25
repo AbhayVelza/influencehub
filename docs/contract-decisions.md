@@ -154,7 +154,7 @@ Record any new API decision here. Dates and documents: `dates-and-documents.md`.
   ig_user_id} | null, token_status (valid|expiring|expired), token_expires_at, sync_interval_hours (168: every 7 days, the only option),
   api_usage_pct, last_runs[≤20] {started_at, finished_at|null, status (running|succeeded|partial|failed),
   synced, failed} }`. PATCH accepts `{ sync_interval_hours }` and returns the full object.
-- `GET /dashboard/summary`: `top_cities` = top 10 by influencer count; `recent_activity` = latest 20;
+- `GET /dashboard/summary`: `top_cities` = top 10 by influencer count; `recent_activity` = latest 20, admins only (others get `[]`);
   `my_follow_ups` = today + overdue, scoped like `mine=true`; "contacted this week" counts moves since Monday 00:00 IST.
   Trends, breakdowns and tables (`src/backend/dashboard.ts`, over what the caller can see): `onboarded_by_week` (moves
   onto Onboarded, last 12 Monday-weeks), `calls_by_day` (last 30 IST days), `by_platform` (creators with an account

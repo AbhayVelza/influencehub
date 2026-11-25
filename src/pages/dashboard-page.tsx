@@ -182,17 +182,17 @@ function RecentActivity({ items }: { items: DashboardSummary['recent_activity'] 
   const team = useTeamMap()
   if (items.length === 0) return <EmptyState icon={History} title="No activity yet" className="py-10" />
   return (
-    <ol className="divide-y divide-surface-container">
+    <ol className="max-h-80 divide-y divide-surface-container overflow-y-auto pr-1">
       {items.map((a) => {
         const { text, detail } = describeActivity(a, team)
         return (
-          <li key={a.id} className="py-2.5 text-body">
+          <li key={a.id} className="py-1.5 text-small">
             <Link to={`/influencers/${a.influencer_id}?tab=activity`} className="font-medium text-primary hover:underline">
               {a.influencer.name}
             </Link>{' '}
             <span className="text-muted-foreground">·</span> {text}
             {detail && <span className="text-muted-foreground"> — “{detail}”</span>}
-            <p className="mt-0.5 text-small text-muted-foreground">
+            <p className="text-small text-muted-foreground">
               {a.actor ? (team.get(a.actor)?.name ?? 'Someone') : 'System'} ·{' '}
               <RelativeTime iso={a.created_at} />
             </p>
@@ -252,6 +252,7 @@ const shortBand = (band: string) => band.replace(/^Under /, '<').replace(/^(\d+)
 export default function DashboardPage() {
   const { data: me } = useMe()
   const crm = useCan('crm:access')
+  const canSeeActivity = useCan('activity:view')
   const summary = useQuery({ queryKey: queryKeys.dashboard, queryFn: ({ signal }) => dashboardApi.summary(signal), refetchInterval: 60_000 })
   const noun = crm ? 'Influencers' : 'Creators'
 
@@ -274,7 +275,7 @@ export default function DashboardPage() {
           const breakdowns = (
             <div className="grid gap-space-lg md:grid-cols-2 xl:grid-cols-3">
               <Panel title={`${noun} by follower size`}>
-                <ColumnChart data={c.bands} unit={noun} labelHeader="Total followers" height={200} showEveryLabel />
+                <ColumnChart data={c.bands} unit={noun} labelHeader="Total followers" height={200} showEveryLabel tableFirst />
               </Panel>
               <Card className="gap-0 p-space-lg">
                 <BarListChart
@@ -379,11 +380,16 @@ export default function DashboardPage() {
                 </Panel>
               )}
 
-              {recent}
-
-              <Panel title="Recent activity" icon={History} description="Latest updates to influencers">
-                <RecentActivity items={s.recent_activity} />
-              </Panel>
+              {canSeeActivity ? (
+                <div className="grid gap-space-lg xl:grid-cols-3">
+                  <div className="min-w-0 xl:col-span-2">{recent}</div>
+                  <Panel title="Recent activity" icon={History}>
+                    <RecentActivity items={s.recent_activity} />
+                  </Panel>
+                </div>
+              ) : (
+                recent
+              )}
             </>
           )
         })()

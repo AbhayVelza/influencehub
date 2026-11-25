@@ -22,6 +22,7 @@ export function ColumnChart({
   labelHeader,
   height = 220,
   showEveryLabel = false,
+  tableFirst = false,
 }: {
   data: Datum[]
   unit: string
@@ -29,11 +30,14 @@ export function ColumnChart({
   height?: number
   /** Few, short categories (size bands): label every column and print its count above it. */
   showEveryLabel?: boolean
+  /** Open on the table view. */
+  tableFirst?: boolean
 }) {
   return (
     <ChartFrame
       labelHeader={labelHeader}
       valueHeader={unit}
+      tableFirst={tableFirst}
       rows={data.map((d) => ({ key: d.key, label: d.fullLabel, value: d.value }))}
       chart={
         <div style={{ height }} role="img" aria-label={`${unit} by ${labelHeader.toLowerCase()}: ${data.map((d) => `${d.fullLabel} ${d.value}`).join(', ')}`}>

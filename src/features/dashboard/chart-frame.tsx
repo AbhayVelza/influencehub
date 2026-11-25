@@ -17,14 +17,17 @@ export function ChartFrame({
   labelHeader,
   valueHeader,
   extraHeader,
+  tableFirst = false,
 }: {
   chart: ReactNode
   rows: TableRow[]
   labelHeader: string
   valueHeader: string
   extraHeader?: string
+  /** Open on the table (the chart is one click away). */
+  tableFirst?: boolean
 }) {
-  const [showTable, setShowTable] = useState(false)
+  const [showTable, setShowTable] = useState(tableFirst)
   return (
     <div className="space-y-2">
       {showTable ? (
