@@ -17,10 +17,11 @@ import { MAX_DOCUMENT_BYTES } from '@/lib/documents'
 import { API_BASE } from '@/lib/env'
 import { authRoutes, ensureFirstAdmin, sessionUid } from './auth'
 import { backgroundDataChanged, closeLiveStreams, dataChanged, liveStream } from './live'
+import { facebookSource } from './facebook'
 import { instagramSource } from './meta'
 import * as pgStore from './pg-store'
 import { startScheduler, stopScheduler } from './scheduler'
-import { startInstagramSync, startYouTubeSync, stopSync } from './sync-worker'
+import { startFacebookSync, startInstagramSync, startYouTubeSync, stopSync } from './sync-worker'
 import { youtubeSource } from './youtube'
 
 // The API server. It runs the same handlers the prototype runs in the browser (src/backend/handlers: stages, claims,
@@ -228,7 +229,8 @@ try {
     })
   await ensureFirstAdmin()
   // Lookup and the background sync per platform: Instagram when META_ACCESS_TOKEN / META_IG_USER_ID are set
-  // (server/meta.ts), YouTube when YOUTUBE_API_KEY is (server/youtube.ts).
+  // (server/meta.ts), Facebook Pages when META_ACCESS_TOKEN is (server/facebook.ts), YouTube when YOUTUBE_API_KEY is
+  // (server/youtube.ts).
   const save = async () => {
     try {
       await pgStore.flush()
@@ -239,6 +241,7 @@ try {
   }
   startScheduler(inBackgroundTurn, save)
   if (await startInstagramSync(inBackgroundTurn, save)) setProfileSource('instagram', instagramSource)
+  if (await startFacebookSync(inBackgroundTurn, save)) setProfileSource('facebook', facebookSource)
   if (await startYouTubeSync(inBackgroundTurn, save)) setProfileSource('youtube', youtubeSource)
 } catch (err) {
   // e.g. PostgreSQL unreachable, a wrong DATABASE_URL, a database still on the old layout, or ADMIN_PASSWORD too short.

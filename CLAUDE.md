@@ -15,7 +15,7 @@ you make in `docs/contract-decisions.md` (dates and documents: `docs/dates-and-d
 ## Business flow
 Gather data → call → onboard → send package.
 Stages: data_gathered → contacted → onboarded → package_sent → delivered. Side stages: on_hold, rejected.
-Add manually / by CSV / by Instagram or YouTube lookup (API server with Meta connected: `server/meta.ts`; with `YOUTUBE_API_KEY`: `server/youtube.ts`; background sync per platform in `server/sync-worker.ts`; other platforms not connected); one creator can have accounts on several platforms. Calls: no answer /
+Add manually / by CSV / by Instagram or YouTube lookup (API server with Meta connected: `server/meta.ts`, Facebook Pages `server/facebook.ts`; with `YOUTUBE_API_KEY`: `server/youtube.ts`; background sync per platform in `server/sync-worker.ts`; other platforms not connected); one creator can have accounts on several platforms. Calls: no answer /
 call back → follow-up; not interested → rejected; interested → contacted. Package returned → back to onboarded.
 
 ## Detail lives in docs/ (read only what the task touches)
