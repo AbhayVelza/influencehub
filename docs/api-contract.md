@@ -27,7 +27,7 @@ page_size }`. Errors → `{ error: { code, message } }` (`contract-decisions.md`
 - POST /auth/sign-in {email, password} · GET /auth/session · POST /auth/sign-out · POST /auth/password
   {current_password, new_password} · POST /auth/set-password {user_id, password} (admin)
 - GET /me · GET /team · POST /team {email, name, role, location?, password} (admin) → User · PATCH /team/{id} {name?, role?, location?,
-  is_active?} · DELETE /team/{id} (admin; deactivated members only) → 204 · GET/POST/PATCH/DELETE /categories · GET/POST/DELETE /saved-views
+  is_active?} · DELETE /team/{id} (admin; deactivated members only) → 204 · GET/POST/PATCH/DELETE /categories · GET/POST/PATCH/DELETE /saved-views
 - GET /pool (same filters, sort and pagination as /influencers) · GET /pool/filter-options · GET /pool/{id} ·
   GET /pool/expiring · POST /influencers/{id}/claim · POST /influencers/{id}/release {reason} ·
   POST /influencers/bulk actions `claim`, `pool_assign` · GET/PATCH /settings/pool {claim_limit, auto_release_days}

@@ -1,7 +1,7 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/query'
 import { influencersApi, poolApi, savedViewsApi } from '@/services'
-import type { BulkRequest, InfluencerFilters, InfluencerListParams, SavedViewCreate } from '@/types'
+import type { BulkRequest, InfluencerFilters, InfluencerListParams, SavedViewCreate, SavedViewUpdate } from '@/types'
 
 export function useInfluencerList(params: InfluencerListParams) {
   return useQuery({
@@ -38,6 +38,14 @@ export function useCreateSavedView() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (body: SavedViewCreate) => savedViewsApi.create(body),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.savedViews }),
+  })
+}
+
+export function useUpdateSavedView() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, body }: { id: string; body: SavedViewUpdate }) => savedViewsApi.update(id, body),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.savedViews }),
   })
 }

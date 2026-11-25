@@ -13,6 +13,7 @@ import type {
   PoolSettings,
   SavedView,
   SavedViewCreate,
+  SavedViewUpdate,
   SyncAllResult,
   TeamMemberCreate,
   TeamMemberUpdate,
@@ -65,5 +66,6 @@ export const settingsApi = {
 export const savedViewsApi = {
   list: (signal?: AbortSignal) => http.get<Paginated<SavedView>>('/saved-views', undefined, signal),
   create: (body: SavedViewCreate) => http.post<SavedView>('/saved-views', body),
+  update: (id: string, body: SavedViewUpdate) => http.patch<SavedView>(`/saved-views/${id}`, body),
   remove: (id: string) => http.delete(`/saved-views/${id}`),
 }
