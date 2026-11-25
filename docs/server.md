@@ -189,7 +189,7 @@ SDLC specification, section 9). Ids are the app's ids (`inf_…`, `call_…`, `u
 | `categories` | name (unique, case-insensitive), is_active |
 | `influencers` | `Influencer` with the address and checklist as columns; `category_id` → categories, `assigned_to` → team_members. Kept columns (`platforms`, `has_agreement`, `insights_count`, `ever_onboarded`, `claimed_at`, `stage_before_hold`, `stage_changed_at`, `search_text`) are written by the server for SQL use; the app never reads them back |
 | `social_accounts` | `SocialAccount`; unique (`platform`, `handle`); one primary per influencer; `metrics` jsonb; kept `audience` |
-| `account_snapshots` | audience history written by each sync: one row per account per IST day, the last 365 days; never loaded into memory |
+| `account_snapshots` | audience history written by each sync: one row per account per IST day, the last 365 days (older rows pruned by each sync and by the daily scheduler clean-up); never loaded into memory |
 | `account_media` | the recent posts the last sync returned (`position` 0 = newest; `likes` null when hidden), replaced per sync; never loaded into memory |
 | `calls`, `activities`, `saved_views` | `CallLog`, `Activity` (`payload` jsonb), `SavedView` (`filters` jsonb) |
 | `packages`, `package_items` | `Package` (address as columns) and its items |
@@ -286,4 +286,7 @@ request queue; the open stream doesn't hold it.
 
 `server/scheduler.ts` runs every 5 minutes (first run 30 s after start): pool auto-release, connect-link expiry,
 the purge of documents deleted more than 30 days ago, then `deleteOrphanFiles()` (files no document points to, older
-than a day). It saves only when something changed and logs `Scheduler: …` when it did.
+than a day). Once a day (the first run, then every 24 hours) `pruneSnapshots()` deletes follower snapshots older than
+365 days for every account, so accounts that stopped syncing don't keep history forever. It saves only when
+something changed and logs `Scheduler: …` when it did. `tests/pg-snapshots.test.ts` checks the snapshot SQL on real
+PostgreSQL when `TEST_DATABASE_URL` points at an empty throwaway database or schema (skipped otherwise).

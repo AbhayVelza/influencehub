@@ -113,7 +113,8 @@ CREATE INDEX IF NOT EXISTS social_accounts_influencer_ix       ON social_account
 CREATE INDEX IF NOT EXISTS social_accounts_link_expiry_ix      ON social_accounts (connect_link_expires_at) WHERE connect_status = 'link_sent';
 
 -- Audience history, written by each sync (server/pg-store.ts, never loaded into memory): one row per account per
--- IST day, the last 365 days. Accounts are saved by upsert, so the cascade only fires when an account is removed.
+-- IST day, the last 365 days (a sync prunes its own account; the daily clean-up in server/scheduler.ts every account).
+-- Accounts are saved by upsert, so the cascade only fires when an account is removed.
 CREATE TABLE IF NOT EXISTS account_snapshots (
   account_id  text NOT NULL REFERENCES social_accounts (id) ON DELETE CASCADE,
   captured_at timestamptz NOT NULL,
