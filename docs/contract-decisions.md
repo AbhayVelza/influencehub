@@ -318,7 +318,12 @@ Rules the forms already applied are now also checked by the handlers, so every c
   these; **Auto-sync IG** (bulk bar) while Instagram is one of them.
 - `POST /lookup` and `POST /accounts/{id}/sync` fetch through `server/meta.ts`. Errors: `not_found` (no Business or
   Creator account with that handle: personal profiles can't be looked up), `rate_limited`, `not_connected`
-  (token expired or missing a permission), `unavailable`. A failed sync sets `sync_status: 'error'` and keeps the stats.
+  (token expired or missing a permission), `unavailable`. A failed sync never changes the stats, picture, bio or
+  `last_synced_at` (every platform; `tests/failed-sync.test.ts`). Sync now: `not_found` and `unavailable` set
+  `sync_status: 'error'`; `rate_limited` and `not_connected` leave the status as it was. Background sync: `not_found`
+  sets `error` (tried again after the sync interval); `rate_limited` / `unavailable` pause that platform 15 minutes and
+  `not_connected` 6 hours, leaving the account queued (`pending`) so it's retried after the pause. An error for a
+  handle renamed while the platform answered is dropped.
 - Stats kept for Instagram: followers, following, posts, and from the last 12 posts `avg_likes`, `avg_comments`,
   `engagement_rate` = (avg likes + avg comments) / followers × 100 (posts with hidden likes are left out). Also the
   display name, picture, bio and website. `is_verified` and `account_type` aren't available.
