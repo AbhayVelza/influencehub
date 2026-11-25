@@ -2,7 +2,8 @@ import { db, findAccount, refreshDerived, nowIso } from '@/backend/db'
 import { JobFailure } from '@/backend/jobs'
 import { applyProfile, recordSyncedData } from '@/backend/social'
 import type { LookupProfile, Platform, SocialAccount, SyncRun } from '@/types'
-import { fetchBusinessAccount, fetchInstagram, metaConfigured, metaUsagePct } from './meta'
+import { checkFacebook, fetchFacebookPage } from './facebook'
+import { fetchBusinessAccount, fetchInstagram, metaConfigured, metaTokenSet, metaUsagePct } from './meta'
 import { checkYouTube, fetchYouTube, youtubeBackgroundHoldUntil, youtubeConfigured } from './youtube'
 
 // The API server's background sync: one loop per connected platform, each fetching one account at a time at its own
@@ -92,6 +93,15 @@ const INSTAGRAM: PlatformSync = {
       await save()
     }),
   onResult: recordInstagramRun,
+}
+
+/** Facebook Pages share Meta's hourly allowance with Instagram, so they go slower and pause at the same 75%. */
+const FACEBOOK: PlatformSync = {
+  platform: 'facebook',
+  label: 'Facebook',
+  tickMs: 60_000,
+  fetch: fetchFacebookPage,
+  holdUntil: (now) => (metaUsagePct() >= 75 ? now + COOL_DOWN_MS : 0),
 }
 
 const YOUTUBE: PlatformSync = {
@@ -189,6 +199,27 @@ export async function startInstagramSync(inTurn: InTurn, save: Save): Promise<bo
     return false
   }
   startLoop(INSTAGRAM, inTurn, save)
+  return true
+}
+
+/**
+ * Checks META_ACCESS_TOKEN with one call (`/me`) and starts the Facebook Pages sync loop. False when the token isn't
+ * set or Meta rejects it; an outage or rate limit at start-up still connects (the token may be fine).
+ */
+export async function startFacebookSync(inTurn: InTurn, save: Save): Promise<boolean> {
+  if (!metaTokenSet()) return false
+  try {
+    await checkFacebook()
+    console.log('Facebook Pages connected')
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    if (err instanceof JobFailure && err.code === 'not_connected') {
+      console.error('Facebook Pages not connected:', message)
+      return false
+    }
+    console.warn('Facebook Pages connected; the start-up check failed:', message)
+  }
+  startLoop(FACEBOOK, inTurn, save)
   return true
 }
 

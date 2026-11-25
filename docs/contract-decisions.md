@@ -336,6 +336,27 @@ Rules the forms already applied are now also checked by the handlers, so every c
   nonexisting field`). A sync fills the influencer's `email` from an address written in the bio, only when the email
   is empty; category and city stay typed in.
 
+## Facebook Page lookup and sync (Graph API v21.0, 25/11/2026)
+
+- Connected when `META_ACCESS_TOKEN` is set (no `META_IG_USER_ID` needed) and the start-up check (`GET /me?fields=id`)
+  doesn't reject the token; an outage or rate limit at start-up still connects. The log says `Facebook Pages connected`
+  or `Facebook Pages not connected: …`. Lookup, Sync now, bulk sync, Auto-sync, CSV "Fetch public profiles" and Sync
+  profiles work as for Instagram (`setProfileSource('facebook', facebookSource)`).
+- One call per Page: `GET /{username or numeric id}?fields=id,name,username,about,category,fan_count,followers_count,
+  website,picture.type(large){url},verification_status`. Handles are a Page username (letters, numbers, dots, dashes,
+  2–50) or a numeric id (5–25 digits); anything else is refused without calling Meta.
+- Kept: `page_followers` = `followers_count`, `page_likes` = `fan_count`, `page_category` = `category`; name, about
+  (bio), picture, `links` = the http(s) links in `website` (it can hold several), `is_verified` = `verification_status
+  === 'blue_verified'`, `linked_accounts` from about + links. The saved handle is the Page's username (lower case), or
+  its id when it has none. No recent posts: post data isn't part of Page Public Metadata Access.
+- Access: Pages the token's user manages work with `pages_read_engagement`; any other public Page needs the app's
+  **Page Public Metadata Access** feature (Meta App Review). Without it Meta answers `#10`/`#200`, shown as
+  `not_connected` ("Meta hasn't approved Page Public Metadata Access…"), and the Facebook sync pauses 6 hours.
+- Errors: `#803` and `#100` subcode 33 (missing, restricted or unreadable Page) → `not_found`; `#100` "on node type
+  (User)" → `not_found` (a personal profile); `#190` → `not_connected`; Meta rate limits → `rate_limited`.
+- Facebook and Instagram share the Meta app's hourly allowance (`X-App-Usage`): the Facebook loop runs every 60 s
+  and both pause while it's at 75% or more.
+
 ## YouTube lookup and sync (YouTube Data API v3, P3, 20/11/2026)
 
 - Connected when `YOUTUBE_API_KEY` is set and the start-up check (`channels.list part=id forHandle=@youtube`, 1 quota
