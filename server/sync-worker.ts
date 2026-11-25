@@ -47,16 +47,26 @@ let stopped = false
 
 const intervalMs = () => db.instagramSettings.sync_interval_hours * 3600_000
 
+/**
+ * How soon an account is due for the background sync: 0 = queued (Sync profiles, Sync now, CSV), 1 = never synced,
+ * 2 = last synced more than the interval ago; null = not due. Queued accounts go regardless; a failure marks them
+ * 'error', so no retry loop.
+ */
+function dueRank(a: SocialAccount, platform: Platform, now: number): number | null {
+  if (a.platform !== platform || a.sync_method !== 'lookup') return null
+  const rank = a.sync_status === 'pending' ? 0 : a.last_synced_at === null ? 1 : 2
+  if (rank > 0 && (failedAt.get(a.id) ?? 0) > now - intervalMs()) return null
+  if (rank === 2 && Date.parse(a.last_synced_at!) > now - intervalMs()) return null
+  return rank
+}
+
 /** The next account of `platform` the background sync should fetch, or null when none is due. */
 export function dueAccount(platform: Platform, now: number): SocialAccount | null {
   let best: { account: SocialAccount; rank: number; at: string } | null = null
   for (const inf of db.influencers) {
     for (const a of inf.accounts) {
-      if (a.platform !== platform || a.sync_method !== 'lookup') continue
-      const rank = a.sync_status === 'pending' ? 0 : a.last_synced_at === null ? 1 : 2
-      // Queued accounts (Sync profiles, Sync now, CSV) go regardless; a failure marks them 'error', so no retry loop.
-      if (rank > 0 && (failedAt.get(a.id) ?? 0) > now - intervalMs()) continue
-      if (rank === 2 && Date.parse(a.last_synced_at!) > now - intervalMs()) continue
+      const rank = dueRank(a, platform, now)
+      if (rank === null) continue
       const at = a.last_synced_at ?? ''
       if (!best || rank < best.rank || (rank === best.rank && at < best.at)) best = { account: a, rank, at }
     }
@@ -64,26 +74,46 @@ export function dueAccount(platform: Platform, now: number): SocialAccount | nul
   return best?.account ?? null
 }
 
-/** This hour's run in Settings → Instagram → Recent runs (one row per hour with work). */
-function recordInstagramRun(ok: boolean) {
+/** How many accounts of `platform` the background sync still has to fetch. */
+export function dueCount(platform: Platform, now: number): number {
+  let n = 0
+  for (const inf of db.influencers) for (const a of inf.accounts) if (dueRank(a, platform, now) !== null) n += 1
+  return n
+}
+
+/** Instagram's pace: one account every 40 s (~90 an hour, ~15,000 a week). */
+const INSTAGRAM_TICK_MS = 40_000
+
+/**
+ * This hour's run in Settings → Instagram → Recent runs (one row per hour with work), with what's still queued and
+ * when it should be done at Instagram's pace (rate-limit pauses add to it). A new run logs the estimate.
+ */
+export function recordInstagramRun(ok: boolean) {
   const settings = db.instagramSettings
-  const hour = new Date(Math.floor(Date.now() / 3600_000) * 3600_000).toISOString()
+  const now = Date.now()
+  const hour = new Date(Math.floor(now / 3600_000) * 3600_000).toISOString()
   let run = settings.last_runs.find((r) => r.started_at === hour)
+  const started = !run
   if (!run) {
-    run = { started_at: hour, finished_at: null, status: 'succeeded', synced: 0, failed: 0 } as SyncRun
+    run = { started_at: hour, finished_at: null, status: 'succeeded', synced: 0, failed: 0, queued: 0, expected_finish_at: null } as SyncRun
     settings.last_runs = [run, ...settings.last_runs].slice(0, KEEP_RUNS)
   }
   if (ok) run.synced += 1
   else run.failed += 1
   run.finished_at = nowIso()
   run.status = run.failed === 0 ? 'succeeded' : run.synced === 0 ? 'failed' : 'partial'
+  run.queued = dueCount('instagram', now)
+  run.expected_finish_at = run.queued > 0 ? new Date(now + run.queued * INSTAGRAM_TICK_MS).toISOString() : null
   settings.api_usage_pct = Math.min(100, metaUsagePct('instagram'))
+  if (started && run.expected_finish_at) {
+    console.log(`Instagram sync: ${run.queued} account(s) queued; expected to finish about ${run.expected_finish_at} (1 per 40 s)`)
+  }
 }
 
 const INSTAGRAM: PlatformSync = {
   platform: 'instagram',
   label: 'Instagram',
-  tickMs: 40_000,
+  tickMs: INSTAGRAM_TICK_MS,
   fetch: fetchInstagram,
   holdUntil: (now) => (metaUsagePct('instagram') >= 75 ? now + COOL_DOWN_MS : 0),
   onNotConnected: async (inTurn, save) =>

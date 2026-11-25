@@ -275,8 +275,13 @@ CREATE TABLE IF NOT EXISTS sync_runs (
   finished_at timestamptz,
   status      text NOT NULL CHECK (status IN ('running', 'succeeded', 'partial', 'failed')),
   synced      integer NOT NULL DEFAULT 0,
-  failed      integer NOT NULL DEFAULT 0
+  failed      integer NOT NULL DEFAULT 0,
+  -- Accounts still due after the latest sync in this run, and when they should be done at 1 per 40 s (null: none left).
+  queued      integer NOT NULL DEFAULT 0 CHECK (queued >= 0),
+  expected_finish_at timestamptz
 );
+ALTER TABLE sync_runs ADD COLUMN IF NOT EXISTS queued integer NOT NULL DEFAULT 0;
+ALTER TABLE sync_runs ADD COLUMN IF NOT EXISTS expected_finish_at timestamptz;
 
 -- One-time data upgrades this workspace has finished (e.g. categories_upgraded), so they never run twice.
 CREATE TABLE IF NOT EXISTS schema_migrations (

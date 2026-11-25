@@ -147,6 +147,13 @@ export function InstagramSettings() {
                 Each {youtube ? 'Instagram account and YouTube channel' : 'account'} is refreshed 7 days after its last sync. To refresh
                 everything now, use Sync profiles.
               </p>
+              {s.last_runs[0] && s.last_runs[0].queued > 0 && s.last_runs[0].expected_finish_at && (
+                <p className="text-small text-on-surface">
+                  {formatNumber(s.last_runs[0].queued)} Instagram {s.last_runs[0].queued === 1 ? 'account' : 'accounts'} queued · expected to
+                  finish <RelativeTime iso={s.last_runs[0].expected_finish_at} /> ({formatDateTime(s.last_runs[0].expected_finish_at)}), at 1
+                  every 40 s
+                </p>
+              )}
             </div>
             <UsageMeter value={s.api_usage_pct} />
           </div>
@@ -168,7 +175,8 @@ export function InstagramSettings() {
                   <TableHead>Duration</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Synced</TableHead>
-                  <TableHead className="pr-(--card-spacing) text-right">Failed</TableHead>
+                  <TableHead className="text-right">Failed</TableHead>
+                  <TableHead className="pr-(--card-spacing) text-right">Left in queue</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -183,9 +191,10 @@ export function InstagramSettings() {
                       </span>
                     </TableCell>
                     <TableCell className="text-right tabular-nums">{formatNumber(run.synced)}</TableCell>
-                    <TableCell className={cn('pr-(--card-spacing) text-right tabular-nums', run.failed > 0 && 'font-medium text-error')}>
+                    <TableCell className={cn('text-right tabular-nums', run.failed > 0 && 'font-medium text-error')}>
                       {formatNumber(run.failed)}
                     </TableCell>
+                    <TableCell className="pr-(--card-spacing) text-right tabular-nums">{formatNumber(run.queued ?? 0)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

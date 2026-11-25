@@ -250,7 +250,10 @@ export function toRows(): Rows {
     token_expires_at: ig.token_expires_at, sync_interval_hours: ig.sync_interval_hours, api_usage_pct: ig.api_usage_pct,
   })
   for (const run of ig.last_runs) {
-    put('sync_runs', { started_at: run.started_at, finished_at: run.finished_at, status: run.status, synced: run.synced, failed: run.failed })
+    put('sync_runs', {
+      started_at: run.started_at, finished_at: run.finished_at, status: run.status, synced: run.synced, failed: run.failed,
+      queued: run.queued ?? 0, expected_finish_at: run.expected_finish_at ?? null,
+    })
   }
   if (db.migrations.categories_upgraded) put('schema_migrations', { version: 'categories_upgraded' })
   for (const j of db.jobs) put('jobs', { id: j.id, status: j.status, result: j.result, error: j.error, created_by: j.created_by, created_at: j.created_at })
@@ -365,6 +368,7 @@ export function fromRows(rows: Rows) {
         api_usage_pct: ig.api_usage_pct,
         last_runs: list(rows, 'sync_runs').map((s) => ({
           started_at: s.started_at, finished_at: s.finished_at, status: s.status, synced: s.synced, failed: s.failed,
+          queued: s.queued ?? 0, expected_finish_at: s.expected_finish_at ?? null,
         })),
       } as InstagramSettings)
     : defaults.instagramSettings

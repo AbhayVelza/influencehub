@@ -39,7 +39,8 @@ active filters stay visible. `CollapsibleFilters` in `components/common/collapsi
    "Possible duplicate" column).
    "Possible same creator" warning: Add account to existing / Create anyway; teammates' matches stay anonymous.
 6. **Pipeline kanban** · 7. **Calls & Follow-ups** · 8. **Welcome Kits** (as before; handles show as primary account).
-9. **Settings (admin)**: Instagram integration status + sync frequency, team & roles, categories, pool guards.
+9. **Settings (admin)**: Instagram integration status + sync frequency (with the queue and its expected finish time
+   while accounts are waiting; the recent-runs table has a "Left in queue" column), team & roles, categories, pool guards.
    **Team**: "Add member" → "Add a team member" dialog (Name, Email, Role, Location, Initial password in server mode) →
    toast "Added <name> as <Role>"; change role, edit location inline, **Set password** (server mode), deactivate /
    reactivate.
