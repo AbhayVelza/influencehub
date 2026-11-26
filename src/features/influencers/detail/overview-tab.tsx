@@ -3,6 +3,7 @@ import { Pencil, Plus, X } from 'lucide-react'
 import { useState, type FormEvent, type ReactNode } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
+import { DateTimeInput } from '@/components/common/date-input'
 import { EmailValue } from '@/components/common/email-value'
 import { InlineSelectField, InlineTextField } from '@/components/common/inline-field'
 import { Button } from '@/components/ui/button'
@@ -12,7 +13,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useCategories } from '@/hooks/use-categories'
 import { useCan } from '@/hooks/use-me'
-import { addressSchema, fieldSchemas, validateField } from '@/lib/schemas'
+import { useSetFollowUp } from '@/features/calls/queries'
+import { parseDateTimeInput, todayKey } from '@/lib/format'
+import { addressWithFollowUpSchema, fieldSchemas, validateField } from '@/lib/schemas'
 import { getErrorMessage } from '@/services'
 import type { Address, Influencer, InfluencerUpdate, OnboardingChecklist } from '@/types'
 import { useUpdateInfluencer } from '../detail-queries'
@@ -39,25 +42,42 @@ const ADDRESS_FIELDS = [
 ] as const
 
 function AddressEditor({
+  influencerId,
   address,
   onSave,
   onCancel,
 }: {
+  influencerId: string
   address: Address | null
   onSave: (address: Address) => Promise<unknown>
   onCancel: () => void
 }) {
   const form = useForm({
-    resolver: zodResolver(addressSchema),
-    defaultValues: address
-      ? { ...address, line2: address.line2 ?? '' }
-      : { line1: '', line2: '', city: '', state: '', postal_code: '', country: 'India' },
+    resolver: zodResolver(addressWithFollowUpSchema),
+    defaultValues: {
+      ...(address
+        ? { ...address, line2: address.line2 ?? '' }
+        : { line1: '', line2: '', city: '', state: '', postal_code: '', country: 'India' }),
+      follow_up: '',
+    },
   })
-  const { register, handleSubmit, formState } = form
+  const { register, handleSubmit, setValue, setError, formState } = form
+  const setFollowUp = useSetFollowUp(influencerId)
 
-  const onSubmit = handleSubmit(async (values) => {
+  const onSubmit = handleSubmit(async ({ follow_up, ...values }) => {
+    // The follow-up first: a taken time slot keeps the form open without saving half of it.
+    const followUpDate = follow_up.trim() ? parseDateTimeInput(follow_up) : null
+    if (followUpDate) {
+      try {
+        await setFollowUp.mutateAsync({ follow_up_date: followUpDate, notes: 'Follow-up set while adding the address' })
+      } catch (err) {
+        setError('follow_up', { message: getErrorMessage(err) }, { shouldFocus: true })
+        return
+      }
+    }
     try {
       await onSave(values)
+      if (followUpDate) toast.success('Address saved and follow-up set')
     } catch (err) {
       toast.error('Couldn’t save the address', { description: getErrorMessage(err) })
     }
@@ -74,6 +94,19 @@ function AddressEditor({
           {formState.errors[name] && <p className="text-small text-error">{formState.errors[name]?.message}</p>}
         </div>
       ))}
+      <div className="grid gap-1 sm:col-span-2">
+        <Label htmlFor="addr-follow-up" className="text-small tracking-wider text-muted-foreground uppercase">
+          Follow up on (optional) · IST
+        </Label>
+        <DateTimeInput
+          id="addr-follow-up"
+          aria-invalid={!!formState.errors.follow_up}
+          minDay={todayKey()}
+          onPick={(text) => setValue('follow_up', text, { shouldValidate: true, shouldDirty: true })}
+          {...register('follow_up')}
+        />
+        {formState.errors.follow_up && <p className="text-small text-error">{formState.errors.follow_up.message}</p>}
+      </div>
       <div className="flex justify-end gap-2 pt-2 sm:col-span-2">
         <Button type="button" variant="outline" size="sm" onClick={onCancel}>
           Cancel
@@ -248,6 +281,7 @@ export function OverviewTab({ influencer }: { influencer: Influencer }) {
       >
         {editingAddress ? (
           <AddressEditor
+            influencerId={influencer.id}
             address={address}
             onCancel={() => setEditingAddress(false)}
             onSave={async (next) => {

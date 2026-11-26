@@ -94,13 +94,13 @@ export function DateRangeFilter({ label, value, onChange }: { label: string; val
             <Label htmlFor="range-from" className="text-small">
               From
             </Label>
-            <DateInput id="range-from" value={draft.from} aria-invalid={badFrom} onChange={(e) => setDraft((d) => ({ ...d, from: e.target.value }))} />
+            <DateInput id="range-from" value={draft.from} aria-invalid={badFrom} onChange={(e) => setDraft((d) => ({ ...d, from: e.target.value }))} onPick={(from) => setDraft((d) => ({ ...d, from }))} />
           </div>
           <div className="grid gap-1">
             <Label htmlFor="range-to" className="text-small">
               To
             </Label>
-            <DateInput id="range-to" value={draft.to} aria-invalid={badTo} onChange={(e) => setDraft((d) => ({ ...d, to: e.target.value }))} />
+            <DateInput id="range-to" value={draft.to} aria-invalid={badTo} onChange={(e) => setDraft((d) => ({ ...d, to: e.target.value }))} onPick={(to) => setDraft((d) => ({ ...d, to }))} />
           </div>
         </div>
         {(badFrom || badTo) && <p className="text-small text-destructive">Use dd/MM/yyyy</p>}

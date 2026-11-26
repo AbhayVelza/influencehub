@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
+import { parseDateTimeInput, withPickedDay } from '@/lib/format'
 import { db } from '@/backend/db'
 import { address, addMember, agreement, api, influencer, insights, logCall, move, onboard, resetWorkspace, uploadDocument } from './harness'
 
@@ -159,6 +160,35 @@ describe('calls and follow-ups', () => {
     expect(res.status).toBe(200)
     expect((res.body.items ?? res.body).length).toBe(1)
   })
+
+  it('FR-CALL-06: a follow-up without a call (from the address form): future, own slot, no "called" tick', async () => {
+    const a = await influencer('a')
+    const b = await influencer('b')
+    const at = tomorrow()
+    expect((await api('POST', `/influencers/${a}/follow-ups`, { body: {} })).status).toBe(422)
+    expect((await api('POST', `/influencers/${a}/follow-ups`, { body: { follow_up_date: '2020-01-01T10:00:00.000Z' } })).status).toBe(422)
+    const res = await api('POST', `/influencers/${a}/follow-ups`, { body: { follow_up_date: at, notes: 'Address added' } })
+    expect(res.status).toBe(201)
+    expect(res.body).toMatchObject({ outcome: 'call_back', follow_up_date: at, follow_up_done: false })
+    const inf = db.influencers.find((i) => i.id === a)!
+    expect(inf.onboarding_checklist.called).toBe(false)
+    expect(inf.stage).toBe('data_gathered')
+    const clash = await api('POST', `/influencers/${b}/follow-ups`, { body: { follow_up_date: at } })
+    expect(clash.body.error.code).toBe('time_taken')
+  })
+
+  it('FR-CALL-07: in the Data gathered column, creators with a follow-up come last, soonest first', async () => {
+    const [plain, later, sooner] = [await influencer('plain'), await influencer('later'), await influencer('sooner')]
+    await logCall(later, 'call_back', { follow_up_date: new Date(Date.now() + 3 * 86_400_000).toISOString() })
+    await api('POST', `/influencers/${sooner}/follow-ups`, { body: { follow_up_date: tomorrow() } })
+    // Make the follow-up creators the longest-waiting ones: the follow-up still sends them to the end.
+    for (const i of db.influencers) if (i.id !== plain) i.created_at = '2026-01-01T00:00:00.000Z'
+    const res = await api('GET', '/pipeline')
+    const col = res.body.columns.find((c: { stage: string }) => c.stage === 'data_gathered')
+    expect(col.items.map((c: { id: string }) => c.id)).toEqual([plain, sooner, later])
+    expect(col.items[0].follow_up_date).toBeNull()
+    expect(col.items[1].follow_up_date).not.toBeNull()
+  })
 })
 
 describe('Welcome Kits', () => {
@@ -196,5 +226,14 @@ describe('Welcome Kits', () => {
     const pkg = await packageSent(id)
     await api('PATCH', `/influencers/${id}`, { body: { address: { ...address, city: 'Mumbai' } } })
     expect(db.packages.find((p) => p.id === pkg)!.address.city).toBe('Pune')
+  })
+})
+
+describe('Calendar picker', () => {
+  it('picking a day keeps the typed time, else 11:00 AM', () => {
+    expect(withPickedDay('', '2026-12-05')).toBe('05/12/2026, 11:00 AM')
+    expect(withPickedDay('01/12/2026, 05:30 pm', '2026-12-05')).toBe('05/12/2026, 05:30 PM')
+    expect(withPickedDay('01/12/2026 17:30', '2026-12-05')).toBe('05/12/2026, 17:30')
+    expect(parseDateTimeInput(withPickedDay('', '2026-12-05'))).toBe('2026-12-05T05:30:00.000Z')
   })
 })

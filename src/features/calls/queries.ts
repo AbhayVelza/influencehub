@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { invalidateInfluencer } from '@/features/influencers/detail-queries'
 import { queryKeys } from '@/lib/query'
 import { callsApi, influencersApi } from '@/services'
-import type { CallLogCreate } from '@/types'
+import type { CallLogCreate, FollowUpCreate } from '@/types'
 
 export function useInfluencerCalls(influencerId: string) {
   return useQuery({
@@ -15,6 +15,18 @@ export function useLogCall(influencerId: string) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (body: CallLogCreate) => influencersApi.logCall(influencerId, body),
+    onSuccess: () => {
+      void invalidateInfluencer(queryClient, influencerId)
+      void queryClient.invalidateQueries({ queryKey: queryKeys.followUpsAll })
+    },
+  })
+}
+
+/** A follow-up without a call (the address form's "Follow up on"). */
+export function useSetFollowUp(influencerId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (body: FollowUpCreate) => influencersApi.setFollowUp(influencerId, body),
     onSuccess: () => {
       void invalidateInfluencer(queryClient, influencerId)
       void queryClient.invalidateQueries({ queryKey: queryKeys.followUpsAll })

@@ -32,13 +32,13 @@ active filters stay visible. `CollapsibleFilters` in `components/common/collapsi
    Owner ▾, Log call, Create Welcome Kit (hidden for Rejected; the Welcome Kits page picker skips them too), ⋯) + stage stepper. Left: **Social accounts** — a list of accounts (tabs), each
    with its platform's stat cards (`PLATFORM_META` labels), method + status (Sync now / Send connect link (copy or
    email) / Edit stats), growth chart where snapshots exist, recent posts (Instagram, YouTube); + Add account (with
-   duplicate check). Right tabs: Overview, Calls, Welcome Kits, Documents, Activity.
+   duplicate check). Right tabs: Overview, Calls, Welcome Kits, Documents, Activity. Overview's address form has an optional "Follow up on" (calendar; sets a follow-up without logging a call).
 5. **Add / Import modal**: Look up a profile (platform + username → job → preview with the platform's stats, "Also
    found" linked accounts → details → duplicate check → save); Manual (several accounts, personal-profile toggle,
    audience for manual accounts); CSV (per-platform columns, optional "Added on" date column, preview w/ errors +
    "Possible duplicate" column).
    "Possible same creator" warning: Add account to existing / Create anyway; teammates' matches stay anonymous.
-6. **Pipeline kanban** · 7. **Calls & Follow-ups** · 8. **Welcome Kits** (as before; handles show as primary account).
+6. **Pipeline kanban** (cards show an open follow-up; in Data gathered those cards come last) · 7. **Calls & Follow-ups** · 8. **Welcome Kits** (as before; handles show as primary account).
 9. **Settings (admin)**: Instagram integration status + sync frequency (with the queue and its expected finish time
    while accounts are waiting; the recent-runs table has a "Left in queue" column), team & roles, categories, pool guards.
    **Team**: "Add member" → "Add a team member" dialog (Name, Email, Role, Location, Initial password in server mode) →

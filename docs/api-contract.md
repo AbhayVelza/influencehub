@@ -13,7 +13,7 @@ page_size }`. Errors → `{ error: { code, message } }` (`contract-decisions.md`
 - PATCH /accounts/{id} {metrics} · POST /accounts/{id}/sync → {job_id} · POST /accounts/{id}/connect-link
   {send_email?} → {url, expires_at, emailed_to} · GET /accounts/{id}/snapshots · GET /accounts/{id}/media
 - POST /duplicates/check · GET /duplicates · POST /duplicates/{id}/dismiss
-- GET/POST /influencers/{id}/calls · GET /calls/follow-ups?bucket=today|overdue|upcoming|history · POST /calls/{id}/done
+- GET/POST /influencers/{id}/calls · POST /influencers/{id}/follow-ups · GET /calls/follow-ups?bucket=today|overdue|upcoming|history · POST /calls/{id}/done
 - GET/POST/PATCH /packages · GET /pipeline · GET /dashboard/summary
 - GET /influencers/{id}/documents · POST /influencers/{id}/documents {key, type, title, ...metadata} ·
   GET /documents (type[], q, uploaded_by[], uploaded_from, uploaded_to, page, page_size) ·

@@ -159,6 +159,14 @@ export const addressSchema = z.object({
 
 export type AddressFormInput = z.input<typeof addressSchema>
 
+/** The address form with its optional "Follow up on" (dd/MM/yyyy, hh:mm a, Asia/Kolkata; in the future). */
+export const addressWithFollowUpSchema = addressSchema.extend({ follow_up: z.string() }).superRefine((value, ctx) => {
+  if (!value.follow_up.trim()) return
+  const iso = parseDateTimeInput(value.follow_up)
+  if (!iso) ctx.addIssue({ code: 'custom', path: ['follow_up'], message: 'Enter a valid date and time, like 31/10/2026, 05:00 PM' })
+  else if (Date.parse(iso) < Date.now()) ctx.addIssue({ code: 'custom', path: ['follow_up'], message: 'Pick a time in the future' })
+})
+
 // ---------------------------------------------------------------------------
 // Calls
 

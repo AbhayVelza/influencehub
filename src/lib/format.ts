@@ -83,6 +83,12 @@ export function formatDay(day: string | null | undefined): string {
   return match ? `${match[3]}/${match[2]}/${match[1]}` : '—'
 }
 
+/** "2026-11" → "November 2026" (the calendar picker's heading). */
+export function formatMonth(month: string): string {
+  const [y, m] = month.split('-').map(Number)
+  return format(new Date(y, m - 1, 1), 'MMMM yyyy')
+}
+
 /** "2 hours ago" / "in 3 days". Show it through `RelativeTime`, which keeps the exact date-time in a tooltip. */
 export function formatRelative(iso: string | null | undefined): string {
   if (!iso) return '—'
@@ -173,6 +179,15 @@ export function parseImportDate(text: string): string | null {
 export function isoToDateTimeInput(iso: string | null | undefined): string {
   const text = formatDateTime(iso)
   return text === '—' ? '' : text
+}
+
+/**
+ * A date-time input's text with its day set to `day` (yyyy-MM-dd), keeping the time already typed (else 11:00 AM):
+ * what picking a day on the calendar does.
+ */
+export function withPickedDay(text: string, day: string): string {
+  const time = text.match(/,?\s+(\d{1,2}:\d{2}\s*(?:[ap]m)?)\s*$/i)?.[1]?.toUpperCase()
+  return `${formatDay(day)}, ${time ?? '11:00 AM'}`
 }
 
 /** A date-time input value for "now + N days at HH:00" in Asia/Kolkata (follow-up shortcuts). */
