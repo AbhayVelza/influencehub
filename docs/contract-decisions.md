@@ -13,7 +13,11 @@ Record any new API decision here. Dates and documents: `dates-and-documents.md`.
   `reach_min/max` filter on total_reach; `followers_min/max` filter on one account's audience: some account on a selected `platform[]` (any account when none is selected) within the range, unknown audiences never match (the Onboarded tabs' Followers filter, which is that platform's followers / subscribers / page followers). Combinable (AND) with everything else, and part of `filter-options`' filters like `reach_min/max`; `filter-options` adds `platforms` with counts (faceted, see Filter options); `q` also matches every
   account handle. Handles are normalised everywhere (forms, lookup, CSV, API): the platform's profile URL and a
   leading `@` are stripped, then lowercased (YouTube channel ids `UC…` keep their case; Facebook
-  `/people/<name>/<id>` and `profile.php?id=<id>` links become the numeric id). No format or length rule:
+  `/people/<name>/<id>` and `profile.php?id=<id>` links become the numeric id, also when "facebook" is misspelt as
+  "acebook"; YouTube video links `youtu.be/<id>`, `watch?v=<id>`, `/shorts/`, `/live/`, `/embed/` become
+  `video:<id>` with the id's case kept, decided 26/11/2026: lookup and sync resolve it to the video's channel with one
+  extra quota unit (`videos.list part=snippet`), and the first sync replaces it with the channel's handle unless another
+  account already has it). No format or length rule:
   any non-empty text is a handle (decided 24/11/2026: real sheets hold short links and legacy names). `(platform, handle)` is unique across the CRM.
   Influencer PATCH can't change accounts or derived fields (`accounts`, `total_reach`, `is_verified`, `profile_pic_url`).
 - `POST /influencers {…, accounts: AccountCreate[]}` (≥1, first = primary). `AccountCreate {platform, handle,
@@ -126,15 +130,19 @@ Record any new API decision here. Dates and documents: `dates-and-documents.md`.
   `POST /imports/csv {key, mapping, fetch_profiles, on_duplicate: skip|update}` → job. Columns: name (required),
   category, phone, email, city, state, country, tags, notes, created_at (optional "added on" date, see Dates) and one
   handle column per platform (at least one mapped; each row needs ≥1 handle). Job result `{total_rows, created, updated, duplicates, failed, errors[{row,
-  handle, message}], profiles {synced, failed} | null}`. `row` = 1-based file line (header = line 1). Rows are
-  validated with the same rules as the forms (`src/lib/csv-import.ts`); a missing or unknown category is a row error (no fallback category).
+  handle, message}], warnings[{row, handle, message}], profiles {synced, failed} | null}`. `row` = 1-based file line (header = line 1). Rows are
+  validated with the same rules as the forms (`src/lib/csv-import.ts`). No restrictions (decided 26/11/2026, replacing
+  "no fallback category"): the only failed row is one with no handle at all. A new category name is added as a
+  category; no category → "Uncategorized" (added when missing); no name → the first handle; a date or follower count
+  that can't be read is ignored; each such row is imported and listed in `warnings`.
   Placeholder cells (`-`, `—`, `N/A`, `none`, `nil`, `null`) count as empty; rows with no name and no handle (blank or
   section-heading rows) are skipped and left out of `total_rows`; tags split on `;`, `|` or `,`. Influencer text
   fields (name, city, state, country, email, notes, tags) have no length limit; a phone that isn't a number is kept as
-  typed. A row
-  repeating an account from earlier in the file is a duplicate; a row with any account already in the CRM is that
-  creator: `skip` counts it as a duplicate, `update` overwrites mapped non-empty fields, merges tags and adds its
-  new accounts (never its `created_at`). `fetch_profiles` turns the rows' accounts on connected platforms (GET /integrations) into lookup accounts and queues them for the background sync (`profiles.queued`); typed-in stats stay until the first sync. Client limits: 2 MB, 5,000 rows.
+  typed. A row's creator is its Instagram handle (the CRM's only duplicate signal), else its first handle
+  (`importIdentity`): a later row with the same one is a duplicate, and when that handle is already in the CRM the row
+  is that creator: `skip` counts it as a duplicate, `update` overwrites mapped non-empty fields, merges tags and adds
+  its new accounts (never its `created_at`). Any other handle the row shares with an earlier row or another creator
+  is left off that row (noted in `warnings`); it never skips the row (decided 26/11/2026). `fetch_profiles` turns the rows' accounts on connected platforms (GET /integrations) into lookup accounts and queues them for the background sync (`profiles.queued`); typed-in stats stay until the first sync. Client limits: 2 MB, 5,000 rows.
   Import/presign are manager/admin only. The preview flags rows matching existing creators (duplicates check).
 - Export CSV columns: name, category, total_reach, phone, email, city, state, country, stage, assigned_to, tags,
   created_at (dd/MM/yyyy), then one column per platform (handles joined with "; ").

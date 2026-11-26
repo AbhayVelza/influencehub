@@ -64,6 +64,18 @@ export function missingMappings(mapping: CsvColumnMapping): string[] {
 
 export type RawImportRow = Partial<Record<ImportField, string>>
 
+/** Where rows without a category go (created by the import when missing). */
+export const UNCATEGORIZED = 'Uncategorized'
+
+/**
+ * Which creator a row is: its Instagram handle (the CRM's only duplicate signal), else its first handle. Two rows with
+ * the same identity are one creator; other handles a row shares with another row or creator don't make it a duplicate.
+ */
+export const importIdentity = (accounts: AccountCreate[]): string | null => {
+  const id = accounts.find((a) => a.platform === 'instagram') ?? accounts[0]
+  return id ? `${id.platform}:${id.handle}` : null
+}
+
 /** Placeholder cells that mean "nothing here" in hand-made sheets: "-", "—", "N/A", "none"… */
 const EMPTY_CELL = /^(?:[-–—.]+|n\/?a|nil|none|null)$/i
 
@@ -106,7 +118,6 @@ export function validateImportRow(raw: RawImportRow, categoryNames: string[]): V
     if (!result.ok) errors[key] = result.error
     else if (result.value !== null && result.value !== '') (values as Record<string, unknown>)[key] = result.value
   }
-  text('name')
   text('phone')
   text('email')
   text('city')
@@ -117,7 +128,7 @@ export function validateImportRow(raw: RawImportRow, categoryNames: string[]): V
   if (raw.created_at) {
     const created = parseImportDate(raw.created_at)
     if (created) values.created_at = created
-    else errors.created_at = 'Use dd/MM/yyyy or an ISO date like 2026-10-28'
+    else warnings.created_at = 'Date not understood (use dd/MM/yyyy or 2026-10-28): today’s date is used'
   }
 
   for (const platform of PLATFORMS) {
@@ -132,32 +143,42 @@ export function validateImportRow(raw: RawImportRow, categoryNames: string[]): V
   if (raw.instagram_followers) {
     const followers = parseCompactNumber(raw.instagram_followers)
     const instagram = accounts.find((a) => a.platform === 'instagram')
-    if (followers === undefined) errors.instagram_followers = 'Use a number like 12400, 12,400 or 12.4K'
+    if (followers === undefined) warnings.instagram_followers = 'Followers not understood (use 12400, 12,400 or 12.4K): skipped'
     else if (!instagram) warnings.instagram_followers = 'No Instagram handle in this row: followers are skipped'
     else {
       instagram.metrics = { followers }
       instagram.sync_method = 'manual'
     }
   }
+  // The only row that can't be imported: no profile at all (a creator needs at least one account).
   if (accounts.length === 0 && !PLATFORMS.some((p) => errors[p])) errors.accounts = 'Add at least one social handle'
 
-  const match = raw.category ? categoryNames.find((c) => c.toLowerCase() === raw.category!.toLowerCase()) : undefined
+  // No name: the first handle stands in.
+  if (raw.name?.trim()) values.name = raw.name.trim()
+  else if (accounts[0]) {
+    values.name = accounts[0].handle
+    warnings.name = 'No name: the handle is used'
+  }
+
+  // Any category: a new name becomes a new category; none goes to "Uncategorized" (both created by the import).
+  const wanted = raw.category?.trim()
+  const match = wanted ? categoryNames.find((c) => c.toLowerCase() === wanted.toLowerCase()) : undefined
   if (match) values.category = match
-  else if (!raw.category) errors.category = 'Category is required'
-  else errors.category = `“${raw.category}” isn’t a category. Use one of: ${categoryNames.join(', ')}`
+  else if (wanted) {
+    values.category = wanted
+    warnings.category = `New category “${wanted}” will be added`
+  } else {
+    values.category = UNCATEGORIZED
+    warnings.category = `No category: “${UNCATEGORIZED}” is used`
+  }
 
   if (raw.tags) {
     const tags: string[] = []
     for (const part of raw.tags.split(/[;|,]/)) {
-      if (!part.trim()) continue
       const result = validateField(fieldSchemas.tag, part)
-      if (!result.ok) {
-        errors.tags = `${part.trim()}: ${result.error}`
-        break
-      }
-      if (!tags.includes(result.value)) tags.push(result.value)
+      if (result.ok && !tags.includes(result.value)) tags.push(result.value)
     }
-    if (!errors.tags && tags.length) values.tags = tags
+    if (tags.length) values.tags = tags
   }
 
   return { values, accounts, errors, warnings, blank: false }

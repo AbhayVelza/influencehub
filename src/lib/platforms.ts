@@ -33,7 +33,19 @@ const count = (key: string, label: string): MetricDef => ({ key, label, format: 
 /** A YouTube channel id (UC + 22 characters): saved as typed and looked up by id. */
 export const YOUTUBE_CHANNEL_ID = /^UC[\w-]{22}$/
 /** facebook.com/people/<name>/<id> or profile.php?id=<id>: the numeric id (group 1 or 2). */
-const FACEBOOK_ID_LINK = /(?:facebook|fb)\.com\/(?:people\/[^/?#\s]+\/(\d+)|profile\.php\?(?:[^#\s]*&)?id=(\d+))/i
+const FACEBOOK_ID_LINK = /(?:f?acebook|fb)\.com\/(?:people\/[^/?#\s]+\/(\d+)|profile\.php\?(?:[^#\s]*&)?id=(\d+))/i
+/** A YouTube video id (11 characters, case-sensitive). */
+const YOUTUBE_VIDEO_ID = '[\\w-]{11}'
+/** youtu.be/<id>, youtube.com/watch?v=<id>, /shorts/<id>, /live/<id>, /embed/<id>: the video id (group 1 or 2). */
+const YOUTUBE_VIDEO_LINK = new RegExp(
+  `(?:youtu\\.be\\/(${YOUTUBE_VIDEO_ID})|youtube\\.com\\/(?:watch\\?(?:[^#\\s]*&)?v=|shorts\\/|live\\/|embed\\/)(${YOUTUBE_VIDEO_ID}))`,
+  'i',
+)
+/**
+ * A YouTube account saved from a video link: `video:<id>`, id as typed. Lookup and sync resolve it to the video's
+ * channel (server/youtube.ts), and the first sync replaces it with the channel's handle.
+ */
+export const YOUTUBE_VIDEO_HANDLE = /^video:[\w-]{11}$/
 /** youtube.com/channel/UC… (group 1) or a legacy /c/ or /user/ name (group 2). Not offered as linked accounts. */
 const YOUTUBE_LEGACY_LINK = /youtube\.com\/(?:channel\/(UC[\w-]{22})|(?:c|user)\/([^/?#\s]+))/i
 
@@ -72,7 +84,12 @@ export const PLATFORM_META: Record<Platform, PlatformMeta> = {
       count('avg_views_recent', 'Avg views (last 10)'),
       { key: 'channel_country', label: 'Channel country', format: 'country' },
     ],
-    url: (h) => (YOUTUBE_CHANNEL_ID.test(h) ? `https://www.youtube.com/channel/${h}` : `https://www.youtube.com/@${h}`),
+    url: (h) =>
+      YOUTUBE_CHANNEL_ID.test(h)
+        ? `https://www.youtube.com/channel/${h}`
+        : YOUTUBE_VIDEO_HANDLE.test(h)
+          ? `https://youtu.be/${h.slice(6)}`
+          : `https://www.youtube.com/@${h}`,
     // Only /@handle links: /channel/UC…, legacy /c/ and /user/ names, /watch, /shorts and /playlist links are not
     // handles (YouTube is looked up by handle, so those would find nothing or someone else's channel).
     urlPattern: /youtube\.com\/@([^/?#\s]+)/i,
@@ -224,7 +241,9 @@ export function normalizeHandle(value: string, platform?: Platform): string {
   const trimmed = value.trim()
   if (platform === 'youtube') {
     // Channel ids stay as typed (they're case-sensitive); legacy /c/ and /user/ names become handles.
-    if (YOUTUBE_CHANNEL_ID.test(trimmed)) return trimmed
+    if (YOUTUBE_CHANNEL_ID.test(trimmed) || YOUTUBE_VIDEO_HANDLE.test(trimmed)) return trimmed
+    const video = trimmed.match(YOUTUBE_VIDEO_LINK)
+    if (video) return `video:${video[1] ?? video[2]}`
     const legacy = trimmed.match(YOUTUBE_LEGACY_LINK)
     if (legacy?.[1]) return legacy[1]
     if (legacy?.[2]) return legacy[2].toLowerCase()

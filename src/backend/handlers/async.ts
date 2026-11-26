@@ -1,11 +1,11 @@
 import { http, HttpResponse } from 'msw'
 import { LOCAL_UPLOAD_PREFIX } from '@/lib/upload-targets'
-import { mapImportRow, validateImportRow } from '@/lib/csv-import'
+import { importIdentity, mapImportRow, validateImportRow } from '@/lib/csv-import'
 import { can } from '@/lib/permissions'
-import { LOOKUP_PLATFORMS, PLATFORM_META, YOUTUBE_CHANNEL_ID } from '@/lib/platforms'
+import { LOOKUP_PLATFORMS, PLATFORM_META, YOUTUBE_CHANNEL_ID, YOUTUBE_VIDEO_HANDLE } from '@/lib/platforms'
 import { toSearchParams } from '@/services/http'
-import type { CsvImportRequest, CsvImportResult, ExportRequest, ExportResult, Influencer, InfluencerCreate, LookupRequest, SocialAccount } from '@/types'
-import { currentUser, db, logActivity, nowIso, refreshDerived } from '../db'
+import type { CsvImportRequest, CsvImportResult, ExportRequest, ExportResult, Influencer, InfluencerCreate, LookupRequest, Platform, SocialAccount } from '@/types'
+import { currentUser, db, logActivity, nextId, nowIso, refreshDerived } from '../db'
 import {
   assignedToOtherMessage,
   createInfluencer,
@@ -38,7 +38,8 @@ export const asyncHandlers = [
     }
     const username = normalizeHandle(body.username ?? '', platform)
     const label = `${PLATFORM_META[platform].label} @${username}`
-    if (!HANDLE.test(username) && !(platform === 'youtube' && YOUTUBE_CHANNEL_ID.test(username))) return apiError(422, 'validation_error', `Enter a valid ${PLATFORM_META[platform].label} username`)
+    const youtubeId = platform === 'youtube' && (YOUTUBE_CHANNEL_ID.test(username) || YOUTUBE_VIDEO_HANDLE.test(username))
+    if (!HANDLE.test(username) && !youtubeId) return apiError(422, 'validation_error', `Enter a valid ${PLATFORM_META[platform].label} username`)
     const { conflict } = handleStatus(platform, username)
     if (conflict === 'exists') return apiError(409, 'already_exists', `${label} is already in the CRM`)
     if (conflict === 'in_pool') return apiError(409, 'in_pool', inPoolMessage(label))
@@ -90,40 +91,61 @@ export const asyncHandlers = [
         duplicates: 0,
         failed: 0,
         errors: [],
+        warnings: [],
         profiles: body.fetch_profiles ? { synced: 0, failed: 0 } : null,
       }
-      const seen = new Set<string>()
+      const seenCreators = new Set<string>()
+      const seenAccounts = new Set<string>()
       const touched: Influencer[] = []
 
       rows.forEach((row, idx) => {
         const line = idx + 2 // header is line 1
         const raw = mapImportRow(row, headers, mapping)
-        const { values, accounts, errors, blank } = validateImportRow(raw, categoryNames)
+        const validated = validateImportRow(raw, categoryNames)
+        const { values, errors, warnings, blank } = validated
         if (blank) {
           result.total_rows--
           return
         }
-        const firstHandle = accounts[0]?.handle ?? null
+        const firstHandle = validated.accounts[0]?.handle ?? null
         const problems = Object.values(errors)
         if (problems.length) {
           result.failed++
           result.errors.push({ row: line, handle: firstHandle, message: problems.join('; ') })
           return
         }
-        const keys = accounts.map((a) => `${a.platform}:${a.handle}`)
-        if (keys.some((k) => seen.has(k))) {
+        // The same creator again (same Instagram handle, else same first handle): skipped as a duplicate.
+        const identity = importIdentity(validated.accounts)!
+        if (seenCreators.has(identity)) {
           result.duplicates++
           return
         }
-        keys.forEach((k) => seen.add(k))
+        seenCreators.add(identity)
+        const [idPlatform, idHandle] = identity.split(/:(.*)/s) as [Platform, string]
+        const existing = findByHandle(idPlatform, idHandle)
 
-        // The row is an existing creator when any of its handles is already in the CRM.
-        const existing = accounts.map((a) => findByHandle(a.platform, a.handle)).find(Boolean)
+        // Other handles that an earlier row or another creator already has are left off this row, not the whole row.
+        const notes = Object.values(warnings)
+        const accounts = validated.accounts.filter((a) => {
+          const key = `${a.platform}:${a.handle}`
+          const owner = findByHandle(a.platform, a.handle)
+          const clash = key !== identity && (seenAccounts.has(key) || (owner && owner !== existing))
+          seenAccounts.add(key)
+          if (clash) notes.push(`${PLATFORM_META[a.platform].label} ${a.handle} is already on another creator: left out`)
+          return !clash
+        })
+        const note = () => notes.length && result.warnings.push({ row: line, handle: firstHandle, message: notes.join('; ') })
+        // A category the CRM doesn't have yet (or "Uncategorized") is added; an inactive one keeps its own spelling.
+        const known = db.categories.find((c) => c.name.toLowerCase() === values.category.toLowerCase())
+        if (known) values.category = known.name
+        else db.categories.push({ id: nextId('cat'), name: values.category, is_active: true })
+
         if (existing) {
           if (body.on_duplicate !== 'update') {
             result.duplicates++
             return
           }
+          note()
           // Only fields present in the row overwrite; tags are merged; new handles are added as accounts.
           const { tags, created_at: _ignored, ...rest } = values
           const fields = Object.keys(raw).filter((k) => k in rest)
@@ -146,6 +168,7 @@ export const asyncHandlers = [
         const { created_at, ...fields } = values
         const res = createInfluencer({ ...fields, accounts } as InfluencerCreate, 'csv', created_at)
         if (res.ok) {
+          note()
           result.created++
           touched.push(res.influencer)
         } else {

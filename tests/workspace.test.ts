@@ -76,13 +76,59 @@ describe('duplicates', () => {
 })
 
 describe('CSV import and export', () => {
-  it('FR-CSV-01/02: bad rows are reported by line, good rows import, no fallback category', async () => {
+  it('FR-CSV-01/02: no restrictions: a missing name, a new or missing category import with notes; only a row with no profile fails', async () => {
     const cat = db.categories[0]!.name
-    const job = await importCsv(`Name,Category,Instagram,City,Tags\nRiya,${cat},riya,Pune,\n,${cat},noname,Pune,\nAsha,Nope,asha,Pune,\n`, CSV_MAPPING)
+    const job = await importCsv(
+      `Name,Category,Instagram,City,Tags\nRiya,${cat},riya,Pune,\n,${cat},noname,Pune,\nAsha,Nope,asha,Pune,\nMeera,,meera,Pune,\nGhost,${cat},,Pune,\n`,
+      CSV_MAPPING,
+    )
     expect(job.status).toBe('succeeded')
-    expect(job.result.created).toBe(1)
-    expect(job.result.failed).toBe(2)
-    expect(job.result.errors.map((e: { row: number }) => e.row)).toEqual([3, 4])
+    expect(job.result).toMatchObject({ created: 4, failed: 1, duplicates: 0 })
+    expect(job.result.errors.map((e: { row: number }) => e.row)).toEqual([6])
+    expect(job.result.warnings.map((w: { row: number }) => w.row)).toEqual([3, 4, 5])
+    expect(db.influencers.find((i) => i.accounts[0]!.handle === 'noname')!.name).toBe('noname')
+    expect(db.influencers.find((i) => i.name === 'Asha')!.category).toBe('Nope')
+    expect(db.influencers.find((i) => i.name === 'Meera')!.category).toBe('Uncategorized')
+    expect(db.categories.filter((c) => ['Nope', 'Uncategorized'].includes(c.name))).toHaveLength(2)
+  })
+
+  it('FR-CSV-02: only the same Instagram handle is a duplicate; a shared Facebook or YouTube link is just left off', async () => {
+    const cat = db.categories[0]!.name
+    await influencer('owner', ADMIN)
+    db.influencers.find((i) => i.accounts[0]!.handle === 'owner')!.accounts.push({
+      ...db.influencers.find((i) => i.accounts[0]!.handle === 'owner')!.accounts[0]!,
+      id: 'acc_owner_fb', platform: 'facebook', handle: 'agencypage', is_primary: false,
+      metrics: { page_followers: null, page_likes: null, page_category: null },
+    } as never)
+    const text =
+      `Name,Category,Instagram,Facebook\n` +
+      `Riya,${cat},riya,https://www.facebook.com/people/Riya/100087175760222/\n` +
+      `Neha,${cat},neha,https://facebook.com/people/Neha/100087175760222\n` +
+      `Asha,${cat},asha,facebook.com/agencypage\n` +
+      `Riya again,${cat},@Riya,\n`
+    const job = await importCsv(text, { name: 'Name', category: 'Category', instagram: 'Instagram', facebook: 'Facebook' })
+    expect(job.result).toMatchObject({ created: 3, duplicates: 1, failed: 0 })
+    const accounts = (name: string) => db.influencers.find((i) => i.name === name)!.accounts.map((a) => `${a.platform}:${a.handle}`)
+    expect(accounts('Riya')).toEqual(['instagram:riya', 'facebook:100087175760222'])
+    expect(accounts('Neha')).toEqual(['instagram:neha'])
+    expect(accounts('Asha')).toEqual(['instagram:asha'])
+    expect(job.result.warnings.map((w: { row: number }) => w.row)).toEqual([3, 4])
+  })
+
+  it('FR-CSV-02: Facebook and YouTube accounts are read from full links, including video links', async () => {
+    const cat = db.categories[0]!.name
+    const text =
+      `Name,Category,Facebook,Youtube\n` +
+      `A,${cat},https://www.acebook.com/profile.php?id=100087175760222,https://youtu.be/2cS5KUcSqv0?si=m0-_vaiygofnsl_y\n` +
+      `B,${cat},https://m.facebook.com/RiyaStyle?mibextid=abc,https://www.youtube.com/watch?v=Kb-rGyXyx_Z&t=10s\n` +
+      `C,${cat},,https://youtube.com/shorts/P5bExKepQho\n`
+    const job = await importCsv(text, { name: 'Name', category: 'Category', facebook: 'Facebook', youtube: 'Youtube' })
+    expect(job.result).toMatchObject({ created: 3, duplicates: 0, failed: 0 })
+    const handles = (name: string) => db.influencers.find((i) => i.name === name)!.accounts.map((a) => `${a.platform}:${a.handle}`)
+    expect(handles('A').sort()).toEqual(['facebook:100087175760222', 'youtube:video:2cS5KUcSqv0'])
+    expect(handles('B')).toContain('facebook:riyastyle')
+    expect(handles('B')).toContain('youtube:video:Kb-rGyXyx_Z')
+    expect(handles('C')).toEqual(['youtube:video:P5bExKepQho'])
   })
 
   it('FR-CSV-02: placeholders count as empty, blank rows are skipped, any handle or tag is kept', async () => {
