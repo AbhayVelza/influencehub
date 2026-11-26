@@ -1,6 +1,6 @@
 {
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://influencehub-api.onrender.com/api/:path*" },
+    { "source": "/api/:path*", "destination": "https://influencehub-api-p4pp.onrender.com/api/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
