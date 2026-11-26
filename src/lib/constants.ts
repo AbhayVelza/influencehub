@@ -150,3 +150,5 @@ export const DEFAULT_CATEGORIES: CategoryName[] = [
 export const PIPELINE_COLUMN_LIMIT = 200
 /** Minimum length for passwords (initial, changed and admin-set). */
 export const MIN_PASSWORD_LENGTH = 8
+/** The server refuses longer ones (hashing a huge password would tie it up). */
+export const MAX_PASSWORD_LENGTH = 200

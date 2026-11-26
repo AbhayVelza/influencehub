@@ -4,7 +4,7 @@ import { Hono } from 'hono'
 import { deleteCookie, getCookie, setCookie } from 'hono/cookie'
 import { db, nextId, nowIso } from '@/backend/db'
 import { apiError } from '@/backend/utils'
-import { MIN_PASSWORD_LENGTH } from '@/lib/constants'
+import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from '@/lib/constants'
 import { OWNER_ID } from '@/lib/mode'
 import type { User } from '@/types'
 import * as pgStore from './pg-store'
@@ -42,13 +42,38 @@ export async function sessionUid(c: Context): Promise<string | undefined> {
   return token ? pgStore.sessionUser(tokenHash(token)) : undefined
 }
 
-const weak = (password: unknown) => typeof password !== 'string' || password.length < MIN_PASSWORD_LENGTH
-const weakPassword = () => apiError(422, 'weak_password', `Use at least ${MIN_PASSWORD_LENGTH} characters`)
+const weak = (password: unknown) =>
+  typeof password !== 'string' || password.length < MIN_PASSWORD_LENGTH || password.length > MAX_PASSWORD_LENGTH
+const weakPassword = () => apiError(422, 'weak_password', `Use ${MIN_PASSWORD_LENGTH} to ${MAX_PASSWORD_LENGTH} characters`)
 const activeMember = (id: string | undefined) => db.team.find((u) => u.id === id && u.is_active)
 
-/** Five wrong passwords for an email lock it for 15 minutes (in memory; a restart clears it). */
+/**
+ * Five wrong passwords for an email lock it for 15 minutes; 20 wrong passwords from one address (any emails) lock that
+ * address for 15 minutes too, so many emails can't be tried from one place. In memory (a restart clears it), at most
+ * MAX_TRACKED entries each, oldest dropped first.
+ */
 const failures = new Map<string, { count: number; until: number }>()
+const ipFailures = new Map<string, { count: number; until: number }>()
 const LOCK_MS = 15 * 60 * 1000
+const EMAIL_LIMIT = 5
+const IP_LIMIT = 20
+const MAX_TRACKED = 10_000
+
+const locked = (map: typeof failures, key: string, limit: number) => {
+  const entry = map.get(key)
+  return !!entry && entry.count >= limit && entry.until > Date.now()
+}
+
+function recordFailure(map: typeof failures, key: string) {
+  const entry = map.get(key)
+  const count = entry && entry.until > Date.now() ? entry.count + 1 : 1
+  map.delete(key)
+  map.set(key, { count, until: Date.now() + LOCK_MS })
+  if (map.size > MAX_TRACKED) map.delete(map.keys().next().value!)
+}
+
+/** The caller's address: the first X-Forwarded-For entry (Vercel / Render put the client there), else "direct". */
+const clientAddress = (c: Context) => c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'direct'
 
 type InTurn = <T>(task: () => Promise<T>) => Promise<T>
 type HandleApi = (request: Request, uid: string | undefined) => Promise<Response>
@@ -67,15 +92,16 @@ export function authRoutes(inTurn: InTurn, handleApi: HandleApi) {
     const body = await c.req.json<{ email?: unknown; password?: unknown }>().catch(() => ({}) as Record<string, unknown>)
     const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : ''
     const password = typeof body.password === 'string' ? body.password : ''
-    const lock = failures.get(email)
-    if (lock && lock.count >= 5 && lock.until > Date.now()) {
+    const address = clientAddress(c)
+    if (locked(failures, email, EMAIL_LIMIT) || locked(ipFailures, address, IP_LIMIT)) {
       return apiError(429, 'too_many_requests', 'Too many wrong passwords. Try again in 15 minutes.')
     }
+    if (password.length > MAX_PASSWORD_LENGTH) return apiError(401, 'invalid_credentials', 'Wrong email or password.')
     const member = await inTurn(async () => db.team.find((u) => u.email.toLowerCase() === email))
     const stored = member && (await pgStore.passwordHash(member.id))
     if (!(await verifyPassword(password, stored ?? DUMMY_HASH)) || !stored || !member) {
-      const count = lock && lock.until > Date.now() ? lock.count + 1 : 1
-      failures.set(email, { count, until: Date.now() + LOCK_MS })
+      recordFailure(failures, email)
+      recordFailure(ipFailures, address)
       return apiError(401, 'invalid_credentials', 'Wrong email or password.')
     }
     failures.delete(email)
@@ -106,7 +132,8 @@ export function authRoutes(inTurn: InTurn, handleApi: HandleApi) {
     if (!uid || !(await inTurn(async () => activeMember(uid)))) return apiError(401, 'unauthenticated', 'Sign in to continue.')
     const body = await c.req.json<{ current_password?: unknown; new_password?: unknown }>().catch(() => ({}) as Record<string, unknown>)
     const stored = await pgStore.passwordHash(uid)
-    if (!stored || !(await verifyPassword(String(body.current_password ?? ''), stored))) {
+    const current = String(body.current_password ?? '')
+    if (!stored || current.length > MAX_PASSWORD_LENGTH || !(await verifyPassword(current, stored))) {
       return apiError(422, 'wrong_password', 'That isn’t your current password.')
     }
     if (weak(body.new_password)) return weakPassword()

@@ -313,3 +313,13 @@ CREATE TABLE IF NOT EXISTS csv_uploads (
 CREATE TABLE IF NOT EXISTS credentials (user_id text PRIMARY KEY, password_hash text NOT NULL, updated_at timestamptz NOT NULL DEFAULT now());
 CREATE TABLE IF NOT EXISTS sessions (token_hash text PRIMARY KEY, user_id text NOT NULL, expires_at timestamptz NOT NULL, created_at timestamptz NOT NULL DEFAULT now());
 CREATE INDEX IF NOT EXISTS sessions_user_id ON sessions (user_id);
+
+-- Row level security on every table, with no policies: Supabase's public REST API (the `anon` / `authenticated`
+-- roles) can read or change nothing. The API server connects as the tables' owner, which RLS doesn't apply to.
+DO $$
+DECLARE t text;
+BEGIN
+  FOR t IN SELECT tablename FROM pg_tables WHERE schemaname = current_schema() LOOP
+    EXECUTE format('ALTER TABLE %I ENABLE ROW LEVEL SECURITY', t);
+  END LOOP;
+END $$;

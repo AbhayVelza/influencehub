@@ -8,7 +8,8 @@ With `VITE_API_SERVER=true`, InfluenceHub has two parts: **PostgreSQL** for all 
 
 - **Sign-in (`server/auth.ts`):** email + password; passwords are hashed with scrypt in `credentials`. A successful
   sign-in sets an HttpOnly session cookie (30 days; the token is stored hashed in `sessions`, so restarts keep people
-  signed in). Five wrong passwords lock an email for 15 minutes. Changing a password, or an admin setting one, signs
+  signed in). Five wrong passwords lock an email for 15 minutes, and 20 from one address (any emails) lock that
+  address; passwords are 8–200 characters. Changing a password, or an admin setting one, signs
   that person out everywhere else.
 - **API server (`server/main.ts`):** the services (`src/services`) call `/api/v1/...` with the session cookie. The
   server refuses requests without a session (401) or from a deactivated member (403), then runs the business rules in `src/backend/handlers` (stages, claims, pool, scoping, permissions, duplicates,
@@ -246,6 +247,32 @@ PostgreSQL 17 client tools (`pg_dump`, `pg_restore`, `psql`; on Windows it finds
 - Other people's changes appear within about a second while the live-updates stream is open (Live updates below),
   otherwise when the app next refetches (30 s stale time, 60 s polling on some screens).
 - Auto-release of stale claims and connect-link expiry run at the start of every request (no scheduler).
+
+## Security
+
+Checked 26/11/2026 across the whole app; what protects it:
+
+- **Access:** every `/api` request needs a signed-in, active member (`server/main.ts`); roles and per-record scoping are
+  enforced by the handlers (`src/lib/permissions.ts`, `canSee` / `findVisible` in `src/backend/domain.ts`, the Brand
+  Specialist allowlist in `src/backend/handlers/index.ts`). Records an executive can't see answer 404, not 403.
+- **Sessions:** HttpOnly, `SameSite=Lax`, `Secure` over HTTPS; random 32-byte tokens stored as SHA-256 hashes; scrypt
+  password hashes; equal timing for unknown emails; sign-in lockouts per email and per address (above).
+- **Headers:** the server adds `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, HSTS, `Referrer-Policy`,
+  `Permissions-Policy` and a CSP (API answers: `default-src 'none'`; the app: `APP_CSP`); `vercel.json` sends the same
+  for the app on Vercel. Inline scripts are not allowed (the theme script is `public/theme-init.js`). API answers are
+  `Cache-Control: no-store`.
+- **Documents:** only PDF, JPG, PNG, DOCX, XLSX up to 20 MB, and the bytes must match the type (a renamed HTML file is
+  refused). Files are served only to members who may see that document; Word and Excel always download; only the app
+  itself may frame a file.
+- **Exports:** CSV cells a spreadsheet would run as a formula get a leading `'` (phone numbers are left alone).
+- **Database:** queries are parameterised (`postgres` tagged templates); row level security is on for every table with
+  no policies, so Supabase's public REST API can't read anything (the server connects as the tables' owner).
+- **Secrets:** only in `.env.local` / the Render dashboard; never logged (the Graph API token isn't in error messages).
+- **Platform APIs:** handles are checked against each platform's pattern before any API call.
+
+Known and accepted: a lockout can be triggered on purpose for someone's email (they wait 15 minutes or an admin
+resets the password); the per-address limit trusts the first `X-Forwarded-For` entry; dev-only tools have 4 moderate
+`npm audit` advisories (none in what runs in production).
 
 ## Troubleshooting
 
