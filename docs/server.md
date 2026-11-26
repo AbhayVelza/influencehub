@@ -72,6 +72,7 @@ With `VITE_API_SERVER=true`, InfluenceHub has two parts: **PostgreSQL** for all 
 | `npm run dev` | The app on port 3000; it forwards `/api` to the server. |
 | `npm run build` then `npm run server` | Production: the server also serves the built app from `dist/`, one process on one port. |
 | `npm start` | Starts an already-built server. |
+| `npm run test:e2e:server` | End-to-end tests per role with sign-in on (`e2e-server/`): builds the server, starts it on port 3101 over a fresh `ih_e2e` schema of the local `DATABASE_URL` (refuses a non-local host; platform keys blanked) and the app on 5196. Test-only accounts are in `e2e-server/accounts.ts`. |
 | `npm run server:supabase` | Same server, but over Supabase (`SUPABASE_DATABASE_URL`) instead of local PostgreSQL. |
 | `npm run db:copy` | Copies all data + files local → Supabase (`-- --from supabase` for Supabase → local). Refuses a target that has data unless `-- --replace`, and either database on the old layout. Stop the server first. |
 | `npm run db:migrate -- --env <VAR>` | Moves a database from the old layout to the relational tables (see Migrating below). |
