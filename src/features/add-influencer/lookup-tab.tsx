@@ -15,7 +15,7 @@ import { Progress } from '@/components/ui/progress'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { DuplicateWarning } from '@/features/duplicates/duplicate-warning'
 import { useJob } from '@/hooks/use-job'
-import { useCan, useMe } from '@/hooks/use-me'
+import { useMe } from '@/hooks/use-me'
 import { exactMetric, formatMetric, LOOKUP_PLATFORMS, metricValue, PLATFORM_META, platformOfUrl } from '@/lib/platforms'
 import { handleSchema, influencerDetailsSchema, validateField, type InfluencerDetailsInput } from '@/lib/schemas'
 import { getErrorMessage, influencersApi, lookupApi } from '@/services'
@@ -109,7 +109,6 @@ function LinkedAccounts({
 function SaveProfileForm({ profile, onDone }: { profile: LookupProfile; onDone: () => void }) {
   const navigate = useNavigate()
   const { data: me } = useMe()
-  const canReassign = useCan('influencer:reassign')
   const create = useCreateInfluencer()
   const [conflict, setConflict] = useState<ConflictState | null>(null)
   const [linked, setLinked] = useState<string[]>([])
@@ -154,7 +153,7 @@ function SaveProfileForm({ profile, onDone }: { profile: LookupProfile; onDone: 
         if (found.length) return setMatches(found)
       }
       const created = await create.mutateAsync({ ...values, accounts: accounts() })
-      const next = afterCreate(created, canReassign)
+      const next = afterCreate(created)
       toast.success(next.message)
       onDone()
       navigate(next.path)

@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { DuplicateWarning } from '@/features/duplicates/duplicate-warning'
-import { useCan, useMe } from '@/hooks/use-me'
+import { useMe } from '@/hooks/use-me'
 import { manualInfluencerSchema, type ManualInfluencerInput } from '@/lib/schemas'
 import { getErrorMessage, influencersApi } from '@/services'
 import type { DuplicateMatch } from '@/types'
@@ -26,7 +26,6 @@ type Values = z.output<typeof manualInfluencerSchema>
 export function ManualTab({ prefill, onDone }: { prefill?: ManualPrefill; onDone: () => void }) {
   const navigate = useNavigate()
   const { data: me } = useMe()
-  const canReassign = useCan('influencer:reassign')
   const create = useCreateInfluencer()
   const [serverConflict, setServerConflict] = useState<ConflictState | null>(null)
   const [matches, setMatches] = useState<DuplicateMatch[] | null>(null)
@@ -61,7 +60,7 @@ export function ManualTab({ prefill, onDone }: { prefill?: ManualPrefill; onDone
         if (found.length) return setMatches(found)
       }
       const created = await create.mutateAsync(body)
-      const next = afterCreate(created, canReassign)
+      const next = afterCreate(created)
       toast.success(next.message)
       onDone()
       navigate(next.path)

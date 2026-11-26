@@ -36,11 +36,9 @@ export async function findDuplicates(body: DuplicateCheckRequest) {
   }
 }
 
-/** After adding: the new profile, or the pool when an executive left it unassigned (they can only see it there). */
-export function afterCreate(created: Influencer, canReassign: boolean): { path: string; message: string } {
-  return created.assigned_to === null && !canReassign
-    ? { path: '/pool', message: `${created.name} added to the Unassigned Pool` }
-    : { path: `/influencers/${created.id}`, message: `${created.name} added` }
+/** After adding: the new profile (an executive always owns what they add). */
+export function afterCreate(created: Influencer): { path: string; message: string } {
+  return { path: `/influencers/${created.id}`, message: `${created.name} added` }
 }
 
 /** Defaults shared by both add forms: owner = me, location India-first. */

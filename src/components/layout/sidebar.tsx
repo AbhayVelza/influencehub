@@ -193,6 +193,7 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
   const { data: dueToday } = useFollowUps('today', 1, 25, useDefaultMine())
   const poolCount = usePoolCount()
   const canMerge = useCan('influencer:merge')
+  const canSeePool = useCan('pool:view')
   const duplicates = useDuplicatePairs()
   const canView = useCan('influencer:view')
   // Brand Specialists get the Dashboard, Influencers (onboarded creators only) and the Onboarded tabs.
@@ -203,7 +204,7 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
   const items: NavItem[] = !crm ? [dashboard, influencers] : [
     dashboard,
     influencers,
-    { to: '/pool', label: 'Unassigned Pool', icon: Inbox, badge: poolCount, badgeLabel: 'unassigned' },
+    ...(canSeePool ? [{ to: '/pool', label: 'Unassigned Pool', icon: Inbox, badge: poolCount, badgeLabel: 'unassigned' }] : []),
     ...(canMerge
       ? [{ to: '/duplicates', label: 'Possible duplicates', icon: Copy, badge: duplicates.data?.total, badgeLabel: 'to review' }]
       : []),

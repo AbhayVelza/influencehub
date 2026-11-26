@@ -253,6 +253,7 @@ export default function DashboardPage() {
   const { data: me } = useMe()
   const crm = useCan('crm:access')
   const canSeeActivity = useCan('activity:view')
+  const canSeePool = useCan('pool:view')
   const summary = useQuery({ queryKey: queryKeys.dashboard, queryFn: ({ signal }) => dashboardApi.summary(signal), refetchInterval: 60_000 })
   const noun = crm ? 'Influencers' : 'Creators'
 
@@ -326,14 +327,16 @@ export default function DashboardPage() {
 
           return (
             <>
-              <section aria-label="Key numbers" className="grid grid-cols-2 gap-space-md sm:grid-cols-3 xl:grid-cols-7">
+              <section aria-label="Key numbers" className={`grid grid-cols-2 gap-space-md sm:grid-cols-3 ${canSeePool ? 'xl:grid-cols-7' : 'xl:grid-cols-6'}`}>
                 <Kpi label={me?.role === 'executive' ? 'My influencers' : 'Total influencers'} value={s.kpis.total} to="/influencers" />
-                <Kpi
-                  label="Unassigned Pool"
-                  value={s.kpis.pool}
-                  to="/pool"
-                  hint={s.kpis.claimed_this_week === null ? undefined : `${formatNumber(s.kpis.claimed_this_week)} claimed this week`}
-                />
+                {canSeePool && (
+                  <Kpi
+                    label="Unassigned Pool"
+                    value={s.kpis.pool}
+                    to="/pool"
+                    hint={s.kpis.claimed_this_week === null ? undefined : `${formatNumber(s.kpis.claimed_this_week)} claimed this week`}
+                  />
+                )}
                 <Kpi label="Contacted this week" value={s.kpis.contacted_this_week} hint="Moved to Contacted since Monday" />
                 <Kpi label="Onboarded this month" value={s.kpis.onboarded_this_month} />
                 <Kpi label="Welcome Kits in transit" value={s.kpis.packages_in_transit} to="/packages?status=sent&status=in_transit" />

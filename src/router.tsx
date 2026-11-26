@@ -40,7 +40,7 @@ export const router = createBrowserRouter([
           { index: true, element: <DashboardPage /> },
           { path: 'influencers', element: <RequirePermission permission="influencer:view"><InfluencersPage /></RequirePermission> },
           { path: 'influencers/:id', element: <InfluencerDetailPage /> },
-          { path: 'pool', element: <RequirePermission permission="crm:access"><PoolPage /></RequirePermission> },
+          { path: 'pool', element: <RequirePermission permission="pool:view"><PoolPage /></RequirePermission> },
           {
             path: 'duplicates',
             element: (

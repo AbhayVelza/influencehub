@@ -252,17 +252,18 @@ export function findByHandle(platform: Platform, handle: string): Influencer | u
 }
 
 /** Managers/admins can set any owner. Executives only pick themselves or nobody when they add an influencer. */
+/** Executives always own what they add (they have no pool); `null` from them means themselves. */
 export function canSetOwnerOnCreate(user: User, to: string | null): boolean {
   return can(user.role, 'influencer:reassign') || to === null || to === user.id
 }
 
-export const OWNER_CHANGE_MESSAGE = 'Executives take influencers by claiming them from the pool, and hand them back by releasing'
+export const OWNER_CHANGE_MESSAGE = 'Only managers and admins assign influencers; executives hand theirs back by releasing'
 
 // ---------------------------------------------------------------------------
 // Visibility and the Unassigned Pool
 
 /**
- * Executives see only influencers they own; unassigned ones are reachable only through the pool. Brand Specialists see
+ * Executives see only influencers they own (they have no Unassigned Pool). Brand Specialists see
  * only onboarded creators (Onboarded, Welcome Kit, Delivered).
  */
 export function canSee(user: User, inf: Influencer): boolean {
@@ -306,7 +307,10 @@ export function toPoolItem(inf: Influencer, user: User = currentUser()): PoolIte
 export function handleStatus(platform: Platform, handle: string, user: User = currentUser()): CheckHandleResponse {
   const existing = findByHandle(platform, handle)
   if (!existing) return { available: true, influencer_id: null, conflict: null }
-  if (existing.assigned_to === null) return { available: false, influencer_id: existing.id, conflict: 'in_pool' }
+  if (existing.assigned_to === null) {
+    // Executives have no pool: they learn it's unassigned, not which influencer.
+    return { available: false, influencer_id: can(user.role, 'pool:view') ? existing.id : null, conflict: 'in_pool' }
+  }
   if (canSee(user, existing)) return { available: false, influencer_id: existing.id, conflict: 'exists' }
   return { available: false, influencer_id: null, conflict: 'assigned_to_other' }
 }
@@ -318,6 +322,7 @@ type Failure = { ok: false; status: number; code: string; message: string }
 
 /** Atomic: succeeds only while the influencer is unassigned (or already mine). */
 export function claimInfluencer(inf: Influencer, user: User = currentUser()): { ok: true; influencer: Influencer } | Failure {
+  if (!can(user.role, 'influencer:claim')) return { ok: false, status: 403, code: 'forbidden', message: 'Only managers and admins can take influencers from the pool' }
   if (inf.assigned_to === user.id) return { ok: true, influencer: inf }
   if (inf.assigned_to) return { ok: false, status: 409, code: 'already_claimed', message: 'Already claimed by a teammate' }
   const limit = db.poolSettings.claim_limit

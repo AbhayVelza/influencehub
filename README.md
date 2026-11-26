@@ -37,7 +37,7 @@ and an override into Onboarded still needs the signed agreement.
   sortable table, saved views, bulk actions, CSV import / export. Filters live in the URL.
 - **Influencer detail**: stage stepper, social accounts with per-platform stats, calls, packages, documents, activity.
 - **Add / Import**: manual entry and CSV with a preview.
-- **Unassigned Pool**: influencers with no owner. Executives see a preview and claim; managers assign.
+- **Unassigned Pool**: influencers with no owner, for managers and admins (claim, assign). Executives have no pool.
   Optional guards: claim limit and auto-release.
 - **Possible duplicates** (manager/admin): side-by-side pairs with confidence and reasons; merge or dismiss.
 - **Documents**: insights summaries and agreements (current + version history). PDF / JPG / PNG / DOCX / XLSX up to

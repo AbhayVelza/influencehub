@@ -9,9 +9,11 @@ export type Permission =
   | 'call:log'
   | 'package:manage'
   | 'stage:change'
+  /** The Unassigned Pool page and API (managers and admins; executives never see the pool). */
+  | 'pool:view'
   /** Take an influencer from the Unassigned Pool (owner = me). */
   | 'influencer:claim'
-  /** Return one of your own influencers to the pool (a reason is required). */
+  /** Return one of your own influencers to the pool, for a manager to reassign (a reason is required). */
   | 'influencer:release'
   /** Upload documents (an executive: their own influencers only; scoping is server-side). */
   | 'document:upload'
@@ -50,13 +52,14 @@ const EXECUTIVE: Permission[] = [
   'call:log',
   'package:manage',
   'stage:change',
-  'influencer:claim',
   'influencer:release',
   'document:upload',
 ]
 
 const MANAGER: Permission[] = [
   ...EXECUTIVE,
+  'pool:view',
+  'influencer:claim',
   'stage:reopen',
   'document:delete',
   'influencer:reassign',

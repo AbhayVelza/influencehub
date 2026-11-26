@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { usePoolActions } from '@/features/pool/use-pool-actions'
+import { useCan } from '@/hooks/use-me'
 import { PLATFORM_META } from '@/lib/platforms'
 import type { HandleConflict } from '@/types'
 import type { ConflictState } from './conflict'
@@ -14,6 +15,7 @@ import type { ConflictState } from './conflict'
 export function AlreadyInCrm({ platform, handle, conflict, id, onDone }: ConflictState & { onDone: () => void }) {
   const label = PLATFORM_META[platform].label
   const { claim, busy } = usePoolActions()
+  const canClaim = useCan('influencer:claim')
   // Someone claimed it between the check and the click.
   const [lost, setLost] = useState(false)
   const shown: HandleConflict = lost ? 'assigned_to_other' : conflict
@@ -28,7 +30,7 @@ export function AlreadyInCrm({ platform, handle, conflict, id, onDone }: Conflic
           <p className="text-muted-foreground">
             {shown === 'in_pool' && (
               <>
-                {label} @{handle} has no owner yet. Claim it to work on it.
+                {label} @{handle} has no owner yet. {canClaim ? 'Claim it to work on it.' : 'Ask a manager to assign it to you.'}
               </>
             )}
             {shown === 'assigned_to_other' && (
@@ -48,7 +50,7 @@ export function AlreadyInCrm({ platform, handle, conflict, id, onDone }: Conflic
             )}
           </p>
         </div>
-        {shown === 'in_pool' && id && (
+        {shown === 'in_pool' && id && canClaim && (
           <Button
             type="button"
             size="sm"

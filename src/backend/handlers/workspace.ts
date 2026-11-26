@@ -361,7 +361,7 @@ export const workspaceHandlers = [
     return HttpResponse.json(body)
   }),
 
-  // Executives' figures cover only their own influencers (the pool count is everyone's).
+  // Executives' figures cover only their own influencers (and they have no pool: its count is 0).
   http.get(api('/dashboard/summary'), async () => {
     const user = currentUser()
     const me = user.id
@@ -403,7 +403,7 @@ export const workspaceHandlers = [
     const body: DashboardSummary = {
       kpis: {
         total: influencers.length,
-        pool: poolInfluencers().length,
+        pool: can(user.role, 'pool:view') ? poolInfluencers().length : 0,
         claimed_this_week:
           user.role === 'executive'
             ? null

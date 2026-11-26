@@ -56,8 +56,8 @@ Source of truth: `src/types/index.ts`. Update both together.
   document_uploaded `{document_id, type, title}`, document_deleted `{document_id, type, title}`
 - **AccountSnapshot**: audience, captured_at (one per IST day a sync ran, 365 days) · **MediaItem**: thumbnail
   (null when withheld), permalink, likes (null when hidden), comments, posted_at
-- **Permissions**: executive = view/add/edit/call/package/change stage on **their own** influencers, see the pool
-  (preview only), claim from it, release their own to it; manager += see everything, assign/reassign, release anyone's,
+- **Permissions**: executive = view/add/edit/call/package/change stage on **their own** influencers (no Unassigned Pool:
+  they can't see or claim from it; what they add is theirs), release their own to it; manager += see everything, the pool, claim, assign/reassign, release anyone's,
   reopen rejected, delete, import/export, review & merge duplicates; admin += override stages, manage team,
   categories, integrations, pool guards, export one influencer's personal data (JSON). **Brand Specialist** = read-only, onboarded creators only (Onboarded,
   Welcome Kit, Delivered): the Dashboard's onboarded numbers, the Influencers list and the Onboarded tabs (both without

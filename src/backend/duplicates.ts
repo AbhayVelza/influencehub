@@ -1,4 +1,5 @@
 import { PIPELINE_STAGES } from '@/lib/constants'
+import { can } from '@/lib/permissions'
 import { primaryAccount, toRef } from '@/lib/platforms'
 import type { DuplicateCheckRequest, DuplicateMatch, DuplicatePair, Influencer, MatchConfidence, MergeField, MergeRequest, User } from '@/types'
 import { currentUser, db, invalidateEverOnboarded, logActivity, nowIso, refreshDerived } from './db'
@@ -51,7 +52,7 @@ export function checkDuplicates(body: Candidate, user: User = currentUser()): Du
       assigned_to: inf.assigned_to,
     }
     if (canSee(user, inf)) matches.push({ influencer_id: inf.id, ...hit, access: 'full', influencer: summary })
-    else if (inf.assigned_to === null) matches.push({ influencer_id: inf.id, ...hit, access: 'pool', influencer: summary })
+    else if (inf.assigned_to === null && can(user.role, 'pool:view')) matches.push({ influencer_id: inf.id, ...hit, access: 'pool', influencer: summary })
     else matches.push({ influencer_id: null, confidence: hit.confidence, reasons: [], access: 'restricted', influencer: null })
   }
   return matches.sort((a, b) => RANK[b.confidence] - RANK[a.confidence])

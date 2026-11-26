@@ -70,13 +70,13 @@ describe('influencers', () => {
     expect(res.body.error.code).toBe('not_manual')
   })
 
-  it('FR-INF-08: an executive adds for themselves or into the pool, never for someone else', async () => {
+  it('FR-INF-08: an executive always adds for themselves (no pool), never for someone else', async () => {
     const exec = await addMember('executive')
     const mine = await addInfluencer('a', { as: exec.id, body: { assigned_to: exec.id } })
     expect(mine.status).toBe(201)
-    const pool = await addInfluencer('b', { as: exec.id, body: { assigned_to: null } })
-    expect(pool.status).toBe(201)
-    expect(pool.body.assigned_to).toBeNull()
+    const unowned = await addInfluencer('b', { as: exec.id, body: { assigned_to: null } })
+    expect(unowned.status).toBe(201)
+    expect(unowned.body.assigned_to).toBe(exec.id)
     const other = await addInfluencer('c', { as: exec.id, body: { assigned_to: ADMIN } })
     expect(other.status).toBe(403)
   })
