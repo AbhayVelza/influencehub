@@ -9,6 +9,8 @@ server in `server/` (prototype mode: in the browser); no sample data. Before cal
 when a change touches lists, the pipeline or the dashboard: NFR-01 at 100,000 influencers).
 When a change touches navigation, permissions or what a role sees, also run `npm run test:e2e` (Playwright, `e2e/`:
 per-role checks in prototype mode on the installed Microsoft Edge; data set up through `window.__ihApi`, dev only).
+When a change touches sign-in, sessions or the API server, also run `npm run test:e2e:server` (`e2e-server/`: per-role
+flows with sign-in on, against the built server on a throwaway `ih_e2e` schema of the local PostgreSQL in .env.local).
 Docs: this file, README.md and `docs/`. Never add features beyond this spec without asking; record any API decision
 you make in `docs/contract-decisions.md` (dates and documents: `docs/dates-and-documents.md`).
 
