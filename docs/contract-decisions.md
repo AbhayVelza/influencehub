@@ -500,7 +500,7 @@ Rules the forms already applied are now also checked by the handlers, so every c
 
 ## Saved views (25/11/2026)
 
-- Shared with the whole team; no limit on how many a member saves (any role). `PATCH /saved-views/{id}` {name?, filters?,
-  sort?} renames a view and/or replaces its filters and sort (a key left out is kept; an empty name → 422). Executives
-  edit and delete only their own views (403); managers and admins any. The Edit button (pencil per view in the Saved
-  views menu) offers "Use the current filters and sort", ticked when what is on screen differs from the view.
+- Shared with the whole team; no limit on how many a member saves (any role). Edit works only on filters (26/11/2026):
+  `PATCH /saved-views/{id}` {filters} replaces the view's filters; the name and sort stay (no filters → 422; other keys
+  ignored). Executives edit and delete only their own views (403); managers and admins any. The Edit button (pencil per
+  view in the Saved views menu) saves the filters on the list now into the view (disabled with no filters on screen).
