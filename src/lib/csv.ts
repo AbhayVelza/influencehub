@@ -33,9 +33,14 @@ export function parseCsv(text: string): string[][] {
   return rows
 }
 
-/** One CSV cell; arrays join with "; ". */
+/**
+ * One CSV cell; arrays join with "; ". Text a spreadsheet would run as a formula (starting with =, @, a tab or a
+ * carriage return, or + / - followed by anything but a number such as a phone number) gets a leading ' so Excel and
+ * Sheets show it as text (OWASP "CSV injection").
+ */
 export function csvCell(value: unknown): string {
-  const s = value == null ? '' : Array.isArray(value) ? value.join('; ') : String(value)
+  const raw = value == null ? '' : Array.isArray(value) ? value.join('; ') : String(value)
+  const s = /^[=@\t\r]/.test(raw) || /^[+-](?![\d\s().-]*$)/.test(raw) ? `'${raw}` : raw
   return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
 }
 

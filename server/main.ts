@@ -13,7 +13,7 @@ import { mayReadFile } from '@/backend/documents'
 import { commitJobs, executeJob, revertJobs } from '@/backend/jobs'
 import { setPlatformData } from '@/backend/platform-data'
 import { apiError } from '@/backend/utils'
-import { MAX_DOCUMENT_BYTES } from '@/lib/documents'
+import { MAX_DOCUMENT_BYTES, matchesContentType } from '@/lib/documents'
 import { API_BASE } from '@/lib/env'
 import { authRoutes, ensureFirstAdmin, sessionUid } from './auth'
 import { backgroundDataChanged, closeLiveStreams, dataChanged, liveStream } from './live'
@@ -75,6 +75,40 @@ function handleApiRequest(request: Request, uid: string | undefined): Promise<Re
 }
 
 const app = new Hono()
+const FILES = `${API_BASE}/files/`
+
+// Security headers on every response (docs/server.md, "Security"): no sniffing, no framing by other sites, HTTPS only,
+// no referrer to other sites. API answers are JSON, so their CSP allows nothing; the app (when this server serves it)
+// gets APP_CSP. A response that already set one of these (document files) keeps its own.
+const APP_CSP = [
+  "default-src 'self'",
+  "script-src 'self'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob: https:",
+  "font-src 'self' data:",
+  "connect-src 'self'",
+  "frame-src 'self' blob:",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+].join('; ')
+const API_CSP = "default-src 'none'; frame-ancestors 'none'"
+
+app.use('*', async (c, next) => {
+  await next()
+  const api = c.req.path.startsWith(`${API_BASE}/`)
+  const headers: Record<string, string> = {
+    'X-Content-Type-Options': 'nosniff',
+    'Referrer-Policy': 'strict-origin-when-cross-origin',
+    'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+    'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=()',
+    'X-Frame-Options': 'DENY',
+    'Content-Security-Policy': api ? API_CSP : APP_CSP,
+    ...(api ? { 'Cache-Control': 'no-store' } : {}),
+  }
+  for (const [key, value] of Object.entries(headers)) if (!c.res.headers.has(key)) c.res.headers.set(key, value)
+})
 
 app.get('/health', async (c) => {
   const database = await pgStore.ping()
@@ -97,7 +131,6 @@ app.use(
 )
 
 // Document files: PUT once to the key the presign step handed out (src/backend/handlers/documents.ts), then served.
-const FILES = `${API_BASE}/files/`
 const fileKey = (pathname: string) => decodeURIComponent(pathname.slice(FILES.length))
 
 let activeFileTransfers = 0
@@ -150,6 +183,13 @@ app.put(`${FILES}*`, async (c) => {
       })
       return apiError(422, 'file_too_large', 'Files can be at most 20 MB')
     }
+    // The bytes must really be the type the presign step allowed (a renamed HTML or script file is refused).
+    if (!matchesContentType(data, upload.content_type)) {
+      await inTurn(async () => {
+        upload.uploading = false
+      })
+      return apiError(422, 'file_type_mismatch', 'That file isn’t really a PDF, JPG, PNG, DOCX or XLSX. Choose the original file.')
+    }
     try {
       await pgStore.saveFile(key, upload.content_type, data)
     } catch (err) {
@@ -181,7 +221,18 @@ app.get(`${FILES}*`, async (c) => {
   try {
     const file = await pgStore.readFile(key)
     if (!file) return apiError(404, 'not_found', 'File not found')
-    return new Response(Buffer.from(file.data), { headers: { 'Content-Type': file.content_type, 'Cache-Control': 'private, max-age=3600' } })
+    // PDFs and images open in the app's preview (same-site frames only); Word and Excel files always download.
+    const inline = file.content_type === 'application/pdf' || file.content_type.startsWith('image/')
+    return new Response(Buffer.from(file.data), {
+      headers: {
+        'Content-Type': file.content_type,
+        'Cache-Control': 'private, max-age=3600',
+        'Content-Disposition': inline ? 'inline' : 'attachment',
+        // Only the app itself may show it in a frame (the document preview).
+        'X-Frame-Options': 'SAMEORIGIN',
+        'Content-Security-Policy': "frame-ancestors 'self'",
+      },
+    })
   } finally {
     fileTransferEnded()
   }

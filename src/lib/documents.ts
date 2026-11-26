@@ -33,6 +33,20 @@ export const DOCUMENT_FILE_TYPES: { extensions: string[]; contentType: string; l
 
 export const ALLOWED_CONTENT_TYPES = DOCUMENT_FILE_TYPES.map((t) => t.contentType)
 
+/** The first bytes each allowed type starts with (DOCX and XLSX are zip files). */
+const SIGNATURES: Record<string, number[][]> = {
+  'application/pdf': [[0x25, 0x50, 0x44, 0x46]], // %PDF
+  'image/jpeg': [[0xff, 0xd8, 0xff]],
+  'image/png': [[0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]],
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': [[0x50, 0x4b, 0x03, 0x04]],
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': [[0x50, 0x4b, 0x03, 0x04]],
+}
+
+/** Whether a file's bytes really are `contentType` (checked on upload, so a renamed HTML or script file is refused). */
+export function matchesContentType(data: Uint8Array, contentType: string): boolean {
+  return (SIGNATURES[contentType] ?? []).some((sig) => sig.every((byte, i) => data[i] === byte))
+}
+
 /** For the file picker's `accept`. */
 export const DOCUMENT_ACCEPT = DOCUMENT_FILE_TYPES.flatMap((t) => t.extensions.map((e) => `.${e}`)).join(',')
 

@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { PROTOTYPE } from '@/lib/mode'
-import { ALL_STAGES, CALL_OUTCOMES, DEFAULT_COUNTRY_CODE, PACKAGE_STATUSES, MIN_PASSWORD_LENGTH } from '@/lib/constants'
+import { ALL_STAGES, CALL_OUTCOMES, DEFAULT_COUNTRY_CODE, PACKAGE_STATUSES, MIN_PASSWORD_LENGTH, MAX_PASSWORD_LENGTH } from '@/lib/constants'
 import { parseCompactNumber, parseDateInput, parseDateTimeInput } from '@/lib/format'
 import { normalizeHandle, PLATFORMS } from '@/lib/platforms'
 import type { Platform } from '@/types'
@@ -293,7 +293,11 @@ export const memberLocationSchema = z
   .optional()
   .transform((v) => (v && v.trim() ? v.trim() : null))
 const newPassword = (label: string) =>
-  z.string().min(1, `${label} is required`).min(MIN_PASSWORD_LENGTH, `Use at least ${MIN_PASSWORD_LENGTH} characters`)
+  z
+    .string()
+    .min(1, `${label} is required`)
+    .min(MIN_PASSWORD_LENGTH, `Use at least ${MIN_PASSWORD_LENGTH} characters`)
+    .max(MAX_PASSWORD_LENGTH, `Use at most ${MAX_PASSWORD_LENGTH} characters`)
 
 
 /** Settings > Team "Add a team member". Server mode: the admin sets an initial password (prototype has no sign-in). */

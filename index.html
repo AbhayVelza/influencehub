@@ -8,15 +8,8 @@
     <meta name="description" content="Influencer CRM and pipeline management platform for tracking creators, outreach, packages, and agreements." />
     <meta property="og:title" content="InfluenceHub" />
     <meta property="og:description" content="Influencer CRM and pipeline management platform for tracking creators, outreach, packages, and agreements." />
-    <script>
-      // Apply the saved theme before first paint to avoid a light flash in dark mode.
-      // Keep the storage key in sync with src/providers/theme-provider.tsx.
-      try {
-        var t = localStorage.getItem('influencehub-theme')
-        var dark = t === 'dark' || ((!t || t === 'system') && matchMedia('(prefers-color-scheme: dark)').matches)
-        if (dark) document.documentElement.classList.add('dark')
-      } catch (e) {}
-    </script>
+    <!-- Applies the saved theme before first paint (a file, not inline, so the CSP can forbid inline scripts). -->
+    <script src="/theme-init.js"></script>
   </head>
   <body>
     <div id="root"></div>
