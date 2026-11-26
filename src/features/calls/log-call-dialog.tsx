@@ -19,7 +19,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { useChangeStage } from '@/features/influencers/detail-queries'
 import { useMe } from '@/hooks/use-me'
 import { CALL_OUTCOME_META, CALL_OUTCOMES, STAGE_META } from '@/lib/constants'
-import { dateTimeInputFromNow, parseDateTimeInput } from '@/lib/format'
+import { dateTimeInputFromNow, parseDateTimeInput, todayKey } from '@/lib/format'
 import { callLogSchema, type CallLogFormInput } from '@/lib/schemas'
 import { getStandardTransitions } from '@/lib/stages'
 import { cn } from '@/lib/utils'
@@ -181,6 +181,8 @@ export function LogCallDialog({ influencer, open, onOpenChange, intent }: LogCal
             <DateTimeInput
               id="call-follow-up"
               aria-invalid={!!formState.errors.follow_up}
+              minDay={todayKey()}
+              onPick={(text) => setValue('follow_up', text, { shouldValidate: true, shouldDirty: true })}
               {...register('follow_up')}
             />
             <div className="flex flex-wrap gap-1.5 pt-0.5">

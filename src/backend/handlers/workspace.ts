@@ -334,13 +334,27 @@ export const workspaceHandlers = [
     const offset = tzOffset(APP_TIMEZONE, new Date()) * 60_000
     const dayOf = (ms: number) => Math.floor((ms + offset) / 86_400_000)
     const today = dayOf(Date.now())
-    const byStage = new Map(ALL_STAGES.map((stage) => [stage, [] as { i: Influencer; days: number }[]]))
-    for (const i of list) byStage.get(i.stage)?.push({ i, days: Math.max(0, today - dayOf(Date.parse(stageEnteredAt(i)))) })
+    // Each influencer's soonest open follow-up (one pass over the calls).
+    const followUps = new Map<string, string>()
+    for (const c of db.calls) {
+      if (!c.follow_up_date || c.follow_up_done) continue
+      const prev = followUps.get(c.influencer_id)
+      if (!prev || c.follow_up_date < prev) followUps.set(c.influencer_id, c.follow_up_date)
+    }
+    const byStage = new Map(ALL_STAGES.map((stage) => [stage, [] as { i: Influencer; days: number; followUp: string | null }[]]))
+    for (const i of list) {
+      byStage.get(i.stage)?.push({ i, days: Math.max(0, today - dayOf(Date.parse(stageEnteredAt(i)))), followUp: followUps.get(i.id) ?? null })
+    }
     const body: PipelineResponse = {
       columns: ALL_STAGES.map((stage) => {
-        const inStage = byStage.get(stage)!.sort((a, b) => b.days - a.days)
+        // Longest-waiting first. In Data gathered, creators with a follow-up go to the end, soonest follow-up first.
+        const inStage = byStage.get(stage)!.sort((a, b) => {
+          if (stage === 'data_gathered' && !!a.followUp !== !!b.followUp) return a.followUp ? 1 : -1
+          if (stage === 'data_gathered' && a.followUp && b.followUp && a.followUp !== b.followUp) return a.followUp < b.followUp ? -1 : 1
+          return b.days - a.days
+        })
         // A column shows its longest-waiting cards; `count` is the whole column (filters narrow it).
-        const items = inStage.slice(0, PIPELINE_COLUMN_LIMIT).map(({ i, days }) => {
+        const items = inStage.slice(0, PIPELINE_COLUMN_LIMIT).map(({ i, days, followUp }) => {
           const primary = primaryAccount(i)
           return {
             id: i.id,
@@ -353,6 +367,7 @@ export const workspaceHandlers = [
             stage: i.stage,
             days_in_stage: days,
             ever_onboarded: everOnboarded(i),
+            follow_up_date: followUp,
           }
         })
         return { stage, count: inStage.length, items }

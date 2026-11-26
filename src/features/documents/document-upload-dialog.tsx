@@ -168,10 +168,10 @@ function InsightsForm({ influencer, onDone, onCancel }: { influencer: UploadTarg
       </Field>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Field id="doc-period-start" label="Period start" error={errors.period_start?.message}>
-          <DateInput id="doc-period-start" aria-invalid={!!errors.period_start} {...register('period_start')} />
+          <DateInput id="doc-period-start" aria-invalid={!!errors.period_start} onPick={(text) => setValue('period_start', text, { shouldValidate: true, shouldDirty: true })} {...register('period_start')} />
         </Field>
         <Field id="doc-period-end" label="Period end" error={errors.period_end?.message}>
-          <DateInput id="doc-period-end" aria-invalid={!!errors.period_end} {...register('period_end')} />
+          <DateInput id="doc-period-end" aria-invalid={!!errors.period_end} onPick={(text) => setValue('period_end', text, { shouldValidate: true, shouldDirty: true })} {...register('period_end')} />
         </Field>
       </div>
       <Field id="doc-platform" label="Platform" hint="(optional)">
@@ -214,7 +214,7 @@ function AgreementForm({ influencer, onDone, onCancel }: { influencer: UploadTar
       notes: '',
     } satisfies AgreementFormInput,
   })
-  const { register, handleSubmit, formState } = form
+  const { register, handleSubmit, setValue, formState } = form
   const { errors } = formState
 
   const onSubmit = handleSubmit((values) =>
@@ -235,10 +235,10 @@ function AgreementForm({ influencer, onDone, onCancel }: { influencer: UploadTar
       </Field>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Field id="doc-signed-on" label="Signed on" error={errors.signed_on?.message}>
-          <DateInput id="doc-signed-on" aria-invalid={!!errors.signed_on} {...register('signed_on')} />
+          <DateInput id="doc-signed-on" aria-invalid={!!errors.signed_on} onPick={(text) => setValue('signed_on', text, { shouldValidate: true, shouldDirty: true })} {...register('signed_on')} />
         </Field>
         <Field id="doc-valid-until" label="Valid until" hint="(optional)" error={errors.valid_until?.message}>
-          <DateInput id="doc-valid-until" aria-invalid={!!errors.valid_until} {...register('valid_until')} />
+          <DateInput id="doc-valid-until" aria-invalid={!!errors.valid_until} onPick={(text) => setValue('valid_until', text, { shouldValidate: true, shouldDirty: true })} {...register('valid_until')} />
         </Field>
       </div>
       <Field id="doc-notes" label="Notes" hint="(optional)" error={errors.notes?.message}>

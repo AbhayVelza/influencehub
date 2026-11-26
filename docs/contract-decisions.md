@@ -64,6 +64,10 @@ Record any new API decision here. Dates and documents: `dates-and-documents.md`.
   dd/MM/yyyy, hh:mm a. Pick a different time."). Different executives can schedule calls at the same time for different
   influencers. Done follow-ups free their slot; the same influencer's own open follow-up doesn't block, since logging
   the call completes it. The Log Call dialog shows the message on the follow-up field and stays open.
+- Follow-up without a call (decided 26/11/2026): `POST /influencers/{id}/follow-ups {follow_up_date, notes?}` → 201
+  `CallLog` with outcome `call_back`, same rules as a call's follow-up (future, `409 time_taken`), completes the
+  influencer's open follow-ups, logs `call_logged` with `follow_up_only: true` ("Set a follow-up"); it doesn't tick
+  "Called" or move the stage. Used by the address form's optional "Follow up on".
 - Admin override (a move outside the standard transitions). One rule, `overrideBlockReason` / `getOverrideTargets` in
   `src/lib/stages.ts`, used by the server, the stage menu and the pipeline board. Targets: data_gathered, contacted,
   onboarded, on_hold, rejected only. None once the creator has **ever** been onboarded: Onboarded / Welcome Kit /
@@ -122,7 +126,8 @@ Record any new API decision here. Dates and documents: `dates-and-documents.md`.
   tomorrow (IST) `{influencer: InfluencerSummary, claimed_at, release_at}[]` — shown in notifications.
 - Embedded `InfluencerSummary` (calls, packages, activity, notifications) = `{id, name, primary_account
   {platform, handle, profile_url} | null, profile_pic_url, phone, stage, assigned_to}`. Pipeline cards carry
-  `primary_account`, `total_reach` and `category`; `days_in_stage` = calendar days since the last move into the stage.
+  `primary_account`, `total_reach` and `category`; `days_in_stage` = calendar days since the last move into the stage;
+  `follow_up_date` = the soonest open follow-up or null.
 - `GET /dashboard/summary` kpis add `pool` (unassigned count, everyone) and `claimed_this_week` (claims since Monday
   00:00 IST; null for executives). For executives every other figure covers only their own influencers.
   `onboarded_without_agreement` = assigned influencers in onboarded / package_sent / delivered with no current agreement.
@@ -319,7 +324,8 @@ Rules the forms already applied are now also checked by the handlers, so every c
   `tracking_number`, `status`, `sent_at`, `delivered_at`; `id` and `influencer_id` in the body are ignored.
 - **Documents:** saving the metadata (`POST /influencers/{id}/documents`) needs the file stored first (the API
   server's `PUT /files/…`, or the browser in prototype mode); otherwise 422 `upload_missing`.
-- **Pipeline:** each column returns at most `PIPELINE_COLUMN_LIMIT` (200) cards, longest in the stage first; `count`
+- **Pipeline:** each column returns at most `PIPELINE_COLUMN_LIMIT` (200) cards, longest in the stage first (Data
+  gathered: creators with an open follow-up go last, soonest follow-up first; decided 26/11/2026); `count`
   is the whole column. Days in stage are calendar days in Asia/Kolkata on the server too.
 - **Jobs:** a finished job's outcome is saved for an hour, so `GET /jobs/{id}` still answers after a restart.
 

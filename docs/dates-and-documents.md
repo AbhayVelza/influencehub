@@ -6,7 +6,9 @@ Contract decisions for the dd/MM/yyyy date format and for Documents.
   `dd/MM/yyyy`; date-times are `dd/MM/yyyy, hh:mm a` in Asia/Kolkata ("28/10/2026, 04:30 PM"); chart axes are `dd/MM`;
   a time on its own is `hh:mm a`. Relative times ("2h ago") always carry the exact `dd/MM/yyyy, hh:mm a` time in
   their tooltip. Date inputs are text fields that show and accept `dd/MM/yyyy` (also `dd-MM-yyyy`, `dd.MM.yyyy`,
-  `d/M/yyyy`); date-time inputs accept `dd/MM/yyyy, hh:mm a` or 24-hour `HH:mm`, read as IST. Calendar-only values
+  `d/M/yyyy`); date-time inputs accept `dd/MM/yyyy, hh:mm a` or 24-hour `HH:mm`, read as IST. Every form date field
+  also has a calendar button (`onPick` on `DateInput` / `DateTimeInput`; weeks start Monday; follow-ups can't pick a
+  past day); on a date-time field the picked day keeps the typed time, else 11:00 AM. Calendar-only values
   (`period_start`, `signed_on`, `sent_from`, …) are `yyyy-MM-dd` on the wire and shown without any timezone shift.
   CSV import's optional `created_at` column ("Added on", new creators only) accepts `dd/MM/yyyy` or ISO 8601 (a date
   or time without an offset is IST); anything else is a row error. CSV export writes `created_at` as `dd/MM/yyyy`.

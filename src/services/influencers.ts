@@ -7,6 +7,7 @@ import type {
   BulkResult,
   CallLog,
   CallLogCreate,
+  FollowUpCreate,
   CallLogCreated,
   CheckHandleResponse,
   FilterOptions,
@@ -72,4 +73,6 @@ export const influencersApi = {
     http.get<Paginated<CallLog>>(`${base}/${id}/calls`, params, signal),
 
   logCall: (id: string, body: CallLogCreate) => http.post<CallLogCreated>(`${base}/${id}/calls`, body),
+  /** A follow-up without a call; 409 `time_taken` like logCall. */
+  setFollowUp: (id: string, body: FollowUpCreate) => http.post<CallLog>(`${base}/${id}/follow-ups`, body),
 }

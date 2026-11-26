@@ -10,6 +10,7 @@ import type {
   CallLog,
   CallLogCreated,
   CallLogCreate,
+  FollowUpCreate,
   FilterOption,
   FilterOptions,
   Influencer,
@@ -148,6 +149,39 @@ export function accountConflict(accounts: { platform: Platform; handle: string }
 const CALL_OUTCOMES = ['interested', 'not_interested', 'call_back', 'no_answer', 'wrong_number']
 
 // Executives only ever reach influencers they own: everything else answers 404 (unassigned ones via /pool).
+/**
+ * A follow-up must be a future timestamp, and the owner (or me) can't already have another open follow-up at that
+ * minute. Returns the error response, or null when it's fine.
+ */
+function followUpProblem(inf: Influencer, date: string) {
+  if (!isTimestamp(date)) return apiError(422, 'validation_error', 'Enter a valid follow-up date and time')
+  if (Date.parse(date) <= Date.now()) return apiError(422, 'validation_error', 'Pick a time in the future')
+  const slot = minuteOf(date)
+  const executiveId = inf.assigned_to ?? currentUser().id
+  const taken = db.calls.some((c) => {
+    if (c.influencer_id === inf.id || !c.follow_up_date || c.follow_up_done) return false
+    if (minuteOf(c.follow_up_date) !== slot) return false
+    const cInf = findInfluencer(c.influencer_id)
+    const cExecId = cInf?.assigned_to ?? c.called_by
+    return cExecId === executiveId
+  })
+  if (taken) {
+    return apiError(
+      409,
+      'time_taken',
+      `Another call is already scheduled for ${formatDateTime(date)}. Pick a different time.`,
+    )
+  }
+  return null
+}
+
+/** Completes this influencer's open follow-ups (a new call or follow-up replaces them). */
+function completeOpenFollowUps(inf: Influencer) {
+  for (const c of db.calls) {
+    if (c.influencer_id === inf.id && c.follow_up_date && !c.follow_up_done) c.follow_up_done = true
+  }
+}
+
 export const influencerHandlers = [
   http.get(api('/influencers'), async ({ request }) => {
     const params = new URL(request.url).searchParams
@@ -424,30 +458,12 @@ export const influencerHandlers = [
     // FR-CALL-02 (the form checks the same): "call back" needs a follow-up, and a follow-up is in the future.
     if (body.outcome === 'call_back' && body.follow_up_date == null) return apiError(422, 'validation_error', 'Pick when to call back')
     if (body.follow_up_date != null) {
-      if (!isTimestamp(body.follow_up_date)) return apiError(422, 'validation_error', 'Enter a valid follow-up date and time')
-      if (Date.parse(body.follow_up_date) <= Date.now()) return apiError(422, 'validation_error', 'Pick a time in the future')
-      const slot = minuteOf(body.follow_up_date)
-      const executiveId = inf.assigned_to ?? currentUser().id
-      const taken = db.calls.some((c) => {
-        if (c.influencer_id === inf.id || !c.follow_up_date || c.follow_up_done) return false
-        if (minuteOf(c.follow_up_date) !== slot) return false
-        const cInf = findInfluencer(c.influencer_id)
-        const cExecId = cInf?.assigned_to ?? c.called_by
-        return cExecId === executiveId
-      })
-      if (taken) {
-        return apiError(
-          409,
-          'time_taken',
-          `Another call is already scheduled for ${formatDateTime(body.follow_up_date)}. Pick a different time.`,
-        )
-      }
+      const problem = followUpProblem(inf, body.follow_up_date)
+      if (problem) return problem
     }
 
     // A new call completes any follow-ups still open for this influencer.
-    for (const c of db.calls) {
-      if (c.influencer_id === inf.id && c.follow_up_date && !c.follow_up_done) c.follow_up_done = true
-    }
+    completeOpenFollowUps(inf)
     const call: CallLog = {
       id: nextId('call'),
       influencer_id: inf.id,
@@ -476,5 +492,31 @@ export const influencerHandlers = [
     }
 
     return HttpResponse.json({ ...call, stage_change } satisfies CallLogCreated, { status: 201 })
+  }),
+
+  // A follow-up without a call (set while adding the address): a `call_back` row with no call made, so it shows in
+  // Calls & Follow-ups and the pipeline like any other; it doesn't tick "Called" or change the stage.
+  http.post(api('/influencers/:id/follow-ups'), async ({ params, request }) => {
+    const inf = findVisible(String(params.id))
+    if (!inf) return notFound('Influencer')
+    const body = await readJson<FollowUpCreate>(request)
+    if (body.follow_up_date == null) return apiError(422, 'validation_error', 'Pick a follow-up date and time')
+    const problem = followUpProblem(inf, body.follow_up_date)
+    if (problem) return problem
+    completeOpenFollowUps(inf)
+    const call: CallLog = {
+      id: nextId('call'),
+      influencer_id: inf.id,
+      called_by: currentUser().id,
+      outcome: 'call_back',
+      notes: body.notes?.trim() || null,
+      follow_up_date: body.follow_up_date,
+      follow_up_done: false,
+      created_at: nowIso(),
+    }
+    db.calls.push(call)
+    inf.updated_at = call.created_at
+    logActivity(inf.id, 'call_logged', { call_id: call.id, outcome: call.outcome, follow_up_only: true })
+    return HttpResponse.json(call, { status: 201 })
   }),
 ]

@@ -1,9 +1,9 @@
 import { useDraggable } from '@dnd-kit/core'
-import { Clock, Users } from 'lucide-react'
+import { CalendarClock, Clock, Users } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { PersonAvatar } from '@/components/common/person-avatar'
 import { AccountLabel } from '@/components/common/platform-badge'
-import { formatCompact } from '@/lib/format'
+import { formatCompact, formatDateTime } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import type { PipelineCard as PipelineCardData, User } from '@/types'
 
@@ -59,6 +59,12 @@ export function PipelineCardView({
           </span>
         )}
       </p>
+      {card.follow_up_date && (
+        <p className="flex items-center gap-1.5 text-small text-muted-foreground">
+          <CalendarClock aria-hidden className="size-3.5 shrink-0" strokeWidth={1.75} />
+          <span className="truncate">Follow-up {formatDateTime(card.follow_up_date)}</span>
+        </p>
+      )}
       <div className="flex items-center justify-between gap-2 pt-0.5 text-small">
         <span className="flex min-w-0 items-center gap-1.5 text-muted-foreground">
           {owner ? (

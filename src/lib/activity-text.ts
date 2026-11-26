@@ -32,6 +32,7 @@ export function describeActivity(activity: Activity, team: Map<string, User>): {
     case 'assigned':
       return { text: p.to ? `Assigned to ${name(p.to)}` : 'Unassigned' }
     case 'call_logged':
+      if (p.follow_up_only) return { text: 'Set a follow-up' }
       return { text: `Logged a call · ${CALL_OUTCOME_META[p.outcome as CallOutcome]?.label ?? String(p.outcome)}` }
     case 'package_created':
       return { text: `Created a Welcome Kit${p.courier ? ` (${String(p.courier)})` : ''}` }

@@ -570,6 +570,12 @@ export interface CallLogCreate {
   follow_up_date?: ISODateString | null
 }
 
+/** `POST /influencers/{id}/follow-ups`: a follow-up without a call (e.g. set while adding the address). */
+export interface FollowUpCreate {
+  follow_up_date: ISODateString
+  notes?: string | null
+}
+
 export type FollowUpBucket = 'today' | 'overdue' | 'upcoming' | 'history'
 
 export interface PackageListParams {
@@ -602,6 +608,8 @@ export interface PipelineCard {
   days_in_stage: number
   /** Has been Onboarded or later at some point (no admin override then). */
   ever_onboarded: boolean
+  /** The next open follow-up, if any. In Data gathered, cards with one come last (soonest follow-up first). */
+  follow_up_date: ISODateString | null
 }
 
 export interface PipelineColumn {
