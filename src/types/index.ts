@@ -772,11 +772,16 @@ export interface CsvImportResult {
   created: number
   /** Existing influencers updated (on_duplicate = update). */
   updated: number
-  /** Rows skipped because the handle already exists (in the CRM or earlier in the file). */
+  /**
+   * Rows skipped as the same creator: their Instagram handle (else first handle) is already in the CRM, or in an
+   * earlier row of the file.
+   */
   duplicates: number
   failed: number
   /** Failed rows only. `row` is the 1-based line number in the file (header = 1). `handle` = the row's first handle. */
   errors: { row: number; handle: string | null; message: string }[]
+  /** Imported rows with something left out or filled in (a new category, an account another creator already has, …). */
+  warnings: { row: number; handle: string | null; message: string }[]
   /**
    * Present when fetch_profiles was requested. On the API server the accounts are queued for its background sync
    * (`queued`, paced by the platform's rate limit) instead of fetched during the import.

@@ -15,6 +15,7 @@ import { downloadCsv, parseCsv, toCsvText } from '@/lib/csv'
 import {
   autoMatchColumns,
   IMPORT_FIELDS,
+  importIdentity,
   mapImportRow,
   missingMappings,
   templateCsv,
@@ -173,13 +174,13 @@ function MappingStep({
     () => parsed.rows.map((row) => validateImportRow(mapImportRow(row, parsed.headers, mapping), categoryNames)),
     [parsed, mapping, categoryNames],
   )
-  // Accounts repeated within the file: later rows are skipped as duplicates.
+  // The same creator again in the file (same Instagram handle, else first handle): later rows are skipped as duplicates.
   const repeated = useMemo(() => {
     const seen = new Set<string>()
     return validated.map((v) => {
-      const keys = v.accounts.map((a) => `${a.platform}:${a.handle}`)
-      const dup = keys.some((k) => seen.has(k))
-      keys.forEach((k) => seen.add(k))
+      const id = importIdentity(v.accounts)
+      const dup = id !== null && seen.has(id)
+      if (id) seen.add(id)
       return dup
     })
   }, [validated])
@@ -374,12 +375,17 @@ function Stat({ label, value, tone }: { label: string; value: number; tone?: 'ba
 
 function Summary({ result, onDone, onAgain }: { result: CsvImportResult; onDone: () => void; onAgain: () => void }) {
   const navigate = useNavigate()
+  // Failed rows first, then imported rows with notes (older results have no warnings).
+  const issues = [
+    ...result.errors.map((e) => ({ ...e, failed: true })),
+    ...(result.warnings ?? []).map((w) => ({ ...w, failed: false })),
+  ]
   const report = () =>
     downloadCsv(
-      'influencehub-import-errors.csv',
+      'influencehub-import-report.csv',
       toCsvText(
-        ['row', 'handle', 'error'],
-        result.errors.map((e) => [e.row, e.handle ?? '', e.message]),
+        ['row', 'handle', 'result', 'message'],
+        issues.map((e) => [e.row, e.handle ?? '', e.failed ? 'not imported' : 'imported', e.message]),
       ),
     )
 
@@ -399,7 +405,13 @@ function Summary({ result, onDone, onAgain }: { result: CsvImportResult; onDone:
             : `Profiles: ${formatNumber(result.profiles.synced)} accounts synced, ${formatNumber(result.profiles.failed)} couldn’t be fetched (personal, not found or rate limited).`}
         </p>
       )}
-      {result.errors.length > 0 && (
+      {(result.warnings?.length ?? 0) > 0 && (
+        <p className="text-body text-muted-foreground">
+          {formatNumber(result.warnings.length)} imported {result.warnings.length === 1 ? 'row has' : 'rows have'} notes (a new
+          category, or an account another creator already has). They’re in the list and the report.
+        </p>
+      )}
+      {issues.length > 0 && (
         <div className="space-y-2">
           <div className="max-h-40 overflow-auto rounded-2xl bg-surface-container-lowest/75 shadow-glass backdrop-blur-2xl dark:ring-1 dark:ring-white/5 text-small">
             <table className="w-full">
@@ -407,15 +419,18 @@ function Summary({ result, onDone, onAgain }: { result: CsvImportResult; onDone:
                 <tr>
                   <th className="px-3 py-2 text-left text-small font-semibold tracking-wider text-muted-foreground uppercase">Row</th>
                   <th className="px-3 py-2 text-left text-small font-semibold tracking-wider text-muted-foreground uppercase">Handle</th>
-                  <th className="px-3 py-2 text-left text-small font-semibold tracking-wider text-muted-foreground uppercase">Error</th>
+                  <th className="px-3 py-2 text-left text-small font-semibold tracking-wider text-muted-foreground uppercase">Message</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-surface-container">
-                {result.errors.slice(0, 50).map((e) => (
-                  <tr key={e.row}>
+                {issues.slice(0, 50).map((e) => (
+                  <tr key={`${e.row}-${e.failed}`}>
                     <td className="px-3 py-2 tabular-nums">{e.row}</td>
                     <td className="px-3 py-2">{e.handle ?? '—'}</td>
-                    <td className="px-3 py-2 text-error">{e.message}</td>
+                    <td className={cn('px-3 py-2', e.failed ? 'text-error' : 'text-muted-foreground')}>
+                      {e.failed ? 'Not imported: ' : 'Imported: '}
+                      {e.message}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -423,7 +438,7 @@ function Summary({ result, onDone, onAgain }: { result: CsvImportResult; onDone:
           </div>
           <Button variant="outline" size="sm" onClick={report}>
             <Download />
-            Download error report
+            Download import report
           </Button>
         </div>
       )}

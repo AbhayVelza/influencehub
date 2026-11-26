@@ -1,6 +1,6 @@
 import { JobFailure } from '@/backend/jobs'
 import type { ProfileSource } from '@/backend/social'
-import { findLinkedAccounts, PLATFORM_META, YOUTUBE_CHANNEL_ID } from '@/lib/platforms'
+import { findLinkedAccounts, PLATFORM_META, YOUTUBE_CHANNEL_ID, YOUTUBE_VIDEO_HANDLE } from '@/lib/platforms'
 import type { LookupProfile, MediaItem } from '@/types'
 
 // YouTube through the YouTube Data API v3, with an API key (YOUTUBE_API_KEY; docs/server.md, "YouTube"). A channel
@@ -190,6 +190,14 @@ function toMediaItems(videos: Video[]): MediaItem[] {
 
 /** A channel's public profile and the stats the CRM keeps for YouTube, by handle (without @). */
 export async function fetchYouTube(handle: string): Promise<LookupProfile> {
+  // A video link (`video:<id>`, platforms.ts): one extra unit finds the video's channel, then the channel as below.
+  const fromVideo = YOUTUBE_VIDEO_HANDLE.test(handle)
+  if (fromVideo) {
+    const { items } = await call<{ items?: { snippet?: { channelId?: string } }[] }>('videos', { part: 'snippet', id: handle.slice(6) })
+    const channelId = items?.[0]?.snippet?.channelId
+    if (!channelId || !YOUTUBE_CHANNEL_ID.test(channelId)) throw new JobFailure('not_found', 'No public YouTube video has that link.')
+    handle = channelId
+  }
   // YouTube handles: 3–30 letters, numbers, dots, dashes or underscores.
   const byId = YOUTUBE_CHANNEL_ID.test(handle)
   if (!byId && !/^[a-z0-9._-]{3,30}$/.test(handle)) throw new JobFailure('not_found', 'That isn’t a valid YouTube handle.')
@@ -199,6 +207,9 @@ export async function fetchYouTube(handle: string): Promise<LookupProfile> {
   })
   const channel = items?.[0]
   if (!channel) throw new JobFailure('not_found', 'No YouTube channel has that handle.')
+  // Found from a video link: the channel's own @handle (else its id) becomes the account's handle (social.ts applyProfile).
+  const own = channel.snippet?.customUrl?.trim().replace(/^@/, '').toLowerCase()
+  if (fromVideo && own && /^[a-z0-9._-]{3,30}$/.test(own)) handle = own
   const stats = channel.statistics ?? {}
   const uploads = channel.contentDetails?.relatedPlaylists?.uploads
   const videoCount = count(stats.videoCount)

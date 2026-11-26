@@ -1,4 +1,4 @@
-import { audienceOf, emptyMetrics, LOOKUP_PLATFORMS, normalizeHandle, PLATFORM_META, PLATFORMS } from '@/lib/platforms'
+import { audienceOf, emptyMetrics, LOOKUP_PLATFORMS, normalizeHandle, PLATFORM_META, PLATFORMS, YOUTUBE_VIDEO_HANDLE } from '@/lib/platforms'
 import type { AccountCreate, Influencer, LookupProfile, MediaItem, Platform, PlatformMetrics, SocialAccount, SyncResult } from '@/types'
 import { db, findAccount, nextId, nowIso, refreshDerived } from './db'
 import { JobFailure } from './jobs'
@@ -157,6 +157,14 @@ export function applyProfile(influencer: Influencer, account: SocialAccount, pro
   account.metrics = metricsFor(account.platform, { ...account.metrics, ...fresh }) as typeof account.metrics
   account.sync_status = 'synced'
   account.last_synced_at = nowIso()
+  // Saved from a YouTube video link (`video:<id>`): it becomes the channel's handle, unless another account has it.
+  if (YOUTUBE_VIDEO_HANDLE.test(account.handle) && profile.handle !== account.handle) {
+    const taken = db.influencers.some((i) => i.accounts.some((a) => a !== account && a.platform === account.platform && a.handle === profile.handle))
+    if (!taken) {
+      account.handle = profile.handle
+      account.profile_url = profile.profile_url
+    }
+  }
 }
 
 /**

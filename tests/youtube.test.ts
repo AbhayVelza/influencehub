@@ -69,6 +69,20 @@ describe('several connected platforms', () => {
     expect((await api('GET', '/integrations')).body).toEqual({ profile_lookup: ['youtube'] })
   })
 
+  it('an account saved from a video link takes its channel’s handle on the first sync, unless another creator has it', async () => {
+    setProfileSource('youtube', { fetch: async () => ytProfile('riyavlogs', 5_000) })
+    const res = await addInfluencer('riya', { body: { accounts: [{ platform: 'youtube', handle: 'https://youtu.be/2cS5KUcSqv0?si=x' }] } })
+    const acc = res.body.accounts[0]
+    expect(acc).toMatchObject({ handle: 'video:2cS5KUcSqv0', profile_url: 'https://youtu.be/2cS5KUcSqv0' })
+    expect((await runJob('POST', `/accounts/${acc.id}/sync`)).status).toBe('succeeded')
+    const account = (id: string) => db.influencers.find((i) => i.id === id)!.accounts[0]!
+    expect(account(res.body.id)).toMatchObject({ handle: 'riyavlogs', profile_url: 'https://www.youtube.com/@riyavlogs', sync_status: 'synced' })
+    // A second creator's video link to the same channel keeps its own handle (no clash).
+    const other = await addInfluencer('neha', { body: { accounts: [{ platform: 'youtube', handle: 'youtube.com/shorts/P5bExKepQho' }] } })
+    await runJob('POST', `/accounts/${other.body.accounts[0].id}/sync`)
+    expect(account(other.body.id).handle).toBe('video:P5bExKepQho')
+  })
+
   it('looks up and syncs through the platform’s own source', async () => {
     setProfileSource('youtube', youtube)
     const job = await runJob('POST', '/lookup', { body: { platform: 'youtube', username: 'youtube.com/@Riya' } })
@@ -250,6 +264,18 @@ describe("server/youtube.ts: YouTube's answers", () => {
       // Hidden likes: null.
       { thumbnail: 'https://i.ytimg.com/b.jpg', permalink: 'https://www.youtube.com/watch?v=vid_bbbbbb2', likes: null, comments: 4, posted_at: '2026-11-10T10:00:00.000Z' },
     ])
+  })
+
+  it('a video link finds its channel (one more unit) and answers with the channel’s own handle', async () => {
+    const channelId = 'UCabcdefghijklmnopqrstuv'
+    const spy = stub(ok({ items: [{ snippet: { channelId } }] }), ok(channel), ok(playlist), ok(videos))
+    const p = await fetchYouTube('video:2cS5KUcSqv0')
+    expect(url(spy, 0).pathname).toBe('/youtube/v3/videos')
+    expect(url(spy, 0).searchParams.get('id')).toBe('2cS5KUcSqv0')
+    expect(url(spy, 1).searchParams.get('id')).toBe(channelId)
+    expect(p).toMatchObject({ handle: 'riyavlogs', profile_url: 'https://www.youtube.com/@riyavlogs', metrics: { subscribers: 45_600 } })
+    stub(ok({ items: [] }))
+    await expect(fetchYouTube('video:AAAAAAAAAAA')).rejects.toMatchObject({ code: 'not_found' })
   })
 
   it('hidden subscriber counts come back as null; a channel without videos costs one call', async () => {
