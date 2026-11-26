@@ -2,7 +2,6 @@ import { Bookmark, Check, ChevronDown, Pencil, Plus, Trash2 } from 'lucide-react
 import { useState, type FormEvent } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
 import {
   Dialog,
   DialogContent,
@@ -37,8 +36,6 @@ export function SavedViewsMenu({ filters, sort, onApply }: SavedViewsMenuProps) 
   const [saveOpen, setSaveOpen] = useState(false)
   const [name, setName] = useState('')
   const [editing, setEditing] = useState<SavedView | null>(null)
-  const [editName, setEditName] = useState('')
-  const [useCurrent, setUseCurrent] = useState(false)
 
   const currentKey = viewKey(filters, sort)
   const activeView = views.data?.items.find((v) => viewKey(v.filters, v.sort) === currentKey)
@@ -46,24 +43,19 @@ export function SavedViewsMenu({ filters, sort, onApply }: SavedViewsMenuProps) 
   const canManage = (view: SavedView) => view.created_by === me?.id || me?.role !== 'executive'
   const hasCurrent = hasActiveFilters(filters) || !!sort
 
-  /** Edit: rename, and/or put the filters and sort on screen now into the view (ticked when they differ). */
+  const filterCount = countActiveFilters(filters)
+  /** Edit works only on filters: the filters on screen now replace the view's (its name and sort stay). */
   const openEdit = (view: SavedView) => {
     setEditing(view)
-    setEditName(view.name)
-    setUseCurrent(hasCurrent && viewKey(view.filters, view.sort) !== currentKey)
     setOpen(false)
   }
 
   const onEdit = async (event: FormEvent) => {
     event.preventDefault()
-    const trimmed = editName.trim()
-    if (!editing || !trimmed) return
+    if (!editing || !hasActiveFilters(filters)) return
     try {
-      await updateView.mutateAsync({
-        id: editing.id,
-        body: { name: trimmed, ...(useCurrent ? { filters, sort: sort ?? null } : {}) },
-      })
-      toast.success(`Updated view “${trimmed}”`)
+      await updateView.mutateAsync({ id: editing.id, body: { filters } })
+      toast.success(`Updated the filters of “${editing.name}”`)
       setEditing(null)
     } catch (err) {
       toast.error('Couldn’t update view', { description: getErrorMessage(err) })
@@ -214,36 +206,25 @@ export function SavedViewsMenu({ filters, sort, onApply }: SavedViewsMenuProps) 
         <DialogContent className="sm:max-w-sm">
           <form onSubmit={onEdit} className="space-y-4">
             <DialogHeader>
-              <DialogTitle>Edit view</DialogTitle>
-              <DialogDescription>Rename it, or save the filters and sort you have on screen now into it.</DialogDescription>
+              <DialogTitle>Edit filters of “{editing?.name}”</DialogTitle>
+              <DialogDescription>
+                Replaces this view’s filters with the ones on the list now. The name and sort stay. To change them, open
+                the view, adjust the filters, then edit it.
+              </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-1.5">
-              <Label htmlFor="edit-view-name">Name</Label>
-              <Input id="edit-view-name" value={editName} maxLength={60} onChange={(e) => setEditName(e.target.value)} autoFocus />
-            </div>
-            <div className="flex items-start gap-2">
-              <Checkbox
-                id="edit-view-filters"
-                checked={useCurrent}
-                disabled={!hasCurrent}
-                onCheckedChange={(v) => setUseCurrent(v === true)}
-                className="mt-0.5"
-              />
-              <Label htmlFor="edit-view-filters" className="grid gap-0.5 font-normal">
-                <span>Use the current filters and sort</span>
-                <span className="text-small text-muted-foreground">
-                  {hasCurrent
-                    ? `${countActiveFilters(filters)} filter${countActiveFilters(filters) === 1 ? '' : 's'}${sort ? ' + sort' : ''} on screen now`
-                    : 'Set filters on the list first'}
-                </span>
-              </Label>
-            </div>
+            <p className="rounded-xl bg-surface-container-low px-3 py-2 text-small text-muted-foreground">
+              {!hasActiveFilters(filters)
+                ? 'No filters on the list now: set filters first.'
+                : editing && viewKey(editing.filters, null) !== viewKey(filters, null)
+                  ? `${filterCount} filter${filterCount === 1 ? '' : 's'} on the list now will replace the view’s.`
+                  : 'The filters on the list already match this view.'}
+            </p>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setEditing(null)}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={!editName.trim() || updateView.isPending}>
-                Save changes
+              <Button type="submit" disabled={!hasActiveFilters(filters) || updateView.isPending}>
+                Save filters
               </Button>
             </DialogFooter>
           </form>

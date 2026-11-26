@@ -295,7 +295,7 @@ export const workspaceHandlers = [
     return HttpResponse.json(view, { status: 201 })
   }),
 
-  // Rename and/or replace the filters and sort. Same rule as delete: executives edit only their own views.
+  // Edit works only on filters: replaces the view's filters (name and sort stay). Executives edit only their own views.
   http.patch(api('/saved-views/:id'), async ({ params, request }) => {
     const view = db.savedViews.find((v) => v.id === params.id)
     if (!view) return notFound('Saved view')
@@ -304,13 +304,8 @@ export const workspaceHandlers = [
       return forbidden('You can only edit your own saved views')
     }
     const body = await readJson<SavedViewUpdate>(request)
-    if (body.name !== undefined) {
-      const name = body.name?.trim()
-      if (!name) return apiError(422, 'validation_error', 'Name is required')
-      view.name = name
-    }
-    if (body.filters !== undefined) view.filters = body.filters ?? {}
-    if (body.sort !== undefined) view.sort = body.sort ?? null
+    if (!body.filters || typeof body.filters !== 'object') return apiError(422, 'validation_error', 'Filters are required')
+    view.filters = body.filters
     return HttpResponse.json(view)
   }),
 

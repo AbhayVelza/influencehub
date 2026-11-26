@@ -996,5 +996,5 @@ export interface SavedView {
 
 export type SavedViewCreate = Pick<SavedView, 'name' | 'filters'> & { sort?: InfluencerSort | null }
 
-/** Rename a view and/or replace its filters and sort (PATCH /saved-views/{id}). */
-export type SavedViewUpdate = Partial<SavedViewCreate>
+/** Replace a view's filters; its name and sort stay (PATCH /saved-views/{id}). */
+export type SavedViewUpdate = Pick<SavedView, 'filters'>
