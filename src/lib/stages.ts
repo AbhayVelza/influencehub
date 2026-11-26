@@ -18,13 +18,6 @@ export const ONBOARDED_OR_LATER: Stage[] = ['onboarded', 'package_sent', 'delive
 /** What must exist before an influencer can enter a stage. */
 export type StageRequirement = 'interested_call' | 'package_with_tracking' | 'agreement_and_insights'
 
-export const STAGE_REQUIREMENTS: Partial<Record<Stage, StageRequirement>> = {
-  contacted: 'interested_call',
-  package_sent: 'package_with_tracking',
-  /** Only when entering from Contacted (resuming from hold or a returned package keeps what's on file). */
-  onboarded: 'agreement_and_insights',
-}
-
 /** Transitions any role may make (before admin override). */
 export function getStandardTransitions(from: Stage, role: Role, previousStage?: Stage | null): Stage[] {
   if (from === 'rejected') {

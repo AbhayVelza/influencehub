@@ -39,14 +39,6 @@ export function usePoolCount() {
   return query.data?.total
 }
 
-export function usePoolItem(id: string, enabled: boolean) {
-  return useQuery({
-    queryKey: queryKeys.poolItem(id),
-    queryFn: ({ signal }) => poolApi.get(id, signal),
-    enabled,
-  })
-}
-
 /** My claims that auto-release returns to the pool by tomorrow. */
 export function useExpiringClaims() {
   return useQuery({

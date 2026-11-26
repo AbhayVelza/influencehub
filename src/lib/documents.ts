@@ -68,11 +68,6 @@ export function canPreview(contentType: string): boolean {
   return contentType === 'application/pdf' || contentType.startsWith('image/')
 }
 
-/** Agreement versions of one influencer, newest first (the current one is first, since a new upload becomes current). */
-export function agreementVersions(documents: InfluencerDocument[]) {
-  return documents.filter((d): d is Extract<InfluencerDocument, { type: 'agreement' }> => d.type === 'agreement')
-}
-
 /** "01/09/2026 – 30/09/2026 · Instagram" / "Signed 28/10/2026 · valid until 28/10/2027". */
 export function documentDetail(doc: InfluencerDocument): string {
   if (doc.type === 'insights_summary') {

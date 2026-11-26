@@ -175,12 +175,6 @@ export function parseImportDate(text: string): string | null {
   return isValid(date) ? date.toISOString() : null
 }
 
-/** ISO timestamp → "28/10/2026, 05:30 PM" (for a date-time input's text), in Asia/Kolkata. */
-export function isoToDateTimeInput(iso: string | null | undefined): string {
-  const text = formatDateTime(iso)
-  return text === '—' ? '' : text
-}
-
 /**
  * A date-time input's text with its day set to `day` (yyyy-MM-dd), keeping the time already typed (else 11:00 AM):
  * what picking a day on the calendar does.

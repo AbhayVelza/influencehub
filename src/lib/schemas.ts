@@ -157,8 +157,6 @@ export const addressSchema = z.object({
   country: requiredText(80, 'Country'),
 })
 
-export type AddressFormInput = z.input<typeof addressSchema>
-
 /** The address form with its optional "Follow up on" (dd/MM/yyyy, hh:mm a, Asia/Kolkata; in the future). */
 export const addressWithFollowUpSchema = addressSchema.extend({ follow_up: z.string() }).superRefine((value, ctx) => {
   if (!value.follow_up.trim()) return
