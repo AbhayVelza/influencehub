@@ -90,6 +90,7 @@ describe(`NFR-01 at ${N.toLocaleString()} influencers`, () => {
   ]
   for (const path of paths) {
     it(`${path} (admin)`, async () => expect(await timed(path)).toBeLessThan(limitFor(path)))
-    it(`${path} (executive)`, async () => expect(await timed(path, exec)).toBeLessThan(limitFor(path)))
+    // Executives have no pool (403).
+    if (!path.startsWith('/pool')) it(`${path} (executive)`, async () => expect(await timed(path, exec)).toBeLessThan(limitFor(path)))
   }
 })

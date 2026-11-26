@@ -6,7 +6,7 @@ import { actAs, expect, seed, sidebar, test, type Role, type Seed } from './fixt
 const NAV: Record<Role, string[]> = {
   admin: ['Dashboard', 'Influencers', 'Unassigned Pool', 'Possible duplicates', 'Pipeline', 'Calls & Follow-ups', 'Welcome Kits', 'Documents', 'Rejected', 'Settings'],
   manager: ['Dashboard', 'Influencers', 'Unassigned Pool', 'Possible duplicates', 'Pipeline', 'Calls & Follow-ups', 'Welcome Kits', 'Documents', 'Rejected'],
-  executive: ['Dashboard', 'Influencers', 'Unassigned Pool', 'Pipeline', 'Calls & Follow-ups', 'Welcome Kits', 'Documents', 'Rejected'],
+  executive: ['Dashboard', 'Influencers', 'Pipeline', 'Calls & Follow-ups', 'Welcome Kits', 'Documents', 'Rejected'],
   brand_specialist: ['Dashboard', 'Influencers', 'Onboarded'],
 }
 const ALL_LINKS = [...new Set(Object.values(NAV).flat())].filter((l) => l !== 'Onboarded')
@@ -65,18 +65,15 @@ test('manager: sees everyone’s influencers, but not Settings', async ({ page }
   await expect(page.getByText(DENIED)).toBeVisible()
 })
 
-test('executive: only their own influencers, the pool, their rejected ones; no Settings or duplicates', async ({ page }) => {
+test('executive: only their own influencers and rejected ones; no pool, Settings or duplicates', async ({ page }) => {
   await as(page, 'executive', '/influencers')
   await expect(page.getByText(creator(data.influencers.mine)).first()).toBeVisible()
   await expect(page.getByText(creator(data.influencers.other))).toHaveCount(0)
 
-  await page.goto('/pool')
-  await expect(page.getByText(creator(data.influencers.pool)).first()).toBeVisible()
-
   await page.goto('/rejected')
   await expect(page.getByRole('link', { name: creator(data.influencers.rejected) })).toBeVisible()
 
-  for (const path of ['/settings', '/duplicates']) {
+  for (const path of ['/pool', '/settings', '/duplicates']) {
     await page.goto(path)
     await expect(page.getByText(DENIED)).toBeVisible()
   }

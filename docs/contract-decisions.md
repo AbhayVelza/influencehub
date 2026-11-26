@@ -95,17 +95,16 @@ Record any new API decision here. Dates and documents: `dates-and-documents.md`.
   applies unchanged. The backend must keep these filters
   combinable (AND) and accept `page_size=1`.
 - **Unassigned Pool**: `GET /pool` = influencers with `assigned_to = null`, same params as `/influencers`
-  (`assigned_to` ignored). Managers/admins get full `Influencer` rows; executives get `PoolInfluencerPreview`
-  (id, name, category, profile_pic_url, is_verified, primary_account {platform, handle, profile_url}, platforms[],
-  total_reach, city, state, country, stage, created_at) — never phone, email, address, notes, tags, checklist,
-  account details or calls — and their `q` matches name / handles / city only. `GET /pool/{id}` is the same shape,
-  404 unless unassigned. `GET /pool/filter-options` = filter-options over the pool.
+  (`assigned_to` ignored). Managers and admins only (`pool:view`): executives get 403 from `/pool`, `/pool/{id}` and
+  `/pool/filter-options` (decided 26/11/2026: executives have no pool; `PoolInfluencerPreview` is no longer served).
+  `GET /pool/{id}` is a full `Influencer`, 404 unless unassigned. `GET /pool/filter-options` = filter-options over
+  the pool. The Dashboard's `kpis.pool` is 0 for executives.
 - **Bulk assign from the pool** (manager/admin): one or more people. Several share the selected influencers out
   round-robin in list order (one owner each, the shares differ by at most one). The UI sends one bulk `pool_assign`
   per person, so a failed request fails only that person's share. No multi-owner influencers.
 - **Owner changes**: managers/admins set any `assigned_to` (PATCH, bulk `assign`). Executives can't PATCH or bulk
-  `assign` owners (403); on `POST /influencers` they may set themselves or null (null = straight into the pool).
-- **Claim** `POST /influencers/{id}/claim` (any role): atomic — succeeds only while unassigned (or already mine,
+  `assign` owners (403); on `POST /influencers` they may set themselves or null, and either way they own it (they have no pool).
+- **Claim** `POST /influencers/{id}/claim` (managers and admins; executives 403 `forbidden`, bulk `claim` rows too): atomic — succeeds only while unassigned (or already mine,
   idempotent 200); else `409 already_claimed` ("Already claimed by a teammate"). Returns the full influencer,
   sets owner = me, writes a `claimed` activity. Claim limit (below) → `409 claim_limit_reached`.
 - **Release** `POST /influencers/{id}/release {reason}`: executives their own only (others are 404), managers and
@@ -113,12 +112,13 @@ Record any new API decision here. Dates and documents: `dates-and-documents.md`.
   `released {from, reason}`. Managers' owner menu uses this too (no "unassign" without a reason in the UI).
 - **Handle conflicts**: `GET /influencers/check-handle?platform=&handle=` → `{available, influencer_id, conflict}`
   with `conflict` = `exists` (visible to you) | `in_pool` (unassigned) | `assigned_to_other` (an executive's teammate
-  owns it; `influencer_id` is null so nothing leaks). `POST /influencers` and `…/accounts` → 409 `handle_taken` /
-  `in_pool` / `assigned_to_other`. The UI offers "Claim it" for `in_pool`.
+  owns it; `influencer_id` is null so nothing leaks; for `in_pool` it's null for executives too). `POST /influencers` and
+  `…/accounts` → 409 `handle_taken` / `in_pool` / `assigned_to_other`. The UI offers "Claim it" for `in_pool` to
+  managers and admins; executives are told to ask a manager. Duplicate matches in the pool are `restricted` for executives.
 - **Pool guards** `GET/PATCH /settings/pool` (admin, else 403) `{claim_limit, auto_release_days}`, both null (off)
   by default; claim_limit 1–500, auto_release_days 1–90. Claim limit: an executive may own at most N influencers
   in `data_gathered`; claiming one more `data_gathered` influencer → 409 (other stages aren't limited, nor are
-  managers/admins). Auto-release: see Backend notes. `GET /pool/expiring` = my claims the job will release by
+  managers/admins). Since executives can't claim (26/11/2026), the claim limit has no effect. Auto-release: see Backend notes. `GET /pool/expiring` = my claims the job will release by
   tomorrow (IST) `{influencer: InfluencerSummary, claimed_at, release_at}[]` — shown in notifications.
 - Embedded `InfluencerSummary` (calls, packages, activity, notifications) = `{id, name, primary_account
   {platform, handle, profile_url} | null, profile_pic_url, phone, stage, assigned_to}`. Pipeline cards carry

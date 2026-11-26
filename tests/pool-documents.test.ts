@@ -11,36 +11,28 @@ const ownerOf = (id: string) => db.influencers.find((i) => i.id === id)!.assigne
 const DAY = 24 * 60 * 60 * 1000
 
 describe('Unassigned Pool', () => {
-  it('FR-POOL-01: executives get a preview of pool influencers, without contact details', async () => {
+  it('FR-POOL-01: executives have no pool: list, filters, items and claims are refused', async () => {
     const exec = await addMember('executive')
-    const id = await influencer('riya', null, { phone: '9876543210', email: 'riya@example.com', notes: 'secret' })
-    const res = await api('GET', `/pool/${id}`, { as: exec.id })
-    expect(res.status).toBe(200)
-    const text = JSON.stringify(res.body)
-    expect(text).not.toContain('9876543210')
-    expect(text).not.toContain('riya@example.com')
-    expect(text).not.toContain('secret')
+    const id = await influencer('riya', null)
+    for (const path of ['/pool', '/pool/filter-options', `/pool/${id}`]) expect((await api('GET', path, { as: exec.id })).status).toBe(403)
+    expect((await api('POST', `/influencers/${id}/claim`, { as: exec.id })).status).toBe(403)
+    const bulk = await api('POST', '/influencers/bulk', { as: exec.id, body: { ids: [id], action: 'claim' } })
+    expect(bulk.body.failed.map((f: { code: string }) => f.code)).toEqual(['forbidden'])
+    expect(ownerOf(id)).toBeNull()
+    // The handle check says it's unassigned, without which influencer; the dashboard shows no pool count.
+    expect((await api('GET', '/influencers/check-handle?platform=instagram&handle=riya', { as: exec.id })).body.influencer_id).toBeNull()
+    expect((await api('GET', '/dashboard/summary', { as: exec.id })).body.kpis.pool).toBe(0)
+    expect((await api('GET', '/pool')).status).toBe(200)
   })
 
   it('FR-POOL-02: a claim succeeds only while unowned', async () => {
-    const a = await addMember('executive', 'Exec A')
-    const b = await addMember('executive', 'Exec B')
+    const a = await addMember('manager', 'Manager A')
+    const b = await addMember('manager', 'Manager B')
     const id = await influencer('riya', null)
     expect((await api('POST', `/influencers/${id}/claim`, { as: a.id })).status).toBe(200)
     const second = await api('POST', `/influencers/${id}/claim`, { as: b.id })
     expect(second.status).toBe(409)
     expect(second.body.error.code).toBe('already_claimed')
-  })
-
-  it('FR-POOL-03: the claim limit stops one more claim', async () => {
-    const exec = await addMember('executive')
-    await api('PATCH', '/settings/pool', { body: { claim_limit: 1 } })
-    const a = await influencer('a', null)
-    const b = await influencer('b', null)
-    expect((await api('POST', `/influencers/${a}/claim`, { as: exec.id })).status).toBe(200)
-    const res = await api('POST', `/influencers/${b}/claim`, { as: exec.id })
-    expect(res.status).toBe(409)
-    expect(res.body.error.code).toBe('claim_limit_reached')
   })
 
   it('FR-POOL-04: release needs a reason; executives release only their own', async () => {
@@ -55,10 +47,11 @@ describe('Unassigned Pool', () => {
   })
 
   it('FR-POOL-05: auto-release returns an uncalled claim; assignments never auto-release', async () => {
+    const mgr = await addMember('manager')
     const exec = await addMember('executive')
     const claimed = await influencer('a', null)
     const assigned = await influencer('b', exec.id)
-    await api('POST', `/influencers/${claimed}/claim`, { as: exec.id })
+    await api('POST', `/influencers/${claimed}/claim`, { as: mgr.id })
     await api('PATCH', '/settings/pool', { body: { auto_release_days: 3 } })
     // The claim happened 4 days ago.
     for (const a of db.activities) if (a.influencer_id === claimed && a.type === 'claimed') a.created_at = new Date(Date.now() - 4 * DAY).toISOString()
@@ -71,24 +64,24 @@ describe('Unassigned Pool', () => {
   })
 
   it('FR-POOL-05: a call since the claim keeps it', async () => {
-    const exec = await addMember('executive')
+    const mgr = await addMember('manager')
     const id = await influencer('a', null)
-    await api('POST', `/influencers/${id}/claim`, { as: exec.id })
-    await api('POST', `/influencers/${id}/calls`, { as: exec.id, body: { outcome: 'interested' } })
+    await api('POST', `/influencers/${id}/claim`, { as: mgr.id })
+    await api('POST', `/influencers/${id}/calls`, { as: mgr.id, body: { outcome: 'interested' } })
     await api('PATCH', '/settings/pool', { body: { auto_release_days: 3 } })
     for (const a of db.activities) if (a.influencer_id === id) a.created_at = new Date(Date.now() - 4 * DAY).toISOString()
     for (const c of db.calls) c.created_at = new Date(Date.now() - 3 * DAY).toISOString()
     await api('GET', '/me')
-    expect(ownerOf(id)).toBe(exec.id)
+    expect(ownerOf(id)).toBe(mgr.id)
   })
 
   it('FR-POOL-06: claims releasing by tomorrow are listed for their owner', async () => {
-    const exec = await addMember('executive')
+    const mgr = await addMember('manager')
     const id = await influencer('a', null)
-    await api('POST', `/influencers/${id}/claim`, { as: exec.id })
+    await api('POST', `/influencers/${id}/claim`, { as: mgr.id })
     await api('PATCH', '/settings/pool', { body: { auto_release_days: 3 } })
     for (const a of db.activities) if (a.influencer_id === id && a.type === 'claimed') a.created_at = new Date(Date.now() - 2.5 * DAY).toISOString()
-    const res = await api('GET', '/pool/expiring', { as: exec.id })
+    const res = await api('GET', '/pool/expiring', { as: mgr.id })
     expect((res.body.items ?? res.body).map((c: { influencer: { id: string } }) => c.influencer.id)).toEqual([id])
   })
 

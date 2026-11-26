@@ -301,7 +301,10 @@ export const influencerHandlers = [
 
   http.post(api('/influencers'), async ({ request }) => {
     const body = await readJson<InfluencerCreate>(request)
-    if (!canSetOwnerOnCreate(currentUser(), body.assigned_to ?? null)) return forbidden(OWNER_CHANGE_MESSAGE)
+    const user = currentUser()
+    if (!canSetOwnerOnCreate(user, body.assigned_to ?? null)) return forbidden(OWNER_CHANGE_MESSAGE)
+    // Executives have no pool: what they add is theirs.
+    if (!can(user.role, 'influencer:reassign')) body.assigned_to = user.id
     const conflict = accountConflict(body.accounts)
     if (conflict) return conflict
     const source = body.accounts?.some((a) => a.metrics !== undefined && a.sync_method !== 'manual') ? 'lookup' : 'manual'

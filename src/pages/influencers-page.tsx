@@ -1,6 +1,6 @@
 import { Download, Plus, SearchX, Upload, Users } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { PageHeader } from '@/components/common/page-header'
 import { Pagination } from '@/components/common/pagination'
 import { EmptyState, ErrorState } from '@/components/common/states'
@@ -103,12 +103,8 @@ export default function InfluencersPage() {
     <EmptyState
       icon={Users}
       title="You don’t own any influencers yet"
-      description="Claim some from the Unassigned Pool, or add a new one."
-      action={
-        <Button asChild>
-          <Link to="/pool">Open the pool</Link>
-        </Button>
-      }
+      description="Add a new one, or ask a manager to assign some to you."
+      action={canCreate && <Button onClick={() => addInfluencer.open()}>Add influencer</Button>}
     />
   )
 

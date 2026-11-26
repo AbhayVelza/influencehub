@@ -212,8 +212,8 @@ export function InfluencerHeader({
       onSuccess: () => {
         setReleasing(false)
         toast.success(`${influencer.name} released to the pool`)
-        // An executive can't see it any more; the pool is where it went.
-        if (!canReassign) navigate('/pool')
+        // An executive can't see it any more (they have no pool).
+        if (!canReassign) navigate('/influencers')
       },
       onError: (err) => toast.error('Couldn’t release', { description: getErrorMessage(err) }),
     })

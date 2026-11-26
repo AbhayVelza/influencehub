@@ -1,7 +1,7 @@
 import { http } from '@/services/http'
 import type { ExpiringClaim, FilterOptions, InfluencerFilters, InfluencerListParams, Paginated, PoolItem } from '@/types'
 
-/** The Unassigned Pool. Executives get previews (no contact details); managers and admins get full influencers. */
+/** The Unassigned Pool (managers and admins; executives get 403, except /pool/expiring). */
 export const poolApi = {
   list: (params: InfluencerListParams = {}, signal?: AbortSignal) => http.get<Paginated<PoolItem>>('/pool', { ...params }, signal),
 

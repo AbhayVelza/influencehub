@@ -45,10 +45,11 @@ active filters stay visible. `CollapsibleFilters` in `components/common/collapsi
    toast "Added <name> as <Role>"; change role, edit location inline, **Set password** (server mode), deactivate /
    reactivate.
 10. **Unassigned Pool**: list filters (no owner filter) in the URL; row → preview drawer (not the profile).
-   Executives: preview fields + Claim / bulk Claim. Managers/admins: full details + Assign to… / bulk "Assign N…"
+   Managers and admins only (executives have no pool: no menu item, page, Dashboard tile or claim prompts).
+   Full details + Claim, Assign to… / bulk "Assign N…"
    dialog (tick one or more people with each one's share shown → confirm with the counts → "Assigning…" → toast;
    rows not assigned stay selected unless they've left the pool).
-   An executive opening an unassigned influencer's URL gets the preview with Claim; another's influencer is 404.
+   An executive opening an influencer they don't own (unassigned or a teammate's) gets 404.
 11. **Possible duplicates** (manager/admin): pairs side by side with confidence + reasons; Merge (pick survivor,
    per-field values, owner if different; summary of combined accounts and resulting stage) or Dismiss.
 12. **Documents** (sidebar page): every document you can see with creator, type, period / signed date, file, uploaded by

@@ -1,4 +1,4 @@
-import { ArrowLeft, SearchX } from 'lucide-react'
+import { SearchX } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { EmptyState, ErrorState } from '@/components/common/states'
@@ -23,12 +23,9 @@ import { PackagesTab } from '@/features/influencers/detail/packages-tab'
 import { listReturnPath } from '@/features/influencers/list-params'
 import { PackageDrawer } from '@/features/packages/package-drawer'
 import { usePackages } from '@/features/packages/queries'
-import { PoolPreview, PoolActions } from '@/features/pool/pool-preview'
-import { usePoolItem } from '@/features/pool/queries'
-import { usePoolActions } from '@/features/pool/use-pool-actions'
-import { useCan, useMe } from '@/hooks/use-me'
+import { useCan } from '@/hooks/use-me'
 import { ApiError } from '@/services'
-import type { Package, PoolItem } from '@/types'
+import type { Package } from '@/types'
 
 const TABS = ['overview', 'calls', 'packages', 'documents', 'activity'] as const
 type Tab = (typeof TABS)[number]
@@ -47,28 +44,6 @@ function DetailSkeleton() {
       <Skeleton className="h-16 w-full rounded-2xl" />
       <Skeleton className="h-72 w-full rounded-2xl" />
       <Skeleton className="h-56 w-full rounded-2xl" />
-    </div>
-  )
-}
-
-/** An executive opening an unassigned influencer's link: the pool preview, with Claim. */
-function PoolPreviewPage({ item }: { item: PoolItem }) {
-  const { claim, busy } = usePoolActions()
-  return (
-    <div className="mx-auto max-w-xl space-y-space-md px-4 py-6 sm:px-6 lg:py-space-lg">
-      <Button asChild variant="ghost" size="sm" className="-ml-2 text-muted-foreground">
-        <Link to="/pool">
-          <ArrowLeft />
-          Unassigned Pool
-        </Link>
-      </Button>
-      <div className="space-y-4 rounded-2xl bg-surface-container-lowest/70 p-space-lg shadow-glass backdrop-blur-2xl dark:ring-1 dark:ring-white/5">
-        <p className="text-body text-muted-foreground">This influencer is in the Unassigned Pool. Claim them to see everything.</p>
-        <PoolPreview item={item} />
-        <div className="flex justify-end gap-2">
-          <PoolActions item={item} busy={busy} onClaim={() => void claim(item)} onAssign={() => {}} />
-        </div>
-      </div>
     </div>
   )
 }
@@ -122,10 +97,6 @@ function FullInfluencerDetail() {
   const activity = useInfluencerActivity(id)
   const calls = useInfluencerCalls(id)
   const packages = usePackages({ influencer_id: id, page_size: 100 })
-  const { data: me } = useMe()
-  // Executives get 404 for anything they don't own; if it's unassigned, show its pool preview instead.
-  const hidden = influencer.error instanceof ApiError && influencer.error.status === 404 && me?.role === 'executive'
-  const poolItem = usePoolItem(id, hidden)
 
   const [callDialog, setCallDialog] = useState<{ open: boolean; intent?: 'contacted' }>({ open: false })
   const [packageDrawer, setPackageDrawer] = useState<{ open: boolean; pkg?: Package | null; intent?: 'package_sent' }>({
@@ -155,8 +126,7 @@ function FullInfluencerDetail() {
     if (inf?.stage === 'on_hold' && !previousStage && hasNextPage && !isFetchingNextPage) void fetchNextPage()
   }, [inf?.stage, previousStage, hasNextPage, isFetchingNextPage, fetchNextPage])
 
-  if (influencer.isPending || (hidden && poolItem.isPending)) return <DetailSkeleton />
-  if (hidden && poolItem.data) return <PoolPreviewPage item={poolItem.data} />
+  if (influencer.isPending) return <DetailSkeleton />
   if (influencer.isError) {
     if (influencer.error instanceof ApiError && influencer.error.status === 404) {
       return (
