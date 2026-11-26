@@ -1,5 +1,4 @@
 import type {
-  AccountType,
   CallOutcome,
   CategoryName,
   PackageStatus,
@@ -114,13 +113,6 @@ export const COURIERS = [
   'FedEx',
   'Aramex',
 ]
-
-export const ACCOUNT_TYPE_LABEL: Record<AccountType, string> = {
-  business: 'Business',
-  creator: 'Creator',
-  personal: 'Personal',
-  unknown: 'Unknown',
-}
 
 export const SYNC_STATUS_META: Record<SyncStatus, { label: string; dot: string }> = {
   synced: { label: 'Synced', dot: 'bg-green-500' },

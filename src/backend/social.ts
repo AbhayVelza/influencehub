@@ -246,5 +246,3 @@ export function expireConnectLinks(now = Date.now()): number {
   }
   return expired
 }
-
-export const CONNECT_LINK_DAYS = 7

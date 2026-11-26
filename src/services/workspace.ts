@@ -6,7 +6,6 @@ import type {
   DashboardSummary,
   InfluencerFilters,
   InstagramSettings,
-  InstagramSettingsUpdate,
   Integrations,
   Paginated,
   PipelineResponse,
@@ -58,7 +57,6 @@ export const integrationsApi = {
 
 export const settingsApi = {
   instagram: (signal?: AbortSignal) => http.get<InstagramSettings>('/settings/instagram', undefined, signal),
-  updateInstagram: (body: InstagramSettingsUpdate) => http.patch<InstagramSettings>('/settings/instagram', body),
   pool: (signal?: AbortSignal) => http.get<PoolSettings>('/settings/pool', undefined, signal),
   updatePool: (body: Partial<PoolSettings>) => http.patch<PoolSettings>('/settings/pool', body),
 }

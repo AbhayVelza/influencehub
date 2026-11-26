@@ -19,8 +19,6 @@ export const youtubeConfigured = () => !!apiKey()
 let quotaResetAt = 0
 export const youtubeQuotaResetAt = () => quotaResetAt
 
-/** YouTube's daily quota per Google Cloud project. */
-export const YOUTUBE_DAILY_UNITS = 10_000
 /**
  * The background sync stops for the day once this process has spent this many units, so the rest (~660 channels) stays
  * for Look up, Sync now and CSV "Fetch public profiles" instead of every one of them answering "rate limited".

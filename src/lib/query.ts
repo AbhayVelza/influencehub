@@ -40,7 +40,6 @@ export const queryKeys = {
   pool: ['influencers', 'pool'] as const,
   poolList: (params: InfluencerListParams) => ['influencers', 'pool', 'list', params] as const,
   poolFilterOptions: (filters: InfluencerFilters) => ['influencers', 'pool', 'filter-options', filters] as const,
-  poolItem: (id: string) => ['influencers', 'pool', 'item', id] as const,
   poolExpiring: ['influencers', 'pool', 'expiring'] as const,
   /** Prefix for all package lists. */
   packages: ['packages'] as const,
