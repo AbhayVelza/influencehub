@@ -105,8 +105,8 @@ export function buildColumns(team: Map<string, User>): ColumnDef<Influencer>[] {
         const inf = row.original
         const handle = primaryAccount(inf)?.handle
         return (
-          <div className="flex items-center gap-3">
-            <PersonAvatar name={inf.name} src={inf.profile_pic_url} className="size-10 shadow-sm" />
+          <div className="flex max-w-72 items-center gap-3">
+            <PersonAvatar name={inf.name} src={inf.profile_pic_url} className="size-10 shrink-0 shadow-sm" />
             <div className="flex min-w-0 flex-col">
               <div className="flex min-w-0 items-center gap-1.5">
                 <Link
@@ -117,7 +117,7 @@ export function buildColumns(team: Map<string, User>): ColumnDef<Influencer>[] {
                 </Link>
                 {inf.is_verified && verifiedMark()}
               </div>
-              {handle && <span className="truncate tabular-nums text-small text-muted-foreground">@{handle}</span>}
+              {handle && <span title={`@${handle}`} className="truncate tabular-nums text-small text-muted-foreground">@{handle}</span>}
             </div>
           </div>
         )
